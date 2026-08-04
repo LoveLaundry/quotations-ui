@@ -43,15 +43,15 @@ export default function QuotationDetailPage() {
             </CardHeader>
             <CardContent>
               <div className="grid gap-4 md:grid-cols-3">
-                <div className="rounded-2xl bg-slate-100/70 p-4">
+                <div className="rounded-2xl border border-stone-200/80 bg-stone-50/70 p-4">
                   <p className="text-sm text-slate-500">Created</p>
                   <p className="mt-2 font-semibold">{formatDate(quotation.created_at)}</p>
                 </div>
-                <div className="rounded-2xl bg-slate-100/70 p-4">
+                <div className="rounded-2xl border border-stone-200/80 bg-stone-50/70 p-4">
                   <p className="text-sm text-slate-500">Updated</p>
                   <p className="mt-2 font-semibold">{formatDate(quotation.updated_at)}</p>
                 </div>
-                <div className="rounded-2xl bg-slate-100/70 p-4">
+                <div className="rounded-2xl border border-stone-200/80 bg-stone-50/70 p-4">
                   <p className="text-sm text-slate-500">Options</p>
                   <p className="mt-2 font-semibold">{Object.keys(quotation.unit_price_with_options).length}</p>
                 </div>
@@ -67,9 +67,9 @@ export default function QuotationDetailPage() {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="overflow-hidden rounded-2xl border border-slate-200/70">
+              <div className="overflow-hidden rounded-2xl border border-stone-200/80">
                 <table className="min-w-full text-left text-sm">
-                  <thead className="bg-slate-100/70">
+                  <thead className="bg-stone-50/80">
                     <tr>
                       <th className="px-4 py-3 font-medium">Service</th>
                       <th className="px-4 py-3 font-medium">Unit price</th>
@@ -77,7 +77,7 @@ export default function QuotationDetailPage() {
                   </thead>
                   <tbody>
                     {Object.entries(quotation.unit_price_with_options).map(([name, price]) => (
-                      <tr key={name} className="border-t border-slate-200/70 bg-white/60">
+                      <tr key={name} className="border-t border-stone-200/70 bg-white/70">
                         <td className="px-4 py-3">{name}</td>
                         <td className="px-4 py-3 font-semibold">{formatCurrency(price)}</td>
                       </tr>

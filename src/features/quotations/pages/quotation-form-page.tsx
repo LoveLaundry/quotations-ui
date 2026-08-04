@@ -88,7 +88,7 @@ export default function QuotationFormPage() {
         <CardHeader>
           <div>
             <h3 className="text-lg font-semibold">{isEditing ? 'Edit quotation' : 'Create quotation'}</h3>
-            <p className="text-sm text-slate-500">Build a polished offer with dynamic pricing options.</p>
+            <p className="text-sm text-slate-500">Build a straightforward offer with clear pricing details.</p>
           </div>
           <Button variant="secondary" onClick={() => navigate('/quotations')}>Cancel</Button>
         </CardHeader>
@@ -97,6 +97,10 @@ export default function QuotationFormPage() {
             <div className="space-y-3">Loading quotation...</div>
           ) : (
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+              <div className="rounded-2xl border border-stone-200/80 bg-stone-50/70 p-4 text-sm text-slate-600">
+                Add the item details first, then define the pricing options your client will review.
+              </div>
+
               <div className="grid gap-4 md:grid-cols-2">
                 <div>
                   <label className="mb-2 block text-sm font-medium">Item name</label>
@@ -112,13 +116,13 @@ export default function QuotationFormPage() {
 
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <h4 className="font-semibold">Unit price options</h4>
+                  <h4 className="font-semibold">Pricing options</h4>
                   <Button type="button" variant="secondary" size="sm" onClick={() => append({ id: crypto.randomUUID(), name: '', price: '' })}>
                     <Plus className="mr-2 h-4 w-4" /> Add option
                   </Button>
                 </div>
                 {fields.map((field, index) => (
-                  <div key={field.id} className="grid gap-3 rounded-2xl border border-slate-200/70 bg-white/70 p-4 md:grid-cols-[1fr_1fr_auto]">
+                  <div key={field.id} className="grid gap-3 rounded-2xl border border-stone-200/80 bg-white/80 p-4 md:grid-cols-[1fr_1fr_auto]">
                     <div>
                       <label className="mb-2 block text-sm">Option name</label>
                       <Input {...register(`options.${index}.name` as const)} placeholder="Wash" />

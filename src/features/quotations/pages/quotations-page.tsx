@@ -42,14 +42,14 @@ export default function QuotationsPage() {
         <CardHeader>
           <div>
             <h3 className="text-lg font-semibold">Quotations library</h3>
-            <p className="text-sm text-slate-500">Search, review, and manage your pricing records.</p>
+            <p className="text-sm text-slate-500">Search, review, and manage pricing records in one place.</p>
           </div>
           <Button onClick={() => navigate('/quotations/new')}>
             <PlusCircle className="mr-2 h-4 w-4" /> New quote
           </Button>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <div className="flex flex-col gap-3 rounded-2xl border border-stone-200/80 bg-stone-50/70 p-4 md:flex-row md:items-center md:justify-between">
             <div className="relative w-full md:max-w-sm">
               <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
               <Input value={search} onChange={(event) => { setSearch(event.target.value); setPage(1) }} placeholder="Search by item or service" className="pl-9" />
@@ -73,9 +73,9 @@ export default function QuotationsPage() {
             </div>
           ) : (
             <>
-              <div className="mt-4 hidden overflow-hidden rounded-2xl border border-slate-200/70 md:block">
+              <div className="mt-4 hidden overflow-hidden rounded-2xl border border-stone-200/80 md:block">
                 <table className="min-w-full text-left text-sm">
-                  <thead className="bg-slate-100/70 text-slate-600 dark:bg-slate-800/70 dark:text-slate-300">
+                  <thead className="bg-stone-50/80 text-slate-600 dark:bg-slate-800/70 dark:text-slate-300">
                     <tr>
                       <th className="px-4 py-3 font-medium">Item</th>
                       <th className="px-4 py-3 font-medium">Size</th>
@@ -86,7 +86,7 @@ export default function QuotationsPage() {
                   </thead>
                   <tbody>
                     {paginated.map((quotation) => (
-                      <tr key={quotation.id} className="border-t border-slate-200/70 bg-white/60 dark:border-slate-800 dark:bg-slate-950/30">
+                      <tr key={quotation.id} className="border-t border-stone-200/70 bg-white/70 dark:border-slate-800 dark:bg-slate-950/30">
                         <td className="px-4 py-3 font-semibold">{quotation.item_name}</td>
                         <td className="px-4 py-3">{quotation.size}</td>
                         <td className="px-4 py-3">{Object.keys(quotation.unit_price_with_options).length}</td>
@@ -106,7 +106,7 @@ export default function QuotationsPage() {
 
               <div className="mt-4 space-y-3 md:hidden">
                 {paginated.map((quotation) => (
-                  <div key={quotation.id} className="rounded-2xl border border-slate-200/70 bg-white/70 p-4">
+                  <div key={quotation.id} className="rounded-2xl border border-stone-200/80 bg-stone-50/70 p-4">
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="font-semibold">{quotation.item_name}</p>

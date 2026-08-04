@@ -4,8 +4,8 @@
   font-family: 'Spectral', Georgia, serif;
   line-height: 1.5;
   font-weight: 400;
-  color: #0f172a;
-  background-color: #f8fafc;
+  color: #111827;
+  background-color: #f7f3ee;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -20,7 +20,8 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
-  background: linear-gradient(135deg, #fff8fa 0%, #ffffff 45%, #f8fafc 100%);
+  background: linear-gradient(135deg, #f8f4ee 0%, #fcfbf8 100%);
+  color: #111827;
 }
 
 #root {
