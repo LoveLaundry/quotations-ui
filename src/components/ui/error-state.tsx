@@ -1,13 +1,21 @@
+import { AlertCircle } from 'lucide-react'
+
 interface ErrorStateProps {
   title?: string
   description?: string
 }
 
-export function ErrorState({ title = 'Something went wrong', description = 'Please try again in a moment.' }: ErrorStateProps) {
+export function ErrorState({
+  title = 'Something went wrong',
+  description = 'Please try again in a moment.',
+}: ErrorStateProps) {
   return (
-    <div className="rounded-[28px] border border-rose-200/80 bg-[linear-gradient(135deg,rgba(255,245,247,0.95),rgba(255,255,255,0.95))] p-6 text-center text-sm text-rose-700 shadow-sm">
-      <h3 className="text-base font-semibold">{title}</h3>
-      <p className="mt-2">{description}</p>
+    <div className="flex flex-col items-center justify-center rounded-xl border border-red-100 bg-red-50/50 p-10 text-center">
+      <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-red-100 text-red-600">
+        <AlertCircle className="h-8 w-8" />
+      </div>
+      <h3 className="text-card-title text-red-800">{title}</h3>
+      <p className="mt-2 text-body text-red-600">{description}</p>
     </div>
   )
 }

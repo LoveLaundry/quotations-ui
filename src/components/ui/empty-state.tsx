@@ -3,16 +3,18 @@ import { Inbox } from 'lucide-react'
 interface EmptyStateProps {
   title: string
   description: string
+  action?: React.ReactNode
 }
 
-export function EmptyState({ title, description }: EmptyStateProps) {
+export function EmptyState({ title, description, action }: EmptyStateProps) {
   return (
-    <div className="flex flex-col items-center justify-center rounded-[28px] border border-dashed border-stone-300/80 bg-[linear-gradient(135deg,rgba(255,255,255,0.95),rgba(255,247,249,0.85))] p-10 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.6)]">
-      <div className="mb-4 rounded-full bg-rose-100 p-3 text-rose-600 shadow-sm">
-        <Inbox className="h-6 w-6" />
+    <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-surface-border bg-slate-50/50 p-12 text-center">
+      <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-xl bg-brand-50 text-brand-600">
+        <Inbox className="h-9 w-9" strokeWidth={1.5} />
       </div>
-      <h3 className="text-lg font-semibold text-slate-900">{title}</h3>
-      <p className="mt-2 max-w-sm text-sm text-slate-600">{description}</p>
+      <h3 className="text-card-title text-slate-900">{title}</h3>
+      <p className="mt-2 max-w-md text-body text-slate-500">{description}</p>
+      {action ? <div className="mt-6">{action}</div> : null}
     </div>
   )
 }
