@@ -1,70 +1,121 @@
 @import 'tailwindcss';
 
-:root {
-  --brand: #DC2626;
-  --brand-light: #FEF2F2;
-  --background: #F8FAFC;
-  --surface: #FFFFFF;
-  --text-primary: #0F172A;
-  --text-secondary: #64748B;
-  --border: #E2E8F0;
+@layer base {
+  :root {
+    --brand: #DC2626;
+    --brand-dark: #991B1B;
+    --brand-light: #FEF2F2;
+    --bg: #F8FAFC;
+    --border: rgba(226, 232, 240, 0.85);
+    --text: #0F172A;
+    --muted: #64748B;
+  }
 
-  font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
-  color: var(--text-primary);
-  background-color: var(--background);
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  body {
+    /* Spectral for headings feel — Inter for UI labels */
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background-color: var(--bg);
+    color: var(--text);
+    margin: 0;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Spectral', Georgia, serif;
+    letter-spacing: -0.01em;
+  }
 }
 
-* {
-  box-sizing: border-box;
+/* ── Typography scale ──────────────────────────────────────── */
+
+/* Dashboard title — 42px desktop / 28px mobile */
+.text-dashboard-title {
+  font-family: 'Spectral', Georgia, serif !important;
+  font-size: clamp(26px, 5vw, 42px) !important;
+  line-height: 1.15 !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.02em !important;
 }
 
-html {
-  scroll-behavior: smooth;
+/* Section titles — 28px desktop / 20px mobile */
+.text-section-title {
+  font-family: 'Spectral', Georgia, serif !important;
+  font-size: clamp(20px, 3.5vw, 28px) !important;
+  line-height: 1.25 !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.015em !important;
 }
 
-body {
-  margin: 0;
-  min-width: 320px;
-  min-height: 100vh;
-  background: var(--background);
-  color: var(--text-primary);
+/* Card titles — 20px desktop / 17px mobile */
+.text-card-title {
+  font-family: 'Spectral', Georgia, serif !important;
+  font-size: clamp(17px, 2.5vw, 20px) !important;
+  line-height: 1.3 !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.01em !important;
 }
 
-#root {
-  min-height: 100vh;
+/* Navigation & buttons — 16px */
+.text-btn-nav {
+  font-size: 16px !important;
+  line-height: 1.4 !important;
+  font-weight: 600 !important;
 }
 
-::selection {
-  background: rgba(220, 38, 38, 0.14);
-  color: var(--text-primary);
+/* Table headers — 14px, uppercase */
+.text-table-header {
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.04em !important;
+  text-transform: uppercase !important;
 }
 
-h1, h2, h3, h4, h5, h6 {
-  font-family: 'Manrope', 'Inter', 'Segoe UI', sans-serif;
-  letter-spacing: -0.02em;
+/* Table rows — 15px */
+.text-table-row {
+  font-size: 15px !important;
+  line-height: 1.45 !important;
+  font-weight: 500 !important;
 }
 
-/* Scrollbar styling */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+/* Input labels — 13px */
+.text-input-label {
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.03em !important;
+  text-transform: uppercase !important;
 }
 
-::-webkit-scrollbar-track {
-  background: transparent;
+/* Input text — 15px */
+.text-input-entry {
+  font-size: 15px !important;
 }
 
-::-webkit-scrollbar-thumb {
-  background: #CBD5E1;
-  border-radius: 4px;
+/* Dialog body — 15px */
+.text-dialog-body {
+  font-size: 15px !important;
+  line-height: 1.55 !important;
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: #94A3B8;
+/* ── Luxury card hover ─────────────────────────────────────── */
+.luxury-card {
+  background: #ffffff;
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  box-shadow: 0 2px 12px -2px rgba(15,23,42,0.04), 0 1px 4px -1px rgba(15,23,42,0.02);
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
 }
+.luxury-card:hover {
+  box-shadow: 0 8px 24px -4px rgba(220,38,38,0.10), 0 2px 8px -2px rgba(15,23,42,0.04);
+  border-color: rgba(220,38,38,0.22);
+  transform: translateY(-2px);
+}
+
+/* ── Scrollbar ─────────────────────────────────────────────── */
+::selection { background: rgba(220,38,38,0.14); color: #0F172A; }
+
+::-webkit-scrollbar { width: 7px; height: 7px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: #94A3B8; }

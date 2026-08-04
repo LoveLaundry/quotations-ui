@@ -1,4 +1,4 @@
-import { ChevronRight } from 'lucide-react'
+import { RiArrowRightSLine } from 'react-icons/ri'
 import { Link } from 'react-router-dom'
 import { cn } from '../../lib/utils'
 
@@ -20,7 +20,7 @@ export function Breadcrumb({ items, className }: BreadcrumbProps) {
 
         return (
           <span key={item.label} className="flex items-center gap-2">
-            {index > 0 ? <ChevronRight className="h-5 w-5 text-slate-300" /> : null}
+            {index > 0 ? <RiArrowRightSLine className="h-4 w-4 text-slate-300" /> : null}
             {item.href && !isLast ? (
               <Link to={item.href} className="text-slate-500 transition hover:text-brand-600">
                 {item.label}

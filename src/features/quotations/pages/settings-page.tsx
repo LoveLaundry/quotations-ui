@@ -1,31 +1,38 @@
-import { Settings } from 'lucide-react'
+import { RiSettings3Line } from 'react-icons/ri'
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card'
 import { Breadcrumb } from '../../../components/ui/breadcrumb'
 import { Badge } from '../../../components/ui/badge'
 
 export default function SettingsPage() {
   return (
-    <div className="space-y-8">
-      <div className="space-y-3">
+    <div className="space-y-8 pb-16 select-none">
+      <div className="space-y-2">
         <Breadcrumb items={[{ label: 'Dashboard', href: '/' }, { label: 'Settings' }]} />
-        <p className="text-body-lg text-slate-500">Application preferences and configuration</p>
+        <h1 className="text-dashboard-title font-extrabold text-slate-900 tracking-tight">
+          Settings
+        </h1>
+        <p className="text-body-copy font-medium text-slate-500">
+          Application preferences and configuration
+        </p>
       </div>
 
-      <Card>
-        <CardHeader>
-          <div className="flex items-center gap-4">
-            <div className="flex h-14 w-14 items-center justify-center rounded-lg bg-slate-100 text-slate-600">
-              <Settings className="h-9 w-9" strokeWidth={1.5} />
+      <Card className="border border-slate-200/90 shadow-sm">
+        <CardHeader className="border-b border-slate-100 pb-5">
+          <div className="flex items-center gap-3">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-100 text-slate-600">
+              <RiSettings3Line className="h-5 w-5" />
             </div>
             <div>
-              <CardTitle>Settings</CardTitle>
-              <Badge variant="secondary" className="mt-2">Coming soon</Badge>
+              <CardTitle className="text-card-title font-extrabold text-slate-900">System Preferences</CardTitle>
+              <Badge variant="secondary" className="mt-1.5 text-[11px] font-bold px-2.5 py-0.5 bg-slate-100 text-slate-700">
+                Coming soon
+              </Badge>
             </div>
           </div>
         </CardHeader>
-        <CardContent>
-          <p className="text-body text-slate-500">
-            Settings for currency, notifications, and account preferences will be available in a future update.
+        <CardContent className="pt-5">
+          <p className="text-body-copy font-medium text-slate-500 leading-relaxed">
+            Settings for currency and account preferences will be available in a future update.
           </p>
         </CardContent>
       </Card>

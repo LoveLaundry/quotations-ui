@@ -14,7 +14,7 @@ import { EmptyState } from '../../../components/ui/empty-state'
 import { Skeleton } from '../../../components/ui/skeleton'
 import { StatCard } from '../../../components/ui/stat-card'
 import { Badge } from '../../../components/ui/badge'
-import { formatCurrency, formatDate } from '../../../lib/utils'
+import { formatDate } from '../../../lib/utils'
 import { useQuotations } from '../hooks/useQuotations'
 import { QuotationPreviewDialog } from '../components/quotation-preview-dialog'
 import { useState } from 'react'
@@ -40,92 +40,107 @@ export default function DashboardPage() {
   ]
 
   return (
-    <div className="space-y-10">
+    <div className="space-y-12 pb-16 select-none">
+      {/* Top Banner / Welcome Section */}
       <section className="space-y-4">
-        <Badge>Guest Laundry Accounts</Badge>
-        <h2 className="text-dashboard text-slate-900">
+        <Badge variant="secondary" className="px-4 py-1.5 text-[17px] font-bold text-red-600 bg-red-50 border-red-200">
+          Guest Laundry Accounts
+        </Badge>
+        <h1 className="text-dashboard-title font-extrabold text-slate-900 tracking-tight">
           Welcome back
-        </h2>
-        <p className="max-w-2xl text-body-lg text-slate-500">
+        </h1>
+        <p className="max-w-3xl text-[22px] font-medium text-slate-500 leading-relaxed">
           Manage pricing, review quotations, and keep your guest laundry operations running smoothly.
         </p>
       </section>
 
-      <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
+      {/* 4 Stat Cards */}
+      <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
         {isLoading ? (
-          [1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-36" />)
+          [1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-40 rounded-3xl" />)
         ) : (
           <>
             <StatCard
               label="Total Items"
               value={total}
               description="In price list"
-              icon={<Receipt className="h-9 w-9" strokeWidth={1.5} />}
+              icon={<Receipt className="h-9 w-9 icon-36" strokeWidth={1.75} />}
             />
             <StatCard
               label="Categories"
               value={categories}
               description="Active groups"
-              icon={<FolderOpen className="h-9 w-9" strokeWidth={1.5} />}
+              icon={<FolderOpen className="h-9 w-9 icon-36" strokeWidth={1.75} />}
             />
             <StatCard
               label="Service Types"
               value={totalOptions}
               description="Pricing options"
-              icon={<Layers className="h-9 w-9" strokeWidth={1.5} />}
+              icon={<Layers className="h-9 w-9 icon-36" strokeWidth={1.75} />}
             />
             <StatCard
               label="Recent Updates"
               value={recent.length}
               description="Latest entries"
-              icon={<TrendingUp className="h-9 w-9" strokeWidth={1.5} />}
+              icon={<TrendingUp className="h-9 w-9 icon-36" strokeWidth={1.75} />}
             />
           </>
         )}
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-3">
-        <Card className="lg:col-span-1">
-          <CardHeader>
-            <CardTitle>Quick Actions</CardTitle>
+      {/* Quick Actions & Recent Activity Grid */}
+      <div className="grid gap-8 lg:grid-cols-12">
+        {/* Quick Actions Card */}
+        <Card className="lg:col-span-4 border border-slate-200/90 shadow-sm">
+          <CardHeader className="border-b border-slate-100 pb-5">
+            <CardTitle className="text-card-title font-extrabold text-slate-900">
+              Quick Actions
+            </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3">
+          <CardContent className="space-y-4 pt-6">
             {quickActions.map(({ label, icon: Icon, href, primary }) => (
-              <Link key={href} to={href}>
+              <Link key={href} to={href} className="block">
                 <motion.div
                   whileHover={{ x: 4 }}
-                  className={`flex items-center gap-4 rounded-lg px-4 py-4 transition ${
+                  className={`flex items-center gap-4 rounded-2xl px-6 py-5 transition duration-200 cursor-pointer ${
                     primary
-                      ? 'bg-brand-600 text-white hover:bg-brand-700'
-                      : 'border border-surface-border bg-white hover:bg-slate-50'
+                      ? 'bg-red-600 text-white font-bold shadow-md shadow-red-600/20 hover:bg-red-700'
+                      : 'border border-slate-200/90 bg-white text-slate-800 font-semibold hover:bg-slate-50 hover:border-slate-300'
                   }`}
                 >
-                  <Icon className="h-9 w-9" strokeWidth={1.5} />
-                  <span className="text-body-lg font-semibold">{label}</span>
-                  <ArrowRight className="ml-auto h-6 w-6 opacity-60" />
+                  <Icon className="h-9 w-9 shrink-0 icon-36" strokeWidth={1.75} />
+                  <span className="text-[22px]">{label}</span>
+                  <ArrowRight className="ml-auto h-7 w-7 opacity-70" />
                 </motion.div>
               </Link>
             ))}
           </CardContent>
         </Card>
 
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <div>
-              <CardTitle>Recent Activity</CardTitle>
-              <p className="mt-1 text-body text-slate-500">Latest quotation updates</p>
+        {/* Recent Activity Card */}
+        <Card className="lg:col-span-8 border border-slate-200/90 shadow-sm">
+          <CardHeader className="border-b border-slate-100 pb-5">
+            <div className="flex items-center justify-between w-full">
+              <div>
+                <CardTitle className="text-card-title font-extrabold text-slate-900">
+                  Recent Activity
+                </CardTitle>
+                <p className="mt-1 text-[18px] font-medium text-slate-500">Latest quotation updates</p>
+              </div>
+              <Link to="/quotations">
+                <Button variant="secondary" size="sm" className="font-semibold text-[18px]">
+                  View all
+                </Button>
+              </Link>
             </div>
-            <Link to="/quotations">
-              <Button variant="secondary" size="sm">View all</Button>
-            </Link>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-6">
             {isLoading ? (
               <div className="space-y-3">
-                {[1, 2, 3].map((i) => <Skeleton key={i} className="h-16" />)}
+                {[1, 2, 3].map((i) => <Skeleton key={i} className="h-20 rounded-2xl" />)}
               </div>
             ) : recent.length ? (
-              <div className="space-y-2">
+              <div className="space-y-3">
                 {recent.map((quotation, index) => (
                   <motion.button
                     key={quotation.id}
@@ -135,19 +150,19 @@ export default function DashboardPage() {
                     transition={{ delay: index * 0.05 }}
                     whileHover={{ x: 4 }}
                     onClick={() => setPreviewQuotation(quotation)}
-                    className="flex w-full items-center justify-between rounded-lg border border-surface-border bg-white px-5 py-4 text-left transition hover:border-brand-200 hover:bg-brand-50/30"
+                    className="flex w-full items-center justify-between rounded-2xl border border-slate-200 bg-white px-6 py-5 text-left transition duration-200 hover:border-red-200 hover:bg-red-50/20 cursor-pointer shadow-xs"
                   >
                     <div>
-                      <p className="text-body-lg font-semibold text-slate-900">{quotation.item_name}</p>
-                      <p className="text-body text-slate-500">
+                      <p className="text-[22px] font-bold text-slate-900">{quotation.item_name}</p>
+                      <p className="text-[18px] font-medium text-slate-500 pt-0.5">
                         {quotation.category} · {quotation.size} · {formatDate(quotation.updated_at ?? quotation.created_at)}
                       </p>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <span className="text-body font-semibold text-brand-600">
+                    <div className="flex items-center gap-4">
+                      <span className="text-[18px] font-bold text-red-600">
                         {Object.keys(quotation.unit_price_with_options).length} types
                       </span>
-                      <ArrowRight className="h-6 w-6 text-slate-400" />
+                      <ArrowRight className="h-7 w-7 text-slate-400" />
                     </div>
                   </motion.button>
                 ))}

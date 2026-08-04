@@ -1,11 +1,11 @@
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
+  DialogBody,
   DialogTitle,
+  DialogDescription,
 } from '../../../components/ui/dialog'
-import { Badge } from '../../../components/ui/badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../../components/ui/table'
 import { formatCurrency } from '../../../lib/utils'
 import type { Quotation } from '../../../types/quotation'
@@ -23,36 +23,40 @@ export function QuotationPreviewDialog({ quotation, open, onOpenChange }: Quotat
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl">
+      <DialogContent>
+        {/* Header */}
         <DialogHeader>
-          <div className="flex flex-wrap items-center gap-3">
-            <Badge>{quotation.category}</Badge>
-            <Badge variant="secondary">{quotation.size}</Badge>
+          <div className="flex flex-wrap items-center gap-2 mb-2">
+            <span className="rounded-full bg-red-50 border border-red-100 px-3 py-0.5 text-[12px] font-semibold text-red-700 tracking-wide uppercase">
+              {quotation.category}
+            </span>
+            <span className="rounded-full bg-slate-100 border border-slate-200 px-3 py-0.5 text-[12px] font-semibold text-slate-600 tracking-wide uppercase">
+              {quotation.size}
+            </span>
           </div>
           <DialogTitle>{quotation.item_name}</DialogTitle>
           <DialogDescription>
-            Service pricing breakdown with all available types and unit rates.
+            Pricing breakdown by service type
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-6">
+        {/* Body */}
+        <DialogBody>
           <Table>
             <TableHeader>
-              <TableRow className="hover:bg-transparent">
+              <TableRow>
                 <TableHead>Service Type</TableHead>
-                <TableHead className="text-right">Unit Price</TableHead>
+                <TableHead className="text-right">Unit Rate</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {priceEntries.map(([serviceType, price]) => (
                 <TableRow key={serviceType}>
-                  <TableCell>
-                    <span className="font-medium text-slate-900">{serviceType}</span>
+                  <TableCell className="font-medium text-slate-900 text-[14px] py-3.5">
+                    {serviceType}
                   </TableCell>
-                  <TableCell className="text-right">
-                    <span className="text-body-lg font-semibold text-brand-600">
-                      {formatCurrency(price)}
-                    </span>
+                  <TableCell className="text-right font-bold text-red-600 text-[15px] py-3.5">
+                    {formatCurrency(price)}
                   </TableCell>
                 </TableRow>
               ))}
@@ -60,16 +64,16 @@ export function QuotationPreviewDialog({ quotation, open, onOpenChange }: Quotat
           </Table>
 
           {priceEntries.length > 1 ? (
-            <div className="flex items-center justify-between rounded-lg border border-surface-border bg-slate-50 px-5 py-4">
-              <span className="text-body-lg font-medium text-slate-600">Price range</span>
-              <span className="text-body-lg font-semibold text-slate-900">
+            <div className="mt-4 flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-5 py-4">
+              <span className="text-[13px] font-semibold text-slate-500 uppercase tracking-wide">Rate Range</span>
+              <span className="text-[16px] font-bold text-slate-900">
                 {formatCurrency(Math.min(...priceEntries.map(([, p]) => p)))}
                 {' — '}
                 {formatCurrency(Math.max(...priceEntries.map(([, p]) => p)))}
               </span>
             </div>
           ) : null}
-        </div>
+        </DialogBody>
       </DialogContent>
     </Dialog>
   )
