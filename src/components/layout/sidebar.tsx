@@ -15,7 +15,7 @@ import { cn } from '../../lib/utils'
 const navItems = [
   { to: '/', label: 'Dashboard', icon: RiDashboardLine, end: true },
   { to: '/quotations', label: 'Quotations', icon: RiFileListLine, end: false },
-  { to: '/categories', label: 'Categories', icon: RiFolderOpenLine, end: false },
+  { to: '/categories', label: 'By Client', icon: RiFolderOpenLine, end: false },
   { to: '/settings', label: 'Settings', icon: RiSettings3Line, end: false },
 ]
 

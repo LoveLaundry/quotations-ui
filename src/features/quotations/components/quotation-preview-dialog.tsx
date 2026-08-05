@@ -1,9 +1,9 @@
-import { Tag } from 'lucide-react'
+import { Printer } from 'lucide-react'
 import {
   Dialog, DialogContent, DialogHeader, DialogBody,
   DialogTitle, DialogDescription,
 } from '../../../components/ui/dialog'
-import { formatCurrency } from '../../../lib/utils'
+import { Button } from '../../../components/ui/button'
 import type { Quotation } from '../../../types/quotation'
 
 interface Props {
@@ -15,59 +15,82 @@ interface Props {
 export function QuotationPreviewDialog({ quotation, open, onOpenChange }: Props) {
   if (!quotation) return null
 
-  const entries = Object.entries(quotation.unit_price_with_options)
-  const prices  = entries.map(([, p]) => p)
-  const min     = Math.min(...prices)
-  const max     = Math.max(...prices)
+  const items = quotation.line_items ?? []
+  // Group by category
+  const groups: Record<string, typeof items> = {}
+  for (const item of items) {
+    const cat = item.category?.trim() || 'General'
+    if (!groups[cat]) groups[cat] = []
+    groups[cat].push(item)
+  }
+  const groupEntries = Object.entries(groups)
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="max-w-lg">
         <DialogHeader>
-          {/* Icon */}
           <div className="flex justify-center mb-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#FFF1F1] text-[#DC2626] border border-[#FECACA]">
-              <Tag className="h-5 w-5" />
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#FFF1F1] text-[#DC2626] border border-[#FECACA] text-[16px] font-bold">
+              {(quotation.client_name ?? '?').charAt(0).toUpperCase()}
             </div>
           </div>
-          <DialogTitle>{quotation.item_name}</DialogTitle>
+          <DialogTitle>{quotation.client_name ?? '(Unnamed)'}</DialogTitle>
           <DialogDescription>
-            <span className="inline-flex items-center gap-1.5 mt-2 justify-center">
-              <span className="rounded-md bg-[#FFF1F1] border border-[#FECACA] px-2 py-0.5 text-[11px] font-medium text-[#DC2626]">
-                {quotation.category}
-              </span>
-              <span className="rounded-md bg-[#F9FAFB] border border-[#E4E7EC] px-2 py-0.5 text-[11px] font-medium text-[#374151]">
-                {quotation.size}
-              </span>
-            </span>
+            {quotation.quotation_title || 'Price List'} · {items.length} items
           </DialogDescription>
         </DialogHeader>
 
         <DialogBody>
-          {/* Service rows */}
-          <div className="space-y-1.5">
-            {entries.map(([type, price]) => (
-              <div
-                key={type}
-                className="flex items-center justify-between rounded-lg border border-[#E4E7EC] bg-[#FAFAFA] px-4 py-2.5 hover:bg-white hover:border-[#D1D5DB] transition-colors"
-              >
-                <span className="text-[13px] font-medium text-[#374151]">{type}</span>
-                <span className="text-[13px] font-semibold text-[#DC2626]">{formatCurrency(price)}</span>
+          {/* Scrollable item list */}
+          <div className="max-h-[380px] overflow-y-auto -mx-1 px-1 space-y-3">
+            {groupEntries.map(([cat, catItems]) => (
+              <div key={cat}>
+                {groupEntries.length > 1 && (
+                  <p className="text-[10px] font-semibold uppercase tracking-widest text-[#98A2B3] mb-1.5 px-1">
+                    {cat}
+                  </p>
+                )}
+                <div className="space-y-1">
+                  {catItems.map((li, idx) => {
+                    const globalNum = items.indexOf(li) + 1
+                    return (
+                      <div
+                        key={li.id ?? idx}
+                        className="flex items-center justify-between rounded-lg border border-[#E4E7EC] bg-[#FAFAFA] px-3 py-2 hover:bg-white hover:border-[#D1D5DB] transition-colors"
+                      >
+                        <div className="flex items-center gap-2 min-w-0">
+                          <span className="text-[10px] font-bold text-[#D1D5DB] w-5 shrink-0 text-right">
+                            {globalNum}
+                          </span>
+                          <div className="min-w-0">
+                            <span className="text-[13px] font-medium text-[#374151] truncate block">
+                              {li.item_name}
+                            </span>
+                            {li.notes && (
+                              <span className="text-[11px] text-[#98A2B3]">{li.notes}</span>
+                            )}
+                          </div>
+                        </div>
+                        <span className="text-[13px] font-semibold text-[#101828] shrink-0 ml-3">
+                          {li.unit_price.toFixed(2)}
+                        </span>
+                      </div>
+                    )
+                  })}
+                </div>
               </div>
             ))}
           </div>
 
-          {/* Range footer */}
-          {entries.length > 1 && (
-            <div className="mt-3 flex items-center justify-between rounded-lg bg-[#F9FAFB] border border-[#E4E7EC] px-4 py-2.5">
-              <span className="text-[11px] font-semibold text-[#9CA3AF] uppercase tracking-wider">Range</span>
-              <span className="text-[13px] font-semibold text-[#101828]">
-                {formatCurrency(min)}
-                <span className="mx-2 text-[#D1D5DB]">—</span>
-                {formatCurrency(max)}
-              </span>
-            </div>
-          )}
+          {/* Footer */}
+          <div className="mt-3 flex items-center justify-between rounded-lg bg-[#F9FAFB] border border-[#E4E7EC] px-3 py-2.5">
+            <span className="text-[11px] font-semibold text-[#9CA3AF] uppercase tracking-wider">
+              {items.length} items · LKR
+            </span>
+            <Button size="sm" variant="secondary" onClick={() => window.print()}>
+              <Printer className="h-3 w-3" /> Print
+            </Button>
+          </div>
         </DialogBody>
       </DialogContent>
     </Dialog>

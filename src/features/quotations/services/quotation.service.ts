@@ -26,4 +26,10 @@ async function deleteQuotation(id: string): Promise<{ message: string }> {
   return response.data
 }
 
-export const quotationService = { getAllQuotations, getQuotation, createQuotation, updateQuotation, deleteQuotation }
+export const quotationService = {
+  getAllQuotations,
+  getQuotation,
+  createQuotation,
+  updateQuotation,
+  deleteQuotation,
+}
