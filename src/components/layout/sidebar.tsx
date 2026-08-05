@@ -29,11 +29,12 @@ interface SidebarProps {
 export function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose }: SidebarProps) {
   const location = useLocation()
 
-  useEffect(() => { onMobileClose() }, [location.pathname]) // eslint-disable-line
+  useEffect(() => {
+    onMobileClose()
+  }, [location.pathname, onMobileClose])
 
   return (
     <>
-      {/* Desktop */}
       <motion.aside
         animate={{ width: collapsed ? 60 : 232 }}
         transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
@@ -42,7 +43,6 @@ export function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose }: Side
         <SidebarContent collapsed={collapsed} onToggle={onToggle} />
       </motion.aside>
 
-      {/* Mobile drawer */}
       <AnimatePresence>
         {mobileOpen && (
           <motion.aside
@@ -64,7 +64,6 @@ export function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose }: Side
 function SidebarContent({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => void }) {
   return (
     <div className="flex flex-col h-full">
-      {/* Logo */}
       <div className={cn(
         'flex h-14 shrink-0 items-center border-b border-[#1F2937] px-4',
         collapsed && 'justify-center px-0',
@@ -82,9 +81,7 @@ function SidebarContent({ collapsed, onToggle }: { collapsed: boolean; onToggle:
         </AnimatePresence>
       </div>
 
-      {/* Nav */}
       <nav className="flex-1 overflow-y-auto px-2 py-3 space-y-0.5">
-        {/* Section label */}
         {!collapsed && (
           <p className="px-2 pb-1.5 text-[10px] font-semibold uppercase tracking-widest text-[#4B5563]">
             Navigation
@@ -115,7 +112,6 @@ function SidebarContent({ collapsed, onToggle }: { collapsed: boolean; onToggle:
         ))}
       </nav>
 
-      {/* Bottom */}
       <div className="border-t border-[#1F2937] p-2">
         <button
           type="button"
@@ -133,7 +129,6 @@ function SidebarContent({ collapsed, onToggle }: { collapsed: boolean; onToggle:
   )
 }
 
-/* Logo adapted for dark sidebar */
 function LogoDark() {
   return (
     <div className="flex items-center gap-2.5 select-none">

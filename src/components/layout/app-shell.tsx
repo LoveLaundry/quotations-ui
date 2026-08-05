@@ -26,7 +26,6 @@ export function AppShell() {
 
   return (
     <div className="min-h-screen bg-[#F7F8FA]">
-      {/* Mobile overlay */}
       {mobileOpen && (
         <div
           className="fixed inset-0 z-30 bg-black/40 backdrop-blur-[2px] lg:hidden"

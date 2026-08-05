@@ -16,7 +16,6 @@ export function QuotationPreviewDialog({ quotation, open, onOpenChange }: Props)
   if (!quotation) return null
 
   const items = quotation.line_items ?? []
-  // Group by category
   const groups: Record<string, typeof items> = {}
   for (const item of items) {
     const cat = item.category?.trim() || 'General'
@@ -41,7 +40,6 @@ export function QuotationPreviewDialog({ quotation, open, onOpenChange }: Props)
         </DialogHeader>
 
         <DialogBody>
-          {/* Scrollable item list */}
           <div className="max-h-[380px] overflow-y-auto -mx-1 px-1 space-y-3">
             {groupEntries.map(([cat, catItems]) => (
               <div key={cat}>

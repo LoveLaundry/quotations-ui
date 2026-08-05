@@ -20,7 +20,6 @@ export function TopBar({ title, sidebarCollapsed, onMobileMenuToggle }: TopBarPr
         sidebarCollapsed ? 'left-0 lg:left-[60px]' : 'left-0 lg:left-[232px]',
       )}
     >
-      {/* Left */}
       <div className="flex items-center gap-3 min-w-0 flex-1">
         <button
           type="button"
@@ -44,9 +43,7 @@ export function TopBar({ title, sidebarCollapsed, onMobileMenuToggle }: TopBarPr
         )}
       </div>
 
-      {/* Right */}
       <div className="flex items-center gap-2 shrink-0">
-        {/* Notification bell */}
         <button
           type="button"
           className="relative flex h-8 w-8 items-center justify-center rounded-lg border border-[#E4E7EC] bg-white text-[#6B7280] hover:bg-[#F9FAFB] hover:text-[#374151] transition cursor-pointer"
@@ -56,7 +53,6 @@ export function TopBar({ title, sidebarCollapsed, onMobileMenuToggle }: TopBarPr
           <span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-red-500 ring-[1.5px] ring-white" />
         </button>
 
-        {/* User chip */}
         <div className="flex items-center gap-2 rounded-lg border border-[#E4E7EC] bg-white px-2.5 py-1.5 cursor-pointer hover:bg-[#F9FAFB] transition">
           <div className="flex h-6 w-6 items-center justify-center rounded-md bg-red-600 text-white">
             <RiUserLine size={12} />

@@ -1,37 +1,30 @@
 @import 'tailwindcss';
-
-/* ── Google Fonts ─────────────────────────────────────────── */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
 @layer base {
   :root {
-    /* Brand */
-    --red-50:  #FFF1F1;
+    --red-50: #FFF1F1;
     --red-100: #FFE0E0;
     --red-500: #EF4444;
     --red-600: #DC2626;
     --red-700: #B91C1C;
-
-    /* Neutrals */
-    --bg:        #F7F8FA;
-    --surface:   #FFFFFF;
-    --border:    #E4E7EC;
-    --border-2:  #D1D5DB;
-
-    /* Text */
-    --text-primary:   #101828;
+    --bg: #F7F8FA;
+    --surface: #FFFFFF;
+    --border: #E4E7EC;
+    --border-2: #D1D5DB;
+    --text-primary: #101828;
     --text-secondary: #475467;
-    --text-tertiary:  #98A2B3;
-
-    /* Sidebar dark theme */
-    --sidebar-bg:      #111827;
-    --sidebar-border:  #1F2937;
-    --sidebar-text:    #9CA3AF;
-    --sidebar-active:  #FFFFFF;
+    --text-tertiary: #98A2B3;
+    --sidebar-bg: #111827;
+    --sidebar-border: #1F2937;
+    --sidebar-text: #9CA3AF;
+    --sidebar-active: #FFFFFF;
     --sidebar-hover-bg: #1F2937;
   }
 
-  *, *::before, *::after { box-sizing: border-box; }
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
 
   body {
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
@@ -47,7 +40,6 @@
   }
 }
 
-/* ── Typography classes ────────────────────────────────────── */
 .text-dashboard-title {
   font-size: clamp(20px, 3vw, 26px) !important;
   font-weight: 700 !important;
@@ -86,14 +78,14 @@
   color: var(--text-tertiary) !important;
 }
 
-.text-table-row   { font-size: 13px !important; color: var(--text-secondary) !important; }
+.text-table-row { font-size: 13px !important; color: var(--text-secondary) !important; }
 .text-input-entry { font-size: 13px !important; }
 .text-dialog-body { font-size: 13px !important; line-height: 1.6 !important; }
-.text-body        { font-size: 13px !important; line-height: 1.6 !important; }
-.text-body-copy   { font-size: 13px !important; line-height: 1.6 !important; }
-.text-body-lg     { font-size: 14px !important; line-height: 1.5 !important; font-weight: 500 !important; }
-.text-btn-nav     { font-size: 13px !important; font-weight: 500 !important; }
-.text-section     { font-size: clamp(14px, 2vw, 16px) !important; font-weight: 600 !important; }
+.text-body { font-size: 13px !important; line-height: 1.6 !important; }
+.text-body-copy { font-size: 13px !important; line-height: 1.6 !important; }
+.text-body-lg { font-size: 14px !important; line-height: 1.5 !important; font-weight: 500 !important; }
+.text-btn-nav { font-size: 13px !important; font-weight: 500 !important; }
+.text-section { font-size: clamp(14px, 2vw, 16px) !important; font-weight: 600 !important; }
 
 .text-dashboard {
   font-size: clamp(22px, 3vw, 28px) !important;
@@ -102,15 +94,12 @@
   line-height: 1.2 !important;
 }
 
-/* ── Brand utilities ───────────────────────────────────────── */
-.text-brand-600        { color: var(--red-600); }
-.bg-brand-50           { background: var(--red-50); }
-.border-brand-600      { border-color: var(--red-600); }
+.text-brand-600 { color: var(--red-600); }
+.bg-brand-50 { background: var(--red-50); }
+.border-brand-600 { border-color: var(--red-600); }
 .border-surface-border { border-color: var(--border); }
 .icon-36 { width: 16px !important; height: 16px !important; }
 
-/* ── Surface / card ────────────────────────────────────────── */
-/* Flat card — clean white, 1px border, barely-there shadow */
 .card-surface {
   background: #FFFFFF;
   border: 1px solid var(--border);
@@ -118,7 +107,6 @@
   box-shadow: 0 1px 2px rgba(16, 24, 40, 0.05);
 }
 
-/* Interactive card — lifts on hover */
 .luxury-card {
   background: #FFFFFF;
   border: 1px solid var(--border);
@@ -126,39 +114,39 @@
   box-shadow: 0 1px 2px rgba(16, 24, 40, 0.05);
   transition: box-shadow 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
 }
+
 .luxury-card:hover {
   box-shadow: 0 4px 16px rgba(16, 24, 40, 0.08), 0 1px 3px rgba(16, 24, 40, 0.04);
   border-color: #D1D5DB;
   transform: translateY(-1px);
 }
 
-/* ── Focus ring ────────────────────────────────────────────── */
 .focus-ring {
   outline: none;
   box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.12);
   border-color: var(--red-500) !important;
 }
 
-/* ── Sidebar specific ──────────────────────────────────────── */
 .sidebar-dark {
   background: var(--sidebar-bg);
   border-right: 1px solid var(--sidebar-border);
 }
 
-/* ── Scrollbar ─────────────────────────────────────────────── */
-::selection { background: rgba(220,38,38,0.15); color: var(--text-primary); }
+::selection {
+  background: rgba(220,38,38,0.15);
+  color: var(--text-primary);
+}
+
 ::-webkit-scrollbar { width: 4px; height: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: #D1D5DB; border-radius: 99px; }
 ::-webkit-scrollbar-thumb:hover { background: #9CA3AF; }
 
-/* ── Page transition ───────────────────────────────────────── */
 @keyframes fadeSlideIn {
   from { opacity: 0; transform: translateY(6px); }
-  to   { opacity: 1; transform: translateY(0); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-/* ── Print ─────────────────────────────────────────────────── */
 @media print {
   body > *:not(#printable-receipt) { display: none !important; }
   #printable-receipt {

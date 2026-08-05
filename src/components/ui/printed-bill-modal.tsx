@@ -14,24 +14,23 @@ interface PrintedBillModalProps {
 
 export function PrintedBillModal({ open, onClose, defaultQuotationId }: PrintedBillModalProps) {
   const { data: quotations = [] } = useQuotations()
-  const [roomNumber, setRoomNumber]     = useState('408')
-  const [guestName, setGuestName]       = useState('Valued Guest')
-  const [selectedId, setSelectedId]     = useState<string | number>(defaultQuotationId ?? '')
-  const [selectedItem, setSelectedItem] = useState('')   // item name within quotation
-  const [quantity, setQuantity]         = useState(1)
-  const [express, setExpress]           = useState(false)
+  const [roomNumber, setRoomNumber] = useState('408')
+  const [guestName, setGuestName] = useState('Valued Guest')
+  const [selectedId, setSelectedId] = useState<string | number>(defaultQuotationId ?? '')
+  const [selectedItem, setSelectedItem] = useState('')
+  const [quantity, setQuantity] = useState(1)
+  const [express, setExpress] = useState(false)
 
-  const resolvedId     = selectedId || quotations[0]?.id || ''
-  const quotation      = quotations.find(q => String(q.id) === String(resolvedId)) ?? quotations[0]
-  const lineItems      = quotation?.line_items ?? []
+  const resolvedId = selectedId || quotations[0]?.id || ''
+  const quotation = quotations.find(q => String(q.id) === String(resolvedId)) ?? quotations[0]
+  const lineItems = quotation?.line_items ?? []
 
-  // Find selected line item (or first)
-  const resolvedItem   = lineItems.find(li => li.item_name === selectedItem) ?? lineItems[0]
-  const basePrice      = resolvedItem?.unit_price ?? 0
-  const subtotal       = basePrice * quantity
+  const resolvedItem = lineItems.find(li => li.item_name === selectedItem) ?? lineItems[0]
+  const basePrice = resolvedItem?.unit_price ?? 0
+  const subtotal = basePrice * quantity
   const expressSurcharge = express ? subtotal * 0.25 : 0
-  const tax            = (subtotal + expressSurcharge) * 0.1
-  const grandTotal     = subtotal + expressSurcharge + tax
+  const tax = (subtotal + expressSurcharge) * 0.1
+  const grandTotal = subtotal + expressSurcharge + tax
 
   return (
     <AnimatePresence>
@@ -44,7 +43,6 @@ export function PrintedBillModal({ open, onClose, defaultQuotationId }: PrintedB
             transition={{ duration: 0.16 }}
             className="w-full max-w-3xl overflow-hidden rounded-2xl border border-[#E4E7EC] bg-white shadow-2xl my-4 sm:my-8"
           >
-            {/* Header */}
             <div className="flex items-center justify-between border-b border-[#E4E7EC] bg-[#FAFAFA] px-5 py-4">
               <div className="flex items-center gap-3">
                 <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#DC2626] text-white">
@@ -55,13 +53,16 @@ export function PrintedBillModal({ open, onClose, defaultQuotationId }: PrintedB
                   <p className="text-[11px] text-[#98A2B3]">Love Laundry · Reg. No: 40-3064</p>
                 </div>
               </div>
-              <button type="button" onClick={onClose} className="rounded-lg p-1.5 text-[#9CA3AF] hover:bg-[#E5E7EB] transition cursor-pointer">
+              <button
+                type="button"
+                onClick={onClose}
+                className="rounded-lg p-1.5 text-[#9CA3AF] hover:bg-[#E5E7EB] transition cursor-pointer"
+              >
                 <X className="h-5 w-5" />
               </button>
             </div>
 
             <div className="grid gap-5 p-5 lg:grid-cols-12">
-              {/* Controls */}
               <div className="space-y-3 lg:col-span-5">
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1">
@@ -128,10 +129,11 @@ export function PrintedBillModal({ open, onClose, defaultQuotationId }: PrintedB
                 </Button>
               </div>
 
-              {/* Receipt preview */}
               <div className="lg:col-span-7">
-                <div id="printable-receipt" className="rounded-xl border-2 border-dashed border-[#E4E7EC] bg-[#FAFAFA] p-5 space-y-4">
-                  {/* Header */}
+                <div
+                  id="printable-receipt"
+                  className="rounded-xl border-2 border-dashed border-[#E4E7EC] bg-[#FAFAFA] p-5 space-y-4"
+                >
                   <div className="text-center space-y-1 border-b border-[#E4E7EC] pb-4">
                     <h2 className="text-[15px] font-extrabold text-[#101828] uppercase tracking-tight">
                       Love Laundry
@@ -139,11 +141,14 @@ export function PrintedBillModal({ open, onClose, defaultQuotationId }: PrintedB
                     <p className="text-[11px] text-[#DC2626] uppercase font-bold tracking-widest">
                       Hotel Laundry Bill
                     </p>
-                    <p className="text-[10px] text-[#98A2B3]">Medagama, Panirendawa · Reg. No: 40-3064</p>
-                    <p className="text-[10px] text-[#98A2B3]">Printed: {formatDate(new Date().toISOString())}</p>
+                    <p className="text-[10px] text-[#98A2B3]">
+                      Medagama, Panirendawa · Reg. No: 40-3064
+                    </p>
+                    <p className="text-[10px] text-[#98A2B3]">
+                      Printed: {formatDate(new Date().toISOString())}
+                    </p>
                   </div>
 
-                  {/* Guest details */}
                   <div className="grid grid-cols-2 gap-3 rounded-lg bg-white p-3 border border-[#E4E7EC]">
                     <div>
                       <span className="text-[10px] font-bold text-[#98A2B3] uppercase block">Guest</span>
@@ -159,7 +164,6 @@ export function PrintedBillModal({ open, onClose, defaultQuotationId }: PrintedB
                     </div>
                   </div>
 
-                  {/* Line item */}
                   <div className="space-y-2">
                     <div className="flex justify-between text-[10px] font-semibold text-[#98A2B3] border-b border-[#E4E7EC] pb-1.5 uppercase">
                       <span>Item</span>
@@ -180,7 +184,6 @@ export function PrintedBillModal({ open, onClose, defaultQuotationId }: PrintedB
                     )}
                   </div>
 
-                  {/* Totals */}
                   <div className="border-t border-[#E4E7EC] pt-3 space-y-1.5 text-[12px]">
                     <div className="flex justify-between text-[#6B7280]">
                       <span>Subtotal</span>
@@ -202,7 +205,6 @@ export function PrintedBillModal({ open, onClose, defaultQuotationId }: PrintedB
                     </div>
                   </div>
 
-                  {/* Signature */}
                   <div className="border-t border-[#E4E7EC] pt-3 flex items-end justify-between">
                     <div>
                       <div className="h-8 border-b-2 border-[#D1D5DB] w-28 mb-1" />

@@ -4,23 +4,23 @@ import { quotationService } from '../services/quotation.service'
 import type { Quotation, QuotationPayload } from '../../../types/quotation'
 
 export const quotationKeys = {
-  all:    ['quotations'] as const,
-  list:   () => [...quotationKeys.all] as const,
+  all: ['quotations'] as const,
+  list: () => [...quotationKeys.all] as const,
   detail: (id: string) => [...quotationKeys.all, id] as const,
 }
 
 export function useQuotations() {
   return useQuery({
     queryKey: quotationKeys.list(),
-    queryFn:  quotationService.getAllQuotations,
+    queryFn: quotationService.getAllQuotations,
   })
 }
 
 export function useQuotation(id?: string) {
   return useQuery({
     queryKey: quotationKeys.detail(id ?? ''),
-    queryFn:  () => quotationService.getQuotation(id ?? ''),
-    enabled:  Boolean(id),
+    queryFn: () => quotationService.getQuotation(id ?? ''),
+    enabled: Boolean(id),
   })
 }
 

@@ -14,7 +14,6 @@ import { useQuotations } from '../hooks/useQuotations'
 export default function ClientsPage() {
   const { data, isLoading, isError, error } = useQuotations()
 
-  // Group quotations by client name
   const clients = useMemo(() => {
     const grouped: Record<string, typeof data> = {}
     for (const q of data ?? []) {
@@ -35,10 +34,14 @@ export default function ClientsPage() {
 
       {isLoading ? (
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {[1,2,3,4,5,6].map(i => <Skeleton key={i} className="h-36 rounded-xl" />)}
+          {[1, 2, 3, 4, 5, 6].map(i => (
+            <Skeleton key={i} className="h-36 rounded-xl" />
+          ))}
         </div>
       ) : isError ? (
-        <ErrorState description={error instanceof Error ? error.message : 'Unable to load clients'} />
+        <ErrorState
+          description={error instanceof Error ? error.message : 'Unable to load clients'}
+        />
       ) : clients.length ? (
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {clients.map(([clientName, quotes], idx) => (
@@ -51,10 +54,10 @@ export default function ClientsPage() {
               <Card className="h-full hover:border-[#FECACA] transition-colors">
                 <CardHeader className="border-b border-[#F2F4F7] pb-3">
                   <div className="flex items-center gap-3 flex-1 min-w-0">
-                    {/* Client avatar */}
                     <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#FFF1F1] text-[#DC2626] border border-[#FECACA] text-[15px] font-bold">
                       {clientName.charAt(0).toUpperCase()}
-                    </div>                    <div className="min-w-0">
+                    </div>
+                    <div className="min-w-0">
                       <CardTitle className="truncate">{clientName}</CardTitle>
                       <p className="text-[11px] text-[#98A2B3] mt-0.5">
                         {quotes?.length ?? 0} quotation{(quotes?.length ?? 0) !== 1 ? 's' : ''}
@@ -95,7 +98,11 @@ export default function ClientsPage() {
         <EmptyState
           title="No clients yet"
           description="Clients will appear once you create quotations."
-          action={<Link to="/quotations/new"><Button>Create quotation</Button></Link>}
+          action={
+            <Link to="/quotations/new">
+              <Button>Create quotation</Button>
+            </Link>
+          }
         />
       )}
     </div>

@@ -26,18 +26,19 @@ export default function QuotationsPage() {
   const { data, isLoading, isError, error } = useQuotations()
   const deleteMutation = useDeleteQuotation()
 
-  const [search, setSearch]   = useState('')
+  const [search, setSearch] = useState('')
   const [preview, setPreview] = useState<Quotation | null>(null)
 
-  const filtered = useMemo(() =>
-    (data ?? [])
-      .filter(q => (q.client_name ?? '').toLowerCase().includes(search.toLowerCase()))
-      .sort((a, b) => (a.client_name ?? '').localeCompare(b.client_name ?? '')),
-  [data, search])
+  const filtered = useMemo(
+    () =>
+      (data ?? [])
+        .filter(q => (q.client_name ?? '').toLowerCase().includes(search.toLowerCase()))
+        .sort((a, b) => (a.client_name ?? '').localeCompare(b.client_name ?? '')),
+    [data, search],
+  )
 
   return (
     <div className="space-y-5 pb-10 select-none">
-      {/* Header */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <Breadcrumb items={[{ label: 'Dashboard', href: '/' }, { label: 'Quotations' }]} />
@@ -82,12 +83,10 @@ export default function QuotationsPage() {
                   transition={{ delay: Math.min(i * 0.025, 0.25) }}
                   className="group flex items-center gap-4 rounded-xl border border-[#E4E7EC] bg-white p-4 hover:border-[#FECACA] hover:bg-[#FFF8F8] transition-all duration-100"
                 >
-                  {/* Avatar */}
                   <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#F3F4F6] border border-[#E4E7EC] text-[14px] font-bold text-[#6B7280] group-hover:bg-[#FFF1F1] group-hover:text-[#DC2626] group-hover:border-[#FECACA] transition-all">
                     {(q.client_name ?? '?').charAt(0).toUpperCase()}
                   </div>
 
-                  {/* Info */}
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2 flex-wrap">
                       <p className="text-[14px] font-semibold text-[#101828]">{q.client_name ?? '(no name)'}</p>
@@ -105,7 +104,6 @@ export default function QuotationsPage() {
                     </p>
                   </div>
 
-                  {/* Actions */}
                   <div className="flex items-center gap-0.5 shrink-0">
                     <Button variant="ghost" size="icon" onClick={() => setPreview(q)} aria-label="Preview">
                       <Eye className="h-3.5 w-3.5" />
