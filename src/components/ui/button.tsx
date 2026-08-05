@@ -5,24 +5,27 @@ import { cn } from '../../lib/utils'
 
 const buttonVariants = cva(
   [
-    'inline-flex items-center justify-center gap-1.5 shrink-0',
+    'inline-flex items-center justify-center gap-2 shrink-0',
     'rounded-lg text-[13px] font-medium leading-none',
-    'border transition-all duration-150',
-    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500/30 focus-visible:ring-offset-1',
-    'disabled:pointer-events-none disabled:opacity-40',
-    'cursor-pointer select-none active:scale-[0.98]',
+    'border transition-all duration-200',
+    'focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-red-500/20 focus-visible:ring-offset-2',
+    'disabled:pointer-events-none disabled:opacity-50 disabled:cursor-not-allowed',
+    'cursor-pointer select-none',
+    'active:scale-[0.97] hover:shadow-sm',
   ].join(' '),
   {
     variants: {
       variant: {
         default: [
-          'bg-[#DC2626] border-[#DC2626] text-white',
-          'shadow-[0_1px_2px_rgba(0,0,0,0.08),inset_0_1px_0_rgba(255,255,255,0.12)]',
-          'hover:bg-[#B91C1C] hover:border-[#B91C1C]',
+          'bg-gradient-to-b from-[#DC2626] to-[#B91C1C]',
+          'border-[#B91C1C] text-white',
+          'shadow-sm shadow-red-600/20',
+          'hover:from-[#B91C1C] hover:to-[#991B1B]',
+          'hover:shadow-md hover:shadow-red-600/30',
         ].join(' '),
         secondary: [
-          'bg-white border-[#E4E7EC] text-[#374151]',
-          'shadow-[0_1px_2px_rgba(0,0,0,0.04)]',
+          'bg-white border-[#E5E7EB] text-[#374151]',
+          'shadow-sm',
           'hover:bg-[#F9FAFB] hover:border-[#D1D5DB] hover:text-[#111827]',
         ].join(' '),
         outline: [
@@ -39,10 +42,10 @@ const buttonVariants = cva(
         ].join(' '),
       },
       size: {
-        default: 'h-9 px-3.5',
-        sm:      'h-7 px-2.5 text-[12px]',
-        lg:      'h-10 px-4 text-[14px]',
-        icon:    'h-8 w-8 p-0 rounded-lg border-transparent',
+        default: 'h-9 px-4',
+        sm: 'h-8 px-3 text-[12px]',
+        lg: 'h-11 px-5 text-[14px] font-semibold',
+        icon: 'h-9 w-9 p-0 rounded-lg border-transparent',
       },
     },
     defaultVariants: { variant: 'default', size: 'default' },

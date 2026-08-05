@@ -10,8 +10,8 @@ export const Card = React.forwardRef<HTMLDivElement, CardProps>(
     <div
       ref={ref}
       className={cn(
-        'rounded-xl border border-[#E4E7EC] bg-white',
-        'shadow-[0_1px_2px_rgba(16,24,40,0.05)]',
+        'rounded-xl border border-[#E5E7EB] bg-white',
+        'shadow-sm',
         hover && 'luxury-card cursor-pointer',
         className,
       )}
@@ -24,15 +24,15 @@ export const Card = React.forwardRef<HTMLDivElement, CardProps>(
 Card.displayName = 'Card'
 
 export function CardHeader({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn('flex items-start justify-between gap-3 px-5 pt-5 pb-4', className)} {...props} />
+  return <div className={cn('flex items-start justify-between gap-4 px-6 pt-6 pb-4', className)} {...props} />
 }
 
 export function CardContent({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn('px-5 pb-5', className)} {...props} />
+  return <div className={cn('px-6 pb-6', className)} {...props} />
 }
 
 export function CardTitle({ className, ...props }: React.HTMLAttributes<HTMLHeadingElement>) {
   return (
-    <h3 className={cn('text-[13px] font-semibold text-[#101828] tracking-tight leading-snug', className)} {...props} />
+    <h3 className={cn('text-[15px] font-semibold text-[#111827] tracking-tight leading-snug', className)} {...props} />
   )
 }

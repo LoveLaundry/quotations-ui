@@ -50,7 +50,6 @@ export function CommandSearch({ open, onClose }: CommandSearchProps) {
           transition={{ duration: 0.15 }}
           className="w-full max-w-2xl overflow-hidden rounded-2xl border border-[#E4E7EC] bg-white shadow-[0_24px_64px_-8px_rgba(16,24,40,0.20)]"
         >
-          {/* Search input */}
           <div className="flex items-center gap-3 border-b border-[#E4E7EC] px-5 py-4">
             <Search className="h-5 w-5 text-[#DC2626] shrink-0" />
             <input
@@ -70,7 +69,6 @@ export function CommandSearch({ open, onClose }: CommandSearchProps) {
             </button>
           </div>
 
-          {/* Results */}
           <div className="max-h-[400px] overflow-y-auto p-3 space-y-1">
             <p className="px-3 py-1.5 text-[11px] font-semibold uppercase tracking-widest text-[#98A2B3]">
               {query ? `Results (${filtered.length})` : 'Recent Quotations'}
@@ -104,7 +102,6 @@ export function CommandSearch({ open, onClose }: CommandSearchProps) {
             )}
           </div>
 
-          {/* Footer */}
           <div className="flex items-center justify-between border-t border-[#F2F4F7] bg-[#FAFAFA] px-5 py-3">
             <span className="flex items-center gap-1.5 text-[12px] text-[#98A2B3]">
               <Sparkles className="h-3.5 w-3.5 text-[#DC2626]" /> Click to open full quotation

@@ -12,37 +12,46 @@ interface StatCardProps {
 
 export function StatCard({ label, value, description, trend, icon, className }: StatCardProps) {
   return (
-    <div className={cn(
-      'group relative overflow-hidden',
-      'rounded-xl border border-[#E4E7EC] bg-white p-5',
-      'shadow-[0_1px_2px_rgba(16,24,40,0.05)]',
-      'transition-all duration-200',
-      'hover:shadow-[0_4px_16px_rgba(16,24,40,0.08)] hover:border-[#D1D5DB]',
-      className,
-    )}>
-      <div className="absolute -top-4 -right-4 h-16 w-16 rounded-full bg-red-500/0 group-hover:bg-red-500/6 blur-xl transition-colors duration-300 pointer-events-none" />
+    <div
+      className={cn(
+        'group relative overflow-hidden',
+        'rounded-xl border border-[#E5E7EB] bg-white p-6',
+        'shadow-sm',
+        'transition-all duration-300',
+        'hover:shadow-md hover:border-[#FCA5A5] hover:-translate-y-1',
+        className,
+      )}
+    >
+      <div className="absolute -top-6 -right-6 h-24 w-24 rounded-full bg-red-500/0 group-hover:bg-red-500/5 blur-2xl transition-all duration-500 pointer-events-none" />
 
       <div className="flex items-start justify-between relative">
-        <div>
-          <p className="text-[11px] font-semibold uppercase tracking-widest text-[#98A2B3]">{label}</p>
-          <p className="mt-1.5 text-[26px] font-bold text-[#101828] leading-none tracking-tight">{value}</p>
+        <div className="flex-1">
+          <p className="text-[12px] font-semibold uppercase tracking-wider text-[#6B7280]">
+            {label}
+          </p>
+          <p className="mt-2 text-[32px] font-bold text-[#111827] leading-none tracking-tight">
+            {value}
+          </p>
           {description && (
-            <div className="flex items-center gap-1.5 mt-2">
+            <div className="flex items-center gap-2 mt-3">
               {trend && (
-                <span className="inline-flex items-center rounded-md bg-emerald-50 border border-emerald-100 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700">
+                <span className="inline-flex items-center rounded-md bg-emerald-50 border border-emerald-200 px-2 py-1 text-[11px] font-semibold text-emerald-700">
                   {trend}
                 </span>
               )}
-              <span className="text-[12px] text-[#98A2B3]">{description}</span>
+              <span className="text-[13px] text-[#6B7280]">{description}</span>
             </div>
           )}
         </div>
-        <div className={cn(
-          'flex h-10 w-10 shrink-0 items-center justify-center rounded-xl',
-          'bg-[#F3F4F6] text-[#6B7280] border border-[#E4E7EC]',
-          'group-hover:bg-[#DC2626] group-hover:text-white group-hover:border-[#DC2626]',
-          'transition-all duration-200',
-        )}>
+        <div
+          className={cn(
+            'flex h-12 w-12 shrink-0 items-center justify-center rounded-xl',
+            'bg-gradient-to-br from-[#F3F4F6] to-[#E5E7EB] text-[#6B7280] border border-[#E5E7EB]',
+            'group-hover:from-[#DC2626] group-hover:to-[#B91C1C] group-hover:text-white group-hover:border-[#B91C1C]',
+            'group-hover:shadow-lg group-hover:shadow-red-600/30',
+            'transition-all duration-300',
+          )}
+        >
           {icon}
         </div>
       </div>
