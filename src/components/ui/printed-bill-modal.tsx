@@ -16,222 +16,200 @@ export function PrintedBillModal({ open, onClose, defaultQuotationId }: PrintedB
   const { data: quotations = [] } = useQuotations()
   const [roomNumber, setRoomNumber] = useState('408')
   const [guestName, setGuestName] = useState('Alexander Wright')
-  const [selectedItemId, setSelectedItemId] = useState<string | number>(
-    defaultQuotationId ?? (quotations[0]?.id || ''),
-  )
+  const [selectedItemId, setSelectedItemId] = useState<string | number>(defaultQuotationId ?? '')
   const [quantity, setQuantity] = useState(2)
   const [expressService, setExpressService] = useState(true)
 
-  if (!open) return null
-
-  const selectedItem = quotations.find((q) => String(q.id) === String(selectedItemId)) || quotations[0]
+  const resolvedId = selectedItemId || quotations[0]?.id || ''
+  const selectedItem = quotations.find((q) => String(q.id) === String(resolvedId)) ?? quotations[0]
   const optionsEntries = selectedItem ? Object.entries(selectedItem.unit_price_with_options) : []
-  const basePrice = optionsEntries.length > 0 ? optionsEntries[0][1] : 0
+  const basePrice = optionsEntries[0]?.[1] ?? 0
   const subtotal = basePrice * quantity
   const expressSurcharge = expressService ? subtotal * 0.25 : 0
   const tax = (subtotal + expressSurcharge) * 0.1
   const grandTotal = subtotal + expressSurcharge + tax
 
-  const handlePrint = () => {
-    window.print()
-  }
-
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-slate-900/60 backdrop-blur-md overflow-y-auto">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95, y: 15 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.95, y: 15 }}
-          className="w-full max-w-4xl overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-2xl my-8"
-        >
-          {/* Header Controls */}
-          <div className="flex items-center justify-between border-b border-slate-200 bg-slate-50/90 px-8 py-6">
-            <div className="flex items-center gap-4">
-              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-red-600 text-white shadow-md">
-                <Printer className="h-7 w-7" />
+      {open && (
+        <div className="fixed inset-0 z-50 flex items-start justify-center p-3 sm:p-6 bg-slate-900/60 backdrop-blur-sm overflow-y-auto">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.96, y: 12 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.96, y: 12 }}
+            transition={{ duration: 0.18 }}
+            className="w-full max-w-3xl overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl my-4 sm:my-8"
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between border-b border-slate-200 bg-slate-50 px-5 py-4">
+              <div className="flex items-center gap-3">
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-red-600 text-white">
+                  <Printer className="h-4 w-4" />
+                </div>
+                <div>
+                  <p className="text-[14px] font-bold text-slate-900">Print Guest Receipt</p>
+                  <p className="text-[11px] text-slate-500">Love Laundry Guest Accounts</p>
+                </div>
               </div>
-              <div>
-                <h3 className="text-card-title text-slate-900 font-bold">Print Hotel Guest Receipt</h3>
-                <p className="text-[18px] text-slate-500 font-medium">Love Laundry Guest Account System</p>
-              </div>
+              <button
+                type="button"
+                onClick={onClose}
+                className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-200 hover:text-slate-700 transition cursor-pointer"
+              >
+                <X className="h-5 w-5" />
+              </button>
             </div>
-            <button
-              type="button"
-              onClick={onClose}
-              className="rounded-2xl p-3 text-slate-400 hover:bg-slate-200 hover:text-slate-700 transition cursor-pointer"
-            >
-              <X className="h-8 w-8" />
-            </button>
-          </div>
 
-          <div className="grid gap-8 p-8 lg:grid-cols-12">
-            {/* Left Controls Column */}
-            <div className="space-y-6 lg:col-span-5">
-              <div className="space-y-2">
-                <label className="text-input-label text-slate-800">Room Number</label>
-                <Input
-                  value={roomNumber}
-                  onChange={(e) => setRoomNumber(e.target.value)}
-                  placeholder="e.g. 408"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-input-label text-slate-800">Guest Full Name</label>
-                <Input
-                  value={guestName}
-                  onChange={(e) => setGuestName(e.target.value)}
-                  placeholder="e.g. John Doe"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-input-label text-slate-800">Laundry Item</label>
-                <select
-                  value={selectedItemId}
-                  onChange={(e) => setSelectedItemId(e.target.value)}
-                  className="w-full h-16 rounded-2xl border border-slate-200 bg-white px-5 text-input-entry text-slate-900 outline-none focus:border-red-600 focus:ring-4 focus:ring-red-500/15 shadow-sm"
-                >
-                  {quotations.map((q) => (
-                    <option key={q.id} value={q.id}>
-                      {q.item_name} ({q.category})
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label className="text-input-label text-slate-800">Quantity</label>
-                  <Input
-                    type="number"
-                    min={1}
-                    value={quantity}
-                    onChange={(e) => setQuantity(Math.max(1, Number(e.target.value)))}
-                  />
+            {/* Body — stacks on mobile, side-by-side on lg */}
+            <div className="grid gap-5 p-5 lg:grid-cols-12">
+              {/* Controls */}
+              <div className="space-y-3 lg:col-span-5">
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <label className="text-input-label text-slate-700">Room</label>
+                    <Input value={roomNumber} onChange={(e) => setRoomNumber(e.target.value)} placeholder="408" />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-input-label text-slate-700">Quantity</label>
+                    <Input
+                      type="number"
+                      min={1}
+                      value={quantity}
+                      onChange={(e) => setQuantity(Math.max(1, Number(e.target.value)))}
+                    />
+                  </div>
                 </div>
 
-                <div className="space-y-2">
-                  <label className="text-input-label text-slate-800">Express +25%</label>
+                <div className="space-y-1">
+                  <label className="text-input-label text-slate-700">Guest Name</label>
+                  <Input value={guestName} onChange={(e) => setGuestName(e.target.value)} placeholder="John Doe" />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-input-label text-slate-700">Laundry Item</label>
+                  <select
+                    value={resolvedId}
+                    onChange={(e) => setSelectedItemId(e.target.value)}
+                    className="w-full h-9 rounded-lg border border-slate-200 bg-white px-3 text-[14px] text-slate-900 outline-none focus:border-red-500 focus:ring-2 focus:ring-red-500/15 shadow-xs"
+                  >
+                    {quotations.map((q) => (
+                      <option key={q.id} value={q.id}>{q.item_name} ({q.category})</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-input-label text-slate-700">Express +25%</label>
                   <button
                     type="button"
                     onClick={() => setExpressService(!expressService)}
-                    className={`w-full h-16 rounded-2xl border px-4 flex items-center justify-center gap-2 text-[20px] font-bold transition cursor-pointer ${
+                    className={`w-full h-9 rounded-lg border px-3 flex items-center justify-center gap-2 text-[13px] font-semibold transition cursor-pointer ${
                       expressService
-                        ? 'border-red-600 bg-red-50 text-red-700'
+                        ? 'border-red-500 bg-red-50 text-red-700'
                         : 'border-slate-200 bg-slate-50 text-slate-600'
                     }`}
                   >
-                    {expressService ? <Check className="h-6 w-6" /> : null}
-                    {expressService ? 'Express' : 'Standard'}
+                    {expressService && <Check className="h-3.5 w-3.5" />}
+                    {expressService ? 'Express Turnaround' : 'Standard Service'}
                   </button>
                 </div>
-              </div>
 
-              <div className="pt-4">
-                <Button size="lg" className="w-full font-bold text-[22px]" onClick={handlePrint}>
-                  <Printer className="h-7 w-7 mr-2" /> Print Official Bill
+                <Button size="lg" className="w-full" onClick={() => window.print()}>
+                  <Printer className="h-4 w-4" /> Print Official Bill
                 </Button>
               </div>
-            </div>
 
-            {/* Right Receipt Preview Column */}
-            <div className="lg:col-span-7">
-              <div 
-                id="printable-receipt"
-                className="rounded-3xl border-2 border-dashed border-slate-200 bg-slate-50/50 p-8 space-y-6 font-sans shadow-sm"
-              >
-                {/* Receipt Header */}
-                <div className="text-center space-y-2 border-b border-slate-200 pb-6">
-                  <h2 className="text-[28px] font-extrabold text-slate-900 tracking-tight">LOVE LAUNDRY GUEST ACCOUNTS</h2>
-                  <p className="text-[18px] font-bold text-red-600 uppercase tracking-widest">LUXURY HOTEL LAUNDRY BILL</p>
-                  <p className="text-[16px] text-slate-500 font-medium">Printed: {formatDate(new Date().toISOString())}</p>
-                </div>
-
-                {/* Guest Details Row */}
-                <div className="grid grid-cols-2 gap-4 rounded-2xl bg-white p-5 border border-slate-200 text-[18px]">
-                  <div>
-                    <span className="text-slate-400 font-semibold block text-[15px] uppercase">GUEST NAME</span>
-                    <span className="font-bold text-slate-900">{guestName || 'Valued Guest'}</span>
-                  </div>
-                  <div>
-                    <span className="text-slate-400 font-semibold block text-[15px] uppercase">ROOM / SUITE</span>
-                    <span className="font-bold text-slate-900">Room #{roomNumber || '---'}</span>
-                  </div>
-                </div>
-
-                {/* Itemized Table */}
-                <div className="space-y-3">
-                  <div className="flex justify-between text-[17px] font-bold text-slate-400 border-b border-slate-200 pb-2 uppercase">
-                    <span>Item & Service</span>
-                    <span>Qty × Rate</span>
-                    <span>Total</span>
+              {/* Receipt preview */}
+              <div className="lg:col-span-7">
+                <div
+                  id="printable-receipt"
+                  className="rounded-xl border-2 border-dashed border-slate-200 bg-slate-50/60 p-5 space-y-4"
+                >
+                  {/* Receipt header */}
+                  <div className="text-center space-y-1 border-b border-slate-200 pb-4">
+                    <h2 className="text-[15px] font-extrabold text-slate-900 tracking-tight uppercase">
+                      Love Laundry Guest Accounts
+                    </h2>
+                    <p className="text-[11px] font-bold text-red-600 uppercase tracking-widest">
+                      Luxury Hotel Laundry Bill
+                    </p>
+                    <p className="text-[11px] text-slate-400">Printed: {formatDate(new Date().toISOString())}</p>
                   </div>
 
-                  {selectedItem ? (
-                    optionsEntries.map(([svcName, svcPrice]) => (
-                      <div key={svcName} className="flex justify-between items-center text-[20px] font-semibold text-slate-800 py-1">
-                        <div>
-                          <p className="font-bold text-slate-900">{selectedItem.item_name}</p>
-                          <p className="text-[16px] font-medium text-slate-500">{selectedItem.category} • {svcName}</p>
-                        </div>
-                        <div className="text-[18px] font-medium text-slate-600">
-                          {quantity} × {formatCurrency(svcPrice)}
-                        </div>
-                        <div className="font-bold text-slate-900">
-                          {formatCurrency(svcPrice * quantity)}
-                        </div>
-                      </div>
-                    ))
-                  ) : (
-                    <p className="text-slate-500 text-[18px]">No item selected</p>
-                  )}
-                </div>
-
-                {/* Calculation Summary */}
-                <div className="border-t border-slate-200 pt-4 space-y-2 text-[19px]">
-                  <div className="flex justify-between text-slate-600">
-                    <span>Subtotal</span>
-                    <span className="font-semibold">{formatCurrency(subtotal)}</span>
-                  </div>
-
-                  {expressService ? (
-                    <div className="flex justify-between text-red-600 font-semibold">
-                      <span>Express Turnaround (+25%)</span>
-                      <span>+{formatCurrency(expressSurcharge)}</span>
-                    </div>
-                  ) : null}
-
-                  <div className="flex justify-between text-slate-600">
-                    <span>Govt Tax / VAT (10%)</span>
-                    <span className="font-semibold">+{formatCurrency(tax)}</span>
-                  </div>
-
-                  <div className="flex justify-between border-t-2 border-slate-900 pt-3 text-[26px] font-extrabold text-slate-900">
-                    <span>Total Bill</span>
-                    <span className="text-red-600">{formatCurrency(grandTotal)}</span>
-                  </div>
-                </div>
-
-                {/* Signature Box */}
-                <div className="border-t border-slate-200 pt-6 mt-6">
-                  <div className="flex items-end justify-between">
+                  {/* Guest details */}
+                  <div className="grid grid-cols-2 gap-3 rounded-lg bg-white p-3 border border-slate-200">
                     <div>
-                      <div className="h-12 border-b-2 border-slate-300 w-48 mb-2" />
-                      <span className="text-[15px] font-bold text-slate-400 uppercase">Guest Signature</span>
+                      <span className="text-[10px] font-bold text-slate-400 uppercase block">Guest</span>
+                      <span className="text-[13px] font-semibold text-slate-900">{guestName || 'Valued Guest'}</span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] font-bold text-slate-400 uppercase block">Room</span>
+                      <span className="text-[13px] font-semibold text-slate-900">#{roomNumber || '---'}</span>
+                    </div>
+                  </div>
+
+                  {/* Line items */}
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-[10px] font-bold text-slate-400 border-b border-slate-200 pb-1.5 uppercase">
+                      <span>Item & Service</span>
+                      <span>Qty × Rate</span>
+                      <span>Total</span>
+                    </div>
+                    {selectedItem ? (
+                      optionsEntries.map(([svcName, svcPrice]) => (
+                        <div key={svcName} className="flex justify-between items-start text-[12px] py-0.5">
+                          <div>
+                            <p className="font-semibold text-slate-900">{selectedItem.item_name}</p>
+                            <p className="text-[11px] text-slate-500">{selectedItem.category} · {svcName}</p>
+                          </div>
+                          <span className="text-slate-500">{quantity}×{formatCurrency(svcPrice)}</span>
+                          <span className="font-bold text-slate-900">{formatCurrency(svcPrice * quantity)}</span>
+                        </div>
+                      ))
+                    ) : (
+                      <p className="text-[12px] text-slate-400">No item selected</p>
+                    )}
+                  </div>
+
+                  {/* Totals */}
+                  <div className="border-t border-slate-200 pt-3 space-y-1.5 text-[13px]">
+                    <div className="flex justify-between text-slate-600">
+                      <span>Subtotal</span>
+                      <span className="font-medium">{formatCurrency(subtotal)}</span>
+                    </div>
+                    {expressService && (
+                      <div className="flex justify-between text-red-600 font-medium">
+                        <span>Express (+25%)</span>
+                        <span>+{formatCurrency(expressSurcharge)}</span>
+                      </div>
+                    )}
+                    <div className="flex justify-between text-slate-600">
+                      <span>VAT (10%)</span>
+                      <span className="font-medium">+{formatCurrency(tax)}</span>
+                    </div>
+                    <div className="flex justify-between border-t border-slate-300 pt-2 text-[15px] font-bold text-slate-900">
+                      <span>Total Bill</span>
+                      <span className="text-red-600">{formatCurrency(grandTotal)}</span>
+                    </div>
+                  </div>
+
+                  {/* Signature */}
+                  <div className="border-t border-slate-200 pt-3 flex items-end justify-between">
+                    <div>
+                      <div className="h-8 border-b-2 border-slate-300 w-32 mb-1" />
+                      <span className="text-[10px] font-bold text-slate-400 uppercase">Guest Signature</span>
                     </div>
                     <div className="text-right">
-                      <span className="text-[15px] font-bold text-slate-400 block uppercase">Folio Code</span>
-                      <span className="text-[17px] font-mono font-bold text-slate-800">LL-GUEST-{roomNumber}-2026</span>
+                      <span className="text-[10px] font-bold text-slate-400 block uppercase">Folio</span>
+                      <span className="text-[11px] font-mono font-bold text-slate-700">LL-{roomNumber}-2026</span>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
-        </motion.div>
-      </div>
+          </motion.div>
+        </div>
+      )}
     </AnimatePresence>
   )
 }

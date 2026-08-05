@@ -13,23 +13,24 @@ export function FilterChip({ label, active, count, onClick }: FilterChipProps) {
       type="button"
       onClick={onClick}
       className={cn(
-        'inline-flex items-center gap-2.5 rounded-2xl border px-5 py-3 text-[20px] font-bold transition-all duration-200 cursor-pointer shadow-xs',
+        'inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-[12px] font-medium',
+        'transition-all duration-150 cursor-pointer',
         active
-          ? 'border-red-600 bg-red-600 text-white shadow-md shadow-red-600/20'
-          : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50',
+          ? 'border-red-500 bg-red-600 text-white shadow-[0_1px_3px_rgba(220,38,38,0.30)]'
+          : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50',
       )}
     >
       {label}
-      {count !== undefined ? (
+      {count !== undefined && (
         <span
           className={cn(
-            'rounded-xl px-2.5 py-0.5 text-[16px] font-bold',
-            active ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-600',
+            'rounded px-1.5 py-0.5 text-[10px] font-semibold',
+            active ? 'bg-white/25 text-white' : 'bg-slate-100 text-slate-500',
           )}
         >
           {count}
         </span>
-      ) : null}
+      )}
     </button>
   )
 }

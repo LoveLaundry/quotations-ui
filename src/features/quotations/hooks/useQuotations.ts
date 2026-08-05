@@ -69,7 +69,7 @@ export function useDeleteQuotation() {
       await queryClient.cancelQueries({ queryKey: quotationKeys.list() })
       const previous = queryClient.getQueryData<Quotation[]>(quotationKeys.list())
       queryClient.setQueryData<Quotation[]>(quotationKeys.list(), (existing = []) =>
-        existing.filter((item) => item.id !== id),
+        existing.filter((item) => String(item.id) !== id),
       )
       return { previous, id }
     },

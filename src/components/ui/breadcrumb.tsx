@@ -14,19 +14,21 @@ interface BreadcrumbProps {
 
 export function Breadcrumb({ items, className }: BreadcrumbProps) {
   return (
-    <nav aria-label="Breadcrumb" className={cn('flex items-center gap-2 text-body', className)}>
+    <nav aria-label="Breadcrumb" className={cn('flex items-center gap-1', className)}>
       {items.map((item, index) => {
         const isLast = index === items.length - 1
-
         return (
-          <span key={item.label} className="flex items-center gap-2">
-            {index > 0 ? <RiArrowRightSLine className="h-4 w-4 text-slate-300" /> : null}
+          <span key={item.label} className="flex items-center gap-1">
+            {index > 0 && <RiArrowRightSLine className="h-3.5 w-3.5 text-slate-300" />}
             {item.href && !isLast ? (
-              <Link to={item.href} className="text-slate-500 transition hover:text-brand-600">
+              <Link
+                to={item.href}
+                className="text-[12px] text-slate-400 hover:text-slate-600 transition-colors"
+              >
                 {item.label}
               </Link>
             ) : (
-              <span className={isLast ? 'font-medium text-slate-900' : 'text-slate-500'}>
+              <span className={isLast ? 'text-[12px] font-medium text-slate-700' : 'text-[12px] text-slate-400'}>
                 {item.label}
               </span>
             )}

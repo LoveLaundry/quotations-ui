@@ -1,5 +1,4 @@
 import React from 'react'
-import { motion } from 'framer-motion'
 import { cn } from '../../lib/utils'
 
 interface StatCardProps {
@@ -13,34 +12,34 @@ interface StatCardProps {
 
 export function StatCard({ label, value, description, trend, icon, className }: StatCardProps) {
   return (
-    <motion.div
-      whileHover={{ y: -3 }}
-      transition={{ duration: 0.2 }}
+    <div
       className={cn(
-        'luxury-card rounded-3xl border border-slate-200/80 bg-white p-7 shadow-sm transition-all duration-300 relative overflow-hidden group',
+        'group rounded-xl border border-slate-200 bg-white p-4',
+        'shadow-[0_1px_3px_0_rgba(15,23,42,0.06)]',
+        'transition-all duration-150',
+        'hover:shadow-[0_4px_12px_-2px_rgba(220,38,38,0.10)] hover:border-red-200',
         className,
       )}
     >
-      <div className="absolute top-0 right-0 w-32 h-32 bg-red-500/5 rounded-full blur-2xl group-hover:bg-red-500/10 transition-colors pointer-events-none" />
-      <div className="flex items-start justify-between relative z-10">
-        <div className="space-y-2">
-          <p className="text-[20px] font-semibold text-slate-500 tracking-wide uppercase">{label}</p>
-          <p className="text-[34px] font-bold text-slate-900 tracking-tight leading-none pt-1">{value}</p>
-          {description ? (
-            <div className="flex items-center gap-2 pt-2">
-              {trend ? (
-                <span className="inline-flex items-center rounded-full bg-emerald-50 px-2.5 py-0.5 text-[16px] font-semibold text-emerald-700">
+      <div className="flex items-start justify-between">
+        <div className="space-y-0.5">
+          <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">{label}</p>
+          <p className="text-[24px] font-bold text-slate-900 leading-none tracking-tight">{value}</p>
+          {description && (
+            <div className="flex items-center gap-1.5 pt-1">
+              {trend && (
+                <span className="rounded bg-emerald-50 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700">
                   {trend}
                 </span>
-              ) : null}
-              <span className="text-[18px] text-slate-500">{description}</span>
+              )}
+              <span className="text-[12px] text-slate-500">{description}</span>
             </div>
-          ) : null}
+          )}
         </div>
-        <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-red-50 text-red-600 border border-red-100 group-hover:bg-red-600 group-hover:text-white transition-colors duration-300 shadow-sm">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-500 group-hover:bg-red-600 group-hover:text-white transition-all duration-200">
           {icon}
         </div>
       </div>
-    </motion.div>
+    </div>
   )
 }

@@ -1,75 +1,65 @@
-import { RiBellLine, RiSearchLine, RiUserLine } from 'react-icons/ri'
+import { RiBellLine, RiMenuLine, RiUserLine } from 'react-icons/ri'
 import { motion } from 'framer-motion'
-import { Input } from '../ui/input'
 import { cn } from '../../lib/utils'
 
 interface TopBarProps {
   title?: string
   sidebarCollapsed: boolean
-  searchValue?: string
-  onSearchChange?: (value: string) => void
   showSearch?: boolean
+  onMobileMenuToggle: () => void
 }
 
-export function TopBar({
-  title,
-  sidebarCollapsed,
-  searchValue = '',
-  onSearchChange,
-  showSearch = true,
-}: TopBarProps) {
+export function TopBar({ title, sidebarCollapsed, onMobileMenuToggle }: TopBarProps) {
   return (
     <header
       className={cn(
-        'fixed top-0 right-0 z-30 flex h-16 items-center justify-between border-b border-slate-200 bg-white/90 backdrop-blur-md transition-[left] duration-250 px-5 select-none',
-        sidebarCollapsed ? 'left-[72px]' : 'left-[256px]',
+        'fixed top-0 right-0 z-30 flex h-14 items-center justify-between px-4',
+        'border-b border-slate-200 bg-white/95 backdrop-blur-sm',
+        'transition-[left] duration-200 select-none',
+        sidebarCollapsed ? 'left-0 lg:left-16' : 'left-0 lg:left-60',
       )}
     >
-      {/* Page title */}
-      <div className="min-w-0 flex-1 mr-4">
-        {title ? (
-          <motion.h1
-            key={title}
-            initial={{ opacity: 0, y: -3 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="truncate text-[17px] font-semibold text-slate-900"
-            style={{ fontFamily: 'Spectral, Georgia, serif' }}
-          >
-            {title}
-          </motion.h1>
-        ) : null}
-      </div>
-
-      {/* Right controls */}
-      <div className="flex items-center gap-3 shrink-0">
-        {showSearch && onSearchChange ? (
-          <div className="relative hidden sm:block w-64">
-            <RiSearchLine className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
-            <Input
-              value={searchValue}
-              onChange={(e) => onSearchChange(e.target.value)}
-              placeholder="Search quotations..."
-              className="h-9 pl-9 text-[14px]"
-            />
-          </div>
-        ) : null}
-
+      <div className="flex items-center gap-3 min-w-0 flex-1">
+        {/* Hamburger — mobile only */}
         <button
           type="button"
-          className="relative flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 text-slate-500 hover:bg-slate-50 hover:text-slate-800 transition cursor-pointer"
-          aria-label="Notifications"
+          onClick={onMobileMenuToggle}
+          className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 transition lg:hidden"
+          aria-label="Menu"
         >
-          <RiBellLine size={18} />
-          <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-red-600 ring-2 ring-white" />
+          <RiMenuLine size={17} />
         </button>
 
-        <div className="flex items-center gap-2.5 rounded-xl border border-slate-200 bg-white px-3 py-1.5">
-          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-red-50 text-red-600">
-            <RiUserLine size={15} />
+        {title && (
+          <motion.p
+            key={title}
+            initial={{ opacity: 0, y: -2 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="truncate text-[14px] font-semibold text-slate-800 tracking-tight"
+          >
+            {title}
+          </motion.p>
+        )}
+      </div>
+
+      {/* Right */}
+      <div className="flex items-center gap-2 shrink-0">
+        <button
+          type="button"
+          className="relative flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50 transition cursor-pointer"
+          aria-label="Notifications"
+        >
+          <RiBellLine size={15} />
+          <span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-red-500 ring-1 ring-white" />
+        </button>
+
+        <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5">
+          <div className="flex h-6 w-6 items-center justify-center rounded-md bg-red-50 text-red-600">
+            <RiUserLine size={13} />
           </div>
-          <div className="hidden sm:block">
-            <p className="text-[13px] font-semibold text-slate-900 leading-none">Reception</p>
-            <p className="text-[11px] text-slate-500 pt-0.5">Guest Accounts</p>
+          <div className="hidden sm:block leading-none">
+            <p className="text-[12px] font-semibold text-slate-800">Reception</p>
+            <p className="text-[10px] text-slate-400 mt-0.5">Guest Accounts</p>
           </div>
         </div>
       </div>

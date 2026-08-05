@@ -8,7 +8,14 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(({ className, type,
     <input
       type={type}
       className={cn(
-        'flex h-10 w-full rounded-xl border border-slate-200 bg-white px-3.5 text-[14px] text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-red-500 focus:ring-2 focus:ring-red-500/15 shadow-xs',
+        // Matches the clean deedlink-style input: white bg, light border, inner shadow, red focus ring
+        'flex h-9 w-full rounded-lg border border-slate-200 bg-white px-3 text-[13px] text-slate-900',
+        'shadow-[inset_0_1px_2px_rgba(15,23,42,0.06)]',
+        'outline-none transition-all duration-150',
+        'placeholder:text-slate-400',
+        'hover:border-slate-300',
+        'focus:border-red-500 focus:shadow-[inset_0_1px_2px_rgba(15,23,42,0.04),0_0_0_3px_rgba(220,38,38,0.10)]',
+        'disabled:bg-slate-50 disabled:text-slate-400 disabled:cursor-not-allowed',
         className,
       )}
       ref={ref}
