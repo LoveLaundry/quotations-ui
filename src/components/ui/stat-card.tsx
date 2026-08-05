@@ -20,7 +20,6 @@ export function StatCard({ label, value, description, trend, icon, className }: 
       'hover:shadow-[0_4px_16px_rgba(16,24,40,0.08)] hover:border-[#D1D5DB]',
       className,
     )}>
-      {/* Subtle top-right glow on hover */}
       <div className="absolute -top-4 -right-4 h-16 w-16 rounded-full bg-red-500/0 group-hover:bg-red-500/6 blur-xl transition-colors duration-300 pointer-events-none" />
 
       <div className="flex items-start justify-between relative">
