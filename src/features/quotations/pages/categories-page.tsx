@@ -14,98 +14,92 @@ import type { Quotation } from '../../../types/quotation'
 
 export default function CategoriesPage() {
   const { data, isLoading, isError, error } = useQuotations()
-  const [previewQuotation, setPreviewQuotation] = useState<Quotation | null>(null)
-  const [expandedCategory, setExpandedCategory] = useState<string | null>(null)
+  const [preview, setPreview]               = useState<Quotation | null>(null)
+  const [expanded, setExpanded]             = useState<string | null>(null)
 
   const categories = useMemo(() => {
-    const grouped = (data ?? []).reduce<Record<string, Quotation[]>>((acc, q) => {
+    const g = (data ?? []).reduce<Record<string, Quotation[]>>((acc, q) => {
       const cat = q.category?.trim() || 'Uncategorized'
       if (!acc[cat]) acc[cat] = []
       acc[cat].push(q)
       return acc
     }, {})
-    return Object.entries(grouped).sort(([a], [b]) => a.localeCompare(b))
+    return Object.entries(g).sort(([a], [b]) => a.localeCompare(b))
   }, [data])
 
   return (
     <div className="space-y-5 pb-10 select-none">
-      <div className="space-y-1">
+      <div>
         <Breadcrumb items={[{ label: 'Dashboard', href: '/' }, { label: 'Categories' }]} />
-        <h1 className="text-dashboard-title font-extrabold text-slate-900 tracking-tight">Categories</h1>
-        <p className="text-[13px] text-slate-500">Browse quotations organised by category</p>
+        <h1 className="text-dashboard-title mt-1">Categories</h1>
+        <p className="text-[13px] text-[#98A2B3] mt-0.5">Browse quotations organised by service category</p>
       </div>
 
       {isLoading ? (
-        <div className="grid gap-4 sm:grid-cols-2">
-          {[1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-48 rounded-2xl" />)}
+        <div className="grid gap-3 sm:grid-cols-2">
+          {[1,2,3,4].map(i => <Skeleton key={i} className="h-44 rounded-xl" />)}
         </div>
       ) : isError ? (
         <ErrorState description={error instanceof Error ? error.message : 'Unable to load categories'} />
       ) : categories.length ? (
-        <div className="grid gap-4 sm:grid-cols-2">
-          {categories.map(([category, items], index) => (
+        <div className="grid gap-3 sm:grid-cols-2">
+          {categories.map(([cat, items], idx) => (
             <motion.div
-              key={category}
-              initial={{ opacity: 0, y: 10 }}
+              key={cat}
+              initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: Math.min(index * 0.05, 0.3) }}
+              transition={{ delay: Math.min(idx * 0.05, 0.25) }}
             >
-              <Card className="luxury-card h-full">
-                <CardHeader className="border-b border-slate-100 pb-4">
+              <Card className="h-full">
+                <CardHeader className="border-b border-[#F2F4F7] pb-3">
                   <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-red-50 text-red-600 border border-red-100">
-                      <FolderOpen className="h-5 w-5" strokeWidth={1.75} />
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#FFF1F1] text-[#DC2626] border border-[#FECACA]">
+                      <FolderOpen className="h-4 w-4" />
                     </div>
                     <div className="min-w-0">
-                      <CardTitle className="truncate">{category}</CardTitle>
-                      <p className="text-[12px] text-slate-500 mt-0.5">{items.length} items</p>
+                      <CardTitle className="truncate">{cat}</CardTitle>
+                      <p className="text-[11px] text-[#98A2B3] mt-0.5">{items.length} items</p>
                     </div>
                   </div>
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={() => setExpandedCategory(expandedCategory === category ? null : category)}
+                  <Button variant="secondary" size="sm"
+                    onClick={() => setExpanded(expanded === cat ? null : cat)}
                   >
-                    {expandedCategory === category ? 'Collapse' : 'Expand'}
+                    {expanded === cat ? 'Less' : 'More'}
                   </Button>
                 </CardHeader>
 
-                <CardContent className="pt-4">
-                  <div className="space-y-2">
-                    {(expandedCategory === category ? items : items.slice(0, 3)).map((quotation) => {
-                      const types = Object.entries(quotation.unit_price_with_options)
-                      return (
-                        <button
-                          key={quotation.id}
-                          type="button"
-                          onClick={() => setPreviewQuotation(quotation)}
-                          className="flex w-full items-start justify-between rounded-xl border border-slate-200 bg-white p-3 text-left transition hover:border-red-200 hover:bg-red-50/20 cursor-pointer group"
-                        >
-                          <div className="min-w-0 flex-1">
-                            <p className="text-[13px] font-semibold text-slate-900 group-hover:text-red-600 transition truncate">
-                              {quotation.item_name}
-                            </p>
-                            <p className="text-[11px] text-slate-500">{quotation.size}</p>
-                            <div className="mt-1.5 flex flex-wrap gap-1">
-                              {types.map(([type, price]) => (
-                                <span key={type} className="rounded bg-slate-100 px-1.5 py-0.5 text-[11px] font-medium text-slate-600">
-                                  {type}: {formatCurrency(price)}
-                                </span>
-                              ))}
-                            </div>
+                <CardContent className="pt-3">
+                  <div className="space-y-1.5">
+                    {(expanded === cat ? items : items.slice(0, 3)).map(q => (
+                      <button
+                        key={q.id} type="button"
+                        onClick={() => setPreview(q)}
+                        className="group flex w-full items-start justify-between rounded-lg border border-[#E4E7EC] bg-white p-3 text-left transition-all duration-100 hover:border-[#FECACA] hover:bg-[#FFF8F8] cursor-pointer"
+                      >
+                        <div className="min-w-0 flex-1">
+                          <p className="text-[13px] font-semibold text-[#101828] group-hover:text-[#DC2626] truncate transition-colors">
+                            {q.item_name}
+                          </p>
+                          <p className="text-[11px] text-[#98A2B3]">{q.size}</p>
+                          <div className="mt-1.5 flex flex-wrap gap-1">
+                            {Object.entries(q.unit_price_with_options).map(([t, p]) => (
+                              <span key={t} className="rounded bg-[#F3F4F6] px-1.5 py-0.5 text-[10px] font-medium text-[#374151]">
+                                {t}: {formatCurrency(p)}
+                              </span>
+                            ))}
                           </div>
-                          <Eye className="h-4 w-4 shrink-0 text-slate-400 group-hover:text-red-500 ml-2 mt-0.5" />
-                        </button>
-                      )
-                    })}
+                        </div>
+                        <Eye className="h-3.5 w-3.5 shrink-0 ml-2 mt-0.5 text-[#D1D5DB] group-hover:text-[#DC2626] transition-colors" />
+                      </button>
+                    ))}
 
-                    {expandedCategory !== category && items.length > 3 && (
+                    {expanded !== cat && items.length > 3 && (
                       <button
                         type="button"
-                        onClick={() => setExpandedCategory(category)}
-                        className="w-full rounded-xl py-2 text-[12px] font-semibold text-red-600 hover:bg-red-50 transition border border-dashed border-red-200 cursor-pointer"
+                        onClick={() => setExpanded(cat)}
+                        className="w-full rounded-lg border border-dashed border-[#E4E7EC] py-2 text-[12px] font-medium text-[#6B7280] hover:border-[#FECACA] hover:text-[#DC2626] hover:bg-[#FFF8F8] transition-all cursor-pointer"
                       >
-                        Show {items.length - 3} more
+                        + {items.length - 3} more items
                       </button>
                     )}
                   </div>
@@ -115,14 +109,10 @@ export default function CategoriesPage() {
           ))}
         </div>
       ) : (
-        <EmptyState title="No categories yet" description="Categories will appear once you create quotations." />
+        <EmptyState title="No categories yet" description="Categories appear once you create quotations." />
       )}
 
-      <QuotationPreviewDialog
-        quotation={previewQuotation}
-        open={Boolean(previewQuotation)}
-        onOpenChange={(open) => !open && setPreviewQuotation(null)}
-      />
+      <QuotationPreviewDialog quotation={preview} open={Boolean(preview)} onOpenChange={o => !o && setPreview(null)} />
     </div>
   )
 }

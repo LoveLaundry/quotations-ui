@@ -1,38 +1,33 @@
 import { RiSettings3Line } from 'react-icons/ri'
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card'
 import { Breadcrumb } from '../../../components/ui/breadcrumb'
-import { Badge } from '../../../components/ui/badge'
 
 export default function SettingsPage() {
   return (
-    <div className="space-y-8 pb-16 select-none">
-      <div className="space-y-2">
+    <div className="space-y-5 pb-10 select-none">
+      <div>
         <Breadcrumb items={[{ label: 'Dashboard', href: '/' }, { label: 'Settings' }]} />
-        <h1 className="text-dashboard-title font-extrabold text-slate-900 tracking-tight">
-          Settings
-        </h1>
-        <p className="text-body-copy font-medium text-slate-500">
-          Application preferences and configuration
-        </p>
+        <h1 className="text-dashboard-title mt-1">Settings</h1>
+        <p className="text-[13px] text-[#98A2B3] mt-0.5">Application preferences and configuration</p>
       </div>
 
-      <Card className="border border-slate-200/90 shadow-sm">
-        <CardHeader className="border-b border-slate-100 pb-5">
+      <Card>
+        <CardHeader className="border-b border-[#F2F4F7] pb-4">
           <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-100 text-slate-600">
-              <RiSettings3Line className="h-5 w-5" />
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#F3F4F6] text-[#6B7280] border border-[#E4E7EC]">
+              <RiSettings3Line className="h-4 w-4" />
             </div>
             <div>
-              <CardTitle className="text-card-title font-extrabold text-slate-900">System Preferences</CardTitle>
-              <Badge variant="secondary" className="mt-1.5 text-[11px] font-bold px-2.5 py-0.5 bg-slate-100 text-slate-700">
+              <CardTitle>System Preferences</CardTitle>
+              <span className="mt-1 inline-flex items-center rounded-md border border-[#E4E7EC] bg-[#F3F4F6] px-2 py-0.5 text-[10px] font-semibold text-[#6B7280]">
                 Coming soon
-              </Badge>
+              </span>
             </div>
           </div>
         </CardHeader>
-        <CardContent className="pt-5">
-          <p className="text-body-copy font-medium text-slate-500 leading-relaxed">
-            Settings for currency and account preferences will be available in a future update.
+        <CardContent className="pt-4">
+          <p className="text-[13px] text-[#98A2B3] leading-relaxed">
+            Currency, account, and display preferences will be available in a future update.
           </p>
         </CardContent>
       </Card>

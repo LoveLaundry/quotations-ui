@@ -5,46 +5,47 @@ import { cn } from '../../lib/utils'
 
 const buttonVariants = cva(
   [
-    'inline-flex items-center justify-center gap-1.5',
-    'rounded-lg font-semibold text-[13px] leading-none',
-    'transition-all duration-150',
-    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500/40 focus-visible:ring-offset-1',
+    'inline-flex items-center justify-center gap-1.5 shrink-0',
+    'rounded-lg text-[13px] font-medium leading-none',
+    'border transition-all duration-150',
+    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500/30 focus-visible:ring-offset-1',
     'disabled:pointer-events-none disabled:opacity-40',
-    'cursor-pointer select-none',
-    'active:scale-[0.97]',
+    'cursor-pointer select-none active:scale-[0.98]',
   ].join(' '),
   {
     variants: {
       variant: {
-        // Primary — solid brand red, like the deedlink "Connect Wallet" button
         default: [
-          'bg-red-600 text-white',
-          'shadow-[0_1px_3px_rgba(220,38,38,0.35),inset_0_1px_0_rgba(255,255,255,0.15)]',
-          'hover:bg-red-700 hover:shadow-[0_2px_6px_rgba(220,38,38,0.40)]',
+          'bg-[#DC2626] border-[#DC2626] text-white',
+          'shadow-[0_1px_2px_rgba(0,0,0,0.08),inset_0_1px_0_rgba(255,255,255,0.12)]',
+          'hover:bg-[#B91C1C] hover:border-[#B91C1C]',
         ].join(' '),
-        // Secondary — muted, like the deedlink "Login" button
         secondary: [
-          'bg-slate-100 text-slate-600 border border-slate-200',
-          'hover:bg-slate-200 hover:text-slate-800',
+          'bg-white border-[#E4E7EC] text-[#374151]',
+          'shadow-[0_1px_2px_rgba(0,0,0,0.04)]',
+          'hover:bg-[#F9FAFB] hover:border-[#D1D5DB] hover:text-[#111827]',
         ].join(' '),
-        // Outline
-        outline: 'border border-red-300 bg-transparent text-red-600 hover:bg-red-50',
-        // Ghost
-        ghost: 'bg-transparent text-slate-600 hover:bg-slate-100 hover:text-slate-900',
-        // Destructive
-        destructive: 'bg-red-700 text-white shadow-sm hover:bg-red-800',
+        outline: [
+          'bg-transparent border-[#FECACA] text-[#DC2626]',
+          'hover:bg-[#FFF1F1] hover:border-[#FCA5A5]',
+        ].join(' '),
+        ghost: [
+          'bg-transparent border-transparent text-[#6B7280]',
+          'hover:bg-[#F3F4F6] hover:text-[#111827]',
+        ].join(' '),
+        destructive: [
+          'bg-[#FEF2F2] border-[#FECACA] text-[#DC2626]',
+          'hover:bg-[#FEE2E2] hover:border-[#FCA5A5]',
+        ].join(' '),
       },
       size: {
-        default: 'h-9 px-4',
-        sm:      'h-7 px-3 text-[12px]',
-        lg:      'h-10 px-5 text-[14px]',
-        icon:    'h-8 w-8 p-0 shrink-0 rounded-lg',
+        default: 'h-9 px-3.5',
+        sm:      'h-7 px-2.5 text-[12px]',
+        lg:      'h-10 px-4 text-[14px]',
+        icon:    'h-8 w-8 p-0 rounded-lg border-transparent',
       },
     },
-    defaultVariants: {
-      variant: 'default',
-      size: 'default',
-    },
+    defaultVariants: { variant: 'default', size: 'default' },
   },
 )
 

@@ -9,9 +9,7 @@ import { ErrorState } from '../../../components/ui/error-state'
 import { FilterChip } from '../../../components/ui/filter-chip'
 import { Input } from '../../../components/ui/input'
 import { Skeleton } from '../../../components/ui/skeleton'
-import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
-} from '../../../components/ui/table'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../../components/ui/table'
 import { Breadcrumb } from '../../../components/ui/breadcrumb'
 import { formatCurrency } from '../../../lib/utils'
 import { useDeleteQuotation, useQuotations } from '../hooks/useQuotations'
@@ -23,37 +21,33 @@ export default function QuotationsPage() {
   const { data, isLoading, isError, error } = useQuotations()
   const deleteMutation = useDeleteQuotation()
 
-  const [search, setSearch] = useState('')
-  const [categoryFilter, setCategoryFilter] = useState<string | null>(null)
-  const [previewQuotation, setPreviewQuotation] = useState<Quotation | null>(null)
+  const [search, setSearch]         = useState('')
+  const [catFilter, setCatFilter]   = useState<string | null>(null)
+  const [preview, setPreview]       = useState<Quotation | null>(null)
 
   const categories = useMemo(() => {
-    const set = new Set((data ?? []).map((q) => q.category?.trim() || 'Uncategorized'))
-    return Array.from(set).sort()
+    const s = new Set((data ?? []).map(q => q.category?.trim() || 'Uncategorized'))
+    return Array.from(s).sort()
   }, [data])
 
   const filtered = useMemo(() =>
     (data ?? [])
-      .filter((q) => {
-        const matchesSearch = [q.category, q.item_name, q.size]
-          .join(' ').toLowerCase().includes(search.toLowerCase())
-        const matchesCategory = !categoryFilter ||
-          (q.category?.trim() || 'Uncategorized') === categoryFilter
-        return matchesSearch && matchesCategory
+      .filter(q => {
+        const ok = [q.category, q.item_name, q.size].join(' ').toLowerCase().includes(search.toLowerCase())
+        const cat = !catFilter || (q.category?.trim() || 'Uncategorized') === catFilter
+        return ok && cat
       })
       .sort((a, b) => a.item_name.localeCompare(b.item_name)),
-  [data, search, categoryFilter])
+  [data, search, catFilter])
 
   return (
     <div className="space-y-5 pb-10 select-none">
       {/* Header */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <div className="space-y-1">
+        <div>
           <Breadcrumb items={[{ label: 'Dashboard', href: '/' }, { label: 'Quotations' }]} />
-          <h1 className="text-dashboard-title font-extrabold text-slate-900 tracking-tight">
-            Quotations & Price List
-          </h1>
-          <p className="text-[13px] text-slate-500">Browse and manage all laundry service pricing</p>
+          <h1 className="text-dashboard-title mt-1">Quotations</h1>
+          <p className="text-[13px] text-[#98A2B3] mt-0.5">Manage all laundry service pricing</p>
         </div>
         <Link to="/quotations/new" className="shrink-0">
           <Button size="lg" className="w-full sm:w-auto">
@@ -63,45 +57,37 @@ export default function QuotationsPage() {
       </div>
 
       <Card>
-        <CardHeader className="border-b border-slate-100 pb-4">
+        {/* Search + title */}
+        <CardHeader className="border-b border-[#F2F4F7] pb-4">
           <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <CardTitle>Price List</CardTitle>
-            <div className="relative w-full sm:w-64">
-              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-              <Input
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search items, categories..."
-                className="pl-9"
-              />
+            <CardTitle>Price List <span className="ml-2 text-[#98A2B3] font-normal text-[12px]">({data?.length ?? 0} items)</span></CardTitle>
+            <div className="relative w-full sm:w-60">
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[#9CA3AF]" />
+              <Input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search…" className="pl-8" />
             </div>
           </div>
         </CardHeader>
 
         <CardContent className="space-y-4 pt-4">
           {/* Filter chips */}
-          <div className="flex flex-wrap gap-2">
-            <FilterChip label="All" active={!categoryFilter} count={data?.length} onClick={() => setCategoryFilter(null)} />
-            {categories.map((cat) => (
+          <div className="flex flex-wrap gap-1.5">
+            <FilterChip label="All" active={!catFilter} count={data?.length} onClick={() => setCatFilter(null)} />
+            {categories.map(cat => (
               <FilterChip
-                key={cat}
-                label={cat}
-                active={categoryFilter === cat}
-                count={data?.filter((q) => (q.category?.trim() || 'Uncategorized') === cat).length}
-                onClick={() => setCategoryFilter(cat)}
+                key={cat} label={cat} active={catFilter === cat}
+                count={data?.filter(q => (q.category?.trim() || 'Uncategorized') === cat).length}
+                onClick={() => setCatFilter(cat)}
               />
             ))}
           </div>
 
           {isLoading ? (
-            <div className="space-y-2">
-              {[1, 2, 3, 4, 5].map((i) => <Skeleton key={i} className="h-14 rounded-xl" />)}
-            </div>
+            <div className="space-y-2">{[1,2,3,4,5].map(i => <Skeleton key={i} className="h-[52px]" />)}</div>
           ) : isError ? (
             <ErrorState description={error instanceof Error ? error.message : 'Unable to load quotations'} />
           ) : filtered.length ? (
             <>
-              {/* ── Desktop table (md+) ── */}
+              {/* Desktop table */}
               <div className="hidden md:block">
                 <Table>
                   <TableHeader>
@@ -114,43 +100,43 @@ export default function QuotationsPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filtered.map((quotation, index) => {
-                      const types = Object.entries(quotation.unit_price_with_options)
+                    {filtered.map((q, i) => {
+                      const types = Object.entries(q.unit_price_with_options)
                       return (
                         <motion.tr
-                          key={quotation.id}
-                          initial={{ opacity: 0, y: 6 }}
+                          key={q.id}
+                          initial={{ opacity: 0, y: 4 }}
                           animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: Math.min(index * 0.03, 0.3) }}
-                          className="border-t border-slate-100 bg-white transition hover:bg-slate-50/80"
+                          transition={{ delay: Math.min(i * 0.025, 0.25) }}
+                          className="border-t border-[#F2F4F7] bg-white transition-colors duration-100 hover:bg-[#FAFAFA]"
                         >
-                          <TableCell className="font-semibold text-slate-900">{quotation.item_name}</TableCell>
-                          <TableCell className="text-slate-600">{quotation.category}</TableCell>
-                          <TableCell className="text-slate-500">{quotation.size}</TableCell>
+                          <TableCell><span className="font-semibold text-[#101828]">{q.item_name}</span></TableCell>
+                          <TableCell>{q.category}</TableCell>
+                          <TableCell>{q.size}</TableCell>
                           <TableCell>
-                            <div className="flex flex-wrap gap-1.5">
-                              {types.slice(0, 3).map(([type, price]) => (
-                                <span key={type} className="rounded-md bg-slate-100 border border-slate-200 px-2 py-0.5 text-[12px] font-medium text-slate-600">
-                                  {type}: {formatCurrency(price)}
+                            <div className="flex flex-wrap gap-1">
+                              {types.slice(0, 3).map(([t, p]) => (
+                                <span key={t} className="rounded-md border border-[#E4E7EC] bg-[#F9FAFB] px-2 py-0.5 text-[11px] font-medium text-[#374151]">
+                                  {t}: {formatCurrency(p)}
                                 </span>
                               ))}
                               {types.length > 3 && (
-                                <span className="rounded-md bg-red-50 border border-red-200 px-2 py-0.5 text-[12px] font-semibold text-red-600">
+                                <span className="rounded-md border border-[#FECACA] bg-[#FFF1F1] px-2 py-0.5 text-[11px] font-semibold text-[#DC2626]">
                                   +{types.length - 3}
                                 </span>
                               )}
                             </div>
                           </TableCell>
                           <TableCell>
-                            <div className="flex items-center justify-end gap-1">
-                              <Button variant="ghost" size="icon" onClick={() => setPreviewQuotation(quotation)} aria-label="Preview">
-                                <Eye className="h-4 w-4 text-slate-500" />
+                            <div className="flex items-center justify-end gap-0.5">
+                              <Button variant="ghost" size="icon" onClick={() => setPreview(q)} aria-label="Preview">
+                                <Eye className="h-3.5 w-3.5" />
                               </Button>
-                              <Button variant="ghost" size="icon" onClick={() => navigate(`/quotations/${quotation.id}/edit`)} aria-label="Edit">
-                                <Edit className="h-4 w-4 text-slate-500" />
+                              <Button variant="ghost" size="icon" onClick={() => navigate(`/quotations/${q.id}/edit`)} aria-label="Edit">
+                                <Edit className="h-3.5 w-3.5" />
                               </Button>
-                              <Button variant="ghost" size="icon" onClick={() => deleteMutation.mutate(String(quotation.id))} aria-label="Delete" className="text-red-500 hover:bg-red-50">
-                                <Trash2 className="h-4 w-4" />
+                              <Button variant="ghost" size="icon" onClick={() => deleteMutation.mutate(String(q.id))} aria-label="Delete" className="text-[#DC2626] hover:bg-[#FFF1F1]">
+                                <Trash2 className="h-3.5 w-3.5" />
                               </Button>
                             </div>
                           </TableCell>
@@ -161,66 +147,49 @@ export default function QuotationsPage() {
                 </Table>
               </div>
 
-              {/* ── Mobile cards (< md) ── */}
+              {/* Mobile cards */}
               <div className="md:hidden space-y-2">
-                {filtered.map((quotation, index) => {
-                  const types = Object.entries(quotation.unit_price_with_options)
-                  return (
-                    <motion.div
-                      key={quotation.id}
-                      initial={{ opacity: 0, y: 6 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: Math.min(index * 0.03, 0.3) }}
-                      className="rounded-xl border border-slate-200 bg-white p-4 space-y-3"
-                    >
-                      <div className="flex items-start justify-between gap-2">
-                        <div>
-                          <p className="text-[14px] font-semibold text-slate-900">{quotation.item_name}</p>
-                          <p className="text-[12px] text-slate-500 mt-0.5">{quotation.category} · {quotation.size}</p>
-                        </div>
-                        <div className="flex items-center gap-0.5 shrink-0">
-                          <Button variant="ghost" size="icon" onClick={() => setPreviewQuotation(quotation)} aria-label="Preview">
-                            <Eye className="h-4 w-4 text-slate-500" />
-                          </Button>
-                          <Button variant="ghost" size="icon" onClick={() => navigate(`/quotations/${quotation.id}/edit`)} aria-label="Edit">
-                            <Edit className="h-4 w-4 text-slate-500" />
-                          </Button>
-                          <Button variant="ghost" size="icon" onClick={() => deleteMutation.mutate(String(quotation.id))} aria-label="Delete" className="text-red-500 hover:bg-red-50">
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
+                {filtered.map((q, i) => (
+                  <motion.div
+                    key={q.id}
+                    initial={{ opacity: 0, y: 4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: Math.min(i * 0.025, 0.25) }}
+                    className="rounded-xl border border-[#E4E7EC] bg-white p-4"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <p className="text-[13px] font-semibold text-[#101828] truncate">{q.item_name}</p>
+                        <p className="text-[11px] text-[#98A2B3] mt-0.5">{q.category} · {q.size}</p>
                       </div>
-                      <div className="flex flex-wrap gap-1.5">
-                        {types.map(([type, price]) => (
-                          <span key={type} className="rounded-md bg-slate-100 border border-slate-200 px-2 py-0.5 text-[11px] font-medium text-slate-600">
-                            {type}: {formatCurrency(price)}
-                          </span>
-                        ))}
+                      <div className="flex items-center gap-0.5 shrink-0">
+                        <Button variant="ghost" size="icon" onClick={() => setPreview(q)} aria-label="Preview"><Eye className="h-3.5 w-3.5" /></Button>
+                        <Button variant="ghost" size="icon" onClick={() => navigate(`/quotations/${q.id}/edit`)} aria-label="Edit"><Edit className="h-3.5 w-3.5" /></Button>
+                        <Button variant="ghost" size="icon" onClick={() => deleteMutation.mutate(String(q.id))} aria-label="Delete" className="text-[#DC2626] hover:bg-[#FFF1F1]"><Trash2 className="h-3.5 w-3.5" /></Button>
                       </div>
-                    </motion.div>
-                  )
-                })}
+                    </div>
+                    <div className="mt-2.5 flex flex-wrap gap-1">
+                      {Object.entries(q.unit_price_with_options).map(([t, p]) => (
+                        <span key={t} className="rounded-md border border-[#E4E7EC] bg-[#F9FAFB] px-2 py-0.5 text-[11px] font-medium text-[#374151]">
+                          {t}: {formatCurrency(p)}
+                        </span>
+                      ))}
+                    </div>
+                  </motion.div>
+                ))}
               </div>
             </>
           ) : (
             <EmptyState
               title="No quotations found"
-              description={search || categoryFilter ? 'Try adjusting your search or filters.' : 'Create your first quotation to get started.'}
-              action={!search && !categoryFilter ? (
-                <Link to="/quotations/new">
-                  <Button>Create quotation</Button>
-                </Link>
-              ) : undefined}
+              description={search || catFilter ? 'Try adjusting your filters.' : 'Create your first quotation to get started.'}
+              action={!search && !catFilter ? <Link to="/quotations/new"><Button>Create quotation</Button></Link> : undefined}
             />
           )}
         </CardContent>
       </Card>
 
-      <QuotationPreviewDialog
-        quotation={previewQuotation}
-        open={Boolean(previewQuotation)}
-        onOpenChange={(open) => !open && setPreviewQuotation(null)}
-      />
+      <QuotationPreviewDialog quotation={preview} open={Boolean(preview)} onOpenChange={o => !o && setPreview(null)} />
     </div>
   )
 }

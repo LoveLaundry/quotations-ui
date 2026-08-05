@@ -13,56 +13,53 @@ const pageTitles: Record<string, string> = {
   '/settings': 'Settings',
 }
 
-function getPageTitle(pathname: string): string {
-  if (pathname.match(/^\/quotations\/[^/]+\/edit$/)) return 'Edit Quotation'
-  if (pathname.match(/^\/quotations\/[^/]+$/)) return 'Quotation Details'
-  return pageTitles[pathname] ?? 'Guest Accounts'
+function getPageTitle(p: string): string {
+  if (p.match(/^\/quotations\/[^/]+\/edit$/)) return 'Edit Quotation'
+  if (p.match(/^\/quotations\/[^/]+$/)) return 'Quotation Details'
+  return pageTitles[p] ?? 'Guest Accounts'
 }
 
 export function AppShell() {
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+  const [collapsed, setCollapsed] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
   const location = useLocation()
-  const pageTitle = getPageTitle(location.pathname)
 
   return (
-    <div className="min-h-screen bg-slate-100">
+    <div className="min-h-screen bg-[#F7F8FA]">
       {/* Mobile overlay */}
       {mobileOpen && (
         <div
-          className="fixed inset-0 z-30 bg-slate-900/30 backdrop-blur-[2px] lg:hidden"
+          className="fixed inset-0 z-30 bg-black/40 backdrop-blur-[2px] lg:hidden"
           onClick={() => setMobileOpen(false)}
         />
       )}
 
       <Sidebar
-        collapsed={sidebarCollapsed}
-        onToggle={() => setSidebarCollapsed((v) => !v)}
+        collapsed={collapsed}
+        onToggle={() => setCollapsed(v => !v)}
         mobileOpen={mobileOpen}
         onMobileClose={() => setMobileOpen(false)}
       />
 
       <TopBar
-        title={pageTitle}
-        sidebarCollapsed={sidebarCollapsed}
-        onMobileMenuToggle={() => setMobileOpen((v) => !v)}
+        title={getPageTitle(location.pathname)}
+        sidebarCollapsed={collapsed}
+        onMobileMenuToggle={() => setMobileOpen(v => !v)}
       />
 
-      <main
-        className={cn(
-          'min-h-screen pt-14 transition-[padding-left] duration-200',
-          'pl-0 lg:pl-60',
-          sidebarCollapsed && 'lg:pl-16',
-        )}
-      >
-        <div className="mx-auto max-w-[1320px] px-4 py-5 sm:px-5 sm:py-6 lg:px-6 lg:py-7">
+      <main className={cn(
+        'min-h-screen pt-14 transition-[padding-left] duration-200',
+        'pl-0 lg:pl-[232px]',
+        collapsed && 'lg:pl-[60px]',
+      )}>
+        <div className="mx-auto max-w-[1280px] px-4 py-6 sm:px-6 lg:px-8">
           <AnimatePresence mode="wait">
             <motion.div
               key={location.pathname}
-              initial={{ opacity: 0, y: 6 }}
+              initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -4 }}
-              transition={{ duration: 0.15, ease: [0.16, 1, 0.3, 1] }}
+              transition={{ duration: 0.14, ease: [0.16, 1, 0.3, 1] }}
             >
               <Outlet />
             </motion.div>

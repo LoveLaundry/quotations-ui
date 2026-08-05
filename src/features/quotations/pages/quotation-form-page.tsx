@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { ArrowLeft, Plus, Trash2, Sparkles } from 'lucide-react'
+import { ArrowLeft, Plus, Trash2 } from 'lucide-react'
 import { useEffect, useMemo } from 'react'
 import { useFieldArray, useForm } from 'react-hook-form'
 import { useNavigate, useParams } from 'react-router-dom'
@@ -13,27 +13,25 @@ import type { QuotationFormValues } from '../../../types/quotation'
 
 const optionSchema = z.object({
   id: z.string(),
-  name: z.string().trim().min(1, 'Service type is required'),
-  price: z.string().trim().min(1, 'Price is required'),
+  name: z.string().trim().min(1, 'Required'),
+  price: z.string().trim().min(1, 'Required'),
 })
-
 const formSchema = z.object({
-  category: z.string().trim().min(1, 'Category is required'),
-  item_name: z.string().trim().min(1, 'Item name is required'),
-  size: z.string().trim().min(1, 'Size is required'),
-  options: z.array(optionSchema).min(1, 'At least one service type is required'),
+  category: z.string().trim().min(1, 'Required'),
+  item_name: z.string().trim().min(1, 'Required'),
+  size: z.string().trim().min(1, 'Required'),
+  options: z.array(optionSchema).min(1, 'At least one service required'),
 })
-
 const defaultValues: QuotationFormValues = {
-  category: '',
-  item_name: '',
-  size: '',
+  category: '', item_name: '', size: '',
   options: [{ id: crypto.randomUUID(), name: 'Wash & Fold', price: '' }],
 }
 
-function FormError({ message }: { message?: string }) {
-  if (!message) return null
-  return <p className="text-[12px] font-medium text-red-600">{message}</p>
+function FieldLabel({ children }: { children: React.ReactNode }) {
+  return <label className="block text-[12px] font-medium text-[#475467] mb-1">{children}</label>
+}
+function FieldError({ msg }: { msg?: string }) {
+  return msg ? <p className="mt-1 text-[11px] text-[#DC2626]">{msg}</p> : null
 }
 
 export default function QuotationFormPage() {
@@ -46,8 +44,8 @@ export default function QuotationFormPage() {
   const updateMutation = useUpdateQuotation()
 
   const existingCategories = useMemo(() => {
-    const set = new Set(quotations.map((q) => q.category?.trim()).filter(Boolean))
-    return Array.from(set).sort()
+    const s = new Set(quotations.map(q => q.category?.trim()).filter(Boolean))
+    return Array.from(s).sort()
   }, [quotations])
 
   const { register, control, handleSubmit, reset, setValue, watch, formState: { errors } } =
@@ -63,42 +61,31 @@ export default function QuotationFormPage() {
       item_name: quotation.item_name,
       size: quotation.size,
       options: Object.entries(quotation.unit_price_with_options).map(([name, price]) => ({
-        id: crypto.randomUUID(),
-        name,
-        price: String(price),
+        id: crypto.randomUUID(), name, price: String(price),
       })),
     })
   }, [quotation, reset])
 
-  const onSubmit = (values: QuotationFormValues) => {
+  const onSubmit = (v: QuotationFormValues) => {
     const payload = {
-      category: values.category.trim(),
-      item_name: values.item_name,
-      size: values.size,
+      category: v.category.trim(),
+      item_name: v.item_name,
+      size: v.size,
       unit_price_with_options: Object.fromEntries(
-        values.options.filter((o) => o.name.trim()).map((o) => [o.name.trim(), Number(o.price)]),
+        v.options.filter(o => o.name.trim()).map(o => [o.name.trim(), Number(o.price)]),
       ),
     }
-    if (isEditing && id) {
-      updateMutation.mutate({ id, payload }, { onSuccess: () => navigate('/quotations') })
-    } else {
-      createMutation.mutate(payload, { onSuccess: () => navigate('/quotations') })
-    }
+    if (isEditing && id) updateMutation.mutate({ id, payload }, { onSuccess: () => navigate('/quotations') })
+    else createMutation.mutate(payload, { onSuccess: () => navigate('/quotations') })
   }
 
   return (
     <div className="space-y-5 pb-10 select-none">
       {/* Header */}
-      <div className="space-y-1">
-        <Breadcrumb items={[
-          { label: 'Dashboard', href: '/' },
-          { label: 'Quotations', href: '/quotations' },
-          { label: isEditing ? 'Edit Item' : 'New Item' },
-        ]} />
-        <div className="flex items-center justify-between gap-3">
-          <h1 className="text-dashboard-title font-extrabold text-slate-900 tracking-tight">
-            {isEditing ? 'Edit Laundry Item' : 'New Laundry Item'}
-          </h1>
+      <div>
+        <Breadcrumb items={[{ label: 'Dashboard', href: '/' }, { label: 'Quotations', href: '/quotations' }, { label: isEditing ? 'Edit' : 'New' }]} />
+        <div className="mt-2 flex items-center justify-between gap-3">
+          <h1 className="text-dashboard-title">{isEditing ? 'Edit Laundry Item' : 'New Laundry Item'}</h1>
           <Button variant="secondary" onClick={() => navigate('/quotations')}>
             <ArrowLeft className="h-3.5 w-3.5" /> Back
           </Button>
@@ -106,124 +93,112 @@ export default function QuotationFormPage() {
       </div>
 
       <Card>
-        <CardHeader className="border-b border-slate-100 pb-4">
-          <CardTitle className="flex items-center gap-2">
-            <Sparkles className="h-4 w-4 text-red-600" /> Item Details & Pricing
-          </CardTitle>
-          <p className="text-[12px] text-slate-500 mt-0.5">
-            Define item classification, size, and service prices.
-          </p>
+        <CardHeader className="border-b border-[#F2F4F7] pb-4">
+          <div>
+            <CardTitle>Item Details & Pricing</CardTitle>
+            <p className="text-[12px] text-[#98A2B3] mt-1">Fill in the classification, size, and pricing options.</p>
+          </div>
         </CardHeader>
 
         <CardContent className="pt-5">
           {isLoading && isEditing ? (
-            <div className="rounded-xl border border-slate-200 bg-slate-50 p-8 text-[14px] text-slate-500 text-center">
-              Loading item record…
+            <div className="rounded-xl border border-[#E4E7EC] bg-[#FAFAFA] p-8 text-[13px] text-[#98A2B3] text-center">
+              Loading item…
             </div>
           ) : (
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
               <div className="grid gap-4 sm:grid-cols-2">
                 {/* Category */}
-                <div className="space-y-1.5">
-                  <label className="text-input-label text-slate-700">Category</label>
-                  <Input {...register('category')} list="category-suggestions" placeholder="e.g. Dry Cleaning" />
-                  <datalist id="category-suggestions">
-                    {existingCategories.map((cat) => <option key={cat} value={cat} />)}
+                <div>
+                  <FieldLabel>Category</FieldLabel>
+                  <Input {...register('category')} list="cat-list" placeholder="e.g. Dry Cleaning" />
+                  <datalist id="cat-list">
+                    {existingCategories.map(c => <option key={c} value={c} />)}
                   </datalist>
                   {existingCategories.length > 0 && (
-                    <div className="flex flex-wrap gap-1.5 pt-0.5">
-                      {existingCategories.map((cat) => (
+                    <div className="flex flex-wrap gap-1 mt-2">
+                      {existingCategories.map(c => (
                         <button
-                          key={cat}
-                          type="button"
-                          onClick={() => setValue('category', cat)}
-                          className={`rounded-md px-2 py-0.5 text-[11px] font-semibold border transition cursor-pointer ${
-                            currentCategory === cat
-                              ? 'bg-red-600 text-white border-red-600'
-                              : 'bg-slate-100 text-slate-600 border-slate-200 hover:bg-slate-200'
-                          }`}
+                          key={c} type="button" onClick={() => setValue('category', c)}
+                          className={[
+                            'rounded-md px-2 py-0.5 text-[11px] font-medium border transition cursor-pointer',
+                            currentCategory === c
+                              ? 'bg-[#DC2626] text-white border-[#DC2626]'
+                              : 'bg-white text-[#374151] border-[#E4E7EC] hover:border-[#D1D5DB]',
+                          ].join(' ')}
                         >
-                          {cat}
+                          {c}
                         </button>
                       ))}
                     </div>
                   )}
-                  <FormError message={errors.category?.message} />
+                  <FieldError msg={errors.category?.message} />
                 </div>
 
-                {/* Item Name */}
-                <div className="space-y-1.5">
-                  <label className="text-input-label text-slate-700">Item Name</label>
+                {/* Item name */}
+                <div>
+                  <FieldLabel>Item Name</FieldLabel>
                   <Input {...register('item_name')} placeholder="e.g. 2-Piece Suit" />
-                  <FormError message={errors.item_name?.message} />
+                  <FieldError msg={errors.item_name?.message} />
                 </div>
               </div>
 
               {/* Size */}
-              <div className="space-y-1.5">
-                <label className="text-input-label text-slate-700">Size</label>
+              <div>
+                <FieldLabel>Size</FieldLabel>
                 <Input {...register('size')} placeholder="e.g. Standard, King Size" />
-                <FormError message={errors.size?.message} />
+                <FieldError msg={errors.size?.message} />
               </div>
 
-              {/* Service rates */}
-              <div className="space-y-3 pt-2 border-t border-slate-100">
-                <div className="flex items-center justify-between">
+              {/* Service rates section */}
+              <div className="pt-4 border-t border-[#F2F4F7]">
+                <div className="flex items-center justify-between mb-3">
                   <div>
-                    <p className="text-[13px] font-semibold text-slate-800">Service Types & Rates</p>
-                    <p className="text-[12px] text-slate-500">Set pricing for each service type</p>
+                    <p className="text-[13px] font-semibold text-[#101828]">Service Types & Rates</p>
+                    <p className="text-[12px] text-[#98A2B3] mt-0.5">Set a price for each service type</p>
                   </div>
                   <Button
-                    type="button"
-                    variant="secondary"
-                    size="sm"
+                    type="button" variant="secondary" size="sm"
                     onClick={() => append({ id: crypto.randomUUID(), name: '', price: '' })}
                   >
-                    <Plus className="h-3.5 w-3.5 text-red-600" /> Add Rate
+                    <Plus className="h-3.5 w-3.5 text-[#DC2626]" /> Add Rate
                   </Button>
                 </div>
 
                 <div className="space-y-2">
-                  {fields.map((field, index) => (
+                  {fields.map((field, idx) => (
                     <div
                       key={field.id}
-                      className="grid gap-3 rounded-xl border border-slate-200 bg-slate-50/60 p-3 grid-cols-1 sm:grid-cols-[1fr_1fr_auto] items-end"
+                      className="grid gap-3 rounded-xl border border-[#E4E7EC] bg-[#FAFAFA] p-3 sm:grid-cols-[1fr_1fr_auto] items-end"
                     >
-                      <div className="space-y-1">
-                        <label className="text-input-label text-slate-600">Service Name</label>
-                        <Input {...register(`options.${index}.name` as const)} placeholder="e.g. Dry Clean" />
-                        <FormError message={errors.options?.[index]?.name?.message} />
+                      <div>
+                        <FieldLabel>Service Name</FieldLabel>
+                        <Input {...register(`options.${idx}.name` as const)} placeholder="e.g. Dry Clean" />
+                        <FieldError msg={errors.options?.[idx]?.name?.message} />
                       </div>
-                      <div className="space-y-1">
-                        <label className="text-input-label text-slate-600">Unit Price (₹ / $)</label>
-                        <Input type="number" {...register(`options.${index}.price` as const)} placeholder="e.g. 450" />
-                        <FormError message={errors.options?.[index]?.price?.message} />
+                      <div>
+                        <FieldLabel>Unit Price (₹ / $)</FieldLabel>
+                        <Input type="number" {...register(`options.${idx}.price` as const)} placeholder="450" />
+                        <FieldError msg={errors.options?.[idx]?.price?.message} />
                       </div>
                       <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => remove(index)}
+                        type="button" variant="ghost" size="icon"
+                        onClick={() => remove(idx)}
                         disabled={fields.length === 1}
                         aria-label="Remove"
-                        className="text-red-400 hover:bg-red-50 hover:text-red-600 disabled:opacity-30 self-end"
+                        className="text-[#DC2626] hover:bg-[#FFF1F1] disabled:opacity-30 self-end"
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <Trash2 className="h-3.5 w-3.5" />
                       </Button>
                     </div>
                   ))}
                 </div>
               </div>
 
-              {/* Actions */}
-              <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">
-                <Button type="button" variant="secondary" onClick={() => navigate('/quotations')}>
-                  Cancel
-                </Button>
-                <Button
-                  type="submit"
-                  disabled={createMutation.isPending || updateMutation.isPending}
-                >
+              {/* Submit */}
+              <div className="flex justify-end gap-2 pt-4 border-t border-[#F2F4F7]">
+                <Button type="button" variant="secondary" onClick={() => navigate('/quotations')}>Cancel</Button>
+                <Button type="submit" disabled={createMutation.isPending || updateMutation.isPending}>
                   {isEditing ? 'Save Changes' : 'Create Quotation'}
                 </Button>
               </div>
