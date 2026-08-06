@@ -24,6 +24,10 @@ export function AppShell() {
   const [mobileOpen, setMobileOpen] = useState(false)
   const location = useLocation()
 
+  const Toggle=()=>{
+    setCollapsed(!collapsed);
+  }
+
   return (
     <div className="min-h-screen bg-[#F9FAFB]">
       {mobileOpen && (
@@ -35,7 +39,7 @@ export function AppShell() {
 
       <Sidebar
         collapsed={collapsed}
-        onToggle={() => setCollapsed(v => !v)}
+        onToggle={() => Toggle()}
         mobileOpen={mobileOpen}
         onMobileClose={() => setMobileOpen(false)}
       />

@@ -26,55 +26,115 @@ interface SidebarProps {
   onMobileClose: () => void
 }
 
-export function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose }: SidebarProps) {
+export function Sidebar({
+  collapsed,
+  onToggle,
+  mobileOpen,
+  onMobileClose,
+}: SidebarProps) {
   const location = useLocation()
 
+  // Close the mobile sidebar whenever the route changes
   useEffect(() => {
-    onMobileClose()
-  }, [location.pathname, onMobileClose])
+    if (mobileOpen) {
+      onMobileClose()
+    }
+  }, [location.pathname])
 
   return (
     <>
+      {/* Desktop Sidebar */}
       <motion.aside
         animate={{ width: collapsed ? 60 : 232 }}
         transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
         className="fixed inset-y-0 left-0 z-40 hidden lg:flex flex-col sidebar-dark select-none overflow-hidden"
       >
-        <SidebarContent collapsed={collapsed} onToggle={onToggle} />
+        <SidebarContent
+          collapsed={collapsed}
+          onToggle={onToggle}
+          onMobileClose={onMobileClose}
+          isMobile={false}
+        />
       </motion.aside>
 
+      {/* Mobile Sidebar */}
       <AnimatePresence>
         {mobileOpen && (
-          <motion.aside
-            key="mob"
-            initial={{ x: -240 }}
-            animate={{ x: 0 }}
-            exit={{ x: -240 }}
-            transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-            className="fixed inset-y-0 left-0 z-40 flex w-[232px] flex-col sidebar-dark shadow-2xl select-none lg:hidden"
-          >
-            <SidebarContent collapsed={false} onToggle={onToggle} />
-          </motion.aside>
+          <>
+            {/* Overlay */}
+            <motion.div
+              key="overlay"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="fixed inset-0 z-30 bg-black/50 lg:hidden"
+              onClick={onMobileClose}
+            />
+
+            {/* Sidebar */}
+            <motion.aside
+              key="mobile-sidebar"
+              initial={{ x: -240 }}
+              animate={{ x: 0 }}
+              exit={{ x: -240 }}
+              transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+              className="fixed inset-y-0 left-0 z-40 flex w-[232px] flex-col sidebar-dark shadow-2xl lg:hidden"
+            >
+              <SidebarContent
+                collapsed={false}
+                onToggle={onToggle}
+                onMobileClose={onMobileClose}
+                isMobile
+              />
+            </motion.aside>
+          </>
         )}
       </AnimatePresence>
     </>
   )
 }
 
-function SidebarContent({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => void }) {
+interface SidebarContentProps {
+  collapsed: boolean
+  onToggle: () => void
+  onMobileClose: () => void
+  isMobile: boolean
+}
+
+function SidebarContent({
+  collapsed,
+  onToggle,
+  onMobileClose,
+  isMobile,
+}: SidebarContentProps) {
   return (
-    <div className="flex flex-col h-full">
-      <div className={cn(
-        'flex h-14 shrink-0 items-center border-b border-[#1F2937] px-4',
-        collapsed && 'justify-center px-0',
-      )}>
+    <div className="flex h-full flex-col">
+      <div
+        className={cn(
+          'flex h-14 shrink-0 items-center border-b border-[#1F2937] px-4',
+          collapsed && 'justify-center px-0'
+        )}
+      >
         <AnimatePresence mode="wait">
           {!collapsed ? (
-            <motion.div key="full" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.1 }}>
+            <motion.div
+              key="full"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.1 }}
+            >
               <LogoDark />
             </motion.div>
           ) : (
-            <motion.div key="icon" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.1 }}>
+            <motion.div
+              key="icon"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.1 }}
+            >
               <Logo size="sm" showText={false} />
             </motion.div>
           )}
@@ -87,18 +147,24 @@ function SidebarContent({ collapsed, onToggle }: { collapsed: boolean; onToggle:
             Menu
           </p>
         )}
+
         {navItems.map(({ to, label, icon: Icon, end }) => (
           <NavLink
             key={to}
             to={to}
             end={end}
+            onClick={() => {
+              if (isMobile) {
+                onMobileClose()
+              }
+            }}
             className={({ isActive }) =>
               cn(
                 'group flex items-center gap-3 rounded-xl px-3 py-2.5 text-[14px] font-medium transition-all duration-200',
                 collapsed && 'justify-center px-2',
                 isActive
                   ? 'bg-gradient-to-r from-[#DC2626] to-[#B91C1C] text-white shadow-lg shadow-red-600/30'
-                  : 'text-[#9CA3AF] hover:bg-[#374151] hover:text-white',
+                  : 'text-[#9CA3AF] hover:bg-[#374151] hover:text-white'
               )
             }
           >
@@ -108,29 +174,41 @@ function SidebarContent({ collapsed, onToggle }: { collapsed: boolean; onToggle:
                   size={18}
                   className={cn(
                     'shrink-0 transition-transform duration-200',
-                    isActive ? 'text-white scale-110' : 'text-[#6B7280] group-hover:text-white group-hover:scale-105',
+                    isActive
+                      ? 'text-white scale-110'
+                      : 'text-[#6B7280] group-hover:text-white group-hover:scale-105'
                   )}
                 />
-                {!collapsed && <span className="truncate">{label}</span>}
+
+                {!collapsed && (
+                  <span className="truncate">{label}</span>
+                )}
               </>
             )}
           </NavLink>
         ))}
       </nav>
 
-      <div className="border-t border-[#1F2937] p-2">
-        <button
-          type="button"
-          onClick={onToggle}
-          className="flex w-full items-center justify-center gap-1.5 rounded-lg px-2.5 py-2 text-[12px] font-medium text-[#4B5563] hover:bg-[#1F2937] hover:text-[#9CA3AF] transition cursor-pointer"
-          aria-label={collapsed ? 'Expand' : 'Collapse'}
-        >
-          {collapsed
-            ? <RiArrowRightSLine size={16} />
-            : <><RiArrowLeftSLine size={16} /><span>Collapse</span></>
-          }
-        </button>
-      </div>
+      {/* Collapse button (Desktop only) */}
+      {!isMobile && (
+        <div className="border-t border-[#1F2937] p-2">
+          <button
+            type="button"
+            onClick={onToggle}
+            className="flex w-full items-center justify-center gap-1.5 rounded-lg px-2.5 py-2 text-[12px] font-medium text-[#4B5563] hover:bg-[#1F2937] hover:text-[#9CA3AF] transition cursor-pointer"
+            aria-label={collapsed ? 'Expand' : 'Collapse'}
+          >
+            {collapsed ? (
+              <RiArrowRightSLine size={16} />
+            ) : (
+              <>
+                <RiArrowLeftSLine size={16} />
+                <span>Collapse</span>
+              </>
+            )}
+          </button>
+        </div>
+      )}
     </div>
   )
 }
@@ -139,9 +217,14 @@ function LogoDark() {
   return (
     <div className="flex items-center gap-2.5 select-none">
       <Logo size="sm" showText={false} />
+
       <div className="min-w-0 leading-none">
-        <p className="text-[14px] font-semibold text-white tracking-tight">Love Laundry</p>
-        <p className="text-[10px] text-[#6B7280] mt-0.5">Guest Accounts</p>
+        <p className="text-[14px] font-semibold text-white tracking-tight">
+          Love Laundry
+        </p>
+        <p className="mt-0.5 text-[10px] text-[#6B7280]">
+          Guest Accounts
+        </p>
       </div>
     </div>
   )
