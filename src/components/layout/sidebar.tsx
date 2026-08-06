@@ -109,7 +109,7 @@ function SidebarContent({
   isMobile,
 }: SidebarContentProps) {
   return (
-    <div className="flex h-full flex-col">
+    <div className="flex h-full flex-col bg-white">
       <div
         className={cn(
           'flex h-14 shrink-0 items-center border-b border-[#1F2937] px-4',

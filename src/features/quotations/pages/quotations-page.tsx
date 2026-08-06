@@ -46,7 +46,7 @@ export default function QuotationsPage() {
           <p className="text-[13px] text-[#98A2B3] mt-0.5">All hotel & client price lists</p>
         </div>
         <Link to="/quotations/new" className="w-full sm:w-auto">
-          <Button size="lg" className="w-full">
+          <Button size="lg" className="w-full max-w-md">
             <Plus className="h-4 w-4" /> New Quotation
           </Button>
         </Link>

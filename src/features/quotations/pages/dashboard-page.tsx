@@ -44,7 +44,7 @@ export default function DashboardPage() {
             Hotel quotation management system — Registration No: 40-3064
           </p>
         </div>
-        <Link to="/quotations/new" className="w-full sm:w-auto">
+        <Link to="/quotations/new" className="max-w-md w-full sm:w-auto">
           <Button size="lg" className="w-full shadow-lg shadow-red-600/20">
             <Plus className="h-4 w-4" /> New Quotation
           </Button>
