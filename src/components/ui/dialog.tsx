@@ -51,9 +51,9 @@ const DialogContent = React.forwardRef<
       <DialogPrimitive.Close
         className={cn(
           'absolute right-4 top-4',
-          'flex h-7 w-7 items-center justify-center rounded-lg',
-          'border border-transparent text-[#9CA3AF]',
-          'hover:bg-[#F3F4F6] hover:text-[#374151] hover:border-[#E4E7EC]',
+          'flex h-7 w-7 items-center justify-center rounded-full',
+          'border border-transparent text-white font-extrabold',
+          'bg-red-600 hover:bg-red-600/80 hover:border-black',
           'transition-all duration-100 cursor-pointer outline-none',
         )}
         aria-label="Close"

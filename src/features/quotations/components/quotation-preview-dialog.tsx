@@ -1,10 +1,12 @@
-import { Printer } from 'lucide-react'
+import { Printer, Search } from 'lucide-react'
 import {
   Dialog, DialogContent, DialogHeader, DialogBody,
   DialogTitle, DialogDescription,
 } from '../../../components/ui/dialog'
 import { Button } from '../../../components/ui/button'
 import type { Quotation } from '../../../types/quotation'
+import { Input } from '../../../components/ui/input'
+import { useEffect, useState } from 'react'
 
 interface Props {
   quotation: Quotation | null
@@ -15,7 +17,19 @@ interface Props {
 export function QuotationPreviewDialog({ quotation, open, onOpenChange }: Props) {
   if (!quotation) return null
 
-  const items = quotation.line_items ?? []
+  const [selectedQuotation, setSelectedQuotation] = useState<Quotation>(quotation);
+  const [searchTerm, setSearchTerm] = useState('');
+
+  useEffect(()=>{
+    if(searchTerm!=''){
+      const filteredItems = quotation.line_items?.filter(item =>
+        item.item_name.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+      setSelectedQuotation({...quotation, line_items: filteredItems});
+    }
+  }, [searchTerm]);
+
+  const items = selectedQuotation.line_items ?? []
   const groups: Record<string, typeof items> = {}
   for (const item of items) {
     const cat = item.category?.trim() || 'General'
@@ -28,18 +42,28 @@ export function QuotationPreviewDialog({ quotation, open, onOpenChange }: Props)
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <div className="flex justify-center mb-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#FFF1F1] text-[#DC2626] border border-[#FECACA] text-[16px] font-bold">
-              {(quotation.client_name ?? '?').charAt(0).toUpperCase()}
+          <div className="flex justify-between mb-3 relative">
+            <div className="flex flex-col items-center gap-0 text-[#101828] text-xs font-pacifico text-center">
+              <img src="/icon.png" alt="Logo" className="h-8 w-h-8 md:h-12 md:w-12" />
+              <div>Love Laundry</div>
+            </div>
+            <div className="flex absolute w-full inset-0 items-center justify-center">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-red-600 text-white border border-[#FECACA] text-[16px] font-bold">
+                {(selectedQuotation.client_name ?? '?').charAt(0).toUpperCase()}
+              </div>
             </div>
           </div>
-          <DialogTitle>{quotation.client_name ?? '(Unnamed)'}</DialogTitle>
+          <DialogTitle>{selectedQuotation.client_name ?? '(Unnamed)'}</DialogTitle>
           <DialogDescription>
-            {quotation.quotation_title || 'Price List'} · {items.length} items
+            {selectedQuotation.quotation_title || 'Price List'} · {items.length} items
           </DialogDescription>
         </DialogHeader>
 
         <DialogBody>
+          <div className='flex gap-2 items-center'>
+            <Input className='' onChange={(e)=>setSearchTerm(e.target.value)}/>
+            <Search className='h-full w-6'/>
+          </div>
           <div className="max-h-[380px] overflow-y-auto -mx-1 px-1 space-y-3">
             {groupEntries.map(([cat, catItems]) => (
               <div key={cat}>
@@ -54,22 +78,22 @@ export function QuotationPreviewDialog({ quotation, open, onOpenChange }: Props)
                     return (
                       <div
                         key={li.id ?? idx}
-                        className="flex items-center justify-between rounded-lg border border-[#E4E7EC] bg-[#FAFAFA] px-3 py-2 hover:bg-white hover:border-[#D1D5DB] transition-colors"
+                        className="flex items-center justify-between rounded-lg border border-[#E4E7EC] bg-red-100 px-3 py-2 hover:bg-red-600 text-black hover:text-white hover:border-[#D1D5DB] transition-colors"
                       >
                         <div className="flex items-center gap-2 min-w-0">
-                          <span className="text-[10px] font-bold text-[#D1D5DB] w-5 shrink-0 text-right">
+                          <span className="text-[10px] font-bold w-5 shrink-0 text-right">
                             {globalNum}
                           </span>
                           <div className="min-w-0">
-                            <span className="text-[13px] font-medium text-[#374151] truncate block">
+                            <span className="text-[13px] font-medium truncate block">
                               {li.item_name}
                             </span>
                             {li.notes && (
-                              <span className="text-[11px] text-[#98A2B3]">{li.notes}</span>
+                              <span className="text-[11px]">{li.notes}</span>
                             )}
                           </div>
                         </div>
-                        <span className="text-[13px] font-semibold text-[#101828] shrink-0 ml-3">
+                        <span className="text-[13px] font-semibold shrink-0 ml-3">
                           {li.unit_price.toFixed(2)}
                         </span>
                       </div>
@@ -81,8 +105,8 @@ export function QuotationPreviewDialog({ quotation, open, onOpenChange }: Props)
           </div>
 
           {/* Footer */}
-          <div className="mt-3 flex items-center justify-between rounded-lg bg-[#F9FAFB] border border-[#E4E7EC] px-3 py-2.5">
-            <span className="text-[11px] font-semibold text-[#9CA3AF] uppercase tracking-wider">
+          <div className="mt-3 flex items-center justify-between rounded-lg bg-black border border-red-600 px-3 py-2.5">
+            <span className="text-[11px] font-semibold text-white uppercase tracking-wider">
               {items.length} items · LKR
             </span>
             <Button size="sm" variant="secondary" onClick={() => window.print()}>
