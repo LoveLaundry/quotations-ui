@@ -219,11 +219,11 @@ function LogoDark() {
       <Logo size="sm" showText={false} />
 
       <div className="min-w-0 leading-none">
-        <p className="text-[14px] font-semibold text-white tracking-tight">
+        <p className="text-[14px] font-pacifico text-black tracking-tight">
           Love Laundry
         </p>
-        <p className="mt-0.5 text-[10px] text-[#6B7280]">
-          Guest Accounts
+        <p className="text-[10px] text-black">
+          Manager
         </p>
       </div>
     </div>
