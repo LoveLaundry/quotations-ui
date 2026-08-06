@@ -3,6 +3,8 @@ import { RouterProvider } from 'react-router-dom'
 import { Toaster } from 'sonner'
 import { router } from './routes'
 import './App.css'
+import { useEffect, useState } from 'react'
+import LoveLoader from './components/ui/LoveLoader'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -14,8 +16,20 @@ const queryClient = new QueryClient({
 })
 
 function App() {
+
+  const [ isLoading, setIsLoading ] = useState(true);
+
+  useEffect(()=>{
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 2000);
+
+    return () => clearTimeout(timer);
+  }, []);
+  
   return (
     <QueryClientProvider client={queryClient}>
+      { isLoading && <LoveLoader/> }
       <RouterProvider router={router} />
       <Toaster
         richColors
