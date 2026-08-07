@@ -7,6 +7,7 @@ import {
   RiSettings3Line,
   RiArrowLeftSLine,
   RiArrowRightSLine,
+  RiBillLine,
 } from 'react-icons/ri'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Logo } from '../brand/logo'
@@ -15,6 +16,7 @@ import { cn } from '../../lib/utils'
 const navItems = [
   { to: '/', label: 'Dashboard', icon: RiDashboardLine, end: true },
   { to: '/quotations', label: 'Quotations', icon: RiFileListLine, end: false },
+  { to: '/bills', label: 'Bills', icon: RiBillLine, end: false },
   { to: '/categories', label: 'By Client', icon: RiFolderOpenLine, end: false },
   { to: '/settings', label: 'Settings', icon: RiSettings3Line, end: false },
 ]
