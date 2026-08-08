@@ -1,9 +1,10 @@
 import { useMemo, useState } from 'react'
-import { Minus, Plus, Receipt, RotateCcw, Printer, Search, X, PackageSearch } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+import { Minus, Plus, Receipt, RotateCcw, Save, Search, X, PackageSearch } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card'
 import { Button } from '../../../components/ui/button'
 import { Badge } from '../../../components/ui/badge'
-import { formatDate } from '../../../lib/utils'
+import { useCreateBill } from '../hooks/useBills'
 import type { Quotation } from '../../../types/quotation'
 
 interface BillBuilderProps {
@@ -11,6 +12,8 @@ interface BillBuilderProps {
 }
 
 export function BillBuilder({ quotation }: BillBuilderProps) {
+  const navigate = useNavigate()
+  const createBill = useCreateBill()
   const lineItems = quotation.line_items ?? []
 
   const items = useMemo(() => {
@@ -24,7 +27,6 @@ export function BillBuilder({ quotation }: BillBuilderProps) {
   }, [lineItems])
 
   const [search, setSearch] = useState('')
-  // itemKey -> quantity selected for the bill
   const [counts, setCounts] = useState<Record<string, number>>({})
 
   const setCount = (key: string, next: number) => {
@@ -32,7 +34,6 @@ export function BillBuilder({ quotation }: BillBuilderProps) {
     setCounts(prev => ({ ...prev, [key]: safe }))
   }
 
-  // Search results only — items are never listed until the user searches.
   const searchResults = useMemo(() => {
     const q = search.trim().toLowerCase()
     if (!q) return []
@@ -59,9 +60,29 @@ export function BillBuilder({ quotation }: BillBuilderProps) {
     setSearch('')
   }
 
+  const handleSave = () => {
+    createBill.mutate(
+      {
+        quotation_id: String(quotation.id),
+        client_name: quotation.client_name,
+        quotation_title: quotation.quotation_title,
+        items: selectedRows.map(({ item, qty }) => ({
+          item_name: item.item_name,
+          category: item.category,
+          unit_price: item.unit_price,
+          quantity: qty,
+        })),
+      },
+      {
+        onSuccess: bill => {
+          navigate(`/bills/${bill._id}`)
+        },
+      },
+    )
+  }
+
   return (
     <div className="grid gap-5 lg:grid-cols-12 select-none">
-      {/* Left: search-only item picker — nothing is listed until you search */}
       <Card className="lg:col-span-7">
         <CardHeader className="border-b border-[#F2F4F7] pb-4">
           <div className="w-full">
@@ -188,7 +209,6 @@ export function BillBuilder({ quotation }: BillBuilderProps) {
         </CardContent>
       </Card>
 
-      {/* Right: live bill summary — selected items stay editable here without re-searching */}
       <div className="lg:col-span-5">
         <Card className="lg:sticky lg:top-4">
           <CardHeader className="border-b border-[#F2F4F7] pb-4">
@@ -205,11 +225,7 @@ export function BillBuilder({ quotation }: BillBuilderProps) {
             </div>
           </CardHeader>
 
-          <CardContent className="pt-4" id="printable-bill">
-            <p className="hidden print:block text-[10px] text-[#98A2B3] mb-3">
-              Printed: {formatDate(new Date().toISOString())}
-            </p>
-
+          <CardContent className="pt-4">
             {selectedRows.length === 0 ? (
               <p className="text-[13px] text-[#98A2B3] py-6 text-center">
                 No items added yet. Search on the left and add items to build the bill.
@@ -226,14 +242,14 @@ export function BillBuilder({ quotation }: BillBuilderProps) {
                         {item.item_name}
                       </p>
                       <p className="text-[12px] text-[#98A2B3]">
-                        LKR {item.unit_price.toFixed(2)} × {qty} = {' '}
+                        LKR {item.unit_price.toFixed(2)} × {qty} ={' '}
                         <span className="font-semibold text-[#101828]">
                           LKR {(item.unit_price * qty).toFixed(2)}
                         </span>
                       </p>
                     </div>
 
-                    <div className="flex items-center gap-1.5 shrink-0 print:hidden">
+                    <div className="flex items-center gap-1.5 shrink-0">
                       <button
                         type="button"
                         onClick={() => setCount(item._key, qty - 1)}
@@ -284,11 +300,12 @@ export function BillBuilder({ quotation }: BillBuilderProps) {
 
             <Button
               size="lg"
-              className="w-full mt-4 print:hidden"
-              disabled={selectedRows.length === 0}
-              onClick={() => window.print()}
+              className="w-full mt-4"
+              disabled={selectedRows.length === 0 || createBill.isPending}
+              onClick={handleSave}
             >
-              <Printer className="h-4 w-4" /> Create &amp; Print Bill
+              <Save className="h-4 w-4" />
+              {createBill.isPending ? 'Saving…' : 'Save Bill'}
             </Button>
           </CardContent>
         </Card>
