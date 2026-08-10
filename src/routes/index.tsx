@@ -1,6 +1,7 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom'
 import { AppShell } from '../components/layout/app-shell'
 import { ProtectedRoute } from '../components/layout/protected-route'
+import { AdminRoute } from '../components/layout/admin-route'
 import LoginPage from '../features/auth/pages/login-page'
 
 import DashboardPage from '../features/quotations/pages/dashboard-page'
@@ -71,7 +72,14 @@ export const router = createBrowserRouter([
           // System
           { path: 'categories', element: <CategoriesPage /> },
           { path: 'settings', element: <SettingsPage /> },
-          { path: 'users', element: <UsersPage /> },
+
+          // Admin-only routes
+          {
+            element: <AdminRoute />,
+            children: [
+              { path: 'users', element: <UsersPage /> },
+            ],
+          },
 
           { path: '*', element: <NotFoundPage /> },
         ],
