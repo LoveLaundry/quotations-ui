@@ -14,6 +14,9 @@ export interface Bill {
   items: BillItem[]
   total_quantity: number
   total_amount: number
+  paid_amount?: number
+  outstanding_amount?: number
+  status?: 'PENDING' | 'PARTIAL' | 'PAID' | 'CANCELLED'
   notes?: string
   created_at: string
   updated_at?: string

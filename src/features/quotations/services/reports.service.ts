@@ -1,0 +1,31 @@
+import billsApi from '../../../api/bills-api'
+import type { Payment, PaymentCreate } from '../../../types/operations'
+import type { ClientSummary } from '../../../types/operations'
+
+export const reports = {
+    clientSummary: (client_name: string) =>
+        billsApi.get<ClientSummary>('/dashboard/client-summary', { params: { client_name } }).then((r: any) => r.data),
+
+    clientWise: () =>
+        billsApi.get<object[]>('/reports/client-wise').then((r: any) => r.data),
+
+    itemWise: () =>
+        billsApi.get<object[]>('/reports/item-wise').then((r: any) => r.data),
+
+    gatepassWise: () =>
+        billsApi.get<object[]>('/reports/gatepass-wise').then((r: any) => r.data),
+
+    billing: () =>
+        billsApi.get<{ total_sales: number; pending_bills_amount: number; paid_bills_amount: number; outstanding_amount: number }>('/reports/billing').then((r: any) => r.data),
+
+    auditLogs: (limit = 50) =>
+        billsApi.get<object[]>('/audit-logs', { params: { limit } }).then((r: any) => r.data),
+}
+
+export const payments = {
+    listForBill: (billId: string) =>
+        billsApi.get<Payment[]>(`/bills/${billId}/payments`).then((r: any) => r.data),
+
+    create: (billId: string, data: PaymentCreate) =>
+        billsApi.post<Payment>(`/bills/${billId}/payments`, data).then((r: any) => r.data),
+}

@@ -1,6 +1,9 @@
-import { RiBellLine, RiMenuLine, RiUserLine } from 'react-icons/ri'
-import { motion } from 'framer-motion'
+import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { RiBellLine, RiMenuLine, RiLogoutBoxLine, RiUserLine } from 'react-icons/ri'
+import { motion, AnimatePresence } from 'framer-motion'
 import { cn } from '../../lib/utils'
+import { useAuth } from '../../context/AuthContext'
 
 interface TopBarProps {
   title?: string
@@ -10,6 +13,19 @@ interface TopBarProps {
 }
 
 export function TopBar({ title, sidebarCollapsed, onMobileMenuToggle }: TopBarProps) {
+  const { user, logout } = useAuth()
+  const navigate = useNavigate()
+  const [showMenu, setShowMenu] = useState(false)
+
+  const handleLogout = () => {
+    logout()
+    navigate('/login', { replace: true })
+  }
+
+  const initials = user?.user_name
+    ? user.user_name.slice(0, 2).toUpperCase()
+    : 'U'
+
   return (
     <header
       className={cn(
@@ -54,14 +70,65 @@ export function TopBar({ title, sidebarCollapsed, onMobileMenuToggle }: TopBarPr
           <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-red-500 ring-2 ring-white animate-pulse" />
         </button>
 
-        <div className="flex items-center gap-2.5 rounded-xl border border-[#E5E7EB] bg-white px-3 py-2 cursor-pointer hover:bg-[#F9FAFB] hover:border-[#D1D5DB] transition-all duration-200 shadow-sm">
-          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-[#DC2626] to-[#B91C1C] text-white shadow-sm">
-            <RiUserLine size={14} />
-          </div>
-          <div className="hidden sm:block leading-none">
-            <p className="text-[13px] font-semibold text-[#111827]">Reception</p>
-            <p className="text-[11px] text-[#6B7280] mt-1">Guest Accounts</p>
-          </div>
+        {/* User menu */}
+        <div className="relative">
+          <button
+            type="button"
+            onClick={() => setShowMenu(v => !v)}
+            className="flex items-center gap-2.5 rounded-xl border border-[#E5E7EB] bg-white px-3 py-2 cursor-pointer hover:bg-[#F9FAFB] hover:border-[#D1D5DB] transition-all duration-200 shadow-sm"
+          >
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-[#16A34A] to-[#15803D] text-white shadow-sm text-[11px] font-bold">
+              {user ? initials : <RiUserLine size={14} />}
+            </div>
+            <div className="hidden sm:block leading-none text-left">
+              <p className="text-[13px] font-semibold text-[#111827]">
+                {user?.user_name ?? 'User'}
+              </p>
+              <p className="text-[11px] text-[#6B7280] mt-0.5 capitalize">
+                {user?.role_id?.toLowerCase() ?? 'staff'}
+              </p>
+            </div>
+          </button>
+
+          <AnimatePresence>
+            {showMenu && (
+              <>
+                {/* Backdrop */}
+                <div
+                  className="fixed inset-0 z-40"
+                  onClick={() => setShowMenu(false)}
+                />
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95, y: -8 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95, y: -8 }}
+                  transition={{ duration: 0.15 }}
+                  className="absolute right-0 top-full mt-2 z-50 w-52 rounded-xl border border-[#E4E7EC] bg-white shadow-[0_16px_40px_-4px_rgba(16,24,40,0.15)] py-1.5"
+                >
+                  {/* User info header */}
+                  <div className="px-4 py-3 border-b border-[#F2F4F7]">
+                    <p className="text-[13px] font-semibold text-[#101828]">
+                      {user?.user_name ?? 'User'}
+                    </p>
+                    <p className="text-[12px] text-[#6B7280] mt-0.5">
+                      {user?.email ?? user?.auth_id ?? ''}
+                    </p>
+                  </div>
+
+                  <div className="p-1.5">
+                    <button
+                      type="button"
+                      onClick={handleLogout}
+                      className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2.5 text-[13px] font-medium text-[#DC2626] hover:bg-[#FEF2F2] transition-colors cursor-pointer"
+                    >
+                      <RiLogoutBoxLine size={16} />
+                      Sign Out
+                    </button>
+                  </div>
+                </motion.div>
+              </>
+            )}
+          </AnimatePresence>
         </div>
       </div>
     </header>

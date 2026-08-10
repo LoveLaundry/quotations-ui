@@ -15,19 +15,25 @@ interface Props {
 }
 
 export function QuotationPreviewDialog({ quotation, open, onOpenChange }: Props) {
-  if (!quotation) return null
+  const [selectedQuotation, setSelectedQuotation] = useState<Quotation | null>(quotation)
+  const [searchTerm, setSearchTerm] = useState('')
 
-  const [selectedQuotation, setSelectedQuotation] = useState<Quotation>(quotation);
-  const [searchTerm, setSearchTerm] = useState('');
-
-  useEffect(()=>{
-    if(searchTerm!=''){
+  useEffect(() => {
+    if (!quotation) {
+      setSelectedQuotation(null)
+      return
+    }
+    if (searchTerm !== '') {
       const filteredItems = quotation.line_items?.filter(item =>
         item.item_name.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-      setSelectedQuotation({...quotation, line_items: filteredItems});
+      )
+      setSelectedQuotation({ ...quotation, line_items: filteredItems || [] })
+    } else {
+      setSelectedQuotation(quotation)
     }
-  }, [searchTerm]);
+  }, [searchTerm, quotation])
+
+  if (!quotation || !selectedQuotation) return null
 
   const items = selectedQuotation.line_items ?? []
   const groups: Record<string, typeof items> = {}
@@ -61,8 +67,8 @@ export function QuotationPreviewDialog({ quotation, open, onOpenChange }: Props)
 
         <DialogBody>
           <div className='flex gap-2 items-center'>
-            <Input className='' onChange={(e)=>setSearchTerm(e.target.value)}/>
-            <Search className='h-full w-6'/>
+            <Input className='' onChange={(e) => setSearchTerm(e.target.value)} />
+            <Search className='h-full w-6' />
           </div>
           <div className="max-h-[380px] overflow-y-auto -mx-1 px-1 space-y-3">
             {groupEntries.map(([cat, catItems]) => (

@@ -8,17 +8,48 @@ import {
   RiArrowLeftSLine,
   RiArrowRightSLine,
   RiBillLine,
+  RiClipboardLine,
+  RiTruckLine,
+  RiBarChartLine,
 } from 'react-icons/ri'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Logo } from '../brand/logo'
 import { cn } from '../../lib/utils'
 
-const navItems = [
-  { to: '/', label: 'Dashboard', icon: RiDashboardLine, end: true },
-  { to: '/quotations', label: 'Quotations', icon: RiFileListLine, end: false },
-  { to: '/bills', label: 'Bills', icon: RiBillLine, end: false },
-  { to: '/categories', label: 'By Client', icon: RiFolderOpenLine, end: false },
-  { to: '/settings', label: 'Settings', icon: RiSettings3Line, end: false },
+const navGroups = [
+  {
+    label: 'Overview',
+    items: [
+      { to: '/', label: 'Dashboard', icon: RiDashboardLine, end: true },
+    ],
+  },
+  {
+    label: 'Operations',
+    items: [
+      { to: '/gate-passes', label: 'Gate Passes', icon: RiClipboardLine, end: false },
+      { to: '/deliveries', label: 'Deliveries', icon: RiTruckLine, end: false },
+      { to: '/bills', label: 'Bills', icon: RiBillLine, end: false },
+    ],
+  },
+  {
+    label: 'Contracts',
+    items: [
+      { to: '/quotations', label: 'Quotations', icon: RiFileListLine, end: false },
+      { to: '/categories', label: 'By Client', icon: RiFolderOpenLine, end: false },
+    ],
+  },
+  {
+    label: 'Analytics',
+    items: [
+      { to: '/reports', label: 'Reports', icon: RiBarChartLine, end: false },
+    ],
+  },
+  {
+    label: 'System',
+    items: [
+      { to: '/settings', label: 'Settings', icon: RiSettings3Line, end: false },
+    ],
+  },
 ]
 
 interface SidebarProps {
@@ -143,51 +174,51 @@ function SidebarContent({
         </AnimatePresence>
       </div>
 
-      <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-1">
-        {!collapsed && (
-          <p className="px-3 pb-2 text-[11px] font-semibold uppercase tracking-wider text-[#6B7280]">
-            Menu
-          </p>
-        )}
-
-        {navItems.map(({ to, label, icon: Icon, end }) => (
-          <NavLink
-            key={to}
-            to={to}
-            end={end}
-            onClick={() => {
-              if (isMobile) {
-                onMobileClose()
-              }
-            }}
-            className={({ isActive }) =>
-              cn(
-                'group flex items-center gap-3 rounded-xl px-3 py-2.5 text-[14px] font-medium transition-all duration-200',
-                collapsed && 'justify-center px-2',
-                isActive
-                  ? 'bg-gradient-to-r from-[#DC2626] to-[#B91C1C] text-white shadow-lg shadow-red-600/30'
-                  : 'text-[#9CA3AF] hover:bg-[#374151] hover:text-white'
-              )
-            }
-          >
-            {({ isActive }) => (
-              <>
-                <Icon
-                  size={18}
-                  className={cn(
-                    'shrink-0 transition-transform duration-200',
-                    isActive
-                      ? 'text-white scale-110'
-                      : 'text-[#6B7280] group-hover:text-white group-hover:scale-105'
-                  )}
-                />
-
-                {!collapsed && (
-                  <span className="truncate">{label}</span>
-                )}
-              </>
+      <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-4">
+        {navGroups.map(({ label: groupLabel, items }) => (
+          <div key={groupLabel}>
+            {!collapsed && (
+              <p className="px-3 pb-1.5 text-[10px] font-semibold uppercase tracking-widest text-[#4B5563]">
+                {groupLabel}
+              </p>
             )}
-          </NavLink>
+            <div className="space-y-0.5">
+              {items.map(({ to, label, icon: Icon, end }) => (
+                <NavLink
+                  key={to}
+                  to={to}
+                  end={end}
+                  onClick={() => {
+                    if (isMobile) onMobileClose()
+                  }}
+                  className={({ isActive }) =>
+                    cn(
+                      'group flex items-center gap-3 rounded-xl px-3 py-2.5 text-[13px] font-medium transition-all duration-200',
+                      collapsed && 'justify-center px-2',
+                      isActive
+                        ? 'bg-gradient-to-r from-[#DC2626] to-[#B91C1C] text-white shadow-lg shadow-red-600/30'
+                        : 'text-[#9CA3AF] hover:bg-[#374151] hover:text-white'
+                    )
+                  }
+                >
+                  {({ isActive }) => (
+                    <>
+                      <Icon
+                        size={17}
+                        className={cn(
+                          'shrink-0 transition-transform duration-200',
+                          isActive
+                            ? 'text-white scale-110'
+                            : 'text-[#6B7280] group-hover:text-white group-hover:scale-105'
+                        )}
+                      />
+                      {!collapsed && <span className="truncate">{label}</span>}
+                    </>
+                  )}
+                </NavLink>
+              ))}
+            </div>
+          </div>
         ))}
       </nav>
 

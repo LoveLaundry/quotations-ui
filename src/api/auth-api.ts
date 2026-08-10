@@ -1,18 +1,18 @@
 import axios from 'axios'
 
-const billsApi = axios.create({
-  baseURL: import.meta.env.VITE_BILLS_API_URL ?? 'http://localhost:8001',
+const authApi = axios.create({
+  baseURL: import.meta.env.VITE_USER_API_URL ?? 'http://localhost:8002',
   timeout: 10000,
   headers: { 'Content-Type': 'application/json' },
 })
 
-billsApi.interceptors.request.use((config) => {
+authApi.interceptors.request.use((config) => {
   const token = localStorage.getItem('ll_token')
   if (token) config.headers.Authorization = `Bearer ${token}`
   return config
 })
 
-billsApi.interceptors.response.use(
+authApi.interceptors.response.use(
   (r) => r,
   (err) => {
     if (err.response?.status === 401) {
@@ -24,4 +24,4 @@ billsApi.interceptors.response.use(
   }
 )
 
-export default billsApi
+export default authApi

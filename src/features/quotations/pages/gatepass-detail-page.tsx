@@ -1,0 +1,328 @@
+import { useState } from 'react'
+import { useParams, Link } from 'react-router-dom'
+import {
+    ArrowLeft, ClipboardList, Calendar, User, AlertCircle,
+    ChevronDown, Truck, CheckCircle2, Pencil, X, Check
+} from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { Button } from '../../../components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card'
+import { EmptyState } from '../../../components/ui/empty-state'
+import { ErrorState } from '../../../components/ui/error-state'
+import { Skeleton } from '../../../components/ui/skeleton'
+import { Breadcrumb } from '../../../components/ui/breadcrumb'
+import { formatDate } from '../../../lib/utils'
+import { useGatePass, useUpdateGatePassStatus, useAdjustGatePass } from '../hooks/useGatePasses'
+import { useDeliveries } from '../hooks/useDeliveries'
+
+const STATUS_CONFIG: Record<string, { label: string; bg: string; text: string; border: string; dot: string }> = {
+    RECEIVED: { label: 'Received', bg: '#EFF6FF', text: '#2563EB', border: '#BFDBFE', dot: '#3B82F6' },
+    PROCESSING: { label: 'Processing', bg: '#FFF7ED', text: '#C2410C', border: '#FED7AA', dot: '#F97316' },
+    READY_FOR_DELIVERY: { label: 'Ready', bg: '#F0FDF4', text: '#15803D', border: '#BBF7D0', dot: '#22C55E' },
+    PARTIALLY_DELIVERED: { label: 'Partial Delivery', bg: '#FFFBEB', text: '#D97706', border: '#FDE68A', dot: '#F59E0B' },
+    DELIVERED: { label: 'Delivered', bg: '#F0FDF4', text: '#16A34A', border: '#BBF7D0', dot: '#16A34A' },
+    CANCELLED: { label: 'Cancelled', bg: '#F9FAFB', text: '#6B7280', border: '#E4E7EC', dot: '#9CA3AF' },
+}
+
+const TRANSITION_STATUSES = ['RECEIVED', 'PROCESSING', 'READY_FOR_DELIVERY', 'CANCELLED']
+
+function StatusBadge({ status }: { status: string }) {
+    const cfg = STATUS_CONFIG[status] ?? STATUS_CONFIG.RECEIVED
+    return (
+        <span
+            className="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[11px] font-semibold whitespace-nowrap"
+            style={{ background: cfg.bg, color: cfg.text, borderColor: cfg.border }}
+        >
+            <span className="h-1.5 w-1.5 rounded-full" style={{ background: cfg.dot }} />
+            {cfg.label}
+        </span>
+    )
+}
+
+export default function GatePassDetailPage() {
+    const { id } = useParams()
+    
+    const { data: gp, isLoading, isError, error } = useGatePass(id)
+    const { data: deliveries = [] } = useDeliveries({ gate_pass_id: id })
+    const updateStatus = useUpdateGatePassStatus()
+    const adjust = useAdjustGatePass()
+
+    const [statusOpen, setStatusOpen] = useState(false)
+    const [adjustingItem, setAdjustingItem] = useState<string | null>(null)
+    const [adjustQty, setAdjustQty] = useState(0)
+    const [adjustReason, setAdjustReason] = useState('')
+
+    if (isLoading) {
+        return (
+            <div className="space-y-3">
+                <Skeleton className="h-8 w-64" />
+                <Skeleton className="h-32" />
+                <Skeleton className="h-64" />
+            </div>
+        )
+    }
+
+    if (isError) {
+        return <ErrorState description={error instanceof Error ? error.message : 'Unable to load gate pass'} />
+    }
+
+    if (!gp) {
+        return <EmptyState title="Gate pass not found" description="It may have been deleted." />
+    }
+
+    const totalReceived = gp.items.reduce((s: number, i: any) => s + i.received_qty, 0)
+    const mismatches = gp.items.filter((i: any) => i.difference !== 0)
+
+    const handleAdjust = (itemName: string) => {
+        const item = gp.items.find((i: any) => i.item_name === itemName)
+        if (!item) return
+        setAdjustingItem(itemName)
+        setAdjustQty(item.received_qty)
+        setAdjustReason('')
+    }
+
+    const submitAdjust = () => {
+        if (!id || !adjustingItem || !adjustReason) return
+        adjust.mutate(
+            { id, item_name: adjustingItem, corrected_qty: adjustQty, reason: adjustReason },
+            { onSuccess: () => setAdjustingItem(null) },
+        )
+    }
+
+    return (
+        <div className="space-y-5 pb-10">
+            {/* Header */}
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                <div className="flex items-start gap-3">
+                    <Link to="/gate-passes" className="mt-1 text-[#98A2B3] hover:text-[#374151] transition-colors">
+                        <ArrowLeft className="h-4 w-4" />
+                    </Link>
+                    <div>
+                        <Breadcrumb
+                            items={[
+                                { label: 'Dashboard', href: '/' },
+                                { label: 'Gate Passes', href: '/gate-passes' },
+                                { label: gp.client_name },
+                            ]}
+                        />
+                        <h1 className="text-dashboard-title mt-1">{gp.client_name}</h1>
+                        <p className="font-mono text-[12px] text-[#98A2B3] mt-0.5">{gp.gate_pass_number}</p>
+                    </div>
+                </div>
+
+                <div className="flex items-center gap-2 flex-wrap">
+                    <StatusBadge status={gp.status} />
+
+                    {/* Status Transition Dropdown */}
+                    {!['PARTIALLY_DELIVERED', 'DELIVERED'].includes(gp.status) && (
+                        <div className="relative">
+                            <Button
+                                variant="secondary"
+                                size="sm"
+                                onClick={() => setStatusOpen(o => !o)}
+                                disabled={updateStatus.isPending}
+                            >
+                                Update Status <ChevronDown className="h-3.5 w-3.5 ml-1" />
+                            </Button>
+                            <AnimatePresence>
+                                {statusOpen && (
+                                    <motion.div
+                                        initial={{ opacity: 0, y: -4 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        exit={{ opacity: 0, y: -4 }}
+                                        className="absolute right-0 top-full mt-1 z-20 w-52 rounded-xl border border-[#E4E7EC] bg-white shadow-lg shadow-black/5 py-1"
+                                    >
+                                        {TRANSITION_STATUSES.filter(s => s !== gp.status).map(s => {
+                                            const cfg = STATUS_CONFIG[s]
+                                            return (
+                                                <button
+                                                    key={s}
+                                                    onClick={() => {
+                                                        updateStatus.mutate({ id: id!, status: s })
+                                                        setStatusOpen(false)
+                                                    }}
+                                                    className="flex w-full items-center gap-2.5 px-3.5 py-2.5 text-[13px] text-[#374151] hover:bg-[#F9FAFB] cursor-pointer transition"
+                                                >
+                                                    <span className="h-2 w-2 rounded-full" style={{ background: cfg.dot }} />
+                                                    {cfg.label}
+                                                </button>
+                                            )
+                                        })}
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+                        </div>
+                    )}
+
+                    <Link to="/deliveries/new">
+                        <Button size="sm" className="bg-[#2563EB] hover:bg-[#1D4ED8] text-white">
+                            <Truck className="h-3.5 w-3.5" /> Record Delivery
+                        </Button>
+                    </Link>
+                </div>
+            </div>
+
+            {/* Info Strip */}
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                {[
+                    { icon: Calendar, label: 'Received', value: formatDate(gp.receiving_date) },
+                    { icon: User, label: 'Received By', value: gp.received_by },
+                    { icon: ClipboardList, label: 'Items', value: `${gp.items.length} types · ${totalReceived} pcs` },
+                    { icon: AlertCircle, label: 'Mismatches', value: mismatches.length > 0 ? `${mismatches.length} item${mismatches.length > 1 ? 's' : ''}` : 'None' },
+                ].map(({ icon: Icon, label, value }) => (
+                    <Card key={label} className="p-3">
+                        <div className="flex items-center gap-2 mb-1">
+                            <Icon className="h-3.5 w-3.5 text-[#98A2B3]" />
+                            <p className="text-[11px] text-[#98A2B3] font-medium uppercase tracking-wide">{label}</p>
+                        </div>
+                        <p className="text-[13px] font-semibold text-[#101828]">{value}</p>
+                    </Card>
+                ))}
+            </div>
+
+            {/* Notes */}
+            {gp.notes && (
+                <Card className="p-4">
+                    <p className="text-[11px] font-semibold uppercase tracking-wide text-[#98A2B3] mb-1">Notes</p>
+                    <p className="text-[13px] text-[#374151]">{gp.notes}</p>
+                </Card>
+            )}
+
+            {/* Items Table */}
+            <Card>
+                <CardHeader className="border-b border-[#F2F4F7] pb-3">
+                    <CardTitle>Item Breakdown</CardTitle>
+                </CardHeader>
+                <CardContent className="pt-0">
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-[13px]">
+                            <thead>
+                                <tr className="border-b border-[#F2F4F7]">
+                                    {['Item', 'Category', 'Client Qty', 'Received', 'Diff', 'Reason', ''].map(h => (
+                                        <th key={h} className="py-3 pr-3 text-left text-[11px] font-semibold uppercase tracking-wide text-[#98A2B3] first:pl-0">
+                                            {h}
+                                        </th>
+                                    ))}
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-[#F9FAFB]">
+                                {gp.items.map((item: any) => (
+                                    <>
+                                        <tr key={item.item_name} className="group">
+                                            <td className="py-3 pr-3 font-medium text-[#101828]">{item.item_name}</td>
+                                            <td className="py-3 pr-3 text-[#6B7280]">{item.category || '—'}</td>
+                                            <td className="py-3 pr-3 text-[#6B7280]">{item.client_qty}</td>
+                                            <td className="py-3 pr-3 font-semibold text-[#101828]">{item.received_qty}</td>
+                                            <td className="py-3 pr-3">
+                                                <span className={`font-semibold ${item.difference === 0 ? 'text-[#16A34A]' :
+                                                        item.difference > 0 ? 'text-[#2563EB]' : 'text-[#C2410C]'
+                                                    }`}>
+                                                    {item.difference > 0 ? `+${item.difference}` : item.difference}
+                                                </span>
+                                            </td>
+                                            <td className="py-3 pr-3 text-[#6B7280] text-[12px]">
+                                                {item.mismatch_reason?.replace(/_/g, ' ') || '—'}
+                                            </td>
+                                            <td className="py-3 text-right">
+                                                {!['DELIVERED', 'CANCELLED'].includes(gp.status) && (
+                                                    <button
+                                                        onClick={() => handleAdjust(item.item_name)}
+                                                        className="opacity-0 group-hover:opacity-100 text-[#6B7280] hover:text-[#2563EB] transition"
+                                                        title="Adjust quantity"
+                                                    >
+                                                        <Pencil className="h-3.5 w-3.5" />
+                                                    </button>
+                                                )}
+                                            </td>
+                                        </tr>
+
+                                        {/* Inline adjustment row */}
+                                        <AnimatePresence>
+                                            {adjustingItem === item.item_name && (
+                                                <tr key={`${item.item_name}-adj`}>
+                                                    <td colSpan={7} className="pb-3">
+                                                        <motion.div
+                                                            initial={{ opacity: 0, height: 0 }}
+                                                            animate={{ opacity: 1, height: 'auto' }}
+                                                            exit={{ opacity: 0, height: 0 }}
+                                                            className="rounded-lg bg-[#EFF6FF] border border-[#BFDBFE] p-3 flex flex-col sm:flex-row gap-3 items-start sm:items-end"
+                                                        >
+                                                            <div>
+                                                                <label className="block text-[11px] font-semibold text-[#374151] mb-1">Corrected Qty</label>
+                                                                <input
+                                                                    type="number"
+                                                                    min={0}
+                                                                    value={adjustQty}
+                                                                    onChange={e => setAdjustQty(Number(e.target.value))}
+                                                                    className="h-9 w-24 rounded-lg border border-[#BFDBFE] bg-white px-3 text-[13px] outline-none focus:border-[#2563EB]"
+                                                                />
+                                                            </div>
+                                                            <div className="flex-1 w-full sm:w-auto">
+                                                                <label className="block text-[11px] font-semibold text-[#374151] mb-1">Reason</label>
+                                                                <input
+                                                                    type="text"
+                                                                    value={adjustReason}
+                                                                    onChange={e => setAdjustReason(e.target.value)}
+                                                                    placeholder="Reason for adjustment…"
+                                                                    className="h-9 w-full rounded-lg border border-[#BFDBFE] bg-white px-3 text-[13px] outline-none focus:border-[#2563EB]"
+                                                                />
+                                                            </div>
+                                                            <div className="flex gap-2">
+                                                                <Button
+                                                                    size="sm"
+                                                                    onClick={submitAdjust}
+                                                                    disabled={!adjustReason || adjust.isPending}
+                                                                    className="bg-[#2563EB] hover:bg-[#1D4ED8] text-white"
+                                                                >
+                                                                    <Check className="h-3.5 w-3.5" /> Save
+                                                                </Button>
+                                                                <Button
+                                                                    size="sm"
+                                                                    variant="ghost"
+                                                                    onClick={() => setAdjustingItem(null)}
+                                                                >
+                                                                    <X className="h-3.5 w-3.5" /> Cancel
+                                                                </Button>
+                                                            </div>
+                                                        </motion.div>
+                                                    </td>
+                                                </tr>
+                                            )}
+                                        </AnimatePresence>
+                                    </>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </CardContent>
+            </Card>
+
+            {/* Deliveries for this Gate Pass */}
+            {deliveries.length > 0 && (
+                <Card>
+                    <CardHeader className="border-b border-[#F2F4F7] pb-3">
+                        <div className="flex items-center gap-2">
+                            <Truck className="h-4 w-4 text-[#2563EB]" />
+                            <CardTitle>Deliveries ({deliveries.length})</CardTitle>
+                        </div>
+                    </CardHeader>
+                    <CardContent className="pt-3 divide-y divide-[#F9FAFB]">
+                        {deliveries.map((d: any) => (
+                            <Link key={d.id} to={`/deliveries/${d.id}`} className="flex items-center justify-between gap-3 py-3 hover:opacity-70 transition">
+                                <div>
+                                    <p className="text-[13px] font-medium text-[#101828]">
+                                        {d.items.reduce((s: number, i: any) => s + i.quantity, 0)} pieces delivered
+                                    </p>
+                                    <p className="text-[12px] text-[#98A2B3]">{formatDate(d.delivery_date)} · by {d.delivered_by}</p>
+                                </div>
+                                <div className="flex items-center gap-1.5 text-[#16A34A] text-[12px] font-medium">
+                                    <CheckCircle2 className="h-4 w-4" /> Delivered
+                                </div>
+                            </Link>
+                        ))}
+                    </CardContent>
+                </Card>
+            )}
+        </div>
+    )
+}
