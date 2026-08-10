@@ -30,6 +30,7 @@ export interface GatePassCreate {
     received_by: string
     items: GatePassItem[]
     notes?: string
+    quotation_id?: string
 }
 
 // ── Delivery ─────────────────────────────────────────────────────────────────

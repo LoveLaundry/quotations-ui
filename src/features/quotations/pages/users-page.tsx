@@ -1,11 +1,13 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { RiUserAddLine, RiUserLine, RiShieldLine, RiCloseLine, RiEyeLine, RiEyeOffLine, RiRefreshLine } from 'react-icons/ri'
+import {
+    RiUserAddLine, RiUserLine, RiCloseLine, RiEyeLine, RiEyeOffLine,
+    RiRefreshLine, RiShieldCheckLine
+} from 'react-icons/ri'
 import { toast } from 'sonner'
-import { useAuth } from '../../../context/AuthContext'
 import authApi from '../../../api/auth-api'
 import { Breadcrumb } from '../../../components/ui/breadcrumb'
-import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card'
+import { Card, CardContent } from '../../../components/ui/card'
 import { Button } from '../../../components/ui/button'
 
 interface UserForm {
@@ -46,23 +48,18 @@ interface UserRecord {
 }
 
 export default function UsersPage() {
-    const { user: currentUser } = useAuth()
     const [users, setUsers] = useState<UserRecord[]>([])
-    const [loadingUsers, setLoadingUsers] = useState(false)
+    const [loadingUsers, setLoadingUsers] = useState(true)
     const [showModal, setShowModal] = useState(false)
     const [form, setForm] = useState<UserForm>(emptyForm)
     const [submitting, setSubmitting] = useState(false)
     const [showPw, setShowPw] = useState(false)
-    const [fetched, setFetched] = useState(false)
-
-    const isAdmin = currentUser?.role_id?.toUpperCase() === 'ADMIN'
 
     const fetchUsers = async () => {
         setLoadingUsers(true)
         try {
             const res = await authApi.get<UserRecord[]>('/users')
             setUsers(res.data)
-            setFetched(true)
         } catch (err: any) {
             toast.error(err.message || 'Failed to load users')
         } finally {
@@ -70,10 +67,14 @@ export default function UsersPage() {
         }
     }
 
+    useEffect(() => {
+        fetchUsers()
+    }, [])
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         if (!form.user_name || !form.auth_id || !form.password) {
-            toast.error('Username, Auth ID and Password are required')
+            toast.error('Full name, Username and Password are required')
             return
         }
         setSubmitting(true)
@@ -86,12 +87,18 @@ export default function UsersPage() {
             toast.success(`User "${form.user_name}" created successfully`)
             setShowModal(false)
             setForm(emptyForm)
-            if (fetched) fetchUsers()
+            fetchUsers()
         } catch (err: any) {
             toast.error(err.message || 'Failed to create user')
         } finally {
             setSubmitting(false)
         }
+    }
+
+    const openModal = () => {
+        setForm(emptyForm)
+        setShowPw(false)
+        setShowModal(true)
     }
 
     const inputClass =
@@ -109,22 +116,9 @@ export default function UsersPage() {
         unset: 'bg-[#F3F4F6] text-[#6B7280] border-[#E5E7EB]',
     }
 
-    if (!isAdmin) {
-        return (
-            <div className="flex flex-col items-center justify-center min-h-[60vh] select-none">
-                <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-[#FEF2F2] text-[#DC2626] mb-4">
-                    <RiShieldLine size={32} />
-                </div>
-                <h2 className="text-[18px] font-bold text-[#101828]">Access Restricted</h2>
-                <p className="text-[13px] text-[#6B7280] mt-1 text-center max-w-xs">
-                    Only administrators can access user management.
-                </p>
-            </div>
-        )
-    }
-
     return (
         <div className="space-y-5 pb-10 select-none">
+            {/* Header */}
             <div className="flex items-start justify-between gap-4 flex-wrap">
                 <div>
                     <Breadcrumb items={[{ label: 'Dashboard', href: '/' }, { label: 'Users' }]} />
@@ -139,27 +133,33 @@ export default function UsersPage() {
                         className="flex items-center gap-1.5"
                     >
                         <RiRefreshLine size={15} className={loadingUsers ? 'animate-spin' : ''} />
-                        {fetched ? 'Refresh' : 'Load Users'}
+                        Refresh
                     </Button>
-                    <Button onClick={() => setShowModal(true)} className="flex items-center gap-1.5">
+                    <Button onClick={openModal} className="flex items-center gap-1.5">
                         <RiUserAddLine size={15} />
                         Create User
                     </Button>
                 </div>
             </div>
 
+            {/* Stats row */}
+            <div className="grid grid-cols-3 gap-3">
+                {[
+                    { label: 'Total Users', value: users.length, color: 'text-[#101828]' },
+                    { label: 'Active', value: users.filter(u => u.status === 'active').length, color: 'text-[#16A34A]' },
+                    { label: 'Admins', value: users.filter(u => u.role_id?.toUpperCase() === 'ADMIN').length, color: 'text-[#92400E]' },
+                ].map(stat => (
+                    <Card key={stat.label}>
+                        <CardContent className="pt-4 pb-4 text-center">
+                            <p className={`text-[24px] font-bold ${stat.color}`}>{loadingUsers ? '—' : stat.value}</p>
+                            <p className="text-[12px] text-[#6B7280] mt-0.5">{stat.label}</p>
+                        </CardContent>
+                    </Card>
+                ))}
+            </div>
+
             {/* User list */}
-            {!fetched ? (
-                <Card>
-                    <CardContent className="py-16 flex flex-col items-center justify-center gap-3">
-                        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#F3F4F6] text-[#6B7280]">
-                            <RiUserLine size={28} />
-                        </div>
-                        <p className="text-[14px] font-semibold text-[#101828]">No users loaded</p>
-                        <p className="text-[13px] text-[#6B7280]">Click "Load Users" to fetch the user list</p>
-                    </CardContent>
-                </Card>
-            ) : loadingUsers ? (
+            {loadingUsers ? (
                 <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                     {[1, 2, 3].map(i => (
                         <div key={i} className="h-28 rounded-xl bg-[#F3F4F6] animate-pulse" />
@@ -168,8 +168,14 @@ export default function UsersPage() {
             ) : users.length === 0 ? (
                 <Card>
                     <CardContent className="py-16 flex flex-col items-center justify-center gap-3">
+                        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#F3F4F6] text-[#6B7280]">
+                            <RiUserLine size={28} />
+                        </div>
                         <p className="text-[14px] font-semibold text-[#101828]">No users found</p>
                         <p className="text-[13px] text-[#6B7280]">Create the first user to get started</p>
+                        <Button onClick={openModal} className="mt-2 flex items-center gap-1.5">
+                            <RiUserAddLine size={14} /> Create First User
+                        </Button>
                     </CardContent>
                 </Card>
             ) : (
@@ -271,7 +277,7 @@ export default function UsersPage() {
                                         </div>
                                         <div>
                                             <label className="block text-[12px] font-medium text-[#374151] mb-1.5">
-                                                Auth ID / Username <span className="text-[#DC2626]">*</span>
+                                                Username <span className="text-[#DC2626]">*</span>
                                             </label>
                                             <input
                                                 type="text"
@@ -369,6 +375,14 @@ export default function UsersPage() {
                                         </div>
                                     </div>
 
+                                    {/* Admin notice */}
+                                    <div className="flex items-start gap-2 rounded-lg bg-[#F0FDF4] border border-[#BBF7D0] px-3 py-2.5">
+                                        <RiShieldCheckLine size={14} className="text-[#16A34A] mt-0.5 shrink-0" />
+                                        <p className="text-[11px] text-[#166534]">
+                                            User will be created with the selected role. They can log in immediately using their username and password.
+                                        </p>
+                                    </div>
+
                                     <div className="flex items-center gap-3 pt-2">
                                         <button
                                             type="button"
@@ -380,9 +394,19 @@ export default function UsersPage() {
                                         <button
                                             type="submit"
                                             disabled={submitting}
-                                            className="flex-1 h-10 rounded-xl bg-[#101828] text-[13px] font-medium text-white hover:bg-[#1D2939] transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                                            className="flex-1 h-10 rounded-xl bg-[#101828] text-[13px] font-medium text-white hover:bg-[#1D2939] transition-colors disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                                         >
-                                            {submitting ? 'Creating...' : 'Create User'}
+                                            {submitting ? (
+                                                <>
+                                                    <RiRefreshLine size={14} className="animate-spin" />
+                                                    Creating…
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <RiUserAddLine size={14} />
+                                                    Create User
+                                                </>
+                                            )}
                                         </button>
                                     </div>
                                 </form>
