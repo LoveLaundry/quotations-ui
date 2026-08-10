@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Eye, EyeOff, Loader2, LogIn, ShieldCheck } from 'lucide-react'
+import { Eye, EyeOff, Loader2 } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { useAuth } from '../../../context/AuthContext'
 import { authService } from '../services/auth.service'
@@ -31,37 +31,36 @@ export default function LoginPage() {
     }
 
     const inputClass =
-        'h-11 w-full rounded-xl border border-[#E4E7EC] bg-white/80 px-4 text-[14px] text-[#101828] placeholder:text-[#98A2B3] outline-none focus:border-[#16A34A] focus:ring-2 focus:ring-[#16A34A]/15 transition-all duration-150 shadow-sm'
+        'h-11 w-full rounded-xl border border-[#E4E7EC] bg-white px-4 text-[14px] text-[#101828] placeholder:text-[#98A2B3] outline-none focus:border-[#101828] focus:ring-1 focus:ring-[#101828] transition-all duration-150'
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-[#F0FDF4] via-[#F9FAFB] to-[#EFF6FF] flex items-center justify-center p-4">
-            {/* Background decoration */}
-            <div className="pointer-events-none fixed inset-0 overflow-hidden">
-                <div className="absolute -top-40 -right-40 h-96 w-96 rounded-full bg-[#16A34A]/8 blur-3xl" />
-                <div className="absolute -bottom-40 -left-40 h-96 w-96 rounded-full bg-[#2563EB]/8 blur-3xl" />
-            </div>
-
+        <div className="min-h-screen bg-[#F9FAFB] flex flex-col items-center justify-center p-4">
             <motion.div
-                initial={{ opacity: 0, y: 24 }}
-                animate={{ opacity: 1, y: 0 }}
+                initial={{ opacity: 0, scale: 0.98 }}
+                animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-                className="relative w-full max-w-[400px]"
+                className="w-full max-w-[400px]"
             >
-                {/* Card */}
-                <div className="rounded-2xl border border-[#E4E7EC] bg-white shadow-[0_24px_64px_-8px_rgba(16,24,40,0.12)] p-8">
+                <div className="rounded-2xl border border-[#E4E7EC] bg-white shadow-sm p-8">
                     {/* Logo & Brand */}
                     <div className="flex flex-col items-center mb-8">
-                        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-[#16A34A] to-[#15803D] shadow-lg shadow-[#16A34A]/30 mb-4">
-                            <ShieldCheck className="h-7 w-7 text-white" />
-                        </div>
-                        <h1 className="text-[22px] font-bold text-[#101828] tracking-tight">LoveLaundry.LK</h1>
-                        <p className="text-[13px] text-[#6B7280] mt-1">Sign in to management system</p>
+                        <img
+                            src="/icon.png"
+                            alt="LoveLaundry Logo"
+                            className="h-16 w-16 object-contain mb-4"
+                        />
+                        <h1 className="text-[22px] font-bold text-[#101828] tracking-tight">
+                            Welcome back
+                        </h1>
+                        <p className="text-[14px] text-[#6B7280] mt-1">
+                            Sign in to your account
+                        </p>
                     </div>
 
                     {/* Form */}
                     <form onSubmit={handleSubmit} className="space-y-4">
                         <div>
-                            <label className="block text-[12px] font-semibold text-[#374151] mb-1.5 uppercase tracking-wide">
+                            <label className="block text-[13px] font-medium text-[#374151] mb-1.5">
                                 Username or Email
                             </label>
                             <input
@@ -78,9 +77,11 @@ export default function LoginPage() {
                         </div>
 
                         <div>
-                            <label className="block text-[12px] font-semibold text-[#374151] mb-1.5 uppercase tracking-wide">
-                                Password
-                            </label>
+                            <div className="flex items-center justify-between mb-1.5">
+                                <label className="block text-[13px] font-medium text-[#374151]">
+                                    Password
+                                </label>
+                            </div>
                             <div className="relative">
                                 <input
                                     id="password"
@@ -107,9 +108,9 @@ export default function LoginPage() {
                         {/* Error */}
                         {error && (
                             <motion.div
-                                initial={{ opacity: 0, scale: 0.97 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                className="rounded-lg bg-[#FEF2F2] border border-[#FECACA] px-4 py-3 text-[13px] text-[#DC2626] font-medium"
+                                initial={{ opacity: 0, y: -4 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                className="rounded-lg bg-[#FEF2F2] px-4 py-3 text-[13px] text-[#DC2626] font-medium"
                             >
                                 {error}
                             </motion.div>
@@ -120,32 +121,19 @@ export default function LoginPage() {
                             id="login-submit"
                             type="submit"
                             disabled={loading || !username || !password}
-                            className="mt-2 flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-br from-[#16A34A] to-[#15803D] text-[14px] font-semibold text-white shadow-md shadow-[#16A34A]/30 hover:shadow-lg hover:shadow-[#16A34A]/40 hover:from-[#15803D] hover:to-[#166534] transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                            className="mt-6 flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-[#101828] text-[14px] font-medium text-white hover:bg-[#1D2939] transition-colors duration-150 disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
                         >
                             {loading ? (
                                 <>
                                     <Loader2 className="h-4 w-4 animate-spin" />
-                                    Signing in…
+                                    Signing in...
                                 </>
                             ) : (
-                                <>
-                                    <LogIn className="h-4 w-4" />
-                                    Sign In
-                                </>
+                                'Sign in'
                             )}
                         </button>
                     </form>
-
-                    {/* Footer note */}
-                    <p className="mt-6 text-center text-[12px] text-[#98A2B3]">
-                        Secure access via JWT authentication
-                    </p>
                 </div>
-
-                {/* Version badge */}
-                <p className="mt-4 text-center text-[11px] text-[#C0C7D4]">
-                    LoveLaundry Management System · v1.0
-                </p>
             </motion.div>
         </div>
     )
