@@ -22,17 +22,20 @@ import DeliveriesPage from '../features/quotations/pages/deliveries-page'
 import CreateDeliveryPage from '../features/quotations/pages/create-delivery-page'
 import DeliveryDetailPage from '../features/quotations/pages/delivery-detail-page'
 import ReportsPage from '../features/quotations/pages/reports-page'
+import ErrorPage from '../features/quotations/pages/error-page'
 
 export const router = createBrowserRouter([
   // ── Public routes ─────────────────────────────────────────────────────────────
   {
     path: '/login',
     element: <LoginPage />,
+    errorElement: <ErrorPage />,
   },
 
   // ── Protected routes (require auth) ──────────────────────────────────────────
   {
     element: <ProtectedRoute />,
+    errorElement: <ErrorPage />,
     children: [
       {
         path: '/',
