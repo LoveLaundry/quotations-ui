@@ -5,6 +5,7 @@ import { router } from './routes'
 import './App.css'
 import { useEffect, useState } from 'react'
 import LoveLoader from './components/ui/LoveLoader'
+import { ThemeProvider } from './context/ThemeContext'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -29,22 +30,24 @@ function App() {
   
   return (
     <QueryClientProvider client={queryClient}>
-      { isLoading && <LoveLoader/> }
-      <RouterProvider router={router} />
-      <Toaster
-        richColors
-        position="top-right"
-        toastOptions={{
-          duration: 4000,
-          className: 'toast-custom',
-          style: {
-            padding: '16px',
-            borderRadius: '12px',
-            fontSize: '14px',
-            fontWeight: '500',
-          },
-        }}
-      />
+      <ThemeProvider>
+        { isLoading && <LoveLoader/> }
+        <RouterProvider router={router} />
+        <Toaster
+          richColors
+          position="top-right"
+          toastOptions={{
+            duration: 4000,
+            className: 'toast-custom',
+            style: {
+              padding: '16px',
+              borderRadius: '12px',
+              fontSize: '14px',
+              fontWeight: '500',
+            },
+          }}
+        />
+      </ThemeProvider>
     </QueryClientProvider>
   )
 }

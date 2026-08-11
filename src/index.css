@@ -12,9 +12,11 @@
     --surface: #FFFFFF;
     --border: #E5E7EB;
     --border-2: #D1D5DB;
-    --text-primary: #111827;
-    --text-secondary: #475467;
-    --text-tertiary: #6B7280;
+    --text-primary: #101828;
+    --text-secondary: #1D2939;
+    --text-tertiary: #344054;
+    --text-muted: #475467;
+    --body-font-size: 14px;
     --sidebar-bg: #1F2937;
     --sidebar-border: #374151;
     --sidebar-text: #9CA3AF;
@@ -40,7 +42,7 @@
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
     overflow-x: hidden;
-    font-size: 14px;
+    font-size: var(--body-font-size, 14px);
     line-height: 1.5;
   }
 
