@@ -63,7 +63,7 @@ export function BillBuilder({ quotation }: BillBuilderProps) {
   const handleSave = () => {
     createBill.mutate(
       {
-        quotationid: String(quotation.id),
+        quotation_id: String(quotation.id),
         client_name: quotation.client_name,
         quotation_title: quotation.quotation_title,
         items: selectedRows.map(({ item, qty }) => ({
