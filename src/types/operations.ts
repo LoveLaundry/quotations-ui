@@ -10,7 +10,7 @@ export interface GatePassItem {
 }
 
 export interface GatePass {
-    _id: string
+    id: string
     gate_pass_number: string
     client_name: string
     receiving_date: string
@@ -40,7 +40,7 @@ export interface DeliveryItem {
 }
 
 export interface Delivery {
-    _id: string
+    id: string
     gate_pass_id: string
     client_name: string
     delivery_date: string
@@ -64,7 +64,7 @@ export interface DeliveryCreate {
 
 // ── Payment ───────────────────────────────────────────────────────────────────
 export interface Payment {
-    _id: string
+    id: string
     bill_id: string
     client_name: string
     amount: number
