@@ -18,12 +18,12 @@ function DeliveryCard({ d }: { d: Delivery }) {
         0
     )
 
-    if (!d._id) {
+    if (!d.id) {
         return null
     }
 
     return (
-        <Link to={`/deliveries/${d._id}`}>
+        <Link to={`/deliveries/${d.id}`}>
             <Card hover className="cursor-pointer p-4 h-full group">
                 <div className="flex items-start gap-3 mb-3">
                     <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#F0FDF4] text-[#16A34A] border border-[#BBF7D0] group-hover:bg-[#DCFCE7] transition-colors">
@@ -175,7 +175,7 @@ export default function DeliveriesPage() {
                 <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                     {deliveries.map((d: Delivery, i: number) => (
                         <motion.div
-                            key={d._id}
+                            key={d.id}
                             initial={{ opacity: 0, y: 6 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: i * 0.03 }}
