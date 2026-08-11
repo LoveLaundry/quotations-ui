@@ -88,7 +88,7 @@ export default function CreateDeliveryPage() {
 
         createDelivery.mutate(
             {
-                gate_pass_id: selectedGP.id || (selectedGP as any)._id,
+                gate_pass_id: selectedGP.id || (selectedGP as any).id,
                 client_name: selectedGP.client_name,
                 delivery_date: new Date(deliveryDate).toISOString(),
                 delivered_by: deliveredBy.trim(),
@@ -165,7 +165,7 @@ export default function CreateDeliveryPage() {
                                     const totalPcs = gp.items.reduce((s: number, i: any) => s + i.received_qty, 0)
                                     return (
                                         <button
-                                            key={gp.id || (gp as any)._id}
+                                            key={gp.id || (gp as any).id}
                                             type="button"
                                             onClick={() => handleSelectGP(gp)}
                                             className="group flex w-full items-center gap-3 rounded-xl border border-[#E4E7EC] bg-white px-4 py-3 text-left hover:border-[#BBF7D0] hover:bg-[#F0FDF4] transition cursor-pointer"

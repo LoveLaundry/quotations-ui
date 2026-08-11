@@ -173,7 +173,7 @@ export default function CreateGatePassPage() {
         return [q.client_name, q.quotation_title ?? ''].join(' ').toLowerCase().includes(term)
     })
 
-    const getQuotationId = (q: Quotation) => String(q.id || (q as any)._id || '')
+    const getQuotationId = (q: Quotation) => String(q.id || (q as any).id || '')
 
     // Selecting a quotation: only link it + set client name — do NOT populate items
     const handleSelectQuotation = (q: Quotation) => {

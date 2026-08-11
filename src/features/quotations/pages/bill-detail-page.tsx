@@ -167,7 +167,7 @@ export default function BillDetailPage() {
   const handleDelete = () => {
     if (!bill) return
     if (!window.confirm('Delete this bill? This cannot be undone.')) return
-    deleteBill.mutate(bill._id, { onSuccess: () => navigate('/bills') })
+    deleteBill.mutate(bill.id, { onSuccess: () => navigate('/bills') })
   }
 
   const outstanding = bill?.outstanding_amount ?? bill?.total_amount ?? 0
@@ -357,7 +357,7 @@ export default function BillDetailPage() {
         <RecordPaymentModal
           isOpen={isPaymentModalOpen}
           onClose={() => setIsPaymentModalOpen(false)}
-          billId={bill._id}
+          billId={bill.id}
           suggestedAmount={outstanding}
         />
       )}

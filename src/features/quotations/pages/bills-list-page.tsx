@@ -132,8 +132,8 @@ export default function BillsListPage() {
         />
       ) : (
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {bills.map(bill => ( bill._id &&
-            <Link key={bill._id} to={`/bills/${bill._id}`}>
+          {bills.map(bill => ( bill.id &&
+            <Link key={bill.id} to={`/bills/${bill.id}`}>
               <Card hover className="cursor-pointer p-4 h-full">
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex items-start gap-3 min-w-0">
