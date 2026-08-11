@@ -56,13 +56,24 @@ export default function CreateGatePassPage() {
         return [q.client_name, q.quotation_title ?? ''].join(' ').toLowerCase().includes(term)
     })
 
-    const handleSelectQuotation = (q: Quotation) => {
+    const getQuotationId = (q: Quotation) => String(q.id || (q as any)._id || '')
+
+    const applyQuotation = (q: Quotation) => {
         setSelectedQuotation(q)
-        // Auto-fill client name from quotation if not already entered
-        if (!clientName.trim()) setClientName(q.client_name)
+        setClientName(q.client_name)
+        // Populate linen items from quotation line_items
+        if (q.line_items?.length) {
+            setItems(q.line_items.map(li => ({
+                ...EMPTY_ITEM,
+                item_name: li.item_name,
+                category: li.category || '',
+            })))
+        }
         setShowQuotationPicker(false)
         setQuotationSearch('')
     }
+
+    const handleSelectQuotation = (q: Quotation) => applyQuotation(q)
 
     const updateItem = (index: number, field: keyof GatePassItem, value: string | number) => {
         setItems(prev => {
@@ -269,20 +280,13 @@ export default function CreateGatePassPage() {
                             <div>
                                 <label className={labelClass}>Client / Hotel Name</label>
                                 <select
-                                    value={selectedQuotation?.id || (selectedQuotation as any)?._id || ''}
+                                    value={selectedQuotation ? getQuotationId(selectedQuotation) : ''}
                                     onChange={e => {
-                                        const q = quotations.find(x => String(x.id || (x as any)._id) === e.target.value);
-                                        setSelectedQuotation(q || null);
+                                        const q = quotations.find(x => getQuotationId(x) === e.target.value);
                                         if (q) {
-                                            setClientName(q.client_name);
-                                            if (q.line_items?.length) {
-                                                setItems(q.line_items.map(li => ({
-                                                    ...EMPTY_ITEM,
-                                                    item_name: li.item_name,
-                                                    category: li.category || ''
-                                                })));
-                                            }
+                                            applyQuotation(q);
                                         } else {
+                                            setSelectedQuotation(null);
                                             setClientName('');
                                         }
                                     }}
@@ -290,7 +294,7 @@ export default function CreateGatePassPage() {
                                 >
                                     <option value="">-- Select Quotation (Optional) --</option>
                                     {quotations.map(q => (
-                                        <option key={q.id || (q as any)._id} value={q.id || (q as any)._id}>{q.client_name} {q.quotation_title ? `(${q.quotation_title})` : ''}</option>
+                                        <option key={getQuotationId(q)} value={getQuotationId(q)}>{q.client_name} {q.quotation_title ? `(${q.quotation_title})` : ''}</option>
                                     ))}
                                 </select>
                                 <input
