@@ -7,7 +7,7 @@ export interface BillItem {
 }
 
 export interface Bill {
-  _id: string
+  id: string
   quotation_id: string
   client_name: string
   quotation_title?: string
