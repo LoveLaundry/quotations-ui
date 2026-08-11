@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
-import { ArrowLeft, Printer, Building2, Calendar, Trash2, DollarSign, Wallet, FileText } from 'lucide-react'
+import { ArrowLeft, Printer, Building2, Calendar, Trash2, Banknote, Wallet, FileText } from 'lucide-react'
 import { Button } from '../../../components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card'
 import { EmptyState } from '../../../components/ui/empty-state'
@@ -65,7 +65,7 @@ function RecordPaymentModal({
         <form onSubmit={handleSubmit}>
           <DialogHeader>
             <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-[#F0FDF4] border border-[#BBF7D0]">
-              <DollarSign className="h-5 w-5 text-[#16A34A]" />
+              <Banknote className="h-5 w-5 text-[#16A34A]" />
             </div>
             <DialogTitle>Record Payment</DialogTitle>
             <DialogDescription>Submit a new payment record for this bill.</DialogDescription>
@@ -308,7 +308,7 @@ export default function BillDetailPage() {
                     onClick={() => setIsPaymentModalOpen(true)}
                     className="w-full bg-[#16A34A] hover:bg-[#15803D] text-white shadow-sm mt-2"
                   >
-                    <DollarSign className="h-4 w-4 mr-1.5" /> Add Payment
+                    <Banknote className="h-4 w-4 mr-1.5" /> Add Payment
                   </Button>
                 )}
               </CardContent>

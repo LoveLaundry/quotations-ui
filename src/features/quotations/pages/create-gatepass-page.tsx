@@ -1,16 +1,16 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ClipboardList, Plus, Trash2, AlertCircle, ArrowLeft } from 'lucide-react'
+import { ClipboardList, Plus, Trash2, AlertCircle, ArrowLeft, Link2, X } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from '../../../components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card'
 import { Breadcrumb } from '../../../components/ui/breadcrumb'
 import { useCreateGatePass } from '../hooks/useGatePasses'
 import { useQuotations } from '../hooks/useQuotations'
-import { quotationService } from '../services/quotation.service'
 import type { GatePassItem } from '../../../types/operations'
 import type { Quotation } from '../../../types/quotation'
 import { Link } from 'react-router-dom'
+import { quotationService } from '../services/quotation.service'
 
 const EMPTY_ITEM: GatePassItem = {
     item_name: '',
@@ -33,8 +33,7 @@ const MISMATCH_REASONS = [
 export default function CreateGatePassPage() {
     const navigate = useNavigate()
     const createGatePass = useCreateGatePass()
-    const { data: quotations = [] } = useQuotations()
-    const [selectedQuotation, setSelectedQuotation] = useState<Quotation | null>(null)
+    const { data: quotations = [], isLoading: quotationsLoading } = useQuotations()
 
     const [gatePassNumber, setGatePassNumber] = useState(() => {
         const now = new Date()
@@ -45,6 +44,25 @@ export default function CreateGatePassPage() {
     const [receivedBy, setReceivedBy] = useState('')
     const [notes, setNotes] = useState('')
     const [items, setItems] = useState<GatePassItem[]>([{ ...EMPTY_ITEM }])
+
+    // Quotation linking
+    const [selectedQuotation, setSelectedQuotation] = useState<Quotation | null>(null)
+    const [quotationSearch, setQuotationSearch] = useState('')
+    const [showQuotationPicker, setShowQuotationPicker] = useState(false)
+
+    const filteredQuotations = quotations.filter(q => {
+        const term = quotationSearch.trim().toLowerCase()
+        if (!term) return true
+        return [q.client_name, q.quotation_title ?? ''].join(' ').toLowerCase().includes(term)
+    })
+
+    const handleSelectQuotation = (q: Quotation) => {
+        setSelectedQuotation(q)
+        // Auto-fill client name from quotation if not already entered
+        if (!clientName.trim()) setClientName(q.client_name)
+        setShowQuotationPicker(false)
+        setQuotationSearch('')
+    }
 
     const updateItem = (index: number, field: keyof GatePassItem, value: string | number) => {
         setItems(prev => {
@@ -80,7 +98,7 @@ export default function CreateGatePassPage() {
         if (selectedQuotation) {
             const existingNames = new Set(selectedQuotation.line_items?.map(li => li.item_name.toLowerCase()) || []);
             const newItems = items.filter(it => !existingNames.has(it.item_name.toLowerCase()));
-            
+
             if (newItems.length > 0) {
                 try {
                     const payload = {
@@ -111,6 +129,7 @@ export default function CreateGatePassPage() {
                 received_by: receivedBy.trim(),
                 notes: notes.trim() || undefined,
                 items,
+                ...(selectedQuotation ? { quotation_id: String(selectedQuotation.id) } : {}),
             },
             { onSuccess: () => navigate('/gate-passes') },
         )
@@ -144,6 +163,87 @@ export default function CreateGatePassPage() {
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
+                {/* Quotation Linking Card */}
+                <Card>
+                    <CardHeader className="border-b border-[#F2F4F7] pb-3">
+                        <div className="flex items-center gap-2">
+                            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#FFF7ED] border border-[#FED7AA]">
+                                <Link2 className="h-4 w-4 text-[#EA580C]" />
+                            </div>
+                            <div>
+                                <CardTitle>Link to Quotation</CardTitle>
+                                <p className="text-[11px] text-[#98A2B3] mt-0.5">Optional — link this gate pass to a client quotation for billing reference</p>
+                            </div>
+                        </div>
+                    </CardHeader>
+                    <CardContent className="pt-4">
+                        {selectedQuotation ? (
+                            <div className="flex items-center justify-between gap-3 rounded-xl border border-[#FED7AA] bg-[#FFF7ED] px-4 py-3">
+                                <div>
+                                    <p className="text-[13px] font-semibold text-[#101828]">{selectedQuotation.client_name}</p>
+                                    <p className="text-[11px] text-[#EA580C]">{selectedQuotation.quotation_title || 'Price List'} · {selectedQuotation.line_items?.length ?? 0} items</p>
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={() => { setSelectedQuotation(null); setShowQuotationPicker(false) }}
+                                    className="flex h-7 w-7 items-center justify-center rounded-lg text-[#EA580C] hover:bg-[#FED7AA] transition-colors cursor-pointer"
+                                >
+                                    <X className="h-3.5 w-3.5" />
+                                </button>
+                            </div>
+                        ) : showQuotationPicker ? (
+                            <div className="space-y-3">
+                                <div className="relative">
+                                    <input
+                                        type="text"
+                                        value={quotationSearch}
+                                        onChange={e => setQuotationSearch(e.target.value)}
+                                        placeholder="Search by client or title…"
+                                        className="h-10 w-full rounded-lg border border-[#E4E7EC] bg-white px-3 text-[13px] text-[#101828] outline-none focus:border-[#EA580C] focus:ring-2 focus:ring-[#EA580C]/10 shadow-sm transition"
+                                        autoFocus
+                                    />
+                                </div>
+                                {quotationsLoading ? (
+                                    <div className="py-4 text-center text-[12px] text-[#98A2B3]">Loading quotations…</div>
+                                ) : filteredQuotations.length === 0 ? (
+                                    <div className="py-4 text-center text-[12px] text-[#98A2B3]">No quotations found</div>
+                                ) : (
+                                    <div className="max-h-48 overflow-y-auto space-y-1.5 pr-1">
+                                        {filteredQuotations.map(q => (
+                                            <button
+                                                key={q.id}
+                                                type="button"
+                                                onClick={() => handleSelectQuotation(q)}
+                                                className="group flex w-full items-center gap-3 rounded-lg border border-[#E4E7EC] bg-white px-3 py-2.5 text-left hover:border-[#FED7AA] hover:bg-[#FFF7ED] transition cursor-pointer"
+                                            >
+                                                <div className="min-w-0 flex-1">
+                                                    <p className="text-[13px] font-semibold text-[#101828] truncate">{q.client_name}</p>
+                                                    <p className="text-[11px] text-[#98A2B3] truncate">{q.quotation_title || 'Price List'} · {q.line_items?.length ?? 0} items</p>
+                                                </div>
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
+                                <button
+                                    type="button"
+                                    onClick={() => { setShowQuotationPicker(false); setQuotationSearch('') }}
+                                    className="text-[12px] text-[#6B7280] hover:text-[#374151] cursor-pointer transition"
+                                >
+                                    Cancel
+                                </button>
+                            </div>
+                        ) : (
+                            <button
+                                type="button"
+                                onClick={() => setShowQuotationPicker(true)}
+                                className="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed border-[#FED7AA] py-3 text-[13px] font-medium text-[#EA580C] hover:border-[#EA580C] hover:bg-[#FFF7ED]/50 transition cursor-pointer"
+                            >
+                                <Link2 className="h-4 w-4" /> Link a Quotation
+                            </button>
+                        )}
+                    </CardContent>
+                </Card>
+
                 {/* Basic Info Card */}
                 <Card>
                     <CardHeader className="border-b border-[#F2F4F7] pb-3">
@@ -311,10 +411,10 @@ export default function CreateGatePassPage() {
                                     {/* Difference badge & mismatch fields */}
                                     <div className="flex items-start gap-3 flex-wrap">
                                         <div className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold border ${item.difference === 0
-                                                ? 'bg-[#F0FDF4] text-[#16A34A] border-[#BBF7D0]'
-                                                : item.difference > 0
-                                                    ? 'bg-[#EFF6FF] text-[#2563EB] border-[#BFDBFE]'
-                                                    : 'bg-[#FFF7ED] text-[#C2410C] border-[#FED7AA]'
+                                            ? 'bg-[#F0FDF4] text-[#16A34A] border-[#BBF7D0]'
+                                            : item.difference > 0
+                                                ? 'bg-[#EFF6FF] text-[#2563EB] border-[#BFDBFE]'
+                                                : 'bg-[#FFF7ED] text-[#C2410C] border-[#FED7AA]'
                                             }`}>
                                             {item.difference === 0 ? '✓ Matched' : item.difference > 0 ? `+${item.difference} extra` : `${item.difference} short`}
                                         </div>
@@ -384,6 +484,12 @@ export default function CreateGatePassPage() {
                                     <span className="ml-2 inline-flex items-center gap-1 text-[#D97706]">
                                         <AlertCircle className="h-3.5 w-3.5" />
                                         {items.filter(i => i.difference !== 0).length} mismatch{items.filter(i => i.difference !== 0).length > 1 ? 'es' : ''}
+                                    </span>
+                                )}
+                                {selectedQuotation && (
+                                    <span className="ml-2 inline-flex items-center gap-1 text-[#EA580C]">
+                                        <Link2 className="h-3.5 w-3.5" />
+                                        Linked to {selectedQuotation.client_name}
                                     </span>
                                 )}
                             </div>

@@ -11,10 +11,12 @@ import {
   RiClipboardLine,
   RiTruckLine,
   RiBarChartLine,
+  RiUserLine,
 } from 'react-icons/ri'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Logo } from '../brand/logo'
 import { cn } from '../../lib/utils'
+import { useAuth } from '../../context/AuthContext'
 
 const navGroups = [
   {
@@ -141,6 +143,19 @@ function SidebarContent({
   onMobileClose,
   isMobile,
 }: SidebarContentProps) {
+  const { user } = useAuth()
+  const isAdmin = user?.role_id?.toUpperCase() === 'ADMIN'
+
+  // Build admin-only extra System items
+  const systemItems = [
+    { to: '/settings', label: 'Settings', icon: RiSettings3Line, end: false },
+    ...(isAdmin ? [{ to: '/users', label: 'Users', icon: RiUserLine, end: false }] : []),
+  ]
+
+  const navGroupsWithRole = navGroups.map(g =>
+    g.label === 'System' ? { ...g, items: systemItems } : g
+  )
+
   return (
     <div className="flex h-full flex-col bg-white">
       <div
@@ -175,7 +190,7 @@ function SidebarContent({
       </div>
 
       <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-4">
-        {navGroups.map(({ label: groupLabel, items }) => (
+        {navGroupsWithRole.map(({ label: groupLabel, items }) => (
           <div key={groupLabel}>
             {!collapsed && (
               <p className="px-3 pb-1.5 text-[10px] font-semibold uppercase tracking-widest text-[#4B5563]">

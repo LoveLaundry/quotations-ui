@@ -1,6 +1,7 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom'
 import { AppShell } from '../components/layout/app-shell'
 import { ProtectedRoute } from '../components/layout/protected-route'
+import { AdminRoute } from '../components/layout/admin-route'
 import LoginPage from '../features/auth/pages/login-page'
 
 import DashboardPage from '../features/quotations/pages/dashboard-page'
@@ -23,6 +24,7 @@ import CreateDeliveryPage from '../features/quotations/pages/create-delivery-pag
 import DeliveryDetailPage from '../features/quotations/pages/delivery-detail-page'
 import ReportsPage from '../features/quotations/pages/reports-page'
 import ErrorPage from '../features/quotations/pages/error-page'
+import UsersPage from '../features/quotations/pages/users-page'
 
 export const router = createBrowserRouter([
   // ── Public routes ─────────────────────────────────────────────────────────────
@@ -70,6 +72,14 @@ export const router = createBrowserRouter([
           // System
           { path: 'categories', element: <CategoriesPage /> },
           { path: 'settings', element: <SettingsPage /> },
+
+          // Admin-only routes
+          {
+            element: <AdminRoute />,
+            children: [
+              { path: 'users', element: <UsersPage /> },
+            ],
+          },
 
           { path: '*', element: <NotFoundPage /> },
         ],
