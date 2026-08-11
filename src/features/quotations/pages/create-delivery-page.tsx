@@ -88,13 +88,13 @@ export default function CreateDeliveryPage() {
 
         createDelivery.mutate(
             {
-                gate_pass_id: selectedGP.id,
+                gate_pass_id: selectedGP.id || (selectedGP as any)._id,
                 client_name: selectedGP.client_name,
-                delivery_date: deliveryDate,
+                delivery_date: new Date(deliveryDate).toISOString(),
                 delivered_by: deliveredBy.trim(),
                 received_by: receivedBy.trim(),
                 notes: notes.trim() || undefined,
-                items: activeItems.map(({ item_name, quantity }) => ({ item_name, quantity })),
+                items: activeItems.map(({ item_name, quantity }) => ({ item_name, quantity: Math.floor(Number(quantity)) })),
             },
             { onSuccess: () => navigate('/deliveries') },
         )
@@ -165,7 +165,7 @@ export default function CreateDeliveryPage() {
                                     const totalPcs = gp.items.reduce((s: number, i: any) => s + i.received_qty, 0)
                                     return (
                                         <button
-                                            key={gp.id}
+                                            key={gp.id || (gp as any)._id}
                                             type="button"
                                             onClick={() => handleSelectGP(gp)}
                                             className="group flex w-full items-center gap-3 rounded-xl border border-[#E4E7EC] bg-white px-4 py-3 text-left hover:border-[#BBF7D0] hover:bg-[#F0FDF4] transition cursor-pointer"

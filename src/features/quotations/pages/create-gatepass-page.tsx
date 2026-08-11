@@ -6,7 +6,10 @@ import { Button } from '../../../components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card'
 import { Breadcrumb } from '../../../components/ui/breadcrumb'
 import { useCreateGatePass } from '../hooks/useGatePasses'
+import { useQuotations } from '../hooks/useQuotations'
+import { quotationService } from '../services/quotation.service'
 import type { GatePassItem } from '../../../types/operations'
+import type { Quotation } from '../../../types/quotation'
 import { Link } from 'react-router-dom'
 
 const EMPTY_ITEM: GatePassItem = {
@@ -30,6 +33,8 @@ const MISMATCH_REASONS = [
 export default function CreateGatePassPage() {
     const navigate = useNavigate()
     const createGatePass = useCreateGatePass()
+    const { data: quotations = [] } = useQuotations()
+    const [selectedQuotation, setSelectedQuotation] = useState<Quotation | null>(null)
 
     const [gatePassNumber, setGatePassNumber] = useState(() => {
         const now = new Date()
@@ -68,15 +73,41 @@ export default function CreateGatePassPage() {
         items.length > 0 &&
         items.every(it => it.item_name.trim() && it.received_qty >= 0)
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         if (!isValid) return
+
+        if (selectedQuotation) {
+            const existingNames = new Set(selectedQuotation.line_items?.map(li => li.item_name.toLowerCase()) || []);
+            const newItems = items.filter(it => !existingNames.has(it.item_name.toLowerCase()));
+            
+            if (newItems.length > 0) {
+                try {
+                    const payload = {
+                        client_name: selectedQuotation.client_name,
+                        quotation_title: selectedQuotation.quotation_title,
+                        line_items: [
+                            ...(selectedQuotation.line_items || []),
+                            ...newItems.map(it => ({
+                                item_name: it.item_name,
+                                category: it.category || '',
+                                unit_price: 0,
+                                notes: 'Auto-added from gate pass'
+                            }))
+                        ]
+                    };
+                    await quotationService.updateQuotation(String(selectedQuotation.id || (selectedQuotation as any)._id), payload);
+                } catch (err) {
+                    console.error('Failed to update quotation with custom items', err);
+                }
+            }
+        }
 
         createGatePass.mutate(
             {
                 gate_pass_number: gatePassNumber.trim(),
                 client_name: clientName.trim(),
-                receiving_date: receivingDate,
+                receiving_date: new Date(receivingDate).toISOString(),
                 received_by: receivedBy.trim(),
                 notes: notes.trim() || undefined,
                 items,
@@ -137,6 +168,31 @@ export default function CreateGatePassPage() {
                             </div>
                             <div>
                                 <label className={labelClass}>Client / Hotel Name</label>
+                                <select
+                                    value={selectedQuotation?.id || (selectedQuotation as any)?._id || ''}
+                                    onChange={e => {
+                                        const q = quotations.find(x => String(x.id || (x as any)._id) === e.target.value);
+                                        setSelectedQuotation(q || null);
+                                        if (q) {
+                                            setClientName(q.client_name);
+                                            if (q.line_items?.length) {
+                                                setItems(q.line_items.map(li => ({
+                                                    ...EMPTY_ITEM,
+                                                    item_name: li.item_name,
+                                                    category: li.category || ''
+                                                })));
+                                            }
+                                        } else {
+                                            setClientName('');
+                                        }
+                                    }}
+                                    className={inputClass + ' mb-2'}
+                                >
+                                    <option value="">-- Select Quotation (Optional) --</option>
+                                    {quotations.map(q => (
+                                        <option key={q.id || (q as any)._id} value={q.id || (q as any)._id}>{q.client_name} {q.quotation_title ? `(${q.quotation_title})` : ''}</option>
+                                    ))}
+                                </select>
                                 <input
                                     type="text"
                                     value={clientName}
