@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ClipboardList, Plus, Trash2, AlertCircle, ArrowLeft, Link2, X } from 'lucide-react'
+import { ClipboardList, Plus, Trash2, AlertCircle, ArrowLeft, Link2, X, ChevronDown, Sparkles } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from '../../../components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card'
@@ -30,6 +30,123 @@ const MISMATCH_REASONS = [
     'OTHER',
 ]
 
+// ─── Item Name Autocomplete ───────────────────────────────────────────────────
+interface ItemNameInputProps {
+    value: string
+    onChange: (name: string, category?: string) => void
+    quotationItems: Array<{ item_name: string; category?: string }>
+    inputClass: string
+    labelClass: string
+    isCustom: boolean
+    hasQuotation: boolean
+}
+
+function ItemNameInput({ value, onChange, quotationItems, inputClass, labelClass, isCustom, hasQuotation }: ItemNameInputProps) {
+    const [open, setOpen] = useState(false)
+    const [search, setSearch] = useState(value)
+    const ref = useRef<HTMLDivElement>(null)
+
+    useEffect(() => { setSearch(value) }, [value])
+
+    useEffect(() => {
+        const handler = (e: MouseEvent) => {
+            if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
+        }
+        document.addEventListener('mousedown', handler)
+        return () => document.removeEventListener('mousedown', handler)
+    }, [])
+
+    const filtered = quotationItems.filter(qi =>
+        qi.item_name.toLowerCase().includes(search.trim().toLowerCase())
+    )
+
+    const handleSelect = (qi: { item_name: string; category?: string }) => {
+        onChange(qi.item_name, qi.category)
+        setSearch(qi.item_name)
+        setOpen(false)
+    }
+
+    const handleBlur = () => {
+        if (search.trim() !== value) onChange(search.trim())
+    }
+
+    return (
+        <div ref={ref} className="relative">
+            <label className={labelClass}>Item Name</label>
+            <div className="relative">
+                <input
+                    type="text"
+                    value={search}
+                    onChange={e => {
+                        setSearch(e.target.value)
+                        onChange(e.target.value)
+                        if (hasQuotation) setOpen(true)
+                    }}
+                    onFocus={() => { if (hasQuotation) setOpen(true) }}
+                    onBlur={handleBlur}
+                    placeholder={hasQuotation ? 'Select or type item…' : 'e.g. Bed Sheet'}
+                    className={inputClass + (hasQuotation ? ' pr-8' : '')}
+                    required
+                    autoComplete="off"
+                />
+                {hasQuotation && (
+                    <button
+                        type="button"
+                        onMouseDown={e => { e.preventDefault(); setOpen(o => !o) }}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 text-[#98A2B3] hover:text-[#374151] transition cursor-pointer"
+                    >
+                        <ChevronDown className="h-3.5 w-3.5" />
+                    </button>
+                )}
+            </div>
+
+            {hasQuotation && value.trim() && isCustom && (
+                <div className="mt-1 inline-flex items-center gap-1 rounded-full bg-[#EFF6FF] border border-[#BFDBFE] px-2 py-0.5 text-[10px] font-semibold text-[#2563EB]">
+                    <Sparkles className="h-2.5 w-2.5" /> New · will be added to quotation
+                </div>
+            )}
+
+            <AnimatePresence>
+                {open && hasQuotation && (
+                    <motion.div
+                        initial={{ opacity: 0, y: -4 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -4 }}
+                        transition={{ duration: 0.12 }}
+                        className="absolute z-50 mt-1 w-full rounded-xl border border-[#E4E7EC] bg-white shadow-lg overflow-hidden"
+                    >
+                        {filtered.length === 0 ? (
+                            <div className="px-3 py-3 text-[12px] text-[#98A2B3]">
+                                {search.trim()
+                                    ? <span>No match — <span className="text-[#2563EB] font-medium">"{search}"</span> will be a new item</span>
+                                    : 'No items in this quotation'}
+                            </div>
+                        ) : (
+                            <div className="max-h-44 overflow-y-auto">
+                                {filtered.map(qi => (
+                                    <button
+                                        key={qi.item_name}
+                                        type="button"
+                                        onMouseDown={e => { e.preventDefault(); handleSelect(qi) }}
+                                        className="flex w-full items-center gap-2 px-3 py-2.5 text-left hover:bg-[#F9FAFB] transition cursor-pointer"
+                                    >
+                                        <div>
+                                            <p className="text-[13px] font-medium text-[#101828]">{qi.item_name}</p>
+                                            {qi.category && (
+                                                <p className="text-[11px] text-[#98A2B3]">{qi.category}</p>
+                                            )}
+                                        </div>
+                                    </button>
+                                ))}
+                            </div>
+                        )}
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </div>
+    )
+}
+
 export default function CreateGatePassPage() {
     const navigate = useNavigate()
     const createGatePass = useCreateGatePass()
@@ -58,22 +175,22 @@ export default function CreateGatePassPage() {
 
     const getQuotationId = (q: Quotation) => String(q.id || (q as any)._id || '')
 
-    const applyQuotation = (q: Quotation) => {
+    // Selecting a quotation: only link it + set client name — do NOT populate items
+    const handleSelectQuotation = (q: Quotation) => {
         setSelectedQuotation(q)
         setClientName(q.client_name)
-        // Populate linen items from quotation line_items
-        if (q.line_items?.length) {
-            setItems(q.line_items.map(li => ({
-                ...EMPTY_ITEM,
-                item_name: li.item_name,
-                category: li.category || '',
-            })))
-        }
         setShowQuotationPicker(false)
         setQuotationSearch('')
     }
 
-    const handleSelectQuotation = (q: Quotation) => applyQuotation(q)
+    // Quotation item names for autocomplete & custom detection
+    const quotationItemList = selectedQuotation?.line_items ?? []
+    const quotationItemNames = new Set(quotationItemList.map(li => li.item_name.toLowerCase()))
+
+    const isCustomItem = (item_name: string) =>
+        !!selectedQuotation && item_name.trim() !== '' && !quotationItemNames.has(item_name.trim().toLowerCase())
+
+    const customItemCount = items.filter(it => isCustomItem(it.item_name)).length
 
     const updateItem = (index: number, field: keyof GatePassItem, value: string | number) => {
         setItems(prev => {
@@ -84,6 +201,16 @@ export default function CreateGatePassPage() {
                 const rq = field === 'received_qty' ? Number(value) : item.received_qty
                 item.difference = rq - cq
             }
+            updated[index] = item
+            return updated
+        })
+    }
+
+    const updateItemName = (index: number, name: string, category?: string) => {
+        setItems(prev => {
+            const updated = [...prev]
+            const item = { ...updated[index], item_name: name }
+            if (category !== undefined) item.category = category
             updated[index] = item
             return updated
         })
@@ -106,29 +233,26 @@ export default function CreateGatePassPage() {
         e.preventDefault()
         if (!isValid) return
 
-        if (selectedQuotation) {
-            const existingNames = new Set(selectedQuotation.line_items?.map(li => li.item_name.toLowerCase()) || []);
-            const newItems = items.filter(it => !existingNames.has(it.item_name.toLowerCase()));
-
-            if (newItems.length > 0) {
-                try {
-                    const payload = {
-                        client_name: selectedQuotation.client_name,
-                        quotation_title: selectedQuotation.quotation_title,
-                        line_items: [
-                            ...(selectedQuotation.line_items || []),
-                            ...newItems.map(it => ({
-                                item_name: it.item_name,
-                                category: it.category || '',
-                                unit_price: 0,
-                                notes: 'Auto-added from gate pass'
-                            }))
-                        ]
-                    };
-                    await quotationService.updateQuotation(String(selectedQuotation.id || (selectedQuotation as any)._id), payload);
-                } catch (err) {
-                    console.error('Failed to update quotation with custom items', err);
+        // Auto-add custom items (not in quotation) to the linked quotation
+        if (selectedQuotation && customItemCount > 0) {
+            const newItems = items.filter(it => isCustomItem(it.item_name))
+            try {
+                const payload = {
+                    client_name: selectedQuotation.client_name,
+                    quotation_title: selectedQuotation.quotation_title,
+                    line_items: [
+                        ...(selectedQuotation.line_items || []),
+                        ...newItems.map(it => ({
+                            item_name: it.item_name,
+                            category: it.category || '',
+                            unit_price: 0,
+                            notes: 'Auto-added from gate pass',
+                        })),
+                    ],
                 }
+                await quotationService.updateQuotation(getQuotationId(selectedQuotation), payload)
+            } catch (err) {
+                console.error('Failed to update quotation with custom items', err)
             }
         }
 
@@ -279,24 +403,6 @@ export default function CreateGatePassPage() {
                             </div>
                             <div>
                                 <label className={labelClass}>Client / Hotel Name</label>
-                                <select
-                                    value={selectedQuotation ? getQuotationId(selectedQuotation) : ''}
-                                    onChange={e => {
-                                        const q = quotations.find(x => getQuotationId(x) === e.target.value);
-                                        if (q) {
-                                            applyQuotation(q);
-                                        } else {
-                                            setSelectedQuotation(null);
-                                            setClientName('');
-                                        }
-                                    }}
-                                    className={inputClass + ' mb-2'}
-                                >
-                                    <option value="">-- Select Quotation (Optional) --</option>
-                                    {quotations.map(q => (
-                                        <option key={getQuotationId(q)} value={getQuotationId(q)}>{q.client_name} {q.quotation_title ? `(${q.quotation_title})` : ''}</option>
-                                    ))}
-                                </select>
                                 <input
                                     type="text"
                                     value={clientName}
@@ -345,7 +451,14 @@ export default function CreateGatePassPage() {
                 <Card>
                     <CardHeader className="border-b border-[#F2F4F7] pb-3">
                         <div className="flex items-center justify-between">
-                            <CardTitle>Linen Items</CardTitle>
+                            <div>
+                                <CardTitle>Linen Items</CardTitle>
+                                {selectedQuotation && (
+                                    <p className="text-[11px] text-[#98A2B3] mt-0.5">
+                                        Select from <span className="font-semibold text-[#EA580C]">{selectedQuotation.client_name}</span>'s quotation, or type a new one
+                                    </p>
+                                )}
+                            </div>
                             <Button
                                 type="button"
                                 variant="secondary"
@@ -364,19 +477,23 @@ export default function CreateGatePassPage() {
                                     initial={{ opacity: 0, y: -8 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     exit={{ opacity: 0, y: -8 }}
-                                    className="rounded-xl border border-[#E4E7EC] bg-[#FAFAFA] p-3.5 space-y-3"
+                                    className={`rounded-xl border p-3.5 space-y-3 ${
+                                        isCustomItem(item.item_name)
+                                            ? 'border-[#BFDBFE] bg-[#EFF6FF]/40'
+                                            : 'border-[#E4E7EC] bg-[#FAFAFA]'
+                                    }`}
                                 >
                                     {/* Row 1: Name, Category, ClientQty, ReceivedQty */}
                                     <div className="grid gap-3 grid-cols-2 sm:grid-cols-4">
                                         <div className="col-span-2 sm:col-span-1">
-                                            <label className={labelClass}>Item Name</label>
-                                            <input
-                                                type="text"
+                                            <ItemNameInput
                                                 value={item.item_name}
-                                                onChange={e => updateItem(idx, 'item_name', e.target.value)}
-                                                placeholder="e.g. Bed Sheet"
-                                                className={inputClass}
-                                                required
+                                                onChange={(name, category) => updateItemName(idx, name, category)}
+                                                quotationItems={quotationItemList}
+                                                inputClass={inputClass}
+                                                labelClass={labelClass}
+                                                isCustom={isCustomItem(item.item_name)}
+                                                hasQuotation={!!selectedQuotation}
                                             />
                                         </div>
                                         <div>
@@ -479,21 +596,26 @@ export default function CreateGatePassPage() {
                 <Card>
                     <CardContent className="pt-4">
                         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                            <div className="text-[13px] text-[#6B7280]">
-                                <span className="font-semibold text-[#101828]">{items.length}</span> item type{items.length !== 1 ? 's' : ''} · {' '}
-                                <span className="font-semibold text-[#101828]">
-                                    {items.reduce((s, i) => s + i.received_qty, 0)}
-                                </span> pieces total
+                            <div className="text-[13px] text-[#6B7280] flex flex-wrap items-center gap-x-2 gap-y-1">
+                                <span><span className="font-semibold text-[#101828]">{items.length}</span> item type{items.length !== 1 ? 's' : ''}</span>
+                                <span className="text-[#E4E7EC]">·</span>
+                                <span><span className="font-semibold text-[#101828]">{items.reduce((s, i) => s + i.received_qty, 0)}</span> pieces total</span>
                                 {items.some(i => i.difference !== 0) && (
-                                    <span className="ml-2 inline-flex items-center gap-1 text-[#D97706]">
+                                    <span className="inline-flex items-center gap-1 text-[#D97706]">
                                         <AlertCircle className="h-3.5 w-3.5" />
                                         {items.filter(i => i.difference !== 0).length} mismatch{items.filter(i => i.difference !== 0).length > 1 ? 'es' : ''}
                                     </span>
                                 )}
                                 {selectedQuotation && (
-                                    <span className="ml-2 inline-flex items-center gap-1 text-[#EA580C]">
+                                    <span className="inline-flex items-center gap-1 text-[#EA580C]">
                                         <Link2 className="h-3.5 w-3.5" />
                                         Linked to {selectedQuotation.client_name}
+                                    </span>
+                                )}
+                                {customItemCount > 0 && (
+                                    <span className="inline-flex items-center gap-1 text-[#2563EB]">
+                                        <Sparkles className="h-3.5 w-3.5" />
+                                        {customItemCount} new item{customItemCount > 1 ? 's' : ''} will be added to quotation
                                     </span>
                                 )}
                             </div>
