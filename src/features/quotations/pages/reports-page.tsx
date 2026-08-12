@@ -11,11 +11,11 @@ import { reports } from '../services/reports.service'
 type ReportTab = 'client' | 'item' | 'gatepass' | 'billing' | 'audit'
 
 const TABS: { id: ReportTab; label: string; icon: ElementType }[] = [
-  { id: 'client',  label: 'Client-Wise', icon: Users },
-  { id: 'item',    label: 'Item-Wise',   icon: Package },
-  { id: 'gatepass',label: 'Gate Pass',   icon: ClipboardList },
-  { id: 'billing', label: 'Billing',     icon: DollarSign },
-  { id: 'audit',   label: 'Audit Log',   icon: History },
+  { id: 'client', label: 'Client-Wise', icon: Users },
+  { id: 'item', label: 'Item-Wise', icon: Package },
+  { id: 'gatepass', label: 'Gate Pass', icon: ClipboardList },
+  { id: 'billing', label: 'Billing', icon: DollarSign },
+  { id: 'audit', label: 'Audit Log', icon: History },
 ]
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -41,9 +41,9 @@ function ActionBadge({ action }: { action: string }) {
   const a = (action || '').toUpperCase()
   const cfg =
     a.includes('CREATE') ? 'bg-[#F0FDF4] text-[#16A34A] border-[#BBF7D0]' :
-    a.includes('UPDATE') || a.includes('EDIT') ? 'bg-[#EFF6FF] text-[#2563EB] border-[#BFDBFE]' :
-    a.includes('DELETE') || a.includes('REMOVE') ? 'bg-[#FFF1F1] text-[#DC2626] border-[#FECACA]' :
-    'bg-[#F9FAFB] text-[#374151] border-[#E4E7EC]'
+      a.includes('UPDATE') || a.includes('EDIT') ? 'bg-[#EFF6FF] text-[#2563EB] border-[#BFDBFE]' :
+        a.includes('DELETE') || a.includes('REMOVE') ? 'bg-[#FFF1F1] text-[#DC2626] border-[#FECACA]' :
+          'bg-[#F9FAFB] text-[#374151] border-[#E4E7EC]'
   return (
     <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-semibold ${cfg}`}>
       {action || '—'}
@@ -70,6 +70,15 @@ function ClientSearch() {
   const [input, setInput] = useState('')
   const [search, setSearch] = useState('')
 
+  const { data: clientsData } = useQuery({
+    queryKey: ['reports', 'client-wise'],
+    queryFn: reports.clientWise as () => Promise<any[]>,
+  })
+
+  const clientNames = Array.from(new Set(
+    (clientsData || []).map((c: any) => c.client_name).filter(Boolean)
+  ))
+
   const { data, isLoading, isError } = useQuery({
     queryKey: ['reports', 'client-summary', search],
     queryFn: () => reports.clientSummary(search),
@@ -88,11 +97,17 @@ function ClientSearch() {
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#98A2B3]" />
           <input
             type="text"
+            list="client-list"
             value={input}
             onChange={e => setInput(e.target.value)}
             placeholder="Enter client / hotel name…"
             className="h-10 w-full rounded-lg border border-[#E4E7EC] bg-white pl-9 pr-3 text-[13px] outline-none focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/10 shadow-sm"
           />
+          <datalist id="client-list">
+            {clientNames.map(name => (
+              <option key={name} value={name as string} />
+            ))}
+          </datalist>
         </div>
         <button
           type="submit"
@@ -104,7 +119,7 @@ function ClientSearch() {
 
       {isLoading && (
         <div className="space-y-3">
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">{[1,2,3,4].map(i => <Skeleton key={i} className="h-24" />)}</div>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">{[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-24" />)}</div>
           <Skeleton className="h-48" />
         </div>
       )}
@@ -115,14 +130,14 @@ function ClientSearch() {
         <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="space-y-5">
           {/* Stats */}
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-            <StatCard label="Gate Passes"     value={data.stats.total_gate_passes}        icon={ClipboardList} />
-            <StatCard label="Items Received"  value={data.stats.total_items_received}     icon={Package} />
-            <StatCard label="Items Delivered" value={data.stats.total_items_delivered}    icon={TrendingUp} accent="#16A34A" />
-            <StatCard label="Pending Items"   value={data.stats.pending_items}            icon={Clock}        accent="#D97706" />
-            <StatCard label="Open Mismatches" value={data.stats.open_mismatches}          icon={AlertTriangle} accent="#DC2626" />
-            <StatCard label="Pending Bills"   value={data.stats.pending_bills}            icon={DollarSign}   accent="#C2410C" />
-            <StatCard label="Total Billed"    value={`LKR ${data.stats.total_billed.toLocaleString()}`}         icon={DollarSign} accent="#2563EB" />
-            <StatCard label="Outstanding"     value={`LKR ${data.stats.outstanding_amount.toLocaleString()}`}   icon={AlertTriangle} accent="#DC2626" />
+            <StatCard label="Gate Passes" value={data.stats.total_gate_passes} icon={ClipboardList} />
+            <StatCard label="Items Received" value={data.stats.total_items_received} icon={Package} />
+            <StatCard label="Items Delivered" value={data.stats.total_items_delivered} icon={TrendingUp} accent="#16A34A" />
+            <StatCard label="Pending Items" value={data.stats.pending_items} icon={Clock} accent="#D97706" />
+            <StatCard label="Open Mismatches" value={data.stats.open_mismatches} icon={AlertTriangle} accent="#DC2626" />
+            <StatCard label="Pending Bills" value={data.stats.pending_bills} icon={DollarSign} accent="#C2410C" />
+            <StatCard label="Total Billed" value={`LKR ${data.stats.total_billed.toLocaleString()}`} icon={DollarSign} accent="#2563EB" />
+            <StatCard label="Outstanding" value={`LKR ${data.stats.outstanding_amount.toLocaleString()}`} icon={AlertTriangle} accent="#DC2626" />
           </div>
 
           {/* Pending Balances */}
@@ -138,7 +153,7 @@ function ClientSearch() {
                 <table className="w-full text-[13px]">
                   <thead className="bg-[#F9FAFB] border-b border-[#E4E7EC]">
                     <tr>
-                      {['Item Name','Received','Delivered','Pending'].map(h => (
+                      {['Item Name', 'Received', 'Delivered', 'Pending'].map(h => (
                         <th key={h} className="px-4 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wide" style={{ color: 'var(--text-tertiary)' }}>{h}</th>
                       ))}
                     </tr>
@@ -175,7 +190,7 @@ function ClientSearch() {
                 <table className="w-full text-[13px]">
                   <thead className="bg-[#F9FAFB] border-b border-[#E4E7EC]">
                     <tr>
-                      {['GP Number','Date','Received By','Items','Status'].map(h => (
+                      {['GP Number', 'Date', 'Received By', 'Items', 'Status'].map(h => (
                         <th key={h} className="px-4 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wide" style={{ color: 'var(--text-tertiary)' }}>{h}</th>
                       ))}
                     </tr>
@@ -209,7 +224,7 @@ function ClientSearch() {
                 <table className="w-full text-[13px]">
                   <thead className="bg-[#F9FAFB] border-b border-[#E4E7EC]">
                     <tr>
-                      {['Bill No.','Date','Amount','Paid','Status'].map(h => (
+                      {['Bill No.', 'Date', 'Amount', 'Paid', 'Status'].map(h => (
                         <th key={h} className="px-4 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wide" style={{ color: 'var(--text-tertiary)' }}>{h}</th>
                       ))}
                     </tr>
@@ -250,7 +265,7 @@ function ItemWiseReport() {
     queryFn: reports.itemWise as () => Promise<any[]>,
   })
 
-  if (isLoading) return <div className="space-y-2">{[1,2,3,4,5].map(i => <Skeleton key={i} className="h-12" />)}</div>
+  if (isLoading) return <div className="space-y-2">{[1, 2, 3, 4, 5].map(i => <Skeleton key={i} className="h-12" />)}</div>
   if (isError) return <ErrorState description="Failed to load item-wise report" />
   if (!data.length) return <div className="py-12 text-center text-[13px]" style={{ color: 'var(--text-tertiary)' }}>No data available</div>
 
@@ -259,7 +274,7 @@ function ItemWiseReport() {
       <table className="w-full text-[13px]">
         <thead className="bg-[#F9FAFB] border-b border-[#E4E7EC]">
           <tr>
-            {['Item Name','Total Received','Total Delivered','Pending','Mismatches','Clients'].map(h => (
+            {['Item Name', 'Total Received', 'Total Delivered', 'Pending', 'Mismatches', 'Clients'].map(h => (
               <th key={h} className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wide" style={{ color: 'var(--text-tertiary)' }}>{h}</th>
             ))}
           </tr>
@@ -285,8 +300,8 @@ function ItemWiseReport() {
               <td className="px-4 py-3">
                 {row.mismatch_count > 0
                   ? <span className="inline-flex items-center gap-1 rounded-full bg-[#FFF1F1] border border-[#FECACA] px-2 py-0.5 text-[10px] font-semibold text-[#DC2626]">
-                      <AlertTriangle className="h-2.5 w-2.5" />{row.mismatch_count}
-                    </span>
+                    <AlertTriangle className="h-2.5 w-2.5" />{row.mismatch_count}
+                  </span>
                   : <span className="text-[#16A34A]">—</span>
                 }
               </td>
@@ -307,7 +322,7 @@ function GatePassReport() {
     queryFn: reports.gatepassWise as () => Promise<any[]>,
   })
 
-  if (isLoading) return <div className="space-y-2">{[1,2,3,4,5].map(i => <Skeleton key={i} className="h-12" />)}</div>
+  if (isLoading) return <div className="space-y-2">{[1, 2, 3, 4, 5].map(i => <Skeleton key={i} className="h-12" />)}</div>
   if (isError) return <ErrorState description="Failed to load gate pass report" />
   if (!data.length) return <div className="py-12 text-center text-[13px]" style={{ color: 'var(--text-tertiary)' }}>No data available</div>
 
@@ -316,7 +331,7 @@ function GatePassReport() {
       <table className="w-full text-[13px]">
         <thead className="bg-[#F9FAFB] border-b border-[#E4E7EC]">
           <tr>
-            {['GP No.','Client','Date','Received By','Received','Delivered','Mismatches','Status'].map(h => (
+            {['GP No.', 'Client', 'Date', 'Received By', 'Received', 'Delivered', 'Mismatches', 'Status'].map(h => (
               <th key={h} className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wide whitespace-nowrap" style={{ color: 'var(--text-tertiary)' }}>{h}</th>
             ))}
           </tr>
@@ -339,8 +354,8 @@ function GatePassReport() {
               <td className="px-4 py-3">
                 {row.mismatch_count > 0
                   ? <span className="inline-flex items-center gap-1 rounded-full bg-[#FFF1F1] border border-[#FECACA] px-2 py-0.5 text-[10px] font-semibold text-[#DC2626]">
-                      <AlertTriangle className="h-2.5 w-2.5" />{row.mismatch_count}
-                    </span>
+                    <AlertTriangle className="h-2.5 w-2.5" />{row.mismatch_count}
+                  </span>
                   : <span style={{ color: 'var(--text-tertiary)' }}>—</span>
                 }
               </td>
@@ -366,7 +381,7 @@ function BillingReport() {
     queryFn: reports.clientWise as () => Promise<any[]>,
   })
 
-  if (isLoading) return <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">{[1,2,3,4].map(i => <Skeleton key={i} className="h-24" />)}</div>
+  if (isLoading) return <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">{[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-24" />)}</div>
   if (isError) return <ErrorState description="Failed to load billing report" />
   if (!data) return null
 
@@ -374,10 +389,10 @@ function BillingReport() {
     <div className="space-y-5">
       {/* Summary cards */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <StatCard label="Total Revenue"  value={`LKR ${(data.total_sales || 0).toLocaleString()}`}          accent="#DC2626" icon={TrendingUp} />
-        <StatCard label="Paid"           value={`LKR ${(data.paid_bills_amount || 0).toLocaleString()}`}     accent="#16A34A" icon={CheckCircle} />
-        <StatCard label="Pending"        value={`LKR ${(data.pending_bills_amount || 0).toLocaleString()}`}  accent="#D97706" icon={Clock} />
-        <StatCard label="Outstanding"    value={`LKR ${(data.outstanding_amount || 0).toLocaleString()}`}    accent="#2563EB" icon={AlertTriangle} />
+        <StatCard label="Total Revenue" value={`LKR ${(data.total_sales || 0).toLocaleString()}`} accent="#DC2626" icon={TrendingUp} />
+        <StatCard label="Paid" value={`LKR ${(data.paid_bills_amount || 0).toLocaleString()}`} accent="#16A34A" icon={CheckCircle} />
+        <StatCard label="Pending" value={`LKR ${(data.pending_bills_amount || 0).toLocaleString()}`} accent="#D97706" icon={Clock} />
+        <StatCard label="Outstanding" value={`LKR ${(data.outstanding_amount || 0).toLocaleString()}`} accent="#2563EB" icon={AlertTriangle} />
       </div>
 
       {/* Per-client breakdown */}
@@ -394,7 +409,7 @@ function BillingReport() {
             <table className="w-full text-[13px]">
               <thead className="bg-[#F9FAFB] border-b border-[#E4E7EC]">
                 <tr>
-                  {['Client','Gate Passes','Total Billed','Paid','Outstanding','Status'].map(h => (
+                  {['Client', 'Gate Passes', 'Total Billed', 'Paid', 'Outstanding', 'Status'].map(h => (
                     <th key={h} className="px-4 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wide whitespace-nowrap" style={{ color: 'var(--text-tertiary)' }}>{h}</th>
                   ))}
                 </tr>
@@ -443,7 +458,7 @@ function AuditLog() {
     queryFn: () => reports.auditLogs(100) as Promise<any[]>,
   })
 
-  if (isLoading) return <div className="space-y-2">{[1,2,3,4,5].map(i => <Skeleton key={i} className="h-12" />)}</div>
+  if (isLoading) return <div className="space-y-2">{[1, 2, 3, 4, 5].map(i => <Skeleton key={i} className="h-12" />)}</div>
   if (isError) return <ErrorState description="Failed to load audit log" />
   if (!data.length) return <div className="py-12 text-center text-[13px]" style={{ color: 'var(--text-tertiary)' }}>No audit entries found</div>
 
@@ -452,7 +467,7 @@ function AuditLog() {
       <table className="w-full text-[13px]">
         <thead className="bg-[#F9FAFB] border-b border-[#E4E7EC]">
           <tr>
-            {['Time','User','Action','Entity','Entity ID','Details'].map(h => (
+            {['Time', 'User', 'Action', 'Entity', 'Entity ID', 'Details'].map(h => (
               <th key={h} className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wide whitespace-nowrap" style={{ color: 'var(--text-tertiary)' }}>{h}</th>
             ))}
           </tr>
@@ -531,11 +546,11 @@ export default function ReportsPage() {
         animate={{ opacity: 1, y: 0 }}
         className="space-y-4"
       >
-        {activeTab === 'client'   && <ClientSearch />}
-        {activeTab === 'item'     && <ItemWiseReport />}
+        {activeTab === 'client' && <ClientSearch />}
+        {activeTab === 'item' && <ItemWiseReport />}
         {activeTab === 'gatepass' && <GatePassReport />}
-        {activeTab === 'billing'  && <BillingReport />}
-        {activeTab === 'audit'    && <AuditLog />}
+        {activeTab === 'billing' && <BillingReport />}
+        {activeTab === 'audit' && <AuditLog />}
       </motion.div>
     </div>
   )
