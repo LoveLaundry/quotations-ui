@@ -10,6 +10,7 @@ import QuotationDetailPage from '../features/quotations/pages/quotation-detail-p
 import QuotationFormPage from '../features/quotations/pages/quotation-form-page'
 import CategoriesPage from '../features/quotations/pages/categories-page'
 import SettingsPage from '../features/quotations/pages/settings-page'
+import ProfilePage from '../features/quotations/pages/profile-page'
 import NotFoundPage from '../features/quotations/pages/not-found-page'
 import BillsListPage from '../features/quotations/pages/bills-list-page'
 import CreateBillPage from '../features/quotations/pages/create-bill-page'
@@ -25,12 +26,18 @@ import DeliveryDetailPage from '../features/quotations/pages/delivery-detail-pag
 import ReportsPage from '../features/quotations/pages/reports-page'
 import ErrorPage from '../features/quotations/pages/error-page'
 import UsersPage from '../features/quotations/pages/users-page'
+import GuestQuotationsPage from '../features/quotations/pages/guest-quotations-page'
 
 export const router = createBrowserRouter([
   // ── Public routes ─────────────────────────────────────────────────────────────
   {
     path: '/login',
     element: <LoginPage />,
+    errorElement: <ErrorPage />,
+  },
+  {
+    path: '/guest/shop',
+    element: <GuestQuotationsPage />,
     errorElement: <ErrorPage />,
   },
 
@@ -71,6 +78,7 @@ export const router = createBrowserRouter([
 
           // System
           { path: 'categories', element: <CategoriesPage /> },
+          { path: 'profile', element: <ProfilePage /> },
           { path: 'settings', element: <SettingsPage /> },
 
           // Admin-only routes

@@ -6,6 +6,9 @@ export interface User {
     status: string
     email?: string
     mobile_number?: string
+    bio_data?: string
+    user_dp?: string
+    employee_id?: string
 }
 
 export interface AuthState {

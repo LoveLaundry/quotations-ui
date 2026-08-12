@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { RiBellLine, RiMenuLine, RiLogoutBoxLine, RiUserLine } from 'react-icons/ri'
+import { RiBellLine, RiMenuLine, RiLogoutBoxLine, RiUserLine, RiUserSettingsLine } from 'react-icons/ri'
 import { motion, AnimatePresence } from 'framer-motion'
 import { cn } from '../../lib/utils'
 import { useAuth } from '../../context/AuthContext'
@@ -77,8 +77,14 @@ export function TopBar({ title, sidebarCollapsed, onMobileMenuToggle }: TopBarPr
             onClick={() => setShowMenu(v => !v)}
             className="flex items-center gap-2.5 rounded-xl border border-[#E5E7EB] bg-white px-3 py-2 cursor-pointer hover:bg-[#F9FAFB] hover:border-[#D1D5DB] transition-all duration-200 shadow-sm"
           >
-            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-[#16A34A] to-[#15803D] text-white shadow-sm text-[11px] font-bold">
-              {user ? initials : <RiUserLine size={14} />}
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg overflow-hidden bg-gradient-to-br from-[#16A34A] to-[#15803D] text-white shadow-sm text-[11px] font-bold">
+              {user?.user_dp ? (
+                <img src={user.user_dp} alt={user.user_name} className="h-full w-full object-cover" />
+              ) : user ? (
+                initials
+              ) : (
+                <RiUserLine size={14} />
+              )}
             </div>
             <div className="hidden sm:block leading-none text-left">
               <p className="text-[13px] font-semibold text-[#111827]">
@@ -116,6 +122,17 @@ export function TopBar({ title, sidebarCollapsed, onMobileMenuToggle }: TopBarPr
                   </div>
 
                   <div className="p-1.5">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowMenu(false)
+                        navigate('/profile')
+                      }}
+                      className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2.5 text-[13px] font-medium text-[#344054] hover:bg-[#F9FAFB] transition-colors cursor-pointer"
+                    >
+                      <RiUserSettingsLine size={16} />
+                      My Profile
+                    </button>
                     <button
                       type="button"
                       onClick={handleLogout}

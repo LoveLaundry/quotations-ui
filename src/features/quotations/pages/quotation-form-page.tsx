@@ -71,6 +71,7 @@ const lineItemSchema = z.object({
 const formSchema = z.object({
   client_name: z.string().trim().min(1, 'Client / hotel name is required'),
   quotation_title: z.string(),
+  tag: z.enum(['shop', 'hotel']),
   line_items: z.array(lineItemSchema).min(1, 'Add at least one item'),
 })
 
@@ -85,6 +86,7 @@ const newItem = () => ({
 const defaultValues: QuotationFormValues = {
   client_name: '',
   quotation_title: '',
+  tag: 'shop' as 'shop' | 'hotel',
   line_items: [newItem()],
 }
 
@@ -120,6 +122,7 @@ export default function QuotationFormPage() {
     reset({
       client_name: existing.client_name,
       quotation_title: existing.quotation_title ?? '',
+      tag: (existing.tag ?? 'shop') as 'shop' | 'hotel',
       line_items: (existing.line_items ?? []).map(li => ({
         id: crypto.randomUUID(),
         item_name: li.item_name,
@@ -145,6 +148,7 @@ export default function QuotationFormPage() {
     const payload = {
       client_name: v.client_name.trim(),
       quotation_title: v.quotation_title.trim() || undefined,
+      tag: v.tag,
       line_items: v.line_items.map(li => ({
         item_name: li.item_name.trim(),
         category: li.category.trim() || undefined,
@@ -202,7 +206,7 @@ export default function QuotationFormPage() {
               </div>
             </CardHeader>
             <CardContent className="pt-4">
-              <div className="grid gap-4 sm:grid-cols-2">
+              <div className="grid gap-4 sm:grid-cols-3">
                 <div>
                   <Label>Hotel / Client Name *</Label>
                   <Input
@@ -217,6 +221,17 @@ export default function QuotationFormPage() {
                     {...register('quotation_title')}
                     placeholder="e.g. 2026 Price List, Annual Contract"
                   />
+                </div>
+                <div>
+                  <Label>Quotation Type *</Label>
+                  <select
+                    {...register('tag')}
+                    className="flex h-10 w-full rounded-lg border border-[#D0D5DD] bg-white px-3 py-2 text-[14px] ring-offset-white focus:outline-none focus:ring-2 focus:ring-[#16A34A] focus:ring-offset-0 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    <option value="shop">Shop (Public)</option>
+                    <option value="hotel">Hotel (Private)</option>
+                  </select>
+                  <p className="mt-1 text-[11px] text-[#667085]">Shop quotations are visible to guests</p>
                 </div>
               </div>
             </CardContent>

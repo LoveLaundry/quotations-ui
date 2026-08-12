@@ -14,6 +14,7 @@ export interface Quotation {
   created_at?: string
   updated_at?: string
   status?: 'draft' | 'sent' | 'accepted' | 'archived'
+  tag?: 'shop' | 'hotel'
 }
 
 export interface QuotationPayload {
@@ -26,11 +27,13 @@ export interface QuotationPayload {
     notes?: string
   }>
   status?: 'draft' | 'sent' | 'accepted' | 'archived'
+  tag?: 'shop' | 'hotel'
 }
 
 export interface QuotationFormValues {
   client_name: string
   quotation_title: string
+  tag: 'shop' | 'hotel'
   line_items: Array<{
     id: string
     item_name: string

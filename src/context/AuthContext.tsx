@@ -4,6 +4,7 @@ import type { User } from '../types/auth'
 interface AuthCtx {
     token: string | null
     user: User | null
+    setUser: (user: User) => void
     login: (token: string, user: User) => void
     logout: () => void
     isAuthenticated: boolean
@@ -31,8 +32,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(null)
     }, [])
 
+    const updateUser = useCallback((usr: User) => {
+        localStorage.setItem('ll_user', JSON.stringify(usr))
+        setUser(usr)
+    }, [])
+
     return (
-        <AuthContext.Provider value={{ token, user, login, logout, isAuthenticated: !!token }}>
+        <AuthContext.Provider value={{ token, user, setUser: updateUser, login, logout, isAuthenticated: !!token }}>
             {children}
         </AuthContext.Provider>
     )
