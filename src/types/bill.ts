@@ -6,6 +6,15 @@ export interface BillItem {
   line_total: number
 }
 
+export interface Verification {
+  status: 'VERIFIED' | 'SYNCING' | 'PENDING' | 'FAILED'
+  verified: boolean
+  last_verified_at?: string | null
+  main_version?: number
+  secondary_version?: number
+  error?: string | null
+}
+
 export interface Bill {
   id: string
   quotation_id: string
@@ -20,6 +29,7 @@ export interface Bill {
   notes?: string
   created_at: string
   updated_at?: string
+  verification?: Verification
 }
 
 export interface BillPayload {

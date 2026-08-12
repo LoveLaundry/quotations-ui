@@ -12,6 +12,7 @@ import {
   RiTruckLine,
   RiBarChartLine,
   RiUserLine,
+  RiDatabase2Line,
 } from 'react-icons/ri'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Logo } from '../brand/logo'
@@ -149,7 +150,10 @@ function SidebarContent({
   // Build admin-only extra System items
   const systemItems = [
     { to: '/settings', label: 'Settings', icon: RiSettings3Line, end: false },
-    ...(isAdmin ? [{ to: '/users', label: 'Users', icon: RiUserLine, end: false }] : []),
+    ...(isAdmin ? [
+      { to: '/users', label: 'Users', icon: RiUserLine, end: false },
+      { to: '/database-sync', label: 'Database Sync', icon: RiDatabase2Line, end: false },
+    ] : []),
   ]
 
   const navGroupsWithRole = navGroups.map(g =>

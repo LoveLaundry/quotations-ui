@@ -8,6 +8,7 @@ import { EmptyState } from '../../../components/ui/empty-state'
 import { ErrorState } from '../../../components/ui/error-state'
 import { Skeleton } from '../../../components/ui/skeleton'
 import { Breadcrumb } from '../../../components/ui/breadcrumb'
+import { VerificationStatus } from '../../../components/ui/verification-status'
 import { formatDate } from '../../../lib/utils'
 import { useBills } from '../hooks/useBills'
 
@@ -149,7 +150,10 @@ export default function BillsListPage() {
                       </p>
                     </div>
                   </div>
-                  <Badge variant="secondary">{bill.total_quantity} items</Badge>
+                  <div className="flex items-center gap-2">
+                    <VerificationStatus status={bill.verification?.status} showLabel={false} />
+                    <Badge variant="secondary">{bill.total_quantity} items</Badge>
+                  </div>
                 </div>
 
                 <div className="mt-3 flex items-center justify-between border-t border-[#F2F4F7] pt-3">

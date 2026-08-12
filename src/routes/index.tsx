@@ -27,6 +27,7 @@ import ReportsPage from '../features/quotations/pages/reports-page'
 import ErrorPage from '../features/quotations/pages/error-page'
 import UsersPage from '../features/quotations/pages/users-page'
 import GuestQuotationsPage from '../features/quotations/pages/guest-quotations-page'
+import DatabaseSyncPage from '../features/quotations/pages/database-sync-page'
 
 export const router = createBrowserRouter([
   // ── Public routes ─────────────────────────────────────────────────────────────
@@ -86,6 +87,7 @@ export const router = createBrowserRouter([
             element: <AdminRoute />,
             children: [
               { path: 'users', element: <UsersPage /> },
+              { path: 'database-sync', element: <DatabaseSyncPage /> },
             ],
           },
 

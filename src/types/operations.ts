@@ -1,3 +1,13 @@
+// ── Verification ─────────────────────────────────────────────────────────────
+export interface Verification {
+    status: 'VERIFIED' | 'SYNCING' | 'PENDING' | 'FAILED'
+    verified: boolean
+    last_verified_at?: string | null
+    main_version?: number
+    secondary_version?: number
+    error?: string | null
+}
+
 // ── Gate Pass ────────────────────────────────────────────────────────────────
 export interface GatePassItem {
     item_name: string
@@ -21,6 +31,7 @@ export interface GatePass {
     adjustments?: object[]
     created_at: string
     updated_at: string
+    verification?: Verification
 }
 
 export interface GatePassCreate {
@@ -50,6 +61,7 @@ export interface Delivery {
     status: string
     notes?: string
     created_at: string
+    verification?: Verification
 }
 
 export interface DeliveryCreate {
@@ -73,6 +85,7 @@ export interface Payment {
     reference?: string
     notes?: string
     created_at: string
+    verification?: Verification
 }
 
 export interface PaymentCreate {
