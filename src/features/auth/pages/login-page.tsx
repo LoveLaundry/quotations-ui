@@ -133,6 +133,17 @@ export default function LoginPage() {
                             )}
                         </button>
                     </form>
+
+                    {/* Guest Pass */}
+                    <div className="mt-6 border-t border-[#E4E7EC] pt-6">
+                        <button
+                            type="button"
+                            onClick={() => navigate('/guest/shop')}
+                            className="flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-[#E4E7EC] bg-white text-[14px] font-semibold text-[#101828] shadow-sm hover:bg-[#F9FAFB] hover:border-[#D0D5DD] transition-all duration-150 cursor-pointer"
+                        >
+                            Guest Pass
+                        </button>
+                    </div>
                 </div>
             </motion.div>
         </div>

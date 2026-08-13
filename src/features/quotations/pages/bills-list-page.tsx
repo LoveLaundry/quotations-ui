@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Plus, Search, Receipt, X, Calendar } from 'lucide-react'
+import { Plus, Search, Receipt, X, Calendar, Download } from 'lucide-react'
+import * as XLSX from 'xlsx'
 import { Card } from '../../../components/ui/card'
 import { Button } from '../../../components/ui/button'
 import { Badge } from '../../../components/ui/badge'
@@ -39,7 +40,28 @@ export default function BillsListPage() {
     setDateFrom('')
     setDateTo('')
   }
-  console.log('bills', bills);
+  
+  const handleExportExcel = () => {
+    if (!bills.length) return
+    
+    // Transform bills data for Excel
+    const dataForExcel = bills.map(bill => ({
+      'Bill ID': bill.id,
+      'Client Name': bill.client_name,
+      'Quotation Title': bill.quotation_title || 'N/A',
+      'Total Quantity': bill.total_quantity,
+      'Total Amount': bill.total_amount,
+      'Paid Amount': bill.paid_amount || 0,
+      'Outstanding Amount': bill.outstanding_amount ?? bill.total_amount,
+      'Status': bill.status || 'PENDING',
+      'Date': formatDate(bill.created_at)
+    }))
+    
+    const ws = XLSX.utils.json_to_sheet(dataForExcel)
+    const wb = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(wb, ws, "Bills")
+    XLSX.writeFile(wb, "bills_export.xlsx")
+  }
 
   return (
     <div className="space-y-5 pb-10">
@@ -51,11 +73,16 @@ export default function BillsListPage() {
             {data ? `${data.total} bill${data.total === 1 ? '' : 's'}` : 'Saved bills'}
           </p>
         </div>
-        <Link to="/bills/new">
-          <Button>
-            <Plus className="h-4 w-4" /> New Bill
+        <div className="flex gap-2">
+          <Button variant="secondary" onClick={handleExportExcel} disabled={!bills.length}>
+            <Download className="h-4 w-4 mr-2" /> Export
           </Button>
-        </Link>
+          <Link to="/bills/new">
+            <Button>
+              <Plus className="h-4 w-4" /> New Bill
+            </Button>
+          </Link>
+        </div>
       </div>
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">

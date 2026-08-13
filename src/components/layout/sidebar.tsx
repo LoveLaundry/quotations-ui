@@ -18,6 +18,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Logo } from '../brand/logo'
 import { cn } from '../../lib/utils'
 import { useAuth } from '../../context/AuthContext'
+import { usePermissions } from '../../hooks/usePermissions'
 
 const navGroups = [
   {
@@ -29,22 +30,22 @@ const navGroups = [
   {
     label: 'Operations',
     items: [
-      { to: '/gate-passes', label: 'Gate Passes', icon: RiClipboardLine, end: false },
-      { to: '/deliveries', label: 'Deliveries', icon: RiTruckLine, end: false },
-      { to: '/bills', label: 'Bills', icon: RiBillLine, end: false },
+      { to: '/gate-passes', label: 'Gate Passes', icon: RiClipboardLine, end: false, permission: 'view_gate_passes' },
+      { to: '/deliveries', label: 'Deliveries', icon: RiTruckLine, end: false, permission: 'view_deliveries' },
+      { to: '/bills', label: 'Bills', icon: RiBillLine, end: false, permission: 'view_bills' },
     ],
   },
   {
     label: 'Contracts',
     items: [
-      { to: '/quotations', label: 'Quotations', icon: RiFileListLine, end: false },
-      { to: '/categories', label: 'By Client', icon: RiFolderOpenLine, end: false },
+      { to: '/quotations', label: 'Quotations', icon: RiFileListLine, end: false, permission: 'view_quotations' },
+      { to: '/categories', label: 'By Client', icon: RiFolderOpenLine, end: false, permission: 'view_clients' },
     ],
   },
   {
     label: 'Analytics',
     items: [
-      { to: '/reports', label: 'Reports', icon: RiBarChartLine, end: false },
+      { to: '/reports', label: 'Reports', icon: RiBarChartLine, end: false, permission: 'view_reports' },
     ],
   },
   {
@@ -145,6 +146,7 @@ function SidebarContent({
   isMobile,
 }: SidebarContentProps) {
   const { user } = useAuth()
+  const { hasPermission } = usePermissions()
   const isAdmin = user?.role_id?.toUpperCase() === 'ADMIN'
 
   // Build admin-only extra System items
@@ -158,7 +160,10 @@ function SidebarContent({
 
   const navGroupsWithRole = navGroups.map(g =>
     g.label === 'System' ? { ...g, items: systemItems } : g
-  )
+  ).map(g => ({
+    ...g,
+    items: g.items.filter((item: any) => !item.permission || hasPermission(item.permission))
+  })).filter(g => g.items.length > 0)
 
   return (
     <div className="flex h-full flex-col bg-white">

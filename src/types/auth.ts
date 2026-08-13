@@ -9,6 +9,7 @@ export interface User {
     bio_data?: string
     user_dp?: string
     employee_id?: string
+    permissions?: string | null
 }
 
 export interface AuthState {

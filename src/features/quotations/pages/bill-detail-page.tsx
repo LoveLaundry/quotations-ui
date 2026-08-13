@@ -11,6 +11,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { formatDate } from '../../../lib/utils'
 import { useBill, useDeleteBill } from '../hooks/useBills'
 import { usePayments, useCreatePayment } from '../hooks/usePayments'
+import { useReactToPrint } from 'react-to-print'
+import { BillPrintTemplate } from '../components/bill-print-template'
+import { useRef } from 'react'
 
 function StatusBadge({ status }: { status?: string }) {
   if (!status) return null
@@ -163,6 +166,12 @@ export default function BillDetailPage() {
 
   const deleteBill = useDeleteBill()
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false)
+  
+  const printRef = useRef<HTMLDivElement>(null)
+  const handlePrint = useReactToPrint({
+    contentRef: printRef,
+    documentTitle: bill ? `Bill-${bill.client_name}-${bill.id}` : 'Bill',
+  })
 
   const handleDelete = () => {
     if (!bill) return
@@ -194,7 +203,7 @@ export default function BillDetailPage() {
 
         {bill && (
           <div className="flex items-center gap-2">
-            <Button variant="secondary" size="sm" onClick={() => window.print()}>
+            <Button variant="secondary" size="sm" onClick={() => handlePrint()}>
               <Printer className="h-3.5 w-3.5" /> Print
             </Button>
             <Button
@@ -360,6 +369,21 @@ export default function BillDetailPage() {
           billId={bill.id}
           suggestedAmount={outstanding}
         />
+      )}
+      
+      {/* Hidden Print Template */}
+      {bill && (
+        <div style={{ display: 'none' }}>
+          <BillPrintTemplate
+            ref={printRef}
+            bill={bill}
+            contactNo=""
+            address=""
+            receivedDate={formatDate(bill.created_at)}
+            deliveryDate=""
+            gatePass=""
+          />
+        </div>
       )}
     </div>
   )
