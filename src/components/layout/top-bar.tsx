@@ -65,9 +65,9 @@ export function TopBar({ title, sidebarCollapsed, onMobileMenuToggle }: TopBarPr
           type="button"
           className="relative flex h-9 w-9 items-center justify-center rounded-xl border border-[#E5E7EB] bg-white text-[#6B7280] hover:bg-[#F9FAFB] hover:text-[#111827] hover:border-[#D1D5DB] transition-all duration-200 cursor-pointer shadow-sm"
           aria-label="Notifications"
+          title="No new notifications"
         >
           <RiBellLine size={18} />
-          <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-red-500 ring-2 ring-white animate-pulse" />
         </button>
 
         {/* User menu */}
@@ -75,9 +75,9 @@ export function TopBar({ title, sidebarCollapsed, onMobileMenuToggle }: TopBarPr
           <button
             type="button"
             onClick={() => setShowMenu(v => !v)}
-            className="flex items-center gap-2.5 rounded-xl border border-[#E5E7EB] bg-white px-3 py-2 cursor-pointer hover:bg-[#F9FAFB] hover:border-[#D1D5DB] transition-all duration-200 shadow-sm"
+            className="flex items-center gap-2.5 rounded-xl border border-[#E5E7EB] bg-white px-3 py-2 cursor-pointer hover:bg-[#F9FAFB] hover:border-[#D1D5DB] transition-all duration-200 shadow-sm max-w-[220px]"
           >
-            <div className="flex h-7 w-7 items-center justify-center rounded-lg overflow-hidden bg-gradient-to-br from-[#16A34A] to-[#15803D] text-white shadow-sm text-[11px] font-bold">
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg overflow-hidden bg-gradient-to-br from-[#16A34A] to-[#15803D] text-white shadow-sm text-[11px] font-bold shrink-0">
               {user?.user_dp ? (
                 <img src={user.user_dp} alt={user.user_name} className="h-full w-full object-cover" />
               ) : user ? (
@@ -86,11 +86,11 @@ export function TopBar({ title, sidebarCollapsed, onMobileMenuToggle }: TopBarPr
                 <RiUserLine size={14} />
               )}
             </div>
-            <div className="hidden sm:block leading-none text-left">
-              <p className="text-[13px] font-semibold text-[#111827]">
+            <div className="hidden sm:block leading-none text-left min-w-0">
+              <p className="text-[13px] font-semibold text-[#111827] truncate">
                 {user?.user_name ?? 'User'}
               </p>
-              <p className="text-[11px] text-[#6B7280] mt-0.5 capitalize">
+              <p className="text-[11px] text-[#6B7280] mt-0.5 capitalize truncate">
                 {user?.role_id?.toLowerCase() ?? 'staff'}
               </p>
             </div>
@@ -109,14 +109,14 @@ export function TopBar({ title, sidebarCollapsed, onMobileMenuToggle }: TopBarPr
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.95, y: -8 }}
                   transition={{ duration: 0.15 }}
-                  className="absolute right-0 top-full mt-2 z-50 w-52 rounded-xl border border-[#E4E7EC] bg-white shadow-[0_16px_40px_-4px_rgba(16,24,40,0.15)] py-1.5"
+                  className="absolute right-0 top-full mt-2 z-50 w-64 rounded-xl border border-[#E4E7EC] bg-white shadow-[0_16px_40px_-4px_rgba(16,24,40,0.15)] py-1.5"
                 >
                   {/* User info header */}
                   <div className="px-4 py-3 border-b border-[#F2F4F7]">
-                    <p className="text-[13px] font-semibold text-[#101828]">
+                    <p className="text-[13px] font-semibold text-[#101828] truncate">
                       {user?.user_name ?? 'User'}
                     </p>
-                    <p className="text-[12px] text-[#6B7280] mt-0.5">
+                    <p className="text-[12px] text-[#6B7280] mt-0.5 truncate" title={user?.email ?? user?.auth_id ?? ''}>
                       {user?.email ?? user?.auth_id ?? ''}
                     </p>
                   </div>

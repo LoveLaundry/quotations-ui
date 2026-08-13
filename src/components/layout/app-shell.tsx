@@ -11,13 +11,27 @@ const pageTitles: Record<string, string> = {
   '/quotations/new': 'New Quotation',
   '/categories': 'Categories',
   '/settings': 'Settings',
+  '/profile': 'My Profile',
+  '/bills': 'Bills',
+  '/bills/new': 'Create Bill',
+  '/gate-passes': 'Gate Passes',
+  '/gate-passes/new': 'New Gate Pass',
+  '/deliveries': 'Deliveries',
+  '/deliveries/new': 'New Delivery',
+  '/reports': 'Reports',
+  '/users': 'Users',
+  '/database-sync': 'Database Sync',
 }
 
-function getPageTitle(p: string): string {
-  if (p.match(/^\/quotations\/[^/]+\/edit$/)) return 'Edit Quotation'
-  if (p.match(/^\/quotations\/[^/]+$/)) return 'Quotation Details'
-  return pageTitles[p] ?? 'Guest Accounts'
+function getPageTitle(pathname: string): string {
+  if (pathname.match(/^\/quotations\/[^/]+\/edit$/)) return 'Edit Quotation'
+  if (pathname.match(/^\/quotations\/[^/]+$/)) return 'Quotation Details'
+  if (pathname.match(/^\/bills\/[^/]+$/)) return 'Bill Details'
+  if (pathname.match(/^\/gate-passes\/[^/]+$/)) return 'Gate Pass Details'
+  if (pathname.match(/^\/deliveries\/[^/]+$/)) return 'Delivery Details'
+  return pageTitles[pathname] ?? 'Love Laundry'
 }
+
 
 export function AppShell() {
   const [collapsed, setCollapsed] = useState(false)
