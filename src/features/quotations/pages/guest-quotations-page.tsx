@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
-import { RiStarLine, RiCalendarLine, RiFileLine, RiEyeLine, RiStore2Line } from 'react-icons/ri'
-import { motion } from 'framer-motion'
+import { RiCalendarLine, RiFileLine, RiEyeLine, RiStore2Line, RiCloseLine } from 'react-icons/ri'
+import { motion, AnimatePresence } from 'framer-motion'
 import api from '../../../api/api'
 import type { Quotation } from '../../../types/quotation'
 
@@ -39,24 +39,53 @@ export default function GuestQuotationsPage() {
     return items.reduce((sum, item) => sum + (item.unit_price || 0), 0)
   }
 
+  const STATUS_STYLE: Record<string, string> = {
+    draft: 'bg-[#F9FAFB] text-[#6B7280] border-[#E4E7EC]',
+    sent: 'bg-[#EFF6FF] text-[#2563EB] border-[#BFDBFE]',
+    accepted: 'bg-[#FFF1F1] text-[#DC2626] border-[#FECACA]',
+    archived: 'bg-[#FAFAFA] text-[#9CA3AF] border-[#E4E7EC]',
+  }
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#F0FDF4] via-white to-[#FFF7ED]">
+    <div className="min-h-screen" style={{ background: 'var(--bg)' }}>
+
       {/* Header */}
-      <header className="bg-white/80 backdrop-blur-md border-b border-[#E5E7EB] shadow-sm sticky top-0 z-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+      <header
+        className="sticky top-0 z-20 border-b"
+        style={{
+          background: 'rgba(255,255,255,0.85)',
+          backdropFilter: 'blur(12px)',
+          borderColor: 'var(--border)',
+          boxShadow: 'var(--shadow-sm)',
+        }}
+      >
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-[#16A34A] to-[#15803D] shadow-lg">
-                <RiStore2Line className="h-6 w-6 text-white" />
+              <div
+                className="flex h-10 w-10 items-center justify-center rounded-xl shadow-md"
+                style={{ background: 'linear-gradient(135deg, #DC2626, #B91C1C)' }}
+              >
+                <RiStore2Line className="h-5 w-5 text-white" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-[#101828]">Love Laundry</h1>
-                <p className="text-[13px] text-[#6B7280]">Shop Quotations</p>
+                <h1
+                  className="text-[17px] font-bold leading-tight"
+                  style={{ color: 'var(--text-primary)', fontFamily: 'Spectral, serif' }}
+                >
+                  Love Laundry
+                </h1>
+                <p className="text-[11px]" style={{ color: 'var(--text-muted)' }}>
+                  Shop Quotations · Medagama, Panirendawa
+                </p>
               </div>
             </div>
-            <div className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-lg bg-[#F0FDF4] border border-[#BBF7D0]">
-              <RiStarLine className="h-4 w-4 text-[#16A34A]" />
-              <span className="text-[13px] font-medium text-[#15803D]">Public Catalog</span>
+            <div
+              className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg border text-[12px] font-semibold"
+              style={{ background: '#FFF1F1', borderColor: '#FECACA', color: '#DC2626' }}
+            >
+              <div className="h-1.5 w-1.5 rounded-full bg-[#DC2626] animate-pulse" />
+              Public Catalog
             </div>
           </div>
         </div>
@@ -64,19 +93,31 @@ export default function GuestQuotationsPage() {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-8">
-          <h2 className="text-3xl font-bold text-[#101828] mb-2">Available Services</h2>
-          <p className="text-[15px] text-[#6B7280]">
+
+        {/* Page heading */}
+        <div className="mb-7">
+          <div className="inline-flex items-center gap-2 mb-2">
+            <div className="h-2 w-2 rounded-full bg-red-500 animate-pulse" />
+            <span
+              className="text-[11px] font-semibold uppercase tracking-widest"
+              style={{ color: 'var(--text-muted)' }}
+            >
+              Love Laundry · Registration No: 40-3064
+            </span>
+          </div>
+          <h2 className="text-dashboard-title mb-1">Available Services</h2>
+          <p className="text-page-subtitle">
             Browse our shop services and pricing. Contact us for more information.
           </p>
         </div>
 
+        {/* Cards grid */}
         {loading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {[1, 2, 3, 4, 5, 6].map((i) => (
-              <div key={i} className="bg-white rounded-2xl border border-[#E4E7EC] p-6 animate-pulse">
-                <div className="h-6 bg-[#F3F4F6] rounded w-3/4 mb-4" />
-                <div className="h-4 bg-[#F3F4F6] rounded w-1/2 mb-6" />
+              <div key={i} className="card-surface p-5 animate-pulse">
+                <div className="h-5 bg-[#F3F4F6] rounded w-3/4 mb-3" />
+                <div className="h-3.5 bg-[#F3F4F6] rounded w-1/2 mb-5" />
                 <div className="space-y-2">
                   <div className="h-3 bg-[#F3F4F6] rounded" />
                   <div className="h-3 bg-[#F3F4F6] rounded w-5/6" />
@@ -85,71 +126,98 @@ export default function GuestQuotationsPage() {
             ))}
           </div>
         ) : quotations.length === 0 ? (
-          <div className="text-center py-20">
-            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#F3F4F6] border-2 border-[#E5E7EB] mx-auto mb-4">
-              <RiFileLine className="h-8 w-8 text-[#9CA3AF]" />
+          <div className="text-center py-24">
+            <div
+              className="flex h-14 w-14 items-center justify-center rounded-xl border mx-auto mb-4"
+              style={{ background: '#FFF1F1', borderColor: '#FECACA' }}
+            >
+              <RiFileLine className="h-7 w-7 text-[#DC2626]" />
             </div>
-            <h3 className="text-lg font-semibold text-[#374151] mb-1">No Services Available</h3>
-            <p className="text-[14px] text-[#6B7280]">Check back later for updates</p>
+            <h3 className="text-[15px] font-semibold mb-1" style={{ color: 'var(--text-primary)' }}>
+              No Services Available
+            </h3>
+            <p className="text-[13px]" style={{ color: 'var(--text-muted)' }}>
+              Check back later for updates.
+            </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {quotations.map((quotation, index) => (
               <motion.div
                 key={quotation.id}
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3, delay: index * 0.05 }}
-                className="group bg-white rounded-2xl border border-[#E4E7EC] p-6 hover:shadow-xl hover:border-[#16A34A] transition-all duration-300 cursor-pointer"
+                transition={{ duration: 0.25, delay: index * 0.05 }}
+                className="luxury-card p-5 cursor-pointer group"
                 onClick={() => setSelectedQuotation(quotation)}
               >
+                {/* Card header */}
                 <div className="flex items-start justify-between mb-4">
-                  <div className="flex-1">
-                    <h3 className="text-lg font-bold text-[#101828] mb-1 group-hover:text-[#16A34A] transition-colors">
+                  <div className="flex-1 min-w-0 pr-3">
+                    <h3
+                      className="text-[14px] font-bold truncate mb-0.5 group-hover:text-[#DC2626] transition-colors"
+                      style={{ color: 'var(--text-primary)' }}
+                    >
                       {quotation.quotation_title || 'Service Package'}
                     </h3>
-                    <p className="text-[13px] text-[#6B7280]">{quotation.client_name}</p>
+                    <p className="text-[12px] truncate" style={{ color: 'var(--text-muted)' }}>
+                      {quotation.client_name}
+                    </p>
                   </div>
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#F0FDF4] border border-[#BBF7D0] group-hover:bg-[#16A34A] transition-colors">
-                    <RiFileLine className="h-5 w-5 text-[#16A34A] group-hover:text-white transition-colors" />
+                  <div
+                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border transition-all group-hover:bg-[#DC2626] group-hover:border-[#DC2626]"
+                    style={{ background: '#FFF1F1', borderColor: '#FECACA' }}
+                  >
+                    <RiFileLine className="h-4 w-4 text-[#DC2626] transition-colors group-hover:text-white" />
                   </div>
                 </div>
 
-                <div className="space-y-3 mb-4">
-                  <div className="flex items-center gap-2 text-[13px] text-[#667085]">
-                    <RiCalendarLine className="h-4 w-4" />
+                {/* Meta */}
+                <div className="space-y-2.5 mb-4">
+                  <div className="flex items-center gap-2 text-[12px]" style={{ color: 'var(--text-muted)' }}>
+                    <RiCalendarLine className="h-3.5 w-3.5 shrink-0" />
                     {quotation.created_at ? formatDate(quotation.created_at) : 'N/A'}
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="px-2.5 py-1 rounded-full bg-[#F0FDF4] text-[#15803D] text-[11px] font-semibold uppercase tracking-wide">
+                    <span
+                      className={`rounded-md border px-1.5 py-0.5 text-[10px] font-semibold capitalize whitespace-nowrap ${
+                        STATUS_STYLE[quotation.status ?? 'draft'] ?? STATUS_STYLE.draft
+                      }`}
+                    >
                       {quotation.status || 'draft'}
                     </span>
-                    <span className="px-2.5 py-1 rounded-full bg-[#FFF7ED] text-[#EA580C] text-[11px] font-semibold uppercase tracking-wide">
+                    <span
+                      className="rounded-md border px-1.5 py-0.5 text-[10px] font-semibold uppercase"
+                      style={{ background: '#FFF7ED', color: '#EA580C', borderColor: '#FED7AA' }}
+                    >
                       Shop
                     </span>
                   </div>
                 </div>
 
-                <div className="pt-4 border-t border-[#F2F4F7]">
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="text-[12px] text-[#667085]">Items</span>
-                    <span className="text-[13px] font-semibold text-[#344054]">
+                {/* Totals */}
+                <div className="pt-3.5 border-t" style={{ borderColor: 'var(--border)' }}>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-[11px]" style={{ color: 'var(--text-muted)' }}>Items</span>
+                    <span className="text-[12px] font-semibold" style={{ color: 'var(--text-tertiary)' }}>
                       {quotation.line_items?.length || 0}
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-[12px] text-[#667085]">Estimated Total</span>
-                    <span className="text-[16px] font-bold text-[#16A34A]">
+                    <span className="text-[11px]" style={{ color: 'var(--text-muted)' }}>Estimated Total</span>
+                    <span className="text-[15px] font-bold text-[#DC2626]">
                       LKR {calculateTotal(quotation.line_items || []).toLocaleString()}
                     </span>
                   </div>
                 </div>
 
+                {/* View button */}
                 <button
                   type="button"
-                  className="w-full mt-4 px-4 py-2.5 rounded-lg border-2 border-[#E4E7EC] text-[#344054] font-medium text-[13px] hover:border-[#16A34A] hover:bg-[#F0FDF4] hover:text-[#16A34A] transition-all duration-200 flex items-center justify-center gap-2"
+                  className="w-full mt-4 flex items-center justify-center gap-2 rounded-lg border px-4 py-2 text-[12px] font-medium transition-all duration-150 hover:bg-[#FFF1F1] hover:border-[#FECACA] hover:text-[#DC2626]"
+                  style={{ borderColor: 'var(--border)', color: 'var(--text-tertiary)' }}
                 >
-                  <RiEyeLine className="h-4 w-4" />
+                  <RiEyeLine className="h-3.5 w-3.5" />
                   View Details
                 </button>
               </motion.div>
@@ -159,92 +227,125 @@ export default function GuestQuotationsPage() {
       </main>
 
       {/* Detail Modal */}
-      {selectedQuotation && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={() => setSelectedQuotation(null)}>
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-            className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden"
-            onClick={(e) => e.stopPropagation()}
+      <AnimatePresence>
+        {selectedQuotation && (
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center p-4"
+            style={{ background: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(4px)' }}
+            onClick={() => setSelectedQuotation(null)}
           >
-            <div className="p-6 border-b border-[#F2F4F7]">
-              <div className="flex items-start justify-between">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.96, y: 8 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.96, y: 8 }}
+              transition={{ duration: 0.2 }}
+              className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden"
+              style={{ border: '1px solid var(--border)' }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Modal header */}
+              <div className="px-6 py-5 border-b flex items-start justify-between" style={{ borderColor: 'var(--border)' }}>
                 <div>
-                  <h2 className="text-2xl font-bold text-[#101828] mb-1">
+                  <h2
+                    className="text-[18px] font-bold mb-0.5"
+                    style={{ color: 'var(--text-primary)', fontFamily: 'Spectral, serif' }}
+                  >
                     {selectedQuotation.quotation_title || 'Service Package'}
                   </h2>
-                  <p className="text-[14px] text-[#6B7280]">{selectedQuotation.client_name}</p>
+                  <p className="text-[13px]" style={{ color: 'var(--text-muted)' }}>
+                    {selectedQuotation.client_name}
+                  </p>
                 </div>
                 <button
                   type="button"
                   onClick={() => setSelectedQuotation(null)}
-                  className="text-[#6B7280] hover:text-[#111827] transition-colors"
+                  className="flex h-8 w-8 items-center justify-center rounded-lg border transition-all hover:bg-[#FFF1F1] hover:border-[#FECACA] hover:text-[#DC2626]"
+                  style={{ borderColor: 'var(--border)', color: 'var(--text-muted)' }}
                 >
-                  <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
+                  <RiCloseLine className="h-5 w-5" />
                 </button>
               </div>
-            </div>
 
-            <div className="p-6 overflow-y-auto max-h-[calc(90vh-200px)]">
-              <div className="mb-6">
-                <h3 className="text-[13px] font-semibold text-[#344054] uppercase tracking-wide mb-3">
+              {/* Modal body */}
+              <div className="px-6 py-5 overflow-y-auto max-h-[calc(90vh-200px)]">
+                <p
+                  className="text-[11px] font-semibold uppercase tracking-widest mb-3"
+                  style={{ color: 'var(--text-muted)' }}
+                >
                   Service Items
-                </h3>
-                <div className="space-y-3">
+                </p>
+                <div className="space-y-2.5">
                   {selectedQuotation.line_items?.map((item: any, index: number) => (
-                    <div key={index} className="flex items-start justify-between p-4 rounded-lg bg-[#F9FAFB] border border-[#E4E7EC]">
-                      <div className="flex-1">
-                        <p className="font-semibold text-[#101828] mb-1">{item.item_name}</p>
+                    <div
+                      key={index}
+                      className="flex items-start justify-between p-4 rounded-lg border"
+                      style={{ background: 'var(--bg)', borderColor: 'var(--border)' }}
+                    >
+                      <div className="flex-1 min-w-0 pr-4">
+                        <p className="text-[13px] font-semibold mb-0.5" style={{ color: 'var(--text-primary)' }}>
+                          {item.item_name}
+                        </p>
                         {item.category && (
-                          <p className="text-[12px] text-[#6B7280] mb-1">{item.category}</p>
+                          <p className="text-[11px]" style={{ color: 'var(--text-muted)' }}>{item.category}</p>
                         )}
                         {item.notes && (
-                          <p className="text-[12px] text-[#9CA3AF] italic">{item.notes}</p>
+                          <p className="text-[11px] italic mt-0.5" style={{ color: '#9CA3AF' }}>{item.notes}</p>
                         )}
                       </div>
-                      <div className="text-right ml-4">
-                        <p className="text-[16px] font-bold text-[#16A34A]">
+                      <div className="text-right shrink-0">
+                        <p className="text-[15px] font-bold text-[#DC2626]">
                           LKR {(item.unit_price || 0).toLocaleString()}
                         </p>
                       </div>
                     </div>
                   ))}
                 </div>
-              </div>
 
-              <div className="pt-4 border-t border-[#F2F4F7]">
-                <div className="flex items-center justify-between text-lg font-bold">
-                  <span className="text-[#344054]">Total Estimate</span>
-                  <span className="text-[#16A34A]">
+                {/* Total row */}
+                <div
+                  className="mt-5 pt-4 border-t flex items-center justify-between"
+                  style={{ borderColor: 'var(--border)' }}
+                >
+                  <span className="text-[14px] font-semibold" style={{ color: 'var(--text-tertiary)' }}>
+                    Total Estimate
+                  </span>
+                  <span className="text-[18px] font-bold text-[#DC2626]">
                     LKR {calculateTotal(selectedQuotation.line_items || []).toLocaleString()}
                   </span>
                 </div>
               </div>
-            </div>
 
-            <div className="p-6 border-t border-[#F2F4F7] bg-[#FAFAFA]">
-              <p className="text-[13px] text-[#667085] text-center">
-                For inquiries or bookings, please contact us at <strong>+94 XX XXX XXXX</strong>
-              </p>
-            </div>
-          </motion.div>
-        </div>
-      )}
+              {/* Modal footer */}
+              <div
+                className="px-6 py-4 border-t text-center"
+                style={{ background: 'var(--bg)', borderColor: 'var(--border)' }}
+              >
+                <p className="text-[12px]" style={{ color: 'var(--text-muted)' }}>
+                  For inquiries or bookings, please contact us at{' '}
+                  <strong style={{ color: 'var(--text-tertiary)' }}>+94 XX XXX XXXX</strong>
+                </p>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
       {/* Footer */}
-      <footer className="mt-20 border-t border-[#E5E7EB] bg-white/50 backdrop-blur-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="text-center">
-            <p className="text-[14px] text-[#6B7280]">
-              © 2026 Love Laundry. All rights reserved.
-            </p>
-            <p className="text-[13px] text-[#9CA3AF] mt-1">
-              Professional laundry services for your business needs
-            </p>
-          </div>
+      <footer
+        className="mt-16 border-t"
+        style={{
+          background: 'rgba(255,255,255,0.6)',
+          backdropFilter: 'blur(8px)',
+          borderColor: 'var(--border)',
+        }}
+      >
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-7 text-center">
+          <p className="text-[13px]" style={{ color: 'var(--text-muted)' }}>
+            © 2026 Love Laundry · Reg. No: 40-3064 · All rights reserved.
+          </p>
+          <p className="text-[12px] mt-1" style={{ color: '#9CA3AF' }}>
+            Professional laundry services for your business needs
+          </p>
         </div>
       </footer>
     </div>
