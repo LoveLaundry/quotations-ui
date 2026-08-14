@@ -51,12 +51,13 @@ export default function DatabaseSyncPage() {
   const qc = useQueryClient()
   const [syncing, setSyncing] = useState(false)
 
-  const { data: status, isLoading, refetch } = useQuery({
+  const { data: status, isLoading, isError, error, refetch } = useQuery({
     queryKey: ['database-status'],
     queryFn: async () => {
       const res = await billsApi.get<DatabaseStatus>('/admin/database/status')
       return res.data
     },
+    retry: 0,
   })
 
   const syncLocal = useMutation({
@@ -114,6 +115,22 @@ export default function DatabaseSyncPage() {
           {Array.from({ length: 3 }).map((_, i) => (
             <Skeleton key={i} className="h-32" />
           ))}
+        </div>
+      ) : isError ? (
+        <div className="rounded-lg border border-[#FCA5A5] bg-[#FEF2F2] p-4 flex items-start gap-3">
+          <RiErrorWarningLine className="h-5 w-5 text-[#DC2626] mt-0.5 shrink-0" />
+          <div>
+            <p className="text-[13px] font-semibold text-[#DC2626]">Failed to load database status</p>
+            <p className="text-[12px] text-[#B91C1C] mt-0.5">
+              {(error as Error)?.message || 'Could not reach the bill service. Check that the service is running and that JWT_SECRET matches between user-service and bill-service on Vercel.'}
+            </p>
+            <button
+              onClick={() => refetch()}
+              className="mt-2 text-[12px] font-medium text-[#DC2626] underline underline-offset-2"
+            >
+              Retry
+            </button>
+          </div>
         </div>
       ) : (
         <div className="grid gap-4 sm:grid-cols-3">
