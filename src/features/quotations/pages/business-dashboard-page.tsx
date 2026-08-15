@@ -88,7 +88,7 @@ export default function BusinessDashboardPage() {
     try {
       const token = localStorage.getItem('token')
       const response = await fetch(
-        `${import.meta.env.VITE_BILL_SERVICE_URL || 'http://localhost:8001'}/dashboard/overview?period=${period}`,
+        `${import.meta.env.VITE_BILLS_API || 'http://localhost:8001'}/dashboard/overview?period=${period}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
