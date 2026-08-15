@@ -77,6 +77,7 @@ interface DashboardData {
 export default function BusinessDashboardPage() {
   const [data, setData] = useState<DashboardData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [period, setPeriod] = useState<'day' | 'week' | 'month' | 'quarter' | 'year'>('month')
 
   useEffect(() => {
@@ -85,22 +86,41 @@ export default function BusinessDashboardPage() {
 
   const fetchDashboardData = async () => {
     setIsLoading(true)
+    setError(null)
     try {
-      const token = localStorage.getItem('token')
+      const token = localStorage.getItem('ll_token')
+      if (!token) {
+        setError('No authentication token found. Please log in again.')
+        setIsLoading(false)
+        return
+      }
+
       const response = await fetch(
         `${import.meta.env.VITE_BILLS_API_URL || 'http://localhost:8001'}/dashboard/overview?period=${period}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
           },
         }
       )
-      if (response.ok) {
-        const result = await response.json()
-        setData(result)
+      
+      if (!response.ok) {
+        if (response.status === 401 || response.status === 403) {
+          setError('Authentication failed. Please log in again.')
+        } else {
+          const errorData = await response.json().catch(() => ({ detail: 'Unknown error' }))
+          setError(errorData.detail || `Error: ${response.status}`)
+        }
+        setIsLoading(false)
+        return
       }
+      
+      const result = await response.json()
+      setData(result)
     } catch (error) {
       console.error('Failed to fetch dashboard:', error)
+      setError('Failed to connect to the server. Please check if the bill service is running.')
     } finally {
       setIsLoading(false)
     }
@@ -123,13 +143,30 @@ export default function BusinessDashboardPage() {
       <div className="space-y-5 pb-8">
         <div>
           <h1 className="text-dashboard-title">Business Dashboard</h1>
-          <p className="text-page-subtitle">Loading comprehensive business metrics...</p>
+          <p className="text-page-subtitle">
+            {error || 'Loading comprehensive business metrics...'}
+          </p>
         </div>
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
-          {[...Array(8)].map((_, i) => (
-            <Skeleton key={i} className="h-32" />
-          ))}
-        </div>
+        {error ? (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
+            <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-3" />
+            <h3 className="text-lg font-semibold text-red-900 mb-2">Unable to Load Dashboard</h3>
+            <p className="text-red-700 mb-4">{error}</p>
+            <button
+              type="button"
+              onClick={() => fetchDashboardData()}
+              className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
+            >
+              Retry
+            </button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+            {[...Array(8)].map((_, i) => (
+              <Skeleton key={i} className="h-32" />
+            ))}
+          </div>
+        )}
       </div>
     )
   }
