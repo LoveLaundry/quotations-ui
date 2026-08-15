@@ -38,6 +38,11 @@ interface Bill {
   created_at: string
 }
 
+interface Bills {
+  items: [Bill],
+  total: number
+}
+
 interface GatePass {
   _id: string
   pass_number: string
@@ -153,7 +158,7 @@ export default function BusinessDashboardPage() {
 
       // Fetch all data in parallel from existing lightweight endpoints
       const [billsRes, gatepassesRes, deliveriesRes] = await Promise.all([
-        billsApi.get<Bill[]>('/bills'),
+        billsApi.get<Bills>('/bills'),
         billsApi.get<GatePass[]>('/gatepasses'),
         billsApi.get<Delivery[]>('/deliveries'),
       ])
@@ -168,7 +173,7 @@ export default function BusinessDashboardPage() {
         return date >= new Date(start) && date <= new Date(end)
       }
 
-      const periodBills = bills.filter((b) => filterByDate(b.created_at))
+      const periodBills = bills.items.filter((b) => filterByDate(b.created_at))
       const periodGatepasses = gatepasses.filter((g) => filterByDate(g.created_at))
       const periodDeliveries = deliveries.filter((d) => filterByDate(d.created_at))
 
@@ -231,7 +236,7 @@ export default function BusinessDashboardPage() {
       const mismatch_rate = total_items_checked > 0 ? (mismatch_count / total_items_checked) * 100 : 0
 
       // Calculate Client Metrics
-      const allClients = new Set(bills.map((b) => b.client_name))
+      const allClients = new Set(bills.items.map((b) => b.client_name))
       const periodClients = new Set(periodBills.map((b) => b.client_name))
       const active_clients = periodClients.size
       const total_clients = allClients.size
@@ -239,7 +244,7 @@ export default function BusinessDashboardPage() {
       // Simplified retention (clients who had bills in previous period and this period)
       const prevPeriodStart = new Date(start)
       prevPeriodStart.setTime(prevPeriodStart.getTime() - (new Date(end).getTime() - new Date(start).getTime()))
-      const prevPeriodBills = bills.filter(
+      const prevPeriodBills = bills.items.filter(
         (b) => new Date(b.created_at) >= prevPeriodStart && new Date(b.created_at) < new Date(start)
       )
       const prevClients = new Set(prevPeriodBills.map((b) => b.client_name))
