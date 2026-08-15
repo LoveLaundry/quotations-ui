@@ -5,6 +5,7 @@ import { AdminRoute } from '../components/layout/admin-route'
 import LoginPage from '../features/auth/pages/login-page'
 
 import DashboardPage from '../features/quotations/pages/dashboard-page'
+import BusinessDashboardPage from '../features/quotations/pages/business-dashboard-page'
 import QuotationsPage from '../features/quotations/pages/quotations-page'
 import QuotationDetailPage from '../features/quotations/pages/quotation-detail-page'
 import QuotationFormPage from '../features/quotations/pages/quotation-form-page'
@@ -52,6 +53,7 @@ export const router = createBrowserRouter([
         element: <AppShell />,
         children: [
           { index: true, element: <DashboardPage /> },
+          { path: 'business-dashboard', element: <BusinessDashboardPage /> },
 
           // Contracts
           { path: 'quotations', element: <QuotationsPage /> },

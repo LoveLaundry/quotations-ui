@@ -25,6 +25,7 @@ const navGroups = [
     label: 'Overview',
     items: [
       { to: '/', label: 'Dashboard', icon: RiDashboardLine, end: true },
+      { to: '/business-dashboard', label: 'Business Intelligence', icon: RiBarChartLine, end: false },
     ],
   },
   {
