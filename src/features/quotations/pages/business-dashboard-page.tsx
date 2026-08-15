@@ -354,7 +354,7 @@ export default function BusinessDashboardPage() {
                   dataKey="date"
                   stroke="#888"
                   fontSize={12}
-                  tickFormatter={(value) => {
+                  tickFormatter={(value: string | number) => {
                     const date = new Date(value)
                     return `${date.getMonth() + 1}/${date.getDate()}`
                   }}
