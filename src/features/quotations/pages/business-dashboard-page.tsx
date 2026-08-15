@@ -25,6 +25,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from 'recharts'
+import billsApi from '../../../api/bills-api'
 
 interface DashboardData {
   period: string
@@ -88,39 +89,15 @@ export default function BusinessDashboardPage() {
     setIsLoading(true)
     setError(null)
     try {
-      const token = localStorage.getItem('ll_token')
-      if (!token) {
-        setError('No authentication token found. Please log in again.')
-        setIsLoading(false)
-        return
-      }
-
-      const response = await fetch(
-        `${import.meta.env.VITE_BILLS_API_URL || 'http://localhost:8001'}/dashboard/overview?period=${period}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        }
-      )
-      
-      if (!response.ok) {
-        if (response.status === 401 || response.status === 403) {
-          setError('Authentication failed. Please log in again.')
-        } else {
-          const errorData = await response.json().catch(() => ({ detail: 'Unknown error' }))
-          setError(errorData.detail || `Error: ${response.status}`)
-        }
-        setIsLoading(false)
-        return
-      }
-      
-      const result = await response.json()
-      setData(result)
+      const response = await billsApi.get<DashboardData>(`/dashboard/overview?period=${period}`)
+      setData(response.data)
     } catch (error) {
       console.error('Failed to fetch dashboard:', error)
-      setError('Failed to connect to the server. Please check if the bill service is running.')
+      if (error instanceof Error) {
+        setError(error.message)
+      } else {
+        setError('Failed to connect to the server. Please check if the bill service is running.')
+      }
     } finally {
       setIsLoading(false)
     }
