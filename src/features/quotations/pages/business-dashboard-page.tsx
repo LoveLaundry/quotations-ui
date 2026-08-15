@@ -89,7 +89,10 @@ export default function BusinessDashboardPage() {
     setIsLoading(true)
     setError(null)
     try {
-      const response = await billsApi.get<DashboardData>(`/dashboard/overview?period=${period}`)
+      // Use longer timeout for dashboard (30s instead of default 10s)
+      const response = await billsApi.get<DashboardData>(`/dashboard/overview?period=${period}`, {
+        timeout: 30000
+      })
       setData(response.data)
     } catch (error) {
       console.error('Failed to fetch dashboard:', error)
