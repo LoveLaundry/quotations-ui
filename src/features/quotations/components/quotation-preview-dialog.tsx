@@ -7,6 +7,7 @@ import { Button } from '../../../components/ui/button'
 import type { Quotation } from '../../../types/quotation'
 import { Input } from '../../../components/ui/input'
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 
 interface Props {
   quotation: Quotation | null
@@ -45,82 +46,86 @@ export function QuotationPreviewDialog({ quotation, open, onOpenChange }: Props)
   const groupEntries = Object.entries(groups)
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg">
-        <DialogHeader>
-          <div className="flex justify-between mb-3 relative">
-            <div className="flex flex-col items-center gap-0 text-[#101828] text-xs font-pacifico text-center">
-              <img src="/icon.png" alt="Logo" className="h-8 w-h-8 md:h-12 md:w-12" />
-              <div>Love Laundry</div>
-            </div>
-            <div className="flex absolute w-full inset-0 items-center justify-center">
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-red-600 text-white border border-[#FECACA] text-[16px] font-bold">
-                {(selectedQuotation.client_name ?? '?').charAt(0).toUpperCase()}
+    <>
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <div className="flex justify-between mb-3 relative">
+              <div className="flex flex-col items-center gap-0 text-[#101828] text-xs font-pacifico text-center">
+                <img src="/icon.png" alt="Logo" className="h-8 w-h-8 md:h-12 md:w-12" />
+                <div>Love Laundry</div>
               </div>
-            </div>
-          </div>
-          <DialogTitle>{selectedQuotation.client_name ?? '(Unnamed)'}</DialogTitle>
-          <DialogDescription>
-            {selectedQuotation.quotation_title || 'Price List'} · {items.length} items
-          </DialogDescription>
-        </DialogHeader>
-
-        <DialogBody>
-          <div className='flex gap-2 items-center'>
-            <Input className='' onChange={(e) => setSearchTerm(e.target.value)} />
-            <Search className='h-full w-6' />
-          </div>
-          <div className="max-h-[380px] overflow-y-auto -mx-1 px-1 space-y-3">
-            {groupEntries.map(([cat, catItems]) => (
-              <div key={cat}>
-                {groupEntries.length > 1 && (
-                  <p className="text-[10px] font-semibold uppercase tracking-widest text-[#98A2B3] mb-1.5 px-1">
-                    {cat}
-                  </p>
-                )}
-                <div className="space-y-1">
-                  {catItems.map((li, idx) => {
-                    const globalNum = items.indexOf(li) + 1
-                    return (
-                      <div
-                        key={li.id ?? idx}
-                        className="flex items-center justify-between rounded-lg border border-[#E4E7EC] bg-red-100 px-3 py-2 hover:bg-red-600 text-black hover:text-white hover:border-[#D1D5DB] transition-colors"
-                      >
-                        <div className="flex items-center gap-2 min-w-0">
-                          <span className="text-[10px] font-bold w-5 shrink-0 text-right">
-                            {globalNum}
-                          </span>
-                          <div className="min-w-0">
-                            <span className="text-[13px] font-medium truncate block">
-                              {li.item_name}
-                            </span>
-                            {li.notes && (
-                              <span className="text-[11px]">{li.notes}</span>
-                            )}
-                          </div>
-                        </div>
-                        <span className="text-[13px] font-semibold shrink-0 ml-3">
-                          {li.unit_price.toFixed(2)}
-                        </span>
-                      </div>
-                    )
-                  })}
+              <div className="flex absolute w-full inset-0 items-center justify-center">
+                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-red-600 text-white border border-[#FECACA] text-[16px] font-bold">
+                  {(selectedQuotation.client_name ?? '?').charAt(0).toUpperCase()}
                 </div>
               </div>
-            ))}
-          </div>
+            </div>
+            <DialogTitle>{selectedQuotation.client_name ?? '(Unnamed)'}</DialogTitle>
+            <DialogDescription>
+              {selectedQuotation.quotation_title || 'Price List'} · {items.length} items
+            </DialogDescription>
+          </DialogHeader>
 
-          {/* Footer */}
-          <div className="mt-3 flex items-center justify-between rounded-lg bg-black border border-red-600 px-3 py-2.5">
-            <span className="text-[11px] font-semibold text-white uppercase tracking-wider">
-              {items.length} items · LKR
-            </span>
-            <Button size="sm" variant="secondary" onClick={() => window.print()}>
-              <Printer className="h-3 w-3" /> Print
-            </Button>
-          </div>
-        </DialogBody>
-      </DialogContent>
-    </Dialog>
+          <DialogBody>
+            <div className='flex gap-2 items-center'>
+              <Input className='' onChange={(e) => setSearchTerm(e.target.value)} />
+              <Search className='h-full w-6' />
+            </div>
+            <div className="max-h-[380px] overflow-y-auto -mx-1 px-1 space-y-3">
+              {groupEntries.map(([cat, catItems]) => (
+                <div key={cat}>
+                  {groupEntries.length > 1 && (
+                    <p className="text-[10px] font-semibold uppercase tracking-widest text-[#98A2B3] mb-1.5 px-1">
+                      {cat}
+                    </p>
+                  )}
+                  <div className="space-y-1">
+                    {catItems.map((li, idx) => {
+                      const globalNum = items.indexOf(li) + 1
+                      return (
+                        <div
+                          key={li.id ?? idx}
+                          className="flex items-center justify-between rounded-lg border border-[#E4E7EC] bg-red-100 px-3 py-2 hover:bg-red-600 text-black hover:text-white hover:border-[#D1D5DB] transition-colors"
+                        >
+                          <div className="flex items-center gap-2 min-w-0">
+                            <span className="text-[10px] font-bold w-5 shrink-0 text-right">
+                              {globalNum}
+                            </span>
+                            <div className="min-w-0">
+                              <span className="text-[13px] font-medium truncate block">
+                                {li.item_name}
+                              </span>
+                              {li.notes && (
+                                <span className="text-[11px]">{li.notes}</span>
+                              )}
+                            </div>
+                          </div>
+                          <span className="text-[13px] font-semibold shrink-0 ml-3">
+                            {li.unit_price.toFixed(2)}
+                          </span>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Footer */}
+            <div className="mt-3 flex items-center justify-between rounded-lg bg-black border border-red-600 px-3 py-2.5">
+              <span className="text-[11px] font-semibold text-white uppercase tracking-wider">
+                {items.length} items · LKR
+              </span>
+              <Link to={`/quotations/${quotation.id}/print`} target="_blank" rel="noopener noreferrer">
+                <Button size="sm" variant="secondary">
+                  <Printer className="h-3 w-3" /> Print
+                </Button>
+              </Link>
+            </div>
+          </DialogBody>
+        </DialogContent>
+      </Dialog>
+    </>
   )
 }

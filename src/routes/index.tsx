@@ -8,6 +8,7 @@ import DashboardPage from '../features/quotations/pages/dashboard-page'
 import BusinessDashboardPage from '../features/quotations/pages/business-dashboard-page'
 import QuotationsPage from '../features/quotations/pages/quotations-page'
 import QuotationDetailPage from '../features/quotations/pages/quotation-detail-page'
+import QuotationPrintPage from '../features/quotations/pages/quotation-print-page'
 import QuotationFormPage from '../features/quotations/pages/quotation-form-page'
 import CategoriesPage from '../features/quotations/pages/categories-page'
 import SettingsPage from '../features/quotations/pages/settings-page'
@@ -28,6 +29,7 @@ import ReportsPage from '../features/quotations/pages/reports-page'
 import ErrorPage from '../features/quotations/pages/error-page'
 import UsersPage from '../features/quotations/pages/users-page'
 import GuestQuotationsPage from '../features/quotations/pages/guest-quotations-page'
+import NotificationsPage from '../features/quotations/pages/notifications-page'
 import DatabaseSyncPage from '../features/quotations/pages/database-sync-page'
 
 export const router = createBrowserRouter([
@@ -54,12 +56,14 @@ export const router = createBrowserRouter([
         children: [
           { index: true, element: <DashboardPage /> },
           { path: 'business-dashboard', element: <BusinessDashboardPage /> },
+          { path: 'notifications', element: <NotificationsPage /> },
 
           // Contracts
           { path: 'quotations', element: <QuotationsPage /> },
           { path: 'quotations/new', element: <QuotationFormPage /> },
           { path: 'quotations/:id', element: <QuotationDetailPage /> },
           { path: 'quotations/:id/edit', element: <QuotationFormPage /> },
+          { path: 'quotations/:id/print', element: <QuotationPrintPage /> },
 
           // Billing
           { path: 'bills', element: <BillsListPage /> },

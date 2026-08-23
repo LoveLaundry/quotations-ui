@@ -229,12 +229,72 @@
 }
 
 @media print {
-  body > *:not(#printable-receipt) { display: none !important; }
+  body > *:not(#printable-receipt):not(.quotation-print-page) { display: none !important; }
   #printable-receipt {
     display: block !important;
     border: none !important;
     box-shadow: none !important;
     border-radius: 0 !important;
+  }
+  .quotation-print-page {
+    display: block !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    min-height: auto !important;
+  }
+  .quotation-print-page * {
+    display: inherit !important;
+  }
+  @page {
+    size: A4;
+    margin: 0;
+  }
+  @page :first { margin: 0; }
+  @page :left { margin: 0; }
+  @page :right { margin: 0; }
+  .avoid-break {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+  .page-break {
+    page-break-before: always !important;
+    break-before: page !important;
+  }
+  table {
+    page-break-inside: auto !important;
+  }
+  tr {
+    page-break-inside: avoid !important;
+    page-break-after: auto !important;
+    break-inside: avoid !important;
+  }
+  thead {
+    display: table-header-group !important;
+  }
+  tfoot {
+    display: table-footer-group !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .page-sheet {
+    page-break-after: always !important;
+    break-after: page !important;
+  }
+  .page-sheet:last-child {
+    page-break-after: auto !important;
+    break-after: auto !important;
+  }
+  .page-border {
+    position: fixed;
+    top: 10mm;
+    left: 10mm;
+    right: 10mm;
+    bottom: 10mm;
+    border: 2px solid #000;
+    pointer-events: none;
+    z-index: 9999;
   }
 }
 

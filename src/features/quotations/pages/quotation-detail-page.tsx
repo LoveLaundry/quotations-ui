@@ -54,9 +54,11 @@ export default function QuotationDetailPage() {
           <Button variant="secondary" onClick={() => navigate('/quotations')}>
             <ArrowLeft className="h-3.5 w-3.5" /> Back
           </Button>
-          <Button variant="secondary" onClick={() => window.print()}>
-            <Printer className="h-3.5 w-3.5" /> Print
-          </Button>
+          <Link to={`/quotations/${String(id)}/print`} target="_blank" rel="noopener noreferrer">
+            <Button variant="secondary">
+              <Printer className="h-3.5 w-3.5" /> Print
+            </Button>
+          </Link>
           <Link to={`/quotations/${String(id)}/edit`}>
             <Button>
               <Edit className="h-3.5 w-3.5" /> Edit
