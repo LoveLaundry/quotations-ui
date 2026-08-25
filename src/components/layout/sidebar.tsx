@@ -12,6 +12,7 @@ import {
   RiTruckLine,
   RiBarChartLine,
   RiUserLine,
+  RiTeamLine,
   RiDatabase2Line,
 } from 'react-icons/ri'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -33,6 +34,7 @@ const navGroups = [
     items: [
       { to: '/gate-passes', label: 'Gate Passes', icon: RiClipboardLine, end: false, permission: 'view_gate_passes' },
       { to: '/deliveries', label: 'Deliveries', icon: RiTruckLine, end: false, permission: 'view_deliveries' },
+      { to: '/workers/daily-tasks', label: 'Worker Daily Tasks', icon: RiTeamLine, end: false },
       { to: '/bills', label: 'Bills', icon: RiBillLine, end: false, permission: 'view_bills' },
     ],
   },

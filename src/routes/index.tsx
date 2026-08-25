@@ -32,6 +32,10 @@ import GuestQuotationsPage from '../features/quotations/pages/guest-quotations-p
 import NotificationsPage from '../features/quotations/pages/notifications-page'
 import DatabaseSyncPage from '../features/quotations/pages/database-sync-page'
 
+// Workers pages
+import WorkersPage from '../features/workers/pages/workers-page'
+import DailyTasksPage from '../features/workers/pages/daily-tasks-page'
+
 export const router = createBrowserRouter([
   // ── Public routes ─────────────────────────────────────────────────────────────
   {
@@ -79,6 +83,10 @@ export const router = createBrowserRouter([
           { path: 'deliveries', element: <DeliveriesPage /> },
           { path: 'deliveries/new', element: <CreateDeliveryPage /> },
           { path: 'deliveries/:id', element: <DeliveryDetailPage /> },
+
+          // Workers
+          { path: 'workers', element: <WorkersPage /> },
+          { path: 'workers/daily-tasks', element: <DailyTasksPage /> },
 
           // Analytics
           { path: 'reports', element: <ReportsPage /> },
