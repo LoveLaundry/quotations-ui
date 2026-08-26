@@ -1,20 +1,20 @@
 import { useEffect } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
 import {
-  RiDashboardLine,
-  RiFileListLine,
-  RiFolderOpenLine,
-  RiSettings3Line,
-  RiArrowLeftSLine,
-  RiArrowRightSLine,
-  RiBillLine,
-  RiClipboardLine,
-  RiTruckLine,
-  RiBarChartLine,
-  RiUserLine,
-  RiTeamLine,
-  RiDatabase2Line,
-} from 'react-icons/ri'
+  House,
+  ChartBar,
+  ClipboardText,
+  Truck,
+  UsersThree,
+  CurrencyCircleDollar,
+  FileText,
+  FolderOpen,
+  GearSix,
+  Users,
+  Database,
+  CaretLeft,
+  CaretRight,
+} from '@phosphor-icons/react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Logo } from '../brand/logo'
 import { cn } from '../../lib/utils'
@@ -25,36 +25,37 @@ const navGroups = [
   {
     label: 'Overview',
     items: [
-      { to: '/', label: 'Dashboard', icon: RiDashboardLine, end: true },
-      { to: '/business-dashboard', label: 'Business Intelligence', icon: RiBarChartLine, end: false },
+      { to: '/', label: 'Dashboard', icon: House, end: true },
+      { to: '/business-dashboard', label: 'Business Intelligence', icon: ChartBar, end: false },
     ],
   },
   {
     label: 'Operations',
     items: [
-      { to: '/gate-passes', label: 'Gate Passes', icon: RiClipboardLine, end: false, permission: 'view_gate_passes' },
-      { to: '/deliveries', label: 'Deliveries', icon: RiTruckLine, end: false, permission: 'view_deliveries' },
-      { to: '/workers/daily-tasks', label: 'Worker Daily Tasks', icon: RiTeamLine, end: false },
-      { to: '/bills', label: 'Bills', icon: RiBillLine, end: false, permission: 'view_bills' },
+      { to: '/gate-passes', label: 'Gate Passes', icon: ClipboardText, end: false, permission: 'view_gate_passes' },
+      { to: '/deliveries', label: 'Deliveries', icon: Truck, end: false, permission: 'view_deliveries' },
+      { to: '/workers', label: 'Staff Management', icon: Users, end: false },
+      { to: '/workers/daily-tasks', label: 'Staff Daily Tasks', icon: UsersThree, end: false },
+      { to: '/bills', label: 'Bills', icon: CurrencyCircleDollar, end: false, permission: 'view_bills' },
     ],
   },
   {
     label: 'Contracts',
     items: [
-      { to: '/quotations', label: 'Quotations', icon: RiFileListLine, end: false, permission: 'view_quotations' },
-      { to: '/categories', label: 'By Client', icon: RiFolderOpenLine, end: false, permission: 'view_clients' },
+      { to: '/quotations', label: 'Quotations', icon: FileText, end: false, permission: 'view_quotations' },
+      { to: '/categories', label: 'By Client', icon: FolderOpen, end: false, permission: 'view_clients' },
     ],
   },
   {
     label: 'Analytics',
     items: [
-      { to: '/reports', label: 'Reports', icon: RiBarChartLine, end: false, permission: 'view_reports' },
+      { to: '/reports', label: 'Reports', icon: ChartBar, end: false, permission: 'view_reports' },
     ],
   },
   {
     label: 'System',
     items: [
-      { to: '/settings', label: 'Settings', icon: RiSettings3Line, end: false },
+      { to: '/settings', label: 'Settings', icon: GearSix, end: false },
     ],
   },
 ]
@@ -74,7 +75,6 @@ export function Sidebar({
 }: SidebarProps) {
   const location = useLocation()
 
-  // Close the mobile sidebar whenever the route changes
   useEffect(() => {
     if (mobileOpen) {
       onMobileClose()
@@ -83,9 +83,8 @@ export function Sidebar({
 
   return (
     <>
-      {/* Desktop Sidebar */}
       <motion.aside
-        animate={{ width: collapsed ? 60 : 232 }}
+        animate={{ width: collapsed ? 60 : 240 }}
         transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
         className="fixed inset-y-0 left-0 z-40 hidden lg:flex flex-col sidebar-dark select-none overflow-hidden"
       >
@@ -97,11 +96,9 @@ export function Sidebar({
         />
       </motion.aside>
 
-      {/* Mobile Sidebar */}
       <AnimatePresence>
         {mobileOpen && (
           <>
-            {/* Overlay */}
             <motion.div
               key="overlay"
               initial={{ opacity: 0 }}
@@ -111,15 +108,13 @@ export function Sidebar({
               className="fixed inset-0 z-30 bg-black/50 lg:hidden"
               onClick={onMobileClose}
             />
-
-            {/* Sidebar */}
             <motion.aside
               key="mobile-sidebar"
               initial={{ x: -240 }}
               animate={{ x: 0 }}
               exit={{ x: -240 }}
               transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-              className="fixed inset-y-0 left-0 z-40 flex w-[232px] flex-col sidebar-dark shadow-2xl lg:hidden"
+              className="fixed inset-y-0 left-0 z-40 flex w-[240px] flex-col sidebar-dark shadow-2xl lg:hidden"
             >
               <SidebarContent
                 collapsed={false}
@@ -152,12 +147,11 @@ function SidebarContent({
   const { hasPermission } = usePermissions()
   const isAdmin = user?.role_id?.toUpperCase() === 'ADMIN'
 
-  // Build admin-only extra System items
   const systemItems = [
-    { to: '/settings', label: 'Settings', icon: RiSettings3Line, end: false },
+    { to: '/settings', label: 'Settings', icon: GearSix, end: false },
     ...(isAdmin ? [
-      { to: '/users', label: 'Users', icon: RiUserLine, end: false },
-      { to: '/database-sync', label: 'Database Sync', icon: RiDatabase2Line, end: false },
+      { to: '/users', label: 'Users', icon: Users, end: false },
+      { to: '/database-sync', label: 'Database Sync', icon: Database, end: false },
     ] : []),
   ]
 
@@ -172,7 +166,7 @@ function SidebarContent({
     <div className="flex h-full flex-col bg-white">
       <div
         className={cn(
-          'flex h-14 shrink-0 items-center border-b border-[#1F2937] px-4',
+          'flex h-[52px] shrink-0 items-center border-b border-[#1F2937] px-4',
           collapsed && 'justify-center px-0'
         )}
       >
@@ -201,15 +195,15 @@ function SidebarContent({
         </AnimatePresence>
       </div>
 
-      <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-4">
+      <nav className="flex-1 overflow-y-auto px-2.5 py-3 space-y-3.5">
         {navGroupsWithRole.map(({ label: groupLabel, items }) => (
           <div key={groupLabel}>
             {!collapsed && (
-              <p className="px-3 pb-1.5 text-[10px] font-semibold uppercase tracking-widest text-[#4B5563]">
+              <p className="px-2.5 pb-1.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-[#6B7280]">
                 {groupLabel}
               </p>
             )}
-            <div className="space-y-0.5">
+            <div className="space-y-px">
               {items.map(({ to, label, icon: Icon, end }) => (
                 <NavLink
                   key={to}
@@ -220,23 +214,24 @@ function SidebarContent({
                   }}
                   className={({ isActive }) =>
                     cn(
-                      'group flex items-center gap-3 rounded-xl px-3 py-2.5 text-[13px] font-medium transition-all duration-200',
+                      'group flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-[13px] font-medium transition-all duration-150',
                       collapsed && 'justify-center px-2',
                       isActive
-                        ? 'bg-gradient-to-r from-[#DC2626] to-[#B91C1C] text-white shadow-lg shadow-red-600/30'
-                        : 'text-[#9CA3AF] hover:bg-[#374151] hover:text-white'
+                        ? 'bg-[#DC2626] text-white'
+                        : 'text-[#9CA3AF] hover:bg-[#F3F4F6] hover:text-[#111827]'
                     )
                   }
                 >
                   {({ isActive }) => (
                     <>
                       <Icon
-                        size={17}
+                        size={18}
+                        weight={isActive ? 'fill' : 'regular'}
                         className={cn(
-                          'shrink-0 transition-transform duration-200',
+                          'shrink-0 transition-colors duration-150',
                           isActive
-                            ? 'text-white scale-110'
-                            : 'text-[#6B7280] group-hover:text-white group-hover:scale-105'
+                            ? 'text-white'
+                            : 'text-[#6B7280] group-hover:text-[#111827]'
                         )}
                       />
                       {!collapsed && <span className="truncate">{label}</span>}
@@ -249,20 +244,19 @@ function SidebarContent({
         ))}
       </nav>
 
-      {/* Collapse button (Desktop only) */}
       {!isMobile && (
         <div className="border-t border-[#1F2937] p-2">
           <button
             type="button"
             onClick={onToggle}
-            className="flex w-full items-center justify-center gap-1.5 rounded-lg px-2.5 py-2 text-[12px] font-medium text-[#4B5563] hover:bg-[#1F2937] hover:text-[#9CA3AF] transition cursor-pointer"
+            className="flex w-full items-center justify-center gap-1.5 rounded-lg px-2.5 py-2 text-[12px] font-medium text-[#6B7280] hover:bg-[#F3F4F6] hover:text-[#111827] transition cursor-pointer"
             aria-label={collapsed ? 'Expand' : 'Collapse'}
           >
             {collapsed ? (
-              <RiArrowRightSLine size={16} />
+              <CaretRight size={14} />
             ) : (
               <>
-                <RiArrowLeftSLine size={16} />
+                <CaretLeft size={14} />
                 <span>Collapse</span>
               </>
             )}
@@ -277,12 +271,11 @@ function LogoDark() {
   return (
     <div className="flex items-center gap-2.5 select-none">
       <Logo size="sm" showText={false} />
-
       <div className="min-w-0 leading-none">
         <p className="text-[14px] font-pacifico text-black tracking-tight">
           Love Laundry
         </p>
-        <p className="text-[10px] text-black">
+        <p className="text-[10px] text-[#6B7280]">
           Manager
         </p>
       </div>

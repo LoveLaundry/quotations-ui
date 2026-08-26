@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useCallback, type ReactNode } from 'react'
+import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from 'react'
 import type { User } from '../types/auth'
 
 interface AuthCtx {
@@ -36,6 +36,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         localStorage.setItem('ll_user', JSON.stringify(usr))
         setUser(usr)
     }, [])
+
+    // Proactively detect an expired JWT so the user is sent to login cleanly
+    // instead of hitting a silent 401 on the first data request.
+    useEffect(() => {
+        if (!token) return
+        try {
+            const payload = JSON.parse(atob(token.split('.')[1] ?? ''))
+            if (payload?.exp && payload.exp * 1000 < Date.now()) {
+                logout()
+            }
+        } catch {
+            // Malformed token — leave it; the API will reject and trigger logout.
+        }
+    }, [token, logout])
 
     return (
         <AuthContext.Provider value={{ token, user, setUser: updateUser, login, logout, isAuthenticated: !!token }}>

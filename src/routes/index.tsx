@@ -33,8 +33,8 @@ import NotificationsPage from '../features/quotations/pages/notifications-page'
 import DatabaseSyncPage from '../features/quotations/pages/database-sync-page'
 
 // Workers pages
-import WorkersPage from '../features/workers/pages/workers-page'
-import DailyTasksPage from '../features/workers/pages/daily-tasks-page'
+import { WorkersPage } from '../features/workers/pages/workers-page'
+import { DailyTasksPage } from '../features/workers/pages/daily-tasks-page'
 
 export const router = createBrowserRouter([
   // ── Public routes ─────────────────────────────────────────────────────────────

@@ -1,9 +1,11 @@
-import { useState } from 'react'
-import { Outlet, useLocation } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Sidebar } from './sidebar'
 import { TopBar } from './top-bar'
 import { cn } from '../../lib/utils'
+import { useAuth } from '../../context/AuthContext'
+import { setUnauthorizedHandler } from '../../api/interceptors'
 
 const pageTitles: Record<string, string> = {
   '/': 'Dashboard',
@@ -37,6 +39,16 @@ export function AppShell() {
   const [collapsed, setCollapsed] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
   const location = useLocation()
+  const navigate = useNavigate()
+  const { logout } = useAuth()
+
+  useEffect(() => {
+    setUnauthorizedHandler(() => {
+      logout()
+      navigate('/login', { replace: true })
+    })
+    return () => setUnauthorizedHandler(null)
+  }, [logout, navigate])
 
   const Toggle=()=>{
     setCollapsed(!collapsed);

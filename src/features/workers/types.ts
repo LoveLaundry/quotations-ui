@@ -36,10 +36,13 @@ export interface TaskEntry {
     description?: string | null
     quantity: number
     unit: string
+    hours_spent?: number | null
+    gate_pass_id?: string | null
+    gate_pass_number?: string | null
 }
 
 export interface Worker {
-    id: string
+    id: string | number
     worker_name: string
     department: string
     phone?: string | null
@@ -60,7 +63,7 @@ export interface WorkerCreate {
 }
 
 export interface DailyLog {
-    id: string
+    id: string | number
     work_date: string
     worker_name: string
     department: string
@@ -92,9 +95,9 @@ export interface DailyLog {
 export interface DailyLogCreate {
     work_date: string
     worker_name: string
-    department: string
-    shift: string
-    attendance_status: string
+    department?: string
+    shift?: string
+    attendance_status?: string
     check_in_time?: string | null
     check_out_time?: string | null
     overtime_hours?: number

@@ -12,6 +12,19 @@ const queryClient = new QueryClient({
     queries: {
       staleTime: 1000 * 60,
       refetchOnWindowFocus: false,
+      retry: (failureCount, error: unknown) => {
+        const status = (error as { response?: { status?: number } })?.response?.status
+        // Never retry client errors — they won't succeed on retry and a 401
+        // would otherwise re-trigger the unauthorized handler repeatedly.
+        if (status === 401 || status === 404 || status === 400 || status === 403) {
+          return false
+        }
+        return failureCount < 2
+      },
+      retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 5000),
+    },
+    mutations: {
+      retry: false,
     },
   },
 })

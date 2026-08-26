@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { attachResponseInterceptor } from './interceptors'
 
 function normalizeBaseUrl(url: string): string {
   // Vercel redirects http -> https; preflight requests cannot follow
@@ -10,7 +11,7 @@ function normalizeBaseUrl(url: string): string {
 }
 
 const workersApi = axios.create({
-  baseURL: normalizeBaseUrl(import.meta.env.VITE_WORKERS_API_URL ?? 'http://localhost:8003'),
+  baseURL: normalizeBaseUrl(import.meta.env.VITE_WORKERS_API_URL ?? 'https://worker-service-zeta.vercel.app'),
   timeout: 10000,
   headers: { 'Content-Type': 'application/json' },
 })
@@ -21,16 +22,6 @@ workersApi.interceptors.request.use((config) => {
   return config
 })
 
-workersApi.interceptors.response.use(
-  (r) => r,
-  (err) => {
-    if (err.response?.status === 401) {
-      localStorage.removeItem('ll_token')
-      localStorage.removeItem('ll_user')
-      window.location.href = '/login'
-    }
-    return Promise.reject(new Error(err.response?.data?.detail || err.message || 'Request failed'))
-  }
-)
+attachResponseInterceptor(workersApi)
 
 export default workersApi

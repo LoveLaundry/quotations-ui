@@ -1,320 +1,400 @@
-import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
-import { Plus, Search, Users, X, Pencil, Trash2, Phone } from 'lucide-react'
-import { Card } from '../../../components/ui/card'
-import { Button } from '../../../components/ui/button'
-import { EmptyState } from '../../../components/ui/empty-state'
+import { useState } from 'react'
+import {
+  Plus,
+  MagnifyingGlass,
+  UsersThree,
+  UserCircle,
+  PencilSimple,
+  TrashSimple,
+  X,
+  Check,
+  FunnelSimple,
+} from '@phosphor-icons/react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { useWorkers, useCreateWorker, useUpdateWorker, useDeleteWorker } from '../hooks/useWorkers'
+import { DEPARTMENTS } from '../types'
+import type { Worker } from '../types'
 import { ErrorState } from '../../../components/ui/error-state'
-import { Skeleton } from '../../../components/ui/skeleton'
-import { Breadcrumb } from '../../../components/ui/breadcrumb'
-import {
-    Dialog,
-    DialogBody,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-} from '../../../components/ui/dialog'
-import { useAuth } from '../../../context/AuthContext'
-import {
-    DEPARTMENTS,
-    type Worker,
-    type WorkerCreate,
-} from '../types'
-import { useCreateWorker, useDeleteWorker, useUpdateWorker, useWorkers } from '../hooks/useWorkers'
 
-const DEPARTMENT_LABELS: Record<string, string> = {
-    WASHING: 'Washing',
-    PRESSING: 'Pressing',
-    FINISHING: 'Finishing',
-    PACKING: 'Packing',
-    DRY_CLEANING: 'Dry Cleaning',
-    DELIVERY: 'Delivery',
-    GENERAL: 'General',
+const statusColors = {
+  active: 'bg-emerald-50 text-emerald-700 border border-emerald-200',
+  inactive: 'bg-gray-50 text-gray-500 border border-gray-200',
 }
 
-const EMPTY_FORM: WorkerCreate = {
+export function WorkersPage() {
+  const { data: workers = [], isLoading, isError } = useWorkers()
+  const createWorker = useCreateWorker()
+  const updateWorker = useUpdateWorker()
+  const deleteWorker = useDeleteWorker()
+
+  const [search, setSearch] = useState('')
+  const [deptFilter, setDeptFilter] = useState<string>('all')
+  const [dialogOpen, setDialogOpen] = useState(false)
+  const [editWorker, setEditWorker] = useState<Worker | null>(null)
+  const [deleteConfirm, setDeleteConfirm] = useState<Worker | null>(null)
+  const [form, setForm] = useState({
     worker_name: '',
     department: 'GENERAL',
     phone: '',
     is_active: true,
-    joined_date: '',
     notes: '',
-}
+  })
 
-export default function WorkersPage() {
-    const { user } = useAuth()
-    const isAdmin = user?.role_id?.toUpperCase() === 'ADMIN'
+  const filtered = workers.filter(w => {
+    const q = search.toLowerCase()
+    const matchSearch = !q || w.worker_name.toLowerCase().includes(q) || w.department.toLowerCase().includes(q) || w.phone?.toLowerCase().includes(q)
+    const matchDept = deptFilter === 'all' || w.department === deptFilter
+    return matchSearch && matchDept
+  })
 
-    const [searchInput, setSearchInput] = useState('')
-    const [search, setSearch] = useState('')
-    const [dialogOpen, setDialogOpen] = useState(false)
-    const [editing, setEditing] = useState<Worker | null>(null)
-    const [form, setForm] = useState<WorkerCreate>(EMPTY_FORM)
+  const activeCount = workers.filter(w => w.is_active).length
 
-    useEffect(() => {
-        const t = setTimeout(() => setSearch(searchInput.trim().toLowerCase()), 300)
-        return () => clearTimeout(t)
-    }, [searchInput])
+  const openCreate = () => {
+    setEditWorker(null)
+    setForm({ worker_name: '', department: 'GENERAL', phone: '', is_active: true, notes: '' })
+    setDialogOpen(true)
+  }
 
-    const { data: workers = [], isLoading, isError } = useWorkers()
-    const createWorker = useCreateWorker()
-    const updateWorker = useUpdateWorker()
-    const deleteWorker = useDeleteWorker()
+  const openEdit = (w: Worker) => {
+    setEditWorker(w)
+    setForm({
+      worker_name: w.worker_name,
+      department: w.department,
+      phone: w.phone ?? '',
+      is_active: w.is_active,
+      notes: w.notes ?? '',
+    })
+    setDialogOpen(true)
+  }
 
-    const filtered = workers.filter(w => w.worker_name.toLowerCase().includes(search))
-
-    const openCreate = () => {
-        setEditing(null)
-        setForm(EMPTY_FORM)
-        setDialogOpen(true)
+  const handleSubmit = () => {
+    if (!form.worker_name.trim()) return
+    if (editWorker) {
+      updateWorker.mutate({ id: editWorker.id, data: form }, {
+        onSuccess: () => { setDialogOpen(false); setEditWorker(null) },
+      })
+    } else {
+      createWorker.mutate({ ...form, is_active: true }, {
+        onSuccess: () => { setDialogOpen(false) },
+      })
     }
+  }
 
-    const openEdit = (w: Worker) => {
-        setEditing(w)
-        setForm({
-            worker_name: w.worker_name,
-            department: w.department,
-            phone: w.phone ?? '',
-            is_active: w.is_active,
-            joined_date: w.joined_date ?? '',
-            notes: w.notes ?? '',
-        })
-        setDialogOpen(true)
-    }
+  const handleDelete = () => {
+    if (!deleteConfirm) return
+    deleteWorker.mutate(deleteConfirm.id, {
+      onSuccess: () => { setDeleteConfirm(null) },
+    })
+  }
 
-    const submit = () => {
-        if (!form.worker_name.trim()) return
-        const payload: WorkerCreate = {
-            ...form,
-            worker_name: form.worker_name.trim(),
-            phone: form.phone?.trim() || null,
-            joined_date: form.joined_date || null,
-            notes: form.notes?.trim() || null,
-        }
-        if (editing) {
-            updateWorker.mutate({ id: editing.id, data: payload })
-        } else {
-            createWorker.mutate(payload)
-        }
-        setDialogOpen(false)
-    }
-
-    const busy = createWorker.isPending || updateWorker.isPending
-
-    return (
-        <div className="space-y-5 pb-10">
-            {/* Header */}
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                <div>
-                    <Breadcrumb items={[{ label: 'Dashboard', href: '/' }, { label: 'Laundry Workers' }]} />
-                    <h1 className="text-dashboard-title mt-1">Laundry Workers</h1>
-                    <p className="text-[13px] text-[#98A2B3] mt-0.5">
-                        Staff registry — who works here and in which department
-                    </p>
-                </div>
-                <Button onClick={openCreate} className="shadow-lg shadow-red-600/20">
-                    <Plus className="h-4 w-4" /> Add Worker
-                </Button>
-            </div>
-
-            {/* Search */}
-            <div className="relative max-w-md">
-                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#98A2B3]" />
-                <input
-                    type="text"
-                    value={searchInput}
-                    onChange={e => setSearchInput(e.target.value)}
-                    placeholder="Search by name…"
-                    className="h-10 w-full rounded-lg border border-[#E4E7EC] bg-white pl-9 pr-8 text-[13px] text-[#101828] outline-none focus:border-[#DC2626] focus:ring-2 focus:ring-red-500/10 shadow-sm"
-                />
-                {searchInput && (
-                    <button
-                        type="button"
-                        onClick={() => setSearchInput('')}
-                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#98A2B3] hover:text-[#374151] cursor-pointer"
-                    >
-                        <X className="h-3.5 w-3.5" />
-                    </button>
-                )}
-            </div>
-
-            {/* Content */}
-            {isLoading ? (
-                <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                    {[...Array(6)].map((_, i) => (
-                        <Skeleton key={i} className="h-[120px]" />
-                    ))}
-                </div>
-            ) : isError ? (
-                <ErrorState description="Could not reach the worker service. Is it running?" />
-            ) : filtered.length === 0 ? (
-                <EmptyState
-                    title={search ? 'No matching workers' : 'No workers yet'}
-                    description={
-                        search
-                            ? 'Try a different name.'
-                            : 'Add your laundry staff to start tracking their daily tasks.'
-                    }
-                    action={!search && <Button onClick={openCreate}><Plus className="h-4 w-4" /> Add Worker</Button>}
-                />
-            ) : (
-                <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                    {filtered.map(w => (
-                        <Card key={w.id} className="p-4 group relative">
-                            <div className="flex items-start justify-between gap-2 mb-3">
-                                <div className="flex items-start gap-3 min-w-0">
-                                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#EFF6FF] text-[#2563EB] border border-[#BFDBFE]">
-                                        <Users className="h-4 w-4" />
-                                    </div>
-                                    <div className="min-w-0">
-                                        <p className="text-[13px] font-semibold text-[#101828] truncate">
-                                            {w.worker_name}
-                                        </p>
-                                        <p className="text-[11px] text-[#98A2B3] mt-0.5">
-                                            {DEPARTMENT_LABELS[w.department] ?? w.department}
-                                            {w.joined_date ? ` · joined ${w.joined_date}` : ''}
-                                        </p>
-                                    </div>
-                                </div>
-                                <span
-                                    className={`inline-flex shrink-0 items-center gap-1.5 rounded-full border px-2 py-0.5 text-[10px] font-semibold ${w.is_active
-                                        ? 'bg-[#F0FDF4] text-[#15803D] border-[#BBF7D0]'
-                                        : 'bg-[#F9FAFB] text-[#6B7280] border-[#E5E7EB]'
-                                        }`}
-                                >
-                                    <span className={`h-1.5 w-1.5 rounded-full ${w.is_active ? 'bg-[#22C55E]' : 'bg-[#9CA3AF]'}`} />
-                                    {w.is_active ? 'Active' : 'Inactive'}
-                                </span>
-                            </div>
-
-                            <div className="flex items-center justify-between border-t border-[#F2F4F7] pt-3">
-                                <span className="flex items-center gap-1.5 text-[12px] text-[#6B7280] truncate">
-                                    <Phone className="h-3 w-3 shrink-0" /> {w.phone || '—'}
-                                </span>
-                                {isAdmin && (
-                                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <button
-                                            type="button"
-                                            onClick={() => openEdit(w)}
-                                            className="p-1.5 rounded-md text-[#6B7280] hover:bg-[#F3F4F6] hover:text-[#2563EB] cursor-pointer"
-                                            title="Edit"
-                                        >
-                                            <Pencil className="h-3.5 w-3.5" />
-                                        </button>
-                                        <button
-                                            type="button"
-                                            onClick={() => {
-                                                if (confirm(`Remove ${w.worker_name}?`)) deleteWorker.mutate(w.id)
-                                            }}
-                                            className="p-1.5 rounded-md text-[#6B7280] hover:bg-[#FEF2F2] hover:text-[#DC2626] cursor-pointer"
-                                            title="Delete"
-                                        >
-                                            <Trash2 className="h-3.5 w-3.5" />
-                                        </button>
-                                    </div>
-                                )}
-                            </div>
-                        </Card>
-                    ))}
-                </div>
-            )}
-
-            {/* Create / edit dialog */}
-            <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>{editing ? 'Edit Worker' : 'Add Worker'}</DialogTitle>
-                        <DialogDescription>
-                            Worker details are encrypted before they touch the database.
-                        </DialogDescription>
-                    </DialogHeader>
-                    <DialogBody>
-                        <label className="block space-y-1">
-                            <span className="text-[12px] font-medium text-[#344054]">Full name *</span>
-                            <input
-                                value={form.worker_name}
-                                onChange={e => setForm({ ...form, worker_name: e.target.value })}
-                                placeholder="e.g. Kasun Perera"
-                                className="h-9 w-full rounded-lg border border-[#E4E7EC] px-3 text-[13px] outline-none focus:border-[#DC2626] focus:ring-2 focus:ring-red-500/10"
-                            />
-                        </label>
-                        <div className="grid grid-cols-2 gap-3">
-                            <label className="block space-y-1">
-                                <span className="text-[12px] font-medium text-[#344054]">Department</span>
-                                <select
-                                    value={form.department}
-                                    onChange={e => setForm({ ...form, department: e.target.value })}
-                                    className="h-9 w-full appearance-none rounded-lg border border-[#E4E7EC] px-3 text-[13px] outline-none focus:border-[#DC2626] cursor-pointer"
-                                >
-                                    {DEPARTMENTS.map(d => (
-                                        <option key={d} value={d}>{DEPARTMENT_LABELS[d] ?? d}</option>
-                                    ))}
-                                </select>
-                            </label>
-                            <label className="block space-y-1">
-                                <span className="text-[12px] font-medium text-[#344054]">Phone</span>
-                                <input
-                                    value={form.phone ?? ''}
-                                    onChange={e => setForm({ ...form, phone: e.target.value })}
-                                    placeholder="07X XXX XXXX"
-                                    className="h-9 w-full rounded-lg border border-[#E4E7EC] px-3 text-[13px] outline-none focus:border-[#DC2626] focus:ring-2 focus:ring-red-500/10"
-                                />
-                            </label>
-                        </div>
-                        <div className="grid grid-cols-2 gap-3">
-                            <label className="block space-y-1">
-                                <span className="text-[12px] font-medium text-[#344054]">Joined date</span>
-                                <input
-                                    type="date"
-                                    value={form.joined_date ?? ''}
-                                    onChange={e => setForm({ ...form, joined_date: e.target.value })}
-                                    className="h-9 w-full rounded-lg border border-[#E4E7EC] px-3 text-[13px] outline-none focus:border-[#DC2626]"
-                                />
-                            </label>
-                            <label className="flex items-end gap-2 pb-1.5">
-                                <input
-                                    type="checkbox"
-                                    checked={form.is_active}
-                                    onChange={e => setForm({ ...form, is_active: e.target.checked })}
-                                    className="h-4 w-4 accent-[#DC2626] cursor-pointer"
-                                />
-                                <span className="text-[12px] font-medium text-[#344054]">Currently active</span>
-                            </label>
-                        </div>
-                        <label className="block space-y-1">
-                            <span className="text-[12px] font-medium text-[#344054]">Notes</span>
-                            <textarea
-                                value={form.notes ?? ''}
-                                onChange={e => setForm({ ...form, notes: e.target.value })}
-                                rows={2}
-                                placeholder="Anything worth remembering…"
-                                className="w-full rounded-lg border border-[#E4E7EC] px-3 py-2 text-[13px] outline-none focus:border-[#DC2626] focus:ring-2 focus:ring-red-500/10 resize-none"
-                            />
-                        </label>
-                    </DialogBody>
-                    <DialogFooter>
-                        <div className="flex gap-2">
-                            <Button variant="secondary" className="flex-1" onClick={() => setDialogOpen(false)}>
-                                Cancel
-                            </Button>
-                            <Button className="flex-1" disabled={!form.worker_name.trim() || busy} onClick={submit}>
-                                {editing ? 'Save Changes' : 'Add Worker'}
-                            </Button>
-                        </div>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
-
-            {/* Cross-link */}
-            <p className="text-[12px] text-[#98A2B3]">
-                Track what each worker did today on the{' '}
-                <Link to="/workers/daily-tasks" className="font-medium text-[#DC2626] hover:underline">
-                    Daily Tasks
-                </Link>{' '}
-                tab.
-            </p>
+  return (
+    <div className="space-y-5">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <h1 className="text-[22px] font-semibold text-[#111827] tracking-tight">Staff Management</h1>
+          <p className="text-[13px] text-[#6B7280] mt-0.5">Manage your laundry team members</p>
         </div>
-    )
+        <button
+          onClick={openCreate}
+          className="flex items-center gap-2 rounded-lg bg-[#DC2626] px-4 py-2.5 text-[13px] font-semibold text-white hover:bg-[#B91C1C] transition-colors shadow-sm cursor-pointer"
+        >
+          <Plus size={16} weight="bold" />
+          Add Staff
+        </button>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        {[
+          { label: 'Total Staff', value: workers.length, icon: UsersThree, color: 'text-[#6366F1]' },
+          { label: 'Active Now', value: activeCount, icon: UserCircle, color: 'text-[#10B981]' },
+        ].map(s => (
+          <div key={s.label} className="flex items-center gap-3 rounded-xl border border-[#E5E7EB] bg-white px-4 py-3.5 shadow-sm">
+            <div className={`flex h-9 w-9 items-center justify-center rounded-lg bg-[#F9FAFB] ${s.color}`}>
+              <s.icon size={18} />
+            </div>
+            <div>
+              <p className="text-[22px] font-bold text-[#111827] leading-none">{s.value}</p>
+              <p className="text-[12px] text-[#6B7280] mt-0.5">{s.label}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="flex flex-col sm:flex-row gap-3">
+        <div className="relative flex-1">
+          <MagnifyingGlass size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#9CA3AF]" />
+          <input
+            type="text"
+            placeholder="Search staff by name, department, or phone..."
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            className="w-full rounded-lg border border-[#E5E7EB] bg-white pl-9 pr-3 py-2.5 text-[13px] text-[#111827] placeholder-[#9CA3AF] focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/10 transition-all"
+          />
+        </div>
+        <div className="relative">
+          <FunnelSimple size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#9CA3AF]" />
+          <select
+            value={deptFilter}
+            onChange={e => setDeptFilter(e.target.value)}
+            className="rounded-lg border border-[#E5E7EB] bg-white pl-9 pr-8 py-2.5 text-[13px] text-[#111827] focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/10 transition-all appearance-none cursor-pointer"
+          >
+            <option value="all">All Departments</option>
+            {DEPARTMENTS.map(d => (
+              <option key={d} value={d}>{d.charAt(0) + d.slice(1).toLowerCase().replace('_', ' ')}</option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      {isError ? (
+        <div className="rounded-xl border border-[#E5E7EB] bg-white shadow-sm overflow-hidden px-6 py-16">
+          <ErrorState
+            title="Couldn't load staff"
+            description="We couldn't reach the server. Please check your connection and try again."
+          />
+        </div>
+      ) : (
+      <div className="rounded-xl border border-[#E5E7EB] bg-white shadow-sm overflow-hidden">
+        {isLoading ? (
+          <div className="px-6 py-16 text-center">
+            <div className="animate-spin inline-block w-6 h-6 border-2 border-[#DC2626] border-t-transparent rounded-full mb-3" />
+            <p className="text-[13px] text-[#6B7280]">Loading staff...</p>
+          </div>
+        ) : filtered.length === 0 ? (
+          <div className="px-6 py-16 text-center">
+            <UsersThree size={40} className="mx-auto mb-3 text-[#D1D5DB]" />
+            <p className="text-[14px] font-medium text-[#374151]">
+              {search || deptFilter !== 'all' ? 'No staff match your filters' : 'No staff yet'}
+            </p>
+            <p className="text-[12px] text-[#9CA3AF] mt-1">
+              {search || deptFilter !== 'all' ? 'Try a different search or filter' : 'Add your first team member to get started'}
+            </p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left">
+              <thead>
+                <tr className="border-b border-[#F3F4F6] bg-[#F9FAFB]">
+                  <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-[#6B7280]">Name</th>
+                  <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-[#6B7280]">Department</th>
+                  <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-[#6B7280]">Phone</th>
+                  <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-[#6B7280]">Status</th>
+                  <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-[#6B7280]">Joined</th>
+                  <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-[#6B7280] text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#F3F4F6]">
+                {filtered.map(w => (
+                  <tr key={w.id} className="hover:bg-[#F9FAFB] transition-colors">
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-2.5">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#F3F4F6] text-[11px] font-bold text-[#6B7280] uppercase shrink-0">
+                          {w.worker_name.slice(0, 2)}
+                        </div>
+                        <span className="text-[13px] font-medium text-[#111827]">{w.worker_name}</span>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className="text-[13px] text-[#374151] capitalize">{w.department.toLowerCase().replace('_', ' ')}</span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className="text-[13px] text-[#6B7280]">{w.phone || '—'}</span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium ${w.is_active ? statusColors.active : statusColors.inactive}`}>
+                        {w.is_active ? 'Active' : 'Inactive'}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className="text-[12px] text-[#9CA3AF]">{w.joined_date ?? '—'}</span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center justify-end gap-1">
+                        <button
+                          onClick={() => openEdit(w)}
+                          className="p-1.5 rounded-lg text-[#6B7280] hover:text-[#111827] hover:bg-[#F3F4F6] transition-colors cursor-pointer"
+                          title="Edit"
+                        >
+                          <PencilSimple size={14} />
+                        </button>
+                        <button
+                          onClick={() => setDeleteConfirm(w)}
+                          className="p-1.5 rounded-lg text-[#6B7280] hover:text-[#DC2626] hover:bg-[#FEF2F2] transition-colors cursor-pointer"
+                          title="Delete"
+                        >
+                          <TrashSimple size={14} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+      )}
+
+      <AnimatePresence>
+        {dialogOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40"
+            onClick={() => setDialogOpen(false)}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 8 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 8 }}
+              transition={{ duration: 0.15 }}
+              className="w-full max-w-md rounded-xl bg-white shadow-xl border border-[#E5E7EB]"
+              onClick={e => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between px-5 py-4 border-b border-[#F3F4F6]">
+                <h3 className="text-[15px] font-semibold text-[#111827]">
+                  {editWorker ? 'Edit Staff' : 'Add Staff'}
+                </h3>
+                <button
+                  onClick={() => setDialogOpen(false)}
+                  className="p-1 rounded-lg hover:bg-[#F3F4F6] transition-colors cursor-pointer"
+                >
+                  <X size={16} className="text-[#6B7280]" />
+                </button>
+              </div>
+
+              <div className="px-5 py-4 space-y-4">
+                <div>
+                  <label className="text-[12px] font-medium text-[#374151] block mb-1">Full Name *</label>
+                  <input
+                    type="text"
+                    value={form.worker_name}
+                    onChange={e => setForm(f => ({ ...f, worker_name: e.target.value }))}
+                    placeholder="e.g. Ravi Kumar"
+                    className="w-full rounded-lg border border-[#E5E7EB] px-3 py-2.5 text-[13px] text-[#111827] placeholder-[#9CA3AF] focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/10 transition-all"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-[12px] font-medium text-[#374151] block mb-1">Department</label>
+                    <select
+                      value={form.department}
+                      onChange={e => setForm(f => ({ ...f, department: e.target.value }))}
+                      className="w-full rounded-lg border border-[#E5E7EB] px-3 py-2.5 text-[13px] text-[#111827] focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/10 transition-all appearance-none cursor-pointer"
+                    >
+                      {DEPARTMENTS.map(d => (
+                        <option key={d} value={d}>{d.charAt(0) + d.slice(1).toLowerCase().replace('_', ' ')}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-[12px] font-medium text-[#374151] block mb-1">Phone</label>
+                    <input
+                      type="text"
+                      value={form.phone}
+                      onChange={e => setForm(f => ({ ...f, phone: e.target.value }))}
+                      placeholder="Phone number"
+                      className="w-full rounded-lg border border-[#E5E7EB] px-3 py-2.5 text-[13px] text-[#111827] placeholder-[#9CA3AF] focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/10 transition-all"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="text-[12px] font-medium text-[#374151] block mb-1">Notes</label>
+                  <input
+                    type="text"
+                    value={form.notes}
+                    onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
+                    placeholder="Optional notes"
+                    className="w-full rounded-lg border border-[#E5E7EB] px-3 py-2.5 text-[13px] text-[#111827] placeholder-[#9CA3AF] focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/10 transition-all"
+                  />
+                </div>
+                {editWorker && (
+                  <div className="flex items-center gap-3">
+                    <label className="text-[12px] font-medium text-[#374151]">Active</label>
+                    <button
+                      type="button"
+                      onClick={() => setForm(f => ({ ...f, is_active: !f.is_active }))}
+                      className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors cursor-pointer ${form.is_active ? 'bg-[#16A34A]' : 'bg-[#D1D5DB]'}`}
+                    >
+                      <span className={`inline-block h-3.5 w-3.5 rounded-full bg-white shadow-sm transition-transform ${form.is_active ? 'translate-x-[18px]' : 'translate-x-[3px]'}`} />
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex items-center justify-end gap-2 px-5 py-3.5 border-t border-[#F3F4F6]">
+                <button
+                  onClick={() => setDialogOpen(false)}
+                  className="px-4 py-2 rounded-lg text-[13px] font-medium text-[#374151] hover:bg-[#F3F4F6] transition-colors cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleSubmit}
+                  disabled={!form.worker_name.trim() || createWorker.isPending || updateWorker.isPending}
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#DC2626] text-[13px] font-semibold text-white hover:bg-[#B91C1C] disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
+                >
+                  {(createWorker.isPending || updateWorker.isPending) ? (
+                    <div className="animate-spin w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full" />
+                  ) : (
+                    <Check size={14} weight="bold" />
+                  )}
+                  {editWorker ? 'Save Changes' : 'Add Staff'}
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {deleteConfirm && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40"
+            onClick={() => setDeleteConfirm(null)}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 8 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 8 }}
+              transition={{ duration: 0.15 }}
+              className="w-full max-w-sm rounded-xl bg-white shadow-xl border border-[#E5E7EB]"
+              onClick={e => e.stopPropagation()}
+            >
+              <div className="px-5 py-5 text-center">
+                <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-red-50 mb-3">
+                  <TrashSimple size={18} className="text-[#DC2626]" />
+                </div>
+                <p className="text-[14px] font-semibold text-[#111827]">Remove Staff?</p>
+                <p className="text-[12px] text-[#6B7280] mt-1">
+                  This will permanently remove <strong>{deleteConfirm.worker_name}</strong>.
+                </p>
+              </div>
+              <div className="flex items-center gap-2 px-5 py-3.5 border-t border-[#F3F4F6]">
+                <button
+                  onClick={() => setDeleteConfirm(null)}
+                  className="flex-1 px-4 py-2 rounded-lg text-[13px] font-medium text-[#374151] bg-[#F3F4F6] hover:bg-[#E5E7EB] transition-colors cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleDelete}
+                  disabled={deleteWorker.isPending}
+                  className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg bg-[#DC2626] text-[13px] font-semibold text-white hover:bg-[#B91C1C] disabled:opacity-50 transition-colors cursor-pointer"
+                >
+                  {deleteWorker.isPending ? (
+                    <div className="animate-spin w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full" />
+                  ) : 'Delete'}
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  )
 }

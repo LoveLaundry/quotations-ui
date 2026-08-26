@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { attachResponseInterceptor } from './interceptors'
 
 const billsApi = axios.create({
   baseURL: import.meta.env.VITE_BILLS_API_URL ?? 'http://localhost:8001',
@@ -12,16 +13,6 @@ billsApi.interceptors.request.use((config) => {
   return config
 })
 
-billsApi.interceptors.response.use(
-  (r) => r,
-  (err) => {
-    if (err.response?.status === 401) {
-      localStorage.removeItem('ll_token')
-      localStorage.removeItem('ll_user')
-      window.location.href = '/login'
-    }
-    return Promise.reject(new Error(err.response?.data?.detail || err.message || 'Request failed'))
-  }
-)
+attachResponseInterceptor(billsApi)
 
 export default billsApi

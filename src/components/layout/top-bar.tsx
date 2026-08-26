@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { RiBellLine, RiMenuLine, RiLogoutBoxLine, RiUserLine, RiUserSettingsLine, RiSendPlaneLine, RiFileTextLine } from 'react-icons/ri'
+import { Bell, List, SignOut, User, UserCircle, PaperPlaneTilt, FileText } from '@phosphor-icons/react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { cn } from '../../lib/utils'
 import { useAuth } from '../../context/AuthContext'
@@ -72,7 +72,7 @@ export function TopBar({ title, sidebarCollapsed, onMobileMenuToggle }: TopBarPr
           className="flex h-9 w-9 items-center justify-center rounded-xl text-[#6B7280] hover:bg-[#F3F4F6] hover:text-[#111827] transition-all duration-200 lg:hidden"
           aria-label="Menu"
         >
-          <RiMenuLine size={20} />
+          <List size={20} />
         </button>
 
         {title && (
@@ -98,7 +98,7 @@ export function TopBar({ title, sidebarCollapsed, onMobileMenuToggle }: TopBarPr
             aria-label={isLoading ? 'Loading notifications...' : `Notifications${totalCount > 0 ? ` (${totalCount})` : ''}`}
             title={isLoading ? 'Loading notifications...' : totalCount > 0 ? `${totalCount} notification${totalCount !== 1 ? 's' : ''}` : 'No new notifications'}
           >
-            <RiBellLine size={18} />
+            <Bell size={18} />
             {totalCount > 0 && !isLoading && (
               <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-[#DC2626] text-white text-[10px] font-bold border-2 border-white">
                 {totalCount > 99 ? '99+' : totalCount}
@@ -150,7 +150,7 @@ export function TopBar({ title, sidebarCollapsed, onMobileMenuToggle }: TopBarPr
                       </div>
                     ) : notificationItems.length === 0 ? (
                       <div className="px-4 py-8 text-center text-[#98A2B3]">
-                        <RiBellLine size={32} className="mx-auto mb-2 opacity-50" />
+                        <Bell size={32} className="mx-auto mb-2 opacity-50" />
                         <p className="text-[13px] font-medium text-[#101828]">No notifications</p>
                         <p className="text-[11px] text-[#98A2B3] mt-1">You're all caught up!</p>
                       </div>
@@ -169,9 +169,9 @@ export function TopBar({ title, sidebarCollapsed, onMobileMenuToggle }: TopBarPr
                                   : 'bg-[#F0FDF4] text-[#16A34A]'
                               }`}>
                                 {notification.type === 'quotation_pending' ? (
-                                  <RiSendPlaneLine size={16} />
+                                  <PaperPlaneTilt size={16} />
                                 ) : (
-                                  <RiFileTextLine size={16} />
+                                  <FileText size={16} />
                                 )}
                               </div>
                               <div className="flex-1 min-w-0">
@@ -231,7 +231,7 @@ export function TopBar({ title, sidebarCollapsed, onMobileMenuToggle }: TopBarPr
               ) : user ? (
                 initials
               ) : (
-                <RiUserLine size={14} />
+                <User size={14} />
               )}
             </div>
             <div className="hidden sm:block leading-none text-left min-w-0">
@@ -273,7 +273,7 @@ export function TopBar({ title, sidebarCollapsed, onMobileMenuToggle }: TopBarPr
                       }}
                       className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2.5 text-[13px] font-medium text-[#344054] hover:bg-[#F9FAFB] transition-colors cursor-pointer"
                     >
-                      <RiUserSettingsLine size={16} />
+                      <UserCircle size={16} />
                       My Profile
                     </button>
                     <button
@@ -281,7 +281,7 @@ export function TopBar({ title, sidebarCollapsed, onMobileMenuToggle }: TopBarPr
                       onClick={handleLogout}
                       className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2.5 text-[13px] font-medium text-[#DC2626] hover:bg-[#FEF2F2] transition-colors cursor-pointer"
                     >
-                      <RiLogoutBoxLine size={16} />
+                      <SignOut size={16} />
                       Sign Out
                     </button>
                   </div>

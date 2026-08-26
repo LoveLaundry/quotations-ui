@@ -1,760 +1,694 @@
-import { useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { useState, useMemo } from 'react'
 import {
-    CalendarDays,
-    ChevronLeft,
-    ChevronRight,
-    Plus,
-    Shirt,
-    Sparkles,
-    PackageCheck,
-    Layers,
-    MoreHorizontal,
-    Pencil,
-    Trash2,
-    Clock,
-    AlertTriangle,
-} from 'lucide-react'
-import { motion } from 'framer-motion'
-import { Card } from '../../../components/ui/card'
-import { Button } from '../../../components/ui/button'
-import { EmptyState } from '../../../components/ui/empty-state'
+  Plus,
+  MagnifyingGlass,
+  CalendarBlank,
+  Clock,
+  ClipboardText,
+  FunnelSimple,
+  X,
+  Check,
+  TrashSimple,
+  PencilSimple,
+  User,
+  Package,
+  TShirt,
+  ArrowsClockwise,
+  HandPalm,
+  Cube,
+  Tag,
+  ListChecks,
+} from '@phosphor-icons/react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { useWorkers, useDailyTasks, useCreateDailyTask, useUpdateDailyTask, useDeleteDailyTask, useGatePassesForWorker } from '../hooks/useWorkers'
+import type { DailyLog, TaskEntry, Worker } from '../types'
+import type { GatePass } from '../../../types/operations'
 import { ErrorState } from '../../../components/ui/error-state'
-import { Skeleton } from '../../../components/ui/skeleton'
-import { Breadcrumb } from '../../../components/ui/breadcrumb'
-import {
-    Dialog,
-    DialogBody,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-} from '../../../components/ui/dialog'
-import {
-    ATTENDANCE_STATUSES,
-    DEPARTMENTS,
-    SHIFTS,
-    TASK_TYPES,
-    TASK_UNITS,
-    todayISO,
-    type DailyLog,
-    type TaskEntry,
-} from '../types'
-import {
-    useCreateDailyLog,
-    useDailyLogs,
-    useDailySummary,
-    useDeleteDailyLog,
-    useUpdateDailyLog,
-    useWorkers,
-} from '../hooks/useWorkers'
 
-const ATTENDANCE_STYLE: Record<string, string> = {
-    PRESENT: 'bg-[#F0FDF4] text-[#15803D] border-[#BBF7D0]',
-    HALF_DAY: 'bg-[#FFFBEB] text-[#D97706] border-[#FDE68A]',
-    ABSENT: 'bg-[#FEF2F2] text-[#DC2626] border-[#FECACA]',
-    ON_LEAVE: 'bg-[#F5F3FF] text-[#6D28D9] border-[#DDD6FE]',
+const taskTypes = [
+  { value: 'WASHING', label: 'Washing', icon: ArrowsClockwise, color: 'bg-blue-50 text-blue-600' },
+  { value: 'PRESSING', label: 'Pressing', icon: HandPalm, color: 'bg-orange-50 text-orange-600' },
+  { value: 'FOLDING', label: 'Folding', icon: Cube, color: 'bg-purple-50 text-purple-600' },
+  { value: 'PACKING', label: 'Packing', icon: Package, color: 'bg-green-50 text-green-600' },
+  { value: 'STAIN_TREATMENT', label: 'Stain Removal', icon: TShirt, color: 'bg-pink-50 text-pink-600' },
+  { value: 'DRY_CLEANING', label: 'Dry Cleaning', icon: Tag, color: 'bg-teal-50 text-teal-600' },
+  { value: 'MACHINE_CLEANING', label: 'Machine Clean', icon: ArrowsClockwise, color: 'bg-cyan-50 text-cyan-600' },
+  { value: 'SORTING_TAGGING', label: 'Sorting', icon: Tag, color: 'bg-amber-50 text-amber-600' },
+  { value: 'DELIVERY_SUPPORT', label: 'Delivery', icon: Package, color: 'bg-indigo-50 text-indigo-600' },
+  { value: 'MAINTENANCE', label: 'Maintenance', icon: Cube, color: 'bg-gray-50 text-gray-600' },
+  { value: 'OTHER', label: 'Other', icon: Tag, color: 'bg-gray-50 text-gray-600' },
+]
+
+const taskTypeMap = Object.fromEntries(taskTypes.map(t => [t.value, t]))
+
+function formatDate(d: Date) {
+  return d.toISOString().split('T')[0]
 }
 
-interface LogFormState {
-    worker_name: string
-    department: string
-    shift: string
-    attendance_status: string
-    check_in_time: string
-    check_out_time: string
-    overtime_hours: number
-    washed_count: number
-    pressed_count: number
-    folded_count: number
-    packed_count: number
-    other_count: number
-    total_weight_kg: number
-    tasks: TaskEntry[]
-    rewash_count: number
-    damaged_items: number
-    complaints: number
-    machines_used: string
-    chemicals_used: string
-    notes: string
-    performance_rating: string
+function today() {
+  return formatDate(new Date())
 }
 
-const EMPTY_FORM = (workerName = '', department = 'GENERAL'): LogFormState => ({
-    worker_name: workerName,
-    department,
-    shift: 'FULL_DAY',
-    attendance_status: 'PRESENT',
-    check_in_time: '',
-    check_out_time: '',
-    overtime_hours: 0,
-    washed_count: 0,
-    pressed_count: 0,
-    folded_count: 0,
-    packed_count: 0,
-    other_count: 0,
-    total_weight_kg: 0,
-    tasks: [],
-    rewash_count: 0,
-    damaged_items: 0,
-    complaints: 0,
-    machines_used: '',
-    chemicals_used: '',
-    notes: '',
-    performance_rating: '',
-})
-
-function shiftDate(iso: string, days: number): string {
-    const d = new Date(`${iso}T00:00:00`)
-    d.setDate(d.getDate() + days)
-    const pad = (n: number) => String(n).padStart(2, '0')
-    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
+function getDateRange(start: string, days: number) {
+  const dates: string[] = []
+  const d = new Date(start)
+  for (let i = 0; i < days; i++) {
+    dates.push(formatDate(new Date(d)))
+    d.setDate(d.getDate() + 1)
+  }
+  return dates
 }
 
-function prettyDate(iso: string): string {
-    return new Date(`${iso}T00:00:00`).toLocaleDateString('en-US', {
-        weekday: 'long',
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
+export function DailyTasksPage() {
+  const { data: workers = [], isLoading: loadingWorkers } = useWorkers()
+  const [selectedDate, setSelectedDate] = useState(today())
+  const [dateRangeDays, setDateRangeDays] = useState(7)
+  const [workerFilter, setWorkerFilter] = useState<string>('all')
+  const [typeFilter, setTypeFilter] = useState<string>('all')
+  const [search, setSearch] = useState('')
+  const [dialogOpen, setDialogOpen] = useState(false)
+  const [editEntry, setEditEntry] = useState<{ log: DailyLog; taskIndex: number; task: TaskEntry } | null>(null)
+  const [deleteConfirm, setDeleteConfirm] = useState<{ log: DailyLog; taskIndex: number; task: TaskEntry } | null>(null)
+
+  const dateRange = useMemo(() => getDateRange(selectedDate, dateRangeDays), [selectedDate, dateRangeDays])
+  const { data: gatePasses = [] } = useGatePassesForWorker()
+
+  const { data: allLogs = [], isLoading: loadingTasks, isError } = useDailyTasks({
+    date_from: dateRange[0],
+    date_to: dateRange[dateRange.length - 1],
+  })
+
+  const filteredLogs = useMemo(() => {
+    return allLogs.filter(log => {
+      const workerMatch = workerFilter === 'all' || log.worker_name === workerFilter
+      if (!workerMatch) return false
+      const q = search.toLowerCase()
+      if (!q) return true
+      return (
+        log.worker_name.toLowerCase().includes(q) ||
+        log.tasks.some(t =>
+          t.description?.toLowerCase().includes(q) ||
+          t.task_type.toLowerCase().includes(q) ||
+          t.gate_pass_number?.toLowerCase().includes(q)
+        )
+      )
     })
+  }, [allLogs, workerFilter, search])
+
+  const createTask = useCreateDailyTask()
+  const updateTask = useUpdateDailyTask()
+  const deleteTask = useDeleteDailyTask()
+
+  const stats = useMemo(() => {
+    const logsInRange = allLogs.filter(l => dateRange.includes(l.work_date))
+    const totalTasks = logsInRange.reduce((sum, l) => sum + l.tasks.length, 0)
+    const totalHours = logsInRange.reduce((sum, l) =>
+      sum + l.tasks.reduce((s, t) => s + (t.hours_spent ?? 0), 0), 0)
+    const gatePassRefs = new Set(
+      logsInRange.flatMap(l => l.tasks.filter(t => t.gate_pass_number).map(t => t.gate_pass_number))
+    ).size
+    return { totalTasks, totalHours: totalHours.toFixed(1), gatePassRefs, uniqueWorkers: new Set(logsInRange.map(l => l.worker_name)).size }
+  }, [allLogs, dateRange])
+
+  const openCreate = () => {
+    setEditEntry(null)
+    setDialogOpen(true)
+  }
+
+  const openEdit = (log: DailyLog, taskIndex: number, task: TaskEntry) => {
+    setEditEntry({ log, taskIndex, task })
+    setDialogOpen(true)
+  }
+
+  const handleDelete = () => {
+    if (!deleteConfirm) return
+    const { log, taskIndex } = deleteConfirm
+    const updatedTasks = log.tasks.filter((_, i) => i !== taskIndex)
+    if (updatedTasks.length === 0) {
+      deleteTask.mutate({ logId: log.id })
+    } else {
+      updateTask.mutate({
+        logId: log.id,
+        data: {
+          worker_name: log.worker_name,
+          work_date: log.work_date,
+          tasks: updatedTasks,
+        },
+      })
+    }
+    setDeleteConfirm(null)
+  }
+
+  const getTaskTypeInfo = (t: string) => taskTypeMap[t] ?? taskTypeMap.OTHER
+
+  return (
+    <div className="space-y-5">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <h1 className="text-[22px] font-semibold text-[#111827] tracking-tight">Staff Daily Tasks</h1>
+          <p className="text-[13px] text-[#6B7280] mt-0.5">Track tasks, link to gate passes, monitor productivity</p>
+        </div>
+        <button
+          onClick={openCreate}
+          className="flex items-center gap-2 rounded-lg bg-[#DC2626] px-4 py-2.5 text-[13px] font-semibold text-white hover:bg-[#B91C1C] transition-colors shadow-sm cursor-pointer"
+        >
+          <Plus size={16} weight="bold" />
+          Log Task
+        </button>
+      </div>
+
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        {[
+          { label: 'Tasks Logged', value: stats.totalTasks, icon: ListChecks, color: 'text-[#6366F1]' },
+          { label: 'Hours Spent', value: stats.totalHours, icon: Clock, color: 'text-[#F59E0B]' },
+          { label: 'Gate Passes', value: stats.gatePassRefs, icon: ClipboardText, color: 'text-[#10B981]' },
+          { label: 'Active Staff', value: stats.uniqueWorkers, icon: User, color: 'text-[#EC4899]' },
+        ].map(s => (
+          <div key={s.label} className="flex items-center gap-3 rounded-xl border border-[#E5E7EB] bg-white px-3.5 py-3 shadow-sm">
+            <div className={`flex h-8 w-8 items-center justify-center rounded-lg bg-[#F9FAFB] ${s.color}`}>
+              <s.icon size={16} />
+            </div>
+            <div>
+              <p className="text-[18px] font-bold text-[#111827] leading-none">{s.value}</p>
+              <p className="text-[11px] text-[#6B7280] mt-0.5">{s.label}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="flex flex-col sm:flex-row gap-3">
+        <div className="flex items-center gap-2 bg-white border border-[#E5E7EB] rounded-lg px-3 py-2.5 shadow-sm">
+          <CalendarBlank size={14} className="text-[#6B7280]" />
+          <input
+            type="date"
+            value={selectedDate}
+            onChange={e => setSelectedDate(e.target.value)}
+            className="text-[13px] text-[#111827] border-none outline-none bg-transparent cursor-pointer"
+          />
+          <span className="text-[11px] text-[#9CA3AF] border-l border-[#E5E7EB] pl-2 ml-1">to</span>
+          <select
+            value={dateRangeDays}
+            onChange={e => setDateRangeDays(Number(e.target.value))}
+            className="text-[13px] text-[#111827] border-none outline-none bg-transparent cursor-pointer"
+          >
+            <option value={1}>1 day</option>
+            <option value={7}>7 days</option>
+            <option value={14}>14 days</option>
+            <option value={30}>30 days</option>
+          </select>
+        </div>
+
+        <div className="relative flex-1 max-w-xs">
+          <MagnifyingGlass size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#9CA3AF]" />
+          <input
+            type="text"
+            placeholder="Search tasks, gate passes..."
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            className="w-full rounded-lg border border-[#E5E7EB] bg-white pl-9 pr-3 py-2.5 text-[13px] text-[#111827] placeholder-[#9CA3AF] focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/10 transition-all"
+          />
+        </div>
+
+        <div className="relative">
+          <User size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#9CA3AF]" />
+          <select
+            value={workerFilter}
+            onChange={e => setWorkerFilter(e.target.value)}
+            className="rounded-lg border border-[#E5E7EB] bg-white pl-9 pr-8 py-2.5 text-[13px] text-[#111827] focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/10 transition-all appearance-none cursor-pointer"
+          >
+            <option value="all">All Staff</option>
+            {workers.map(w => (
+              <option key={w.id} value={w.worker_name}>{w.worker_name}</option>
+            ))}
+          </select>
+        </div>
+
+        <div className="relative">
+          <FunnelSimple size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#9CA3AF]" />
+          <select
+            value={typeFilter}
+            onChange={e => setTypeFilter(e.target.value)}
+            className="rounded-lg border border-[#E5E7EB] bg-white pl-9 pr-8 py-2.5 text-[13px] text-[#111827] focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/10 transition-all appearance-none cursor-pointer"
+          >
+            <option value="all">All Types</option>
+            {taskTypes.map(t => (
+              <option key={t.value} value={t.value}>{t.label}</option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      <div className="space-y-3">
+        {isError ? (
+          <div className="rounded-xl border border-[#E5E7EB] bg-white shadow-sm px-6 py-16">
+            <ErrorState
+              title="Couldn't load tasks"
+              description="We couldn't reach the server. Please check your connection and try again."
+            />
+          </div>
+        ) : loadingTasks || loadingWorkers ? (
+          <div className="rounded-xl border border-[#E5E7EB] bg-white px-6 py-16 text-center shadow-sm">
+            <div className="animate-spin inline-block w-6 h-6 border-2 border-[#DC2626] border-t-transparent rounded-full mb-3" />
+            <p className="text-[13px] text-[#6B7280]">Loading tasks...</p>
+          </div>
+        ) : filteredLogs.length === 0 ? (
+          <div className="rounded-xl border border-[#E5E7EB] bg-white px-6 py-16 text-center shadow-sm">
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-[#F3F4F6] mb-4">
+              <ClipboardText size={24} className="text-[#9CA3AF]" />
+            </div>
+            <p className="text-[14px] font-medium text-[#374151]">
+              {search || workerFilter !== 'all' || typeFilter !== 'all'
+                ? 'No tasks match your filters'
+                : 'No tasks logged yet'}
+            </p>
+            <p className="text-[12px] text-[#9CA3AF] mt-1">
+              {search || workerFilter !== 'all' || typeFilter !== 'all'
+                ? 'Try adjusting your search or filters'
+                : 'Log your first task or link one to a gate pass'}
+            </p>
+            {!search && workerFilter === 'all' && typeFilter === 'all' && (
+              <button
+                onClick={openCreate}
+                className="mt-4 inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#DC2626] text-[13px] font-semibold text-white hover:bg-[#B91C1C] transition-colors cursor-pointer"
+              >
+                <Plus size={14} weight="bold" />
+                Log First Task
+              </button>
+            )}
+          </div>
+        ) : (
+          filteredLogs.map(log => (
+            <div key={log.id} className="rounded-xl border border-[#E5E7EB] bg-white shadow-sm overflow-hidden">
+              <div className="flex items-center justify-between px-4 py-3 bg-[#F9FAFB] border-b border-[#F3F4F6]">
+                <div className="flex items-center gap-2.5">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#F3F4F6] text-[11px] font-bold text-[#6B7280] uppercase">
+                    {log.worker_name?.slice(0, 2) ?? '??'}
+                  </div>
+                  <div>
+                    <p className="text-[13px] font-semibold text-[#111827]">{log.worker_name}</p>
+                    <p className="text-[11px] text-[#6B7280]">
+                      {log.work_date} · {log.shift?.replace('_', ' ').toLowerCase()}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-4 text-[11px] text-[#6B7280]">
+                  <span>{log.tasks.length} task{log.tasks.length !== 1 ? 's' : ''}</span>
+                  <span>{log.attendance_status?.toLowerCase().replace('_', ' ')}</span>
+                </div>
+              </div>
+
+              <div className="divide-y divide-[#F3F4F6]">
+                {(typeFilter === 'all' ? log.tasks : log.tasks.filter(t => t.task_type === typeFilter)).map((task, idx) => {
+                  const tInfo = getTaskTypeInfo(task.task_type)
+                  return (
+                    <div key={idx} className="flex items-start gap-3 px-4 py-3 hover:bg-[#F9FAFB] transition-colors group">
+                      <div className={`flex h-7 w-7 items-center justify-center rounded-lg shrink-0 mt-0.5 ${tInfo.color}`}>
+                        <tInfo.icon size={14} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-[13px] font-medium text-[#111827]">{task.task_type.replace('_', ' ')}</span>
+                          {task.gate_pass_number && (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-[#EFF6FF] text-[11px] font-medium text-[#2563EB] border border-[#BFDBFE]">
+                              <ClipboardText size={10} />
+                              {task.gate_pass_number}
+                            </span>
+                          )}
+                          {task.hours_spent != null && task.hours_spent > 0 && (
+                            <span className="text-[11px] text-[#9CA3AF]">{task.hours_spent}h</span>
+                          )}
+                          {task.quantity > 0 && (
+                            <span className="text-[11px] text-[#9CA3AF]">{task.quantity} {task.unit?.toLowerCase() ?? 'pcs'}</span>
+                          )}
+                        </div>
+                        {task.description && (
+                          <p className="text-[12px] text-[#6B7280] mt-0.5 line-clamp-2">{task.description}</p>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                        <button
+                          onClick={() => openEdit(log, idx, task)}
+                          className="p-1.5 rounded-lg text-[#9CA3AF] hover:text-[#111827] hover:bg-[#F3F4F6] transition-colors cursor-pointer"
+                          title="Edit"
+                        >
+                          <PencilSimple size={13} />
+                        </button>
+                        <button
+                          onClick={() => setDeleteConfirm({ log, taskIndex: idx, task })}
+                          className="p-1.5 rounded-lg text-[#9CA3AF] hover:text-[#DC2626] hover:bg-[#FEF2F2] transition-colors cursor-pointer"
+                          title="Delete"
+                        >
+                          <TrashSimple size={13} />
+                        </button>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
+      <TaskDialog
+        open={dialogOpen}
+        onClose={() => { setDialogOpen(false); setEditEntry(null) }}
+        editEntry={editEntry}
+        workers={workers}
+        gatePasses={gatePasses}
+        onSubmit={(data) => {
+          if (editEntry) {
+            const { log, taskIndex } = editEntry
+            const updatedTasks = [...log.tasks]
+            updatedTasks[taskIndex] = data.tasks[0]
+            updateTask.mutate({
+              logId: log.id,
+              data: {
+                worker_name: log.worker_name,
+                work_date: log.work_date,
+                tasks: updatedTasks,
+              },
+            }, { onSuccess: () => { setDialogOpen(false); setEditEntry(null) } })
+          } else {
+            // Avoid creating a duplicate daily log for the same worker + date;
+            // merge the new task into the existing log when one already exists.
+            const existing = allLogs.find(
+              (l) => l.worker_name === data.worker_name && l.work_date === data.work_date
+            )
+            if (existing) {
+              updateTask.mutate({
+                logId: existing.id,
+                data: {
+                  worker_name: existing.worker_name,
+                  work_date: existing.work_date,
+                  tasks: [...existing.tasks, ...data.tasks],
+                },
+              }, { onSuccess: () => { setDialogOpen(false) } })
+            } else {
+              createTask.mutate(data, {
+                onSuccess: () => { setDialogOpen(false) },
+              })
+            }
+          }
+        }}
+        isPending={createTask.isPending || updateTask.isPending}
+      />
+
+      <AnimatePresence>
+        {deleteConfirm && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40"
+            onClick={() => setDeleteConfirm(null)}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 8 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 8 }}
+              transition={{ duration: 0.15 }}
+              className="w-full max-w-sm rounded-xl bg-white shadow-xl border border-[#E5E7EB]"
+              onClick={e => e.stopPropagation()}
+            >
+              <div className="px-5 py-5 text-center">
+                <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-red-50 mb-3">
+                  <TrashSimple size={18} className="text-[#DC2626]" />
+                </div>
+                <p className="text-[14px] font-semibold text-[#111827]">Delete Task?</p>
+                <p className="text-[12px] text-[#6B7280] mt-1">
+                  This will permanently remove the <strong>{deleteConfirm.task.task_type.replace('_', ' ')}</strong> entry.
+                </p>
+              </div>
+              <div className="flex items-center gap-2 px-5 py-3.5 border-t border-[#F3F4F6]">
+                <button
+                  onClick={() => setDeleteConfirm(null)}
+                  className="flex-1 px-4 py-2 rounded-lg text-[13px] font-medium text-[#374151] bg-[#F3F4F6] hover:bg-[#E5E7EB] transition-colors cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleDelete}
+                  disabled={deleteTask.isPending || updateTask.isPending}
+                  className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg bg-[#DC2626] text-[13px] font-semibold text-white hover:bg-[#B91C1C] disabled:opacity-50 transition-colors cursor-pointer"
+                >
+                  {(deleteTask.isPending || updateTask.isPending) ? (
+                    <div className="animate-spin w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full" />
+                  ) : 'Delete'}
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  )
 }
 
-export default function DailyTasksPage() {
-    const [date, setDate] = useState(todayISO())
-    const [dialogOpen, setDialogOpen] = useState(false)
-    const [editing, setEditing] = useState<DailyLog | null>(null)
-    const [form, setForm] = useState<LogFormState>(EMPTY_FORM())
+interface TaskDialogProps {
+  open: boolean
+  onClose: () => void
+  editEntry: { log: DailyLog; taskIndex: number; task: TaskEntry } | null
+  workers: Worker[]
+  gatePasses: GatePass[]
+  onSubmit: (data: { worker_name: string; work_date: string; tasks: TaskEntry[] }) => void
+  isPending: boolean
+}
 
-    const { data: workers = [] } = useWorkers(true)
-    const { data: logs = [], isLoading, isError } = useDailyLogs({ work_date: date })
-    const { data: summary } = useDailySummary(date)
-    const createLog = useCreateDailyLog()
-    const updateLog = useUpdateDailyLog()
-    const deleteLog = useDeleteDailyLog()
+function TaskDialog({ open, onClose, editEntry, workers, gatePasses, onSubmit, isPending }: TaskDialogProps) {
 
-    const activeWorkers = useMemo(
-        () =>
-            workers.map(w => ({
-                name: w.worker_name,
-                department: w.department || 'GENERAL',
-            })),
-        [workers]
-    )
+  const [workerName, setWorkerName] = useState(editEntry?.log.worker_name ?? (workers[0]?.worker_name ?? ''))
+  const [taskType, setTaskType] = useState(editEntry?.task.task_type ?? 'WASHING')
+  const [description, setDescription] = useState(editEntry?.task.description ?? '')
+  const [hoursSpent, setHoursSpent] = useState(editEntry?.task.hours_spent?.toString() ?? '')
+  const [quantity, setQuantity] = useState(editEntry?.task.quantity?.toString() ?? '')
+  const [unit, setUnit] = useState(editEntry?.task.unit ?? 'PIECES')
+  const [gatePassNumber, setGatePassNumber] = useState(editEntry?.task.gate_pass_number ?? '')
+  const [workDate, setWorkDate] = useState(editEntry?.log.work_date ?? today())
+  const [showGatePassPicker, setShowGatePassPicker] = useState(false)
+  const [gatePassSearch, setGatePassSearch] = useState('')
 
-    // Merge workers seen in logs but missing from registry (e.g. offboarded)
-    const knownWorkers = useMemo(() => {
-        const map = new Map(activeWorkers.map(w => [w.name.toLowerCase(), w]))
-        logs.forEach(l => {
-            if (!map.has(l.worker_name.toLowerCase())) {
-                map.set(l.worker_name.toLowerCase(), {
-                    name: l.worker_name,
-                    department: l.department || 'GENERAL',
-                })
-            }
-        })
-        return [...map.values()].sort((a, b) => a.name.localeCompare(b.name))
-    }, [activeWorkers, logs])
+  const filteredGatePasses = gatePasses.filter(gp =>
+    !gatePassSearch ||
+    gp.gate_pass_number.toLowerCase().includes(gatePassSearch.toLowerCase()) ||
+    gp.client_name.toLowerCase().includes(gatePassSearch.toLowerCase())
+  )
 
-    const openCreate = () => {
-        setEditing(null)
-        setForm(EMPTY_FORM())
-        setDialogOpen(true)
-    }
+  const selectedGatePass = gatePasses.find(gp => gp.gate_pass_number === gatePassNumber)
 
-    const openEdit = (log: DailyLog) => {
-        setEditing(log)
-        setForm({
-            ...EMPTY_FORM(),
-            worker_name: log.worker_name,
-            department: log.department,
-            shift: log.shift,
-            attendance_status: log.attendance_status,
-            check_in_time: log.check_in_time ?? '',
-            check_out_time: log.check_out_time ?? '',
-            overtime_hours: log.overtime_hours,
-            washed_count: log.washed_count,
-            pressed_count: log.pressed_count,
-            folded_count: log.folded_count,
-            packed_count: log.packed_count,
-            other_count: log.other_count,
-            total_weight_kg: log.total_weight_kg,
-            tasks: (log.tasks ?? []).map(t => ({ ...t })),
-            rewash_count: log.rewash_count,
-            damaged_items: log.damaged_items,
-            complaints: log.complaints,
-            machines_used: log.machines_used ?? '',
-            chemicals_used: log.chemicals_used ?? '',
-            notes: log.notes ?? '',
-            performance_rating: log.performance_rating ? String(log.performance_rating) : '',
-        })
-        setDialogOpen(true)
-    }
+  const handleSubmit = () => {
+    if (!workerName.trim()) return
+    onSubmit({
+      worker_name: workerName,
+      work_date: workDate,
+      tasks: [{
+        task_type: taskType,
+        description: description || undefined,
+        hours_spent: hoursSpent ? parseFloat(hoursSpent) : undefined,
+        quantity: quantity ? parseInt(quantity) : 0,
+        unit,
+        gate_pass_id: selectedGatePass?.gate_pass_number ?? undefined,
+        gate_pass_number: selectedGatePass?.gate_pass_number ?? undefined,
+      }],
+    })
+  }
 
-    const submit = () => {
-        if (!form.worker_name.trim()) return
-        const payload = {
-            work_date: date,
-            worker_name: form.worker_name.trim(),
-            department: form.department,
-            shift: form.shift,
-            attendance_status: form.attendance_status,
-            check_in_time: form.check_in_time || null,
-            check_out_time: form.check_out_time || null,
-            overtime_hours: Number(form.overtime_hours) || 0,
-            washed_count: Number(form.washed_count) || 0,
-            pressed_count: Number(form.pressed_count) || 0,
-            folded_count: Number(form.folded_count) || 0,
-            packed_count: Number(form.packed_count) || 0,
-            other_count: Number(form.other_count) || 0,
-            total_weight_kg: Number(form.total_weight_kg) || 0,
-            tasks: form.tasks.filter(t => t.task_type && t.quantity > 0),
-            rewash_count: Number(form.rewash_count) || 0,
-            damaged_items: Number(form.damaged_items) || 0,
-            complaints: Number(form.complaints) || 0,
-            machines_used: form.machines_used.trim() || null,
-            chemicals_used: form.chemicals_used.trim() || null,
-            notes: form.notes.trim() || null,
-            performance_rating: form.performance_rating ? Number(form.performance_rating) : null,
-        }
-        if (editing) {
-            updateLog.mutate({ id: editing.id, data: payload })
-        } else {
-            createLog.mutate(payload)
-        }
-        setDialogOpen(false)
-    }
+  if (!open) return null
 
-    const addTaskRow = () =>
-        setForm(f => ({
-            ...f,
-            tasks: [...f.tasks, { task_type: 'WASHING', description: '', quantity: 1, unit: 'PIECES' }],
-        }))
-
-    const updateTaskRow = (idx: number, patch: Partial<TaskEntry>) =>
-        setForm(f => ({
-            ...f,
-            tasks: f.tasks.map((t, i) => (i === idx ? { ...t, ...patch } : t)),
-        }))
-
-    const removeTaskRow = (idx: number) =>
-        setForm(f => ({ ...f, tasks: f.tasks.filter((_, i) => i !== idx) }))
-
-    const busy = createLog.isPending || updateLog.isPending
-
-    const statCards = summary
-        ? [
-            { label: 'Washed', value: summary.total_washed, icon: Shirt, color: '#2563EB', bg: '#EFF6FF' },
-            { label: 'Pressed', value: summary.total_pressed, icon: Sparkles, color: '#C2410C', bg: '#FFF7ED' },
-            { label: 'Folded', value: summary.total_folded, icon: Layers, color: '#7C3AED', bg: '#F5F3FF' },
-            { label: 'Packed', value: summary.total_packed, icon: PackageCheck, color: '#15803D', bg: '#F0FDF4' },
-        ]
-        : []
-
-    return (
-        <div className="space-y-5 pb-10">
-            {/* Header */}
-            <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-                <div>
-                    <Breadcrumb items={[{ label: 'Dashboard', href: '/' }, { label: 'Worker Daily Tasks' }]} />
-                    <h1 className="text-dashboard-title mt-1">Worker Daily Tasks</h1>
-                    <p className="text-[13px] text-[#98A2B3] mt-0.5">
-                        What each person washed, pressed and did today — all records encrypted at rest
-                    </p>
-                </div>
-                <Button onClick={openCreate} className="shadow-lg shadow-red-600/20">
-                    <Plus className="h-4 w-4" /> Log Daily Tasks
-                </Button>
-            </div>
-
-            {/* Date navigator */}
-            <Card className="p-3">
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                    <div className="flex items-center gap-2">
-                        <Button variant="secondary" size="icon" onClick={() => setDate(d => shiftDate(d, -1))} title="Previous day">
-                            <ChevronLeft className="h-4 w-4" />
-                        </Button>
-                        <label className="relative flex items-center gap-2">
-                            <CalendarDays className="pointer-events-none absolute left-3 h-4 w-4 text-[#98A2B3]" />
-                            <input
-                                type="date"
-                                value={date}
-                                onChange={e => e.target.value && setDate(e.target.value)}
-                                className="h-9 appearance-none rounded-lg border border-[#E4E7EC] bg-white pl-9 pr-3 text-[13px] text-[#101828] outline-none focus:border-[#DC2626] shadow-sm cursor-pointer"
-                            />
-                        </label>
-                        <Button variant="secondary" size="icon" onClick={() => setDate(d => shiftDate(d, 1))} title="Next day">
-                            <ChevronRight className="h-4 w-4" />
-                        </Button>
-                        <Button variant="outline" size="sm" onClick={() => setDate(todayISO())}>
-                            Today
-                        </Button>
-                    </div>
-                    <p className="text-[12px] font-medium text-[#667085]">{prettyDate(date)}</p>
-                </div>
-
-                {/* Summary strip */}
-                {summary && (
-                    <div className="grid grid-cols-2 gap-3 md:grid-cols-4 xl:grid-cols-8 pt-3 mt-3 border-t border-[#F2F4F7]">
-                        {statCards.map(s => (
-                            <motion.div
-                                key={s.label}
-                                initial={{ opacity: 0, y: 6 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                className="flex items-center gap-2.5 rounded-lg border border-[#EAECF0] px-3 py-2"
-                                style={{ background: s.bg }}
-                            >
-                                <s.icon className="h-4 w-4 shrink-0" style={{ color: s.color }} />
-                                <div className="min-w-0">
-                                    <p className="text-[15px] font-bold leading-none text-[#101828]">{s.value}</p>
-                                    <p className="text-[10px] font-medium uppercase tracking-wide text-[#667085] mt-1">
-                                        {s.label}
-                                    </p>
-                                </div>
-                            </motion.div>
-                        ))}
-                        <div className="flex items-center gap-2.5 rounded-lg border border-[#EAECF0] bg-white px-3 py-2">
-                            <Clock className="h-4 w-4 shrink-0 text-[#0891B2]" />
-                            <div className="min-w-0">
-                                <p className="text-[15px] font-bold leading-none text-[#101828]">
-                                    {summary.total_overtime_hours}
-                                </p>
-                                <p className="text-[10px] font-medium uppercase tracking-wide text-[#667085] mt-1">OT hrs</p>
-                            </div>
-                        </div>
-                        <div className="flex items-center gap-2.5 rounded-lg border border-[#EAECF0] bg-white px-3 py-2">
-                            <AlertTriangle className="h-4 w-4 shrink-0 text-[#DC2626]" />
-                            <div className="min-w-0">
-                                <p className="text-[15px] font-bold leading-none text-[#101828]">
-                                    {summary.total_rewash}
-                                </p>
-                                <p className="text-[10px] font-medium uppercase tracking-wide text-[#667085] mt-1">Rewash</p>
-                            </div>
-                        </div>
-                    </div>
-                )}
-            </Card>
-
-            {/* Logs list */}
-            {isLoading ? (
-                <div className="space-y-3">
-                    {[...Array(3)].map((_, i) => (
-                        <Skeleton key={i} className="h-[110px]" />
-                    ))}
-                </div>
-            ) : isError ? (
-                <ErrorState description="Could not reach the worker service. Is it running?" />
-            ) : logs.length === 0 ? (
-                <EmptyState
-                    title="No task logs for this day"
-                    description="Record what each worker washed, pressed, folded or packed today."
-                    action={<Button onClick={openCreate}><Plus className="h-4 w-4" /> Log Daily Tasks</Button>}
-                />
-            ) : (
-                <div className="space-y-3">
-                    {logs.map(log => {
-                        const pieces =
-                            log.washed_count + log.pressed_count + log.folded_count + log.packed_count + log.other_count
-                        return (
-                            <Card key={log.id} className="p-4 group">
-                                <div className="flex flex-wrap items-start justify-between gap-3 mb-3">
-                                    <div className="flex items-start gap-3 min-w-0">
-                                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#EFF6FF] to-[#DBEAFE] border border-[#BFDBFE] text-[13px] font-bold text-[#2563EB]">
-                                            {log.worker_name.slice(0, 2).toUpperCase()}
-                                        </div>
-                                        <div className="min-w-0">
-                                            <p className="text-[14px] font-semibold text-[#101828] truncate">
-                                                {log.worker_name}
-                                                <span className="ml-2 text-[11px] font-normal text-[#98A2B3]">
-                                                    {log.department}
-                                                </span>
-                                            </p>
-                                            <div className="mt-1 flex flex-wrap items-center gap-1.5 text-[11px] text-[#667085]">
-                                                <span
-                                                    className={`rounded-full border px-2 py-0.5 font-semibold ${ATTENDANCE_STYLE[log.attendance_status] ?? ATTENDANCE_STYLE.PRESENT}`}
-                                                >
-                                                    {log.attendance_status.replace('_', ' ')}
-                                                </span>
-                                                <span>·</span>
-                                                <span>{log.shift.replace('_', ' ')}</span>
-                                                {(log.check_in_time || log.check_out_time) && (
-                                                    <>
-                                                        <span>·</span>
-                                                        <span className="font-mono">
-                                                            {log.check_in_time || '--:--'} → {log.check_out_time || '--:--'}
-                                                        </span>
-                                                    </>
-                                                )}
-                                                {log.overtime_hours > 0 && (
-                                                    <>
-                                                        <span>·</span>
-                                                        <span className="text-[#D97706] font-medium">
-                                                            +{log.overtime_hours}h OT
-                                                        </span>
-                                                    </>
-                                                )}
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className="flex items-center gap-1">
-                                        <button
-                                            type="button"
-                                            onClick={() => openEdit(log)}
-                                            className="p-1.5 rounded-md text-[#98A2B3] hover:bg-[#F3F4F6] hover:text-[#2563EB] cursor-pointer transition-colors"
-                                            title="Edit"
-                                        >
-                                            <Pencil className="h-3.5 w-3.5" />
-                                        </button>
-                                        <button
-                                            type="button"
-                                            onClick={() => {
-                                                if (confirm(`Delete the daily log for ${log.worker_name}?`)) deleteLog.mutate(log.id)
-                                            }}
-                                            className="p-1.5 rounded-md text-[#98A2B3] hover:bg-[#FEF2F2] hover:text-[#DC2626] cursor-pointer transition-colors"
-                                            title="Delete"
-                                        >
-                                            <Trash2 className="h-3.5 w-3.5" />
-                                        </button>
-                                    </div>
-                                </div>
-
-                                {/* Counts */}
-                                <div className="flex flex-wrap gap-x-4 gap-y-1.5 text-[12px] text-[#667085] border-t border-[#F2F4F7] pt-3">
-                                    <span><Shirt className="inline h-3 w-3 mr-1 -mt-0.5 text-[#2563EB]" /><b className="text-[#374151]">{log.washed_count}</b> washed</span>
-                                    <span><Sparkles className="inline h-3 w-3 mr-1 -mt-0.5 text-[#C2410C]" /><b className="text-[#374151]">{log.pressed_count}</b> pressed</span>
-                                    <span><Layers className="inline h-3 w-3 mr-1 -mt-0.5 text-[#7C3AED]" /><b className="text-[#374151]">{log.folded_count}</b> folded</span>
-                                    <span><PackageCheck className="inline h-3 w-3 mr-1 -mt-0.5 text-[#15803D]" /><b className="text-[#374151]">{log.packed_count}</b> packed</span>
-                                    <span><MoreHorizontal className="inline h-3 w-3 mr-1 -mt-0.5 text-[#667085]" /><b className="text-[#374151]">{log.other_count}</b> other</span>
-                                    <span className="text-[#374151]"><b>{pieces}</b> pcs total</span>
-                                    {log.total_weight_kg > 0 && (
-                                        <span><b className="text-[#374151]">{log.total_weight_kg}</b> kg</span>
-                                    )}
-                                    {log.rewash_count > 0 && (
-                                        <span className="text-[#DC2626]"><b>{log.rewash_count}</b> rewash</span>
-                                    )}
-                                    {log.damaged_items > 0 && (
-                                        <span className="text-[#DC2626]"><b>{log.damaged_items}</b> damaged</span>
-                                    )}
-                                    {log.performance_rating && (
-                                        <span className="text-[#D97706]">
-                                            {'★'.repeat(log.performance_rating)}
-                                            {'☆'.repeat(Math.max(0, 5 - log.performance_rating))}
-                                        </span>
-                                    )}
-                                </div>
-
-                                {/* Detailed task entries */}
-                                {log.tasks?.length > 0 && (
-                                    <div className="flex flex-wrap gap-1.5 mt-2.5">
-                                        {log.tasks.map((t, i) => (
-                                            <span
-                                                key={`${t.task_type}-${i}`}
-                                                className="inline-flex items-center rounded-md bg-[#F9FAFB] border border-[#EAECF0] px-2 py-0.5 text-[11px] text-[#475467]"
-                                            >
-                                                <b className="mr-1">{t.quantity} {t.unit.toLowerCase()}</b>
-                                                {t.task_type.replace(/_/g, ' ').toLowerCase()}
-                                                {t.description ? ` · ${t.description}` : ''}
-                                            </span>
-                                        ))}
-                                    </div>
-                                )}
-
-                                {/* Notes / machines */}
-                                {(log.notes || log.machines_used || log.quality_notes) && (
-                                    <p className="mt-2.5 text-[12px] text-[#667085] italic truncate">
-                                        {[
-                                            log.machines_used && `Machines: ${log.machines_used}`,
-                                            log.quality_notes,
-                                            log.notes,
-                                        ]
-                                            .filter(Boolean)
-                                            .join(' — ')}
-                                    </p>
-                                )}
-                            </Card>
-                        )
-                    })}
-                </div>
-            )}
-
-            {/* Create / edit dialog */}
-            <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-                <DialogContent className="max-w-[560px] max-h-[92vh] overflow-y-auto">
-                    <DialogHeader className="text-left">
-                        <DialogTitle>
-                            {editing ? `Edit — ${editing.worker_name}` : 'Log Daily Tasks'}
-                        </DialogTitle>
-                        <DialogDescription>
-                            {prettyDate(date)} · counts sync automatically with detailed task rows
-                        </DialogDescription>
-                    </DialogHeader>
-                    <DialogBody>
-                        {/* Worker */}
-                        <div className="grid grid-cols-2 gap-3">
-                            <label className="block space-y-1">
-                                <span className="text-[12px] font-medium text-[#344054]">Worker *</span>
-                                <select
-                                    value={form.worker_name}
-                                    onChange={e => {
-                                        const match = knownWorkers.find(w => w.name === e.target.value)
-                                        setForm(f => ({
-                                            ...f,
-                                            worker_name: e.target.value,
-                                            department: match?.department ?? f.department,
-                                        }))
-                                    }}
-                                    className="h-9 w-full appearance-none rounded-lg border border-[#E4E7EC] px-3 text-[13px] outline-none focus:border-[#DC2626] cursor-pointer"
-                                >
-                                    <option value="">Select…</option>
-                                    {knownWorkers.map(w => (
-                                        <option key={w.name} value={w.name}>{w.name}</option>
-                                    ))}
-                                </select>
-                            </label>
-                            <label className="block space-y-1">
-                                <span className="text-[12px] font-medium text-[#344054]">Department</span>
-                                <select
-                                    value={form.department}
-                                    onChange={e => setForm(f => ({ ...f, department: e.target.value }))}
-                                    className="h-9 w-full appearance-none rounded-lg border border-[#E4E7EC] px-3 text-[13px] outline-none focus:border-[#DC2626] cursor-pointer"
-                                >
-                                    {DEPARTMENTS.map(d => (
-                                        <option key={d} value={d}>{d.replace(/_/g, ' ')}</option>
-                                    ))}
-                                </select>
-                            </label>
-                        </div>
-
-                        {/* Attendance */}
-                        <div className="grid grid-cols-3 gap-3">
-                            <label className="block space-y-1">
-                                <span className="text-[12px] font-medium text-[#344054]">Shift</span>
-                                <select
-                                    value={form.shift}
-                                    onChange={e => setForm(f => ({ ...f, shift: e.target.value }))}
-                                    className="h-9 w-full appearance-none rounded-lg border border-[#E4E7EC] px-3 text-[13px] outline-none focus:border-[#DC2626] cursor-pointer"
-                                >
-                                    {SHIFTS.map(s => (
-                                        <option key={s} value={s}>{s.replace(/_/g, ' ')}</option>
-                                    ))}
-                                </select>
-                            </label>
-                            <label className="block space-y-1">
-                                <span className="text-[12px] font-medium text-[#344054]">Attendance</span>
-                                <select
-                                    value={form.attendance_status}
-                                    onChange={e => setForm(f => ({ ...f, attendance_status: e.target.value }))}
-                                    className="h-9 w-full appearance-none rounded-lg border border-[#E4E7EC] px-3 text-[13px] outline-none focus:border-[#DC2626] cursor-pointer"
-                                >
-                                    {ATTENDANCE_STATUSES.map(a => (
-                                        <option key={a} value={a}>{a.replace(/_/g, ' ')}</option>
-                                    ))}
-                                </select>
-                            </label>
-                            <label className="block space-y-1">
-                                <span className="text-[12px] font-medium text-[#344054]">Overtime (h)</span>
-                                <input
-                                    type="number"
-                                    min={0}
-                                    step={0.5}
-                                    value={form.overtime_hours}
-                                    onChange={e => setForm(f => ({ ...f, overtime_hours: Number(e.target.value) }))}
-                                    className="h-9 w-full rounded-lg border border-[#E4E7EC] px-3 text-[13px] outline-none focus:border-[#DC2626]"
-                                />
-                            </label>
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-3">
-                            <label className="block space-y-1">
-                                <span className="text-[12px] font-medium text-[#344054]">Check in</span>
-                                <input
-                                    type="time"
-                                    value={form.check_in_time}
-                                    onChange={e => setForm(f => ({ ...f, check_in_time: e.target.value }))}
-                                    className="h-9 w-full rounded-lg border border-[#E4E7EC] px-3 text-[13px] outline-none focus:border-[#DC2626]"
-                                />
-                            </label>
-                            <label className="block space-y-1">
-                                <span className="text-[12px] font-medium text-[#344054]">Check out</span>
-                                <input
-                                    type="time"
-                                    value={form.check_out_time}
-                                    onChange={e => setForm(f => ({ ...f, check_out_time: e.target.value }))}
-                                    className="h-9 w-full rounded-lg border border-[#E4E7EC] px-3 text-[13px] outline-none focus:border-[#DC2626]"
-                                />
-                            </label>
-                        </div>
-
-                        {/* Quick counts */}
-                        <fieldset className="rounded-lg border border-[#EAECF0] p-3 space-y-2">
-                            <legend className="px-1 text-[11px] font-semibold uppercase tracking-wider text-[#667085]">
-                                Work done today
-                            </legend>
-                            <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
-                                {([
-                                    ['washed_count', 'Washed'],
-                                    ['pressed_count', 'Pressed'],
-                                    ['folded_count', 'Folded'],
-                                    ['packed_count', 'Packed'],
-                                    ['other_count', 'Other'],
-                                    ['total_weight_kg', 'Kg'],
-                                ] as const).map(([key, label]) => (
-                                    <label key={key} className="block space-y-0.5">
-                                        <span className="block text-[10px] font-medium uppercase tracking-wide text-[#667085]">
-                                            {label}
-                                        </span>
-                                        <input
-                                            type="number"
-                                            min={0}
-                                            step={key === 'total_weight_kg' ? 0.1 : 1}
-                                            value={form[key]}
-                                            onChange={e => setForm(f => ({ ...f, [key]: Number(e.target.value) }))}
-                                            className="h-8 w-full rounded-md border border-[#E4E7EC] px-2 text-[12px] outline-none focus:border-[#DC2626]"
-                                        />
-                                    </label>
-                                ))}
-                            </div>
-                        </fieldset>
-
-                        {/* Detailed task rows */}
-                        <fieldset className="rounded-lg border border-[#EAECF0] p-3 space-y-2">
-                            <legend className="px-1 text-[11px] font-semibold uppercase tracking-wider text-[#667085]">
-                                Detailed tasks (optional)
-                            </legend>
-                            {form.tasks.length === 0 && (
-                                <p className="text-[11px] text-[#98A2B3]">
-                                    Break down the day into specific jobs — e.g. “40 shirts pressing”.
-                                </p>
-                            )}
-                            {form.tasks.map((t, idx) => (
-                                <div key={idx} className="flex gap-2">
-                                    <select
-                                        value={t.task_type}
-                                        onChange={e => updateTaskRow(idx, { task_type: e.target.value })}
-                                        className="h-8 w-[130px] shrink-0 appearance-none rounded-md border border-[#E4E7EC] px-2 text-[11px] outline-none focus:border-[#DC2626] cursor-pointer"
-                                    >
-                                        {TASK_TYPES.map(tt => (
-                                            <option key={tt} value={tt}>{tt.replace(/_/g, ' ')}</option>
-                                        ))}
-                                    </select>
-                                    <input
-                                        value={t.description ?? ''}
-                                        onChange={e => updateTaskRow(idx, { description: e.target.value })}
-                                        placeholder="What exactly?"
-                                        className="h-8 min-w-0 flex-1 rounded-md border border-[#E4E7EC] px-2 text-[11px] outline-none focus:border-[#DC2626]"
-                                    />
-                                    <input
-                                        type="number"
-                                        min={0}
-                                        value={t.quantity}
-                                        onChange={e => updateTaskRow(idx, { quantity: Number(e.target.value) })}
-                                        className="h-8 w-16 shrink-0 rounded-md border border-[#E4E7EC] px-2 text-[11px] outline-none focus:border-[#DC2626]"
-                                    />
-                                    <select
-                                        value={t.unit}
-                                        onChange={e => updateTaskRow(idx, { unit: e.target.value })}
-                                        className="h-8 w-[80px] shrink-0 appearance-none rounded-md border border-[#E4E7EC] px-2 text-[11px] outline-none focus:border-[#DC2626] cursor-pointer"
-                                    >
-                                        {TASK_UNITS.map(u => (
-                                            <option key={u} value={u}>{u}</option>
-                                        ))}
-                                    </select>
-                                    <button
-                                        type="button"
-                                        onClick={() => removeTaskRow(idx)}
-                                        className="shrink-0 p-1 rounded text-[#98A2B3] hover:bg-[#FEF2F2] hover:text-[#DC2626] cursor-pointer"
-                                    >
-                                        <Trash2 className="h-3.5 w-3.5" />
-                                    </button>
-                                </div>
-                            ))}
-                            <Button type="button" variant="secondary" size="sm" onClick={addTaskRow}>
-                                <Plus className="h-3.5 w-3.5" /> Add task row
-                            </Button>
-                        </fieldset>
-
-                        {/* Quality + extras */}
-                        <div className="grid grid-cols-3 gap-2">
-                            {([
-                                ['rewash_count', 'Rewash', 1],
-                                ['damaged_items', 'Damaged', 1],
-                                ['complaints', 'Complaints', 1],
-                            ] as const).map(([key, label]) => (
-                                <label key={key} className="block space-y-0.5">
-                                    <span className="block text-[10px] font-medium uppercase tracking-wide text-[#667085]">
-                                        {label}
-                                    </span>
-                                    <input
-                                        type="number"
-                                        min={0}
-                                        value={form[key]}
-                                        onChange={e => setForm(f => ({ ...f, [key]: Number(e.target.value) }))}
-                                        className="h-8 w-full rounded-md border border-[#E4E7EC] px-2 text-[12px] outline-none focus:border-[#DC2626]"
-                                    />
-                                </label>
-                            ))}
-                        </div>
-                        <div className="grid grid-cols-2 gap-3">
-                            <label className="block space-y-1">
-                                <span className="text-[12px] font-medium text-[#344054]">Machines used</span>
-                                <input
-                                    value={form.machines_used}
-                                    onChange={e => setForm(f => ({ ...f, machines_used: e.target.value }))}
-                                    placeholder="Washer #2, Steam press A…"
-                                    className="h-9 w-full rounded-lg border border-[#E4E7EC] px-3 text-[13px] outline-none focus:border-[#DC2626]"
-                                />
-                            </label>
-                            <label className="block space-y-1">
-                                <span className="text-[12px] font-medium text-[#344054]">Performance rating</span>
-                                <select
-                                    value={form.performance_rating}
-                                    onChange={e => setForm(f => ({ ...f, performance_rating: e.target.value }))}
-                                    className="h-9 w-full appearance-none rounded-lg border border-[#E4E7EC] px-3 text-[13px] outline-none focus:border-[#DC2626] cursor-pointer"
-                                >
-                                    <option value="">—</option>
-                                    {[5, 4, 3, 2, 1].map(r => (
-                                        <option key={r} value={r}>{'★'.repeat(r)} ({r})</option>
-                                    ))}
-                                </select>
-                            </label>
-                        </div>
-                        <label className="block space-y-1">
-                            <span className="text-[12px] font-medium text-[#344054]">Notes</span>
-                            <textarea
-                                value={form.notes}
-                                onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
-                                rows={2}
-                                placeholder="Anything else worth recording about this worker's day…"
-                                className="w-full rounded-lg border border-[#E4E7EC] px-3 py-2 text-[13px] outline-none focus:border-[#DC2626] focus:ring-2 focus:ring-red-500/10 resize-none"
-                            />
-                        </label>
-                    </DialogBody>
-                    <DialogFooter>
-                        <div className="flex gap-2">
-                            <Button variant="secondary" className="flex-1" onClick={() => setDialogOpen(false)}>
-                                Cancel
-                            </Button>
-                            <Button
-                                className="flex-1"
-                                disabled={!form.worker_name || busy}
-                                onClick={submit}
-                            >
-                                {editing ? 'Save Changes' : 'Save Daily Log'}
-                            </Button>
-                        </div>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
-
-            {/* Cross-link */}
-            <p className="text-[12px] text-[#98A2B3]">
-                Manage who works here on the{' '}
-                <Link to="/workers" className="font-medium text-[#DC2626] hover:underline">
-                    Laundry Workers
-                </Link>{' '}
-                page.
-            </p>
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40"
+      onClick={onClose}
+    >
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95, y: 8 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.95, y: 8 }}
+        transition={{ duration: 0.15 }}
+        className="w-full max-w-lg rounded-xl bg-white shadow-xl border border-[#E5E7EB]"
+        onClick={e => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between px-5 py-4 border-b border-[#F3F4F6]">
+          <h3 className="text-[15px] font-semibold text-[#111827]">
+            {editEntry ? 'Edit Task' : 'Log New Task'}
+          </h3>
+          <button onClick={onClose} className="p-1 rounded-lg hover:bg-[#F3F4F6] transition-colors cursor-pointer">
+            <X size={16} className="text-[#6B7280]" />
+          </button>
         </div>
-    )
+
+        <div className="px-5 py-4 space-y-4">
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-[12px] font-medium text-[#374151] block mb-1">Staff Member *</label>
+              <select
+                value={workerName}
+                onChange={e => setWorkerName(e.target.value)}
+                disabled={!!editEntry}
+                className="w-full rounded-lg border border-[#E5E7EB] px-3 py-2.5 text-[13px] text-[#111827] focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/10 transition-all appearance-none cursor-pointer disabled:opacity-50"
+              >
+                {workers.map(w => (
+                  <option key={w.id} value={w.worker_name}>{w.worker_name}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="text-[12px] font-medium text-[#374151] block mb-1">Date *</label>
+              <input
+                type="date"
+                value={workDate}
+                onChange={e => setWorkDate(e.target.value)}
+                disabled={!!editEntry}
+                className="w-full rounded-lg border border-[#E5E7EB] px-3 py-2.5 text-[13px] text-[#111827] focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/10 transition-all disabled:opacity-50"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="text-[12px] font-medium text-[#374151] block mb-1">Task Type *</label>
+            <div className="grid grid-cols-4 gap-1.5">
+              {taskTypes.slice(0, 8).map(t => {
+                const isSelected = taskType === t.value
+                return (
+                  <button
+                    key={t.value}
+                    onClick={() => setTaskType(t.value)}
+                    className={`flex flex-col items-center gap-1 px-2 py-2.5 rounded-lg text-[11px] font-medium transition-all cursor-pointer border ${
+                      isSelected
+                        ? 'bg-[#DC2626] text-white border-[#DC2626] shadow-sm'
+                        : 'bg-white text-[#374151] border-[#E5E7EB] hover:border-[#D1D5DB] hover:bg-[#F9FAFB]'
+                    }`}
+                  >
+                    <t.icon size={16} className={isSelected ? 'text-white' : 'text-[#6B7280]'} />
+                    <span className="truncate w-full text-center">{t.label}</span>
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-3 gap-3">
+            <div>
+              <label className="text-[12px] font-medium text-[#374151] block mb-1">Quantity</label>
+              <input
+                type="number"
+                min="0"
+                value={quantity}
+                onChange={e => setQuantity(e.target.value)}
+                placeholder="0"
+                className="w-full rounded-lg border border-[#E5E7EB] px-3 py-2.5 text-[13px] text-[#111827] placeholder-[#9CA3AF] focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/10 transition-all"
+              />
+            </div>
+            <div>
+              <label className="text-[12px] font-medium text-[#374151] block mb-1">Unit</label>
+              <select
+                value={unit}
+                onChange={e => setUnit(e.target.value)}
+                className="w-full rounded-lg border border-[#E5E7EB] px-3 py-2.5 text-[13px] text-[#111827] focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/10 transition-all appearance-none cursor-pointer"
+              >
+                <option value="PIECES">Pieces</option>
+                <option value="KG">Kg</option>
+                <option value="LOADS">Loads</option>
+                <option value="HOURS">Hours</option>
+              </select>
+            </div>
+            <div>
+              <label className="text-[12px] font-medium text-[#374151] block mb-1">Hours Spent</label>
+              <input
+                type="number"
+                step="0.5"
+                min="0"
+                value={hoursSpent}
+                onChange={e => setHoursSpent(e.target.value)}
+                placeholder="0"
+                className="w-full rounded-lg border border-[#E5E7EB] px-3 py-2.5 text-[13px] text-[#111827] placeholder-[#9CA3AF] focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/10 transition-all"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="text-[12px] font-medium text-[#374151] block mb-1">Link to Gate Pass (optional)</label>
+            <div className="relative">
+              <ClipboardText size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#9CA3AF]" />
+              <input
+                type="text"
+                value={gatePassSearch || gatePassNumber}
+                onChange={e => { setGatePassSearch(e.target.value); setGatePassNumber(''); setShowGatePassPicker(true) }}
+                onFocus={() => setShowGatePassPicker(true)}
+                placeholder="Search gate pass number or client..."
+                className="w-full rounded-lg border border-[#E5E7EB] bg-white pl-9 pr-3 py-2.5 text-[13px] text-[#111827] placeholder-[#9CA3AF] focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/10 transition-all"
+              />
+              {showGatePassPicker && filteredGatePasses.length > 0 && (
+                <div className="absolute z-10 top-full left-0 right-0 mt-1 max-h-48 overflow-y-auto rounded-lg border border-[#E5E7EB] bg-white shadow-lg">
+                  {filteredGatePasses.slice(0, 20).map(gp => (
+                    <button
+                      key={gp.gate_pass_number}
+                      onClick={() => { setGatePassNumber(gp.gate_pass_number); setGatePassSearch(''); setShowGatePassPicker(false) }}
+                      className="w-full text-left px-3 py-2.5 hover:bg-[#F9FAFB] transition-colors border-b border-[#F3F4F6] last:border-0 cursor-pointer"
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="text-[13px] font-medium text-[#111827]">{gp.gate_pass_number}</span>
+                        <span className="text-[11px] text-[#9CA3AF]">{gp.receiving_date}</span>
+                      </div>
+                      <p className="text-[11px] text-[#6B7280] mt-0.5">{gp.client_name} · {gp.items.length} item{gp.items.length !== 1 ? 's' : ''}</p>
+                    </button>
+                  ))}
+                </div>
+              )}
+              {gatePassNumber && (
+                <button
+                  onClick={() => { setGatePassNumber(''); setGatePassSearch('') }}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 p-0.5 rounded hover:bg-[#F3F4F6] cursor-pointer"
+                >
+                  <X size={12} className="text-[#9CA3AF]" />
+                </button>
+              )}
+            </div>
+            {selectedGatePass && (
+              <div className="mt-2 flex items-center gap-2 px-3 py-2 rounded-lg bg-[#EFF6FF] border border-[#BFDBFE] text-[12px]">
+                <ClipboardText size={12} className="text-[#2563EB] shrink-0" />
+                <span className="font-medium text-[#1E40AF]">{selectedGatePass.gate_pass_number}</span>
+                <span className="text-[#6B7280]">— {selectedGatePass.client_name}, {selectedGatePass.items.length} items</span>
+              </div>
+            )}
+          </div>
+
+          <div>
+            <label className="text-[12px] font-medium text-[#374151] block mb-1">Notes / Description</label>
+            <textarea
+              value={description}
+              onChange={e => setDescription(e.target.value)}
+              placeholder="Optional notes about this task..."
+              rows={2}
+              className="w-full rounded-lg border border-[#E5E7EB] px-3 py-2.5 text-[13px] text-[#111827] placeholder-[#9CA3AF] focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/10 transition-all resize-none"
+            />
+          </div>
+        </div>
+
+        <div className="flex items-center justify-end gap-2 px-5 py-3.5 border-t border-[#F3F4F6]">
+          <button
+            onClick={onClose}
+            className="px-4 py-2 rounded-lg text-[13px] font-medium text-[#374151] hover:bg-[#F3F4F6] transition-colors cursor-pointer"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleSubmit}
+            disabled={!workerName.trim() || isPending}
+            className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#DC2626] text-[13px] font-semibold text-white hover:bg-[#B91C1C] disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
+          >
+            {isPending ? (
+              <div className="animate-spin w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full" />
+            ) : (
+              <Check size={14} weight="bold" />
+            )}
+            {editEntry ? 'Save Changes' : 'Log Task'}
+          </button>
+        </div>
+      </motion.div>
+    </motion.div>
+  )
 }
