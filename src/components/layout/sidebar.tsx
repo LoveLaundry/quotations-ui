@@ -14,6 +14,7 @@ import {
   Database,
   CaretLeft,
   CaretRight,
+  ChatCircleDots,
 } from '@phosphor-icons/react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Logo } from '../brand/logo'
@@ -27,6 +28,7 @@ const navGroups = [
     items: [
       { to: '/', label: 'Dashboard', icon: House, end: true },
       { to: '/business-dashboard', label: 'Business Intelligence', icon: ChartBar, end: false },
+      { to: '/live-chat', label: 'Live Chat', icon: ChatCircleDots, end: false, roles: ['ADMIN', 'MANAGER'] },
     ],
   },
   {
@@ -159,7 +161,11 @@ function SidebarContent({
     g.label === 'System' ? { ...g, items: systemItems } : g
   ).map(g => ({
     ...g,
-    items: g.items.filter((item: any) => !item.permission || hasPermission(item.permission))
+    items: g.items.filter(
+      (item: any) =>
+        (!item.permission || hasPermission(item.permission)) &&
+        (!item.roles || (user?.role_id && item.roles.includes(String(user.role_id).toUpperCase()))),
+    )
   })).filter(g => g.items.length > 0)
 
   return (

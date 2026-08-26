@@ -26,6 +26,7 @@ import DeliveriesPage from '../features/quotations/pages/deliveries-page'
 import CreateDeliveryPage from '../features/quotations/pages/create-delivery-page'
 import DeliveryDetailPage from '../features/quotations/pages/delivery-detail-page'
 import ReportsPage from '../features/quotations/pages/reports-page'
+import LiveChatPage from '../features/quotations/pages/live-chat-page'
 import ErrorPage from '../features/quotations/pages/error-page'
 import UsersPage from '../features/quotations/pages/users-page'
 import GuestQuotationsPage from '../features/quotations/pages/guest-quotations-page'
@@ -102,6 +103,7 @@ export const router = createBrowserRouter([
             children: [
               { path: 'users', element: <UsersPage /> },
               { path: 'database-sync', element: <DatabaseSyncPage /> },
+              { path: 'live-chat', element: <LiveChatPage /> },
             ],
           },
 
