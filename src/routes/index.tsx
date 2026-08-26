@@ -89,6 +89,9 @@ export const router = createBrowserRouter([
           { path: 'workers', element: <WorkersPage /> },
           { path: 'workers/daily-tasks', element: <DailyTasksPage /> },
 
+          // Public chatbot (ADMIN / MANAGER)
+          { path: 'live-chat', element: <LiveChatPage /> },
+
           // Analytics
           { path: 'reports', element: <ReportsPage /> },
 
@@ -103,7 +106,6 @@ export const router = createBrowserRouter([
             children: [
               { path: 'users', element: <UsersPage /> },
               { path: 'database-sync', element: <DatabaseSyncPage /> },
-              { path: 'live-chat', element: <LiveChatPage /> },
             ],
           },
 
