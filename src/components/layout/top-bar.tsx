@@ -7,6 +7,7 @@ import { useAuth } from '../../context/AuthContext'
 import { useNotifications } from '../../features/quotations/hooks/useNotifications'
 import { NotificationDetailDialog } from '../../features/quotations/components/notification-detail-dialog'
 import type { Quotation } from '../../types/quotation'
+import type { GatePassPendingEntry, NotificationType } from '../../types/notification'
 
 interface TopBarProps {
   title?: string
@@ -20,7 +21,7 @@ export function TopBar({ title, sidebarCollapsed, onMobileMenuToggle }: TopBarPr
   const navigate = useNavigate()
   const [showMenu, setShowMenu] = useState(false)
   const [showNotifications, setShowNotifications] = useState(false)
-  const [selectedNotification, setSelectedNotification] = useState<{ item: Quotation; type: 'quotation_pending' | 'quotation_accepted' } | null>(null)
+  const [selectedNotification, setSelectedNotification] = useState<{ item: Quotation | GatePassPendingEntry; type: NotificationType } | null>(null)
   const notificationsRef = useRef<HTMLDivElement>(null)
 
   const { totalCount, notificationItems, isLoading } = useNotifications()
@@ -30,7 +31,7 @@ export function TopBar({ title, sidebarCollapsed, onMobileMenuToggle }: TopBarPr
     navigate('/login', { replace: true })
   }
 
-  const handleNotificationItemClick = (item: Quotation, type: 'quotation_pending' | 'quotation_accepted') => {
+  const handleNotificationItemClick = (item: Quotation | GatePassPendingEntry, type: NotificationType) => {
     setSelectedNotification({ item, type })
   }
 
@@ -164,15 +165,15 @@ export function TopBar({ title, sidebarCollapsed, onMobileMenuToggle }: TopBarPr
                           >
                             <div className="flex items-start gap-3">
                               <div className={`flex h-8 w-8 items-center justify-center rounded-lg shrink-0 ${
-                                notification.type === 'quotation_pending' 
+                                 notification.type === 'gatepass_pending'
                                   ? 'bg-[#FEF2F2] text-[#DC2626]' 
                                   : 'bg-[#F0FDF4] text-[#16A34A]'
                               }`}>
-                                {notification.type === 'quotation_pending' ? (
-                                  <PaperPlaneTilt size={16} />
-                                ) : (
-                                  <FileText size={16} />
-                                )}
+                                 {notification.type === 'gatepass_pending' ? (
+                                   <PaperPlaneTilt size={16} />
+                                 ) : (
+                                   <FileText size={16} />
+                                 )}
                               </div>
                               <div className="flex-1 min-w-0">
                                 <p className="text-[13px] font-semibold text-[#101828] truncate">
@@ -181,28 +182,28 @@ export function TopBar({ title, sidebarCollapsed, onMobileMenuToggle }: TopBarPr
                                 <p className="text-[11px] text-[#6B7280] mt-0.5 truncate">
                                   {notification.message}
                                 </p>
-                                {notification.items.length > 0 && (
-                                  <div className="mt-2 flex flex-wrap gap-1">
-                                    {notification.items.slice(0, 3).map((item, idx) => (
-                                      <button
-                                        key={idx}
-                                        onClick={(e) => {
-                                          e.stopPropagation()
-                                          handleNotificationItemClick(item as Quotation, notification.type)
-                                        }}
-                                        className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-[#F3F4F6] text-[10px] font-medium text-[#374151] border border-[#E5E7EB] hover:bg-[#E5E7EB] transition-colors cursor-pointer"
-                                      >
-                                        {item.client_name}
-                                      </button>
-                                    ))}
-                                    {notification.items.length > 3 && (
-                                      <button
-                            onClick={() => handleNotificationGroupClick('/notifications')}
-                                        className="inline-flex items-center px-2 py-0.5 rounded bg-[#F3F4F6] text-[10px] font-medium text-[#6B7280] border border-[#E5E7EB] hover:bg-[#E5E7EB] transition-colors cursor-pointer"
-                                      >
-                                        +{notification.items.length - 3} more
-                                      </button>
-                                    )}
+                                 {((notification.type === 'gatepass_pending' ? notification.gatePassItems : notification.quotations) ?? []).length > 0 && (
+                                   <div className="mt-2 flex flex-wrap gap-1">
+                                     {((notification.type === 'gatepass_pending' ? notification.gatePassItems : notification.quotations) ?? []).slice(0, 3).map((item: Quotation | GatePassPendingEntry, idx: number) => (
+                                       <button
+                                         key={idx}
+                                         onClick={(e) => {
+                                           e.stopPropagation()
+                                           handleNotificationItemClick(item, notification.type)
+                                         }}
+                                         className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-[#F3F4F6] text-[10px] font-medium text-[#374151] border border-[#E5E7EB] hover:bg-[#E5E7EB] transition-colors cursor-pointer"
+                                       >
+                                         {item.client_name}
+                                       </button>
+                                     ))}
+                                     {((notification.type === 'gatepass_pending' ? notification.gatePassItems : notification.quotations) ?? []).length > 3 && (
+                                       <button
+                             onClick={() => handleNotificationGroupClick('/notifications')}
+                                         className="inline-flex items-center px-2 py-0.5 rounded bg-[#F3F4F6] text-[10px] font-medium text-[#6B7280] border border-[#E5E7EB] hover:bg-[#E5E7EB] transition-colors cursor-pointer"
+                                       >
+                                         +{((notification.type === 'gatepass_pending' ? notification.gatePassItems : notification.quotations) ?? []).length - 3} more
+                                       </button>
+                                     )}
                                   </div>
                                 )}
                               </div>
@@ -295,8 +296,8 @@ export function TopBar({ title, sidebarCollapsed, onMobileMenuToggle }: TopBarPr
       <NotificationDetailDialog
         open={!!selectedNotification}
         onOpenChange={(open) => !open && setSelectedNotification(null)}
-        quotation={selectedNotification?.item ?? null}
-        type={selectedNotification?.type ?? 'quotation_pending'}
+        data={selectedNotification?.item ?? null}
+        type={selectedNotification?.type ?? 'gatepass_pending'}
       />
     </>
   )

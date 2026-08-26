@@ -1,49 +1,62 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
-  RiSendPlaneLine, RiFileTextLine, RiSearchLine, RiAddLine,
-  RiArrowRightSLine, RiCloseLine,
+  RiFileTextLine, RiSearchLine, RiAddLine,
+  RiArrowRightSLine, RiCloseLine, RiTruckLine,
 } from 'react-icons/ri'
 import { Button } from '../../../components/ui/button'
 import { EmptyState } from '../../../components/ui/empty-state'
 import { Skeleton } from '../../../components/ui/skeleton'
-import { formatDate } from '../../../lib/utils'
 import { useNotifications } from '../hooks/useNotifications'
 import { NotificationDetailDialog } from '../components/notification-detail-dialog'
 import type { Quotation } from '../../../types/quotation'
+import type { GatePassPendingEntry } from '../../../types/notification'
 
 type TabFilter = 'all' | 'pending' | 'accepted'
 
+type Row =
+  | { kind: 'gatepass_pending'; entry: GatePassPendingEntry }
+  | { kind: 'quotation_accepted'; quotation: Quotation }
+
 export default function NotificationsPage() {
   const navigate = useNavigate()
-  const { pendingQuotations, acceptedQuotations, pendingCount, acceptedCount, totalCount, isLoading } = useNotifications()
+  const { gatePassPending, acceptedQuotations, pendingCount, acceptedCount, totalCount, isLoading } = useNotifications()
   const [filter, setFilter] = useState<TabFilter>('all')
   const [search, setSearch] = useState('')
-  const [selected, setSelected] = useState<{ item: Quotation; type: 'quotation_pending' | 'quotation_accepted' } | null>(null)
+  const [selected, setSelected] = useState<Row | null>(null)
 
-  const allItems: Array<{ item: Quotation; type: 'quotation_pending' | 'quotation_accepted' }> = [
-    ...pendingQuotations.map(q => ({ item: q, type: 'quotation_pending' as const })),
-    ...acceptedQuotations.map(q => ({ item: q, type: 'quotation_accepted' as const })),
+  const allRows: Row[] = [
+    ...gatePassPending.map((entry) => ({ kind: 'gatepass_pending' as const, entry })),
+    ...acceptedQuotations.map((quotation) => ({ kind: 'quotation_accepted' as const, quotation })),
   ]
 
-  const filtered = allItems.filter(({ item }) => {
-    if (filter === 'pending') return item.status === 'draft'
-    if (filter === 'accepted') return item.status === 'accepted'
-    return true
-  }).filter(({ item }) => {
-    if (!search.trim()) return true
-    const s = search.toLowerCase()
-    return (
-      item.client_name.toLowerCase().includes(s) ||
-      (item.quotation_title ?? '').toLowerCase().includes(s)
-    )
-  })
+  const filtered = allRows
+    .filter((row) => {
+      if (filter === 'pending') return row.kind === 'gatepass_pending'
+      if (filter === 'accepted') return row.kind === 'quotation_accepted'
+      return true
+    })
+    .filter((row) => {
+      if (!search.trim()) return true
+      const s = search.toLowerCase()
+      if (row.kind === 'gatepass_pending') {
+        return (
+          row.entry.client_name.toLowerCase().includes(s) ||
+          row.entry.item_name.toLowerCase().includes(s) ||
+          row.entry.gate_pass_number.toLowerCase().includes(s)
+        )
+      }
+      return (
+        row.quotation.client_name.toLowerCase().includes(s) ||
+        (row.quotation.quotation_title ?? '').toLowerCase().includes(s)
+      )
+    })
 
-  const handleAction = (item: Quotation, type: 'quotation_pending' | 'quotation_accepted') => {
-    if (type === 'quotation_pending') {
-      navigate(`/quotations/${item.id}/edit`)
+  const handleAction = (row: Row) => {
+    if (row.kind === 'quotation_accepted') {
+      navigate(`/bills/new?quotation_id=${row.quotation.id}`)
     } else {
-      navigate(`/bills/new?quotation_id=${item.id}`)
+      navigate(`/gate-passes/${row.entry.gate_pass_id}`)
     }
   }
 
@@ -78,15 +91,20 @@ export default function NotificationsPage() {
               : 'Everything is up to date'}
           </p>
         </div>
-        <Button variant="secondary" onClick={() => navigate('/quotations')}>
-          <RiFileTextLine size={16} /> All Quotations
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="secondary" onClick={() => navigate('/gate-passes')}>
+            <RiTruckLine size={16} /> Gate Passes
+          </Button>
+          <Button variant="secondary" onClick={() => navigate('/quotations')}>
+            <RiFileTextLine size={16} /> All Quotations
+          </Button>
+        </div>
       </div>
 
       {/* Tabs + Search */}
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div className="flex gap-1 bg-[#F3F4F6] rounded-xl p-1 w-fit">
-          {tabs.map(tab => (
+          {tabs.map((tab) => (
             <button
               key={tab.key}
               onClick={() => setFilter(tab.key)}
@@ -114,8 +132,8 @@ export default function NotificationsPage() {
           <RiSearchLine size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#98A2B3]" />
           <input
             value={search}
-            onChange={e => setSearch(e.target.value)}
-            placeholder="Search client or title..."
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search client, item or gate pass..."
             className="h-10 w-full rounded-lg border border-[#E4E7EC] bg-white pl-9 pr-9 text-[13px] text-[#101828] outline-none focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/10 transition"
           />
           {search && (
@@ -136,54 +154,106 @@ export default function NotificationsPage() {
           title={search ? 'No results found' : 'No notifications'}
           description={search
             ? `Nothing matches "${search}".`
-            : "You're all caught up. No quotations waiting to be sent or billed."}
+            : "You're all caught up. No gate pass items pending to be sent or quotations waiting to be billed."}
         />
       ) : (
         <div className="rounded-2xl border border-[#E4E7EC] bg-white overflow-hidden shadow-sm divide-y divide-[#F2F4F7]">
-          {filtered.map(({ item, type }, idx) => {
-            const isPending = type === 'quotation_pending'
+          {filtered.map((row, idx) => {
+            if (row.kind === 'gatepass_pending') {
+              const e = row.entry
+              return (
+                <div
+                  key={`gp-${e.gate_pass_id}-${e.item_name}-${idx}`}
+                  className="flex items-start justify-between gap-4 px-5 py-4 hover:bg-[#FAFAFA] transition-colors"
+                >
+                  <button
+                    onClick={() => setSelected(row)}
+                    className="flex items-start gap-4 flex-1 min-w-0 text-left cursor-pointer"
+                  >
+                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border bg-[#FEF2F2] text-[#DC2626] border-[#FECACA]">
+                      <RiTruckLine size={20} />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <p className="text-[14px] font-semibold text-[#101828] truncate">
+                          {e.item_name}
+                        </p>
+                        <span className="inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide whitespace-nowrap bg-[#FEF2F2] text-[#DC2626] border-[#FECACA]">
+                          Pending to Send
+                        </span>
+                      </div>
+                      <p className="text-[12px] text-[#6B7280] mt-0.5 truncate">
+                        {e.client_name} · Gate Pass #{e.gate_pass_number}
+                      </p>
+                      <div className="mt-1.5 flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-[#98A2B3]">
+                        <span>Received: {e.received}</span>
+                        <span>Delivered: {e.delivered}</span>
+                        <span className="font-semibold text-[#DC2626]">Pending: {e.pending}</span>
+                      </div>
+                    </div>
+                  </button>
+
+                  <div className="flex items-center gap-2 shrink-0">
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      onClick={() => navigate(`/gate-passes/${e.gate_pass_id}`)}
+                    >
+                      Details
+                    </Button>
+                    <Button
+                      size="sm"
+                      onClick={() => navigate(`/gate-passes/${e.gate_pass_id}`)}
+                      className="bg-[#DC2626] hover:bg-[#B91C1C]"
+                    >
+                      <RiTruckLine size={14} /> View Gate Pass
+                    </Button>
+                    <button
+                      onClick={() => setSelected(row)}
+                      className="flex h-8 w-8 items-center justify-center rounded-lg text-[#98A2B3] hover:bg-[#F3F4F6] hover:text-[#111827] transition-colors cursor-pointer"
+                      aria-label="Open details"
+                    >
+                      <RiArrowRightSLine size={18} />
+                    </button>
+                  </div>
+                </div>
+              )
+            }
+
+            const q = row.quotation
             return (
               <div
-                key={`${item.id}-${idx}`}
+                key={`q-${q.id}-${idx}`}
                 className="flex items-start justify-between gap-4 px-5 py-4 hover:bg-[#FAFAFA] transition-colors"
               >
                 <button
-                  onClick={() => setSelected({ item, type })}
+                  onClick={() => setSelected(row)}
                   className="flex items-start gap-4 flex-1 min-w-0 text-left cursor-pointer"
                 >
-                  <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border ${
-                    isPending
-                      ? 'bg-[#FEF2F2] text-[#DC2626] border-[#FECACA]'
-                      : 'bg-[#FFF7ED] text-[#EA580C] border-[#FED7AA]'
-                  }`}>
-                    {isPending ? <RiSendPlaneLine size={20} /> : <RiFileTextLine size={20} />}
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border bg-[#FFF7ED] text-[#EA580C] border-[#FED7AA]">
+                    <RiFileTextLine size={20} />
                   </div>
-
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
                       <p className="text-[14px] font-semibold text-[#101828] truncate">
-                        {item.client_name}
+                        {q.client_name}
                       </p>
-                      <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide whitespace-nowrap ${
-                        isPending
-                          ? 'bg-[#FEF2F2] text-[#DC2626] border-[#FECACA]'
-                          : 'bg-[#FFF7ED] text-[#EA580C] border-[#FED7AA]'
-                      }`}>
-                        {isPending ? 'Pending to Send' : 'Ready for Billing'}
+                      <span className="inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide whitespace-nowrap bg-[#FFF7ED] text-[#EA580C] border-[#FED7AA]">
+                        Ready for Billing
                       </span>
-                      {item.tag && (
+                      {q.tag && (
                         <span className="inline-flex items-center rounded-full bg-[#F3F4F6] border border-[#E5E7EB] px-2 py-0.5 text-[10px] font-semibold uppercase text-[#6B7280]">
-                          {item.tag}
+                          {q.tag}
                         </span>
                       )}
                     </div>
                     <p className="text-[12px] text-[#6B7280] mt-0.5 truncate">
-                      {item.quotation_title || 'General Price List'} · #{String(item.id).slice(0, 8)} · {item.created_at ? formatDate(item.created_at) : '—'}
+                      {q.quotation_title || 'General Price List'} · #{String(q.id).slice(0, 8)}
                     </p>
                     <div className="mt-1.5 flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-[#98A2B3]">
-                      <span>{item.line_items?.length ?? 0} items</span>
+                      <span>{q.line_items?.length ?? 0} items</span>
                       <span>
-                        LKR {(item.line_items ?? []).reduce((sum, li) => sum + li.unit_price, 0).toFixed(2)} total rate value
+                        LKR {(q.line_items ?? []).reduce((sum, li) => sum + li.unit_price, 0).toFixed(2)} total rate value
                       </span>
                     </div>
                   </div>
@@ -193,23 +263,19 @@ export default function NotificationsPage() {
                   <Button
                     size="sm"
                     variant="secondary"
-                    onClick={() => navigate(`/quotations/${item.id}`)}
+                    onClick={() => navigate(`/quotations/${q.id}`)}
                   >
                     Details
                   </Button>
                   <Button
                     size="sm"
-                    onClick={() => handleAction(item, type)}
-                    className={isPending ? 'bg-[#DC2626] hover:bg-[#B91C1C]' : 'bg-[#101828] hover:bg-[#374151]'}
+                    onClick={() => handleAction(row)}
+                    className="bg-[#101828] hover:bg-[#374151]"
                   >
-                    {isPending ? (
-                      <><RiSendPlaneLine size={14} /> Send</>
-                    ) : (
-                      <><RiAddLine size={14} /> Create Bill</>
-                    )}
+                    <RiAddLine size={14} /> Create Bill
                   </Button>
                   <button
-                    onClick={() => setSelected({ item, type })}
+                    onClick={() => setSelected(row)}
                     className="flex h-8 w-8 items-center justify-center rounded-lg text-[#98A2B3] hover:bg-[#F3F4F6] hover:text-[#111827] transition-colors cursor-pointer"
                     aria-label="Open details"
                   >
@@ -226,8 +292,8 @@ export default function NotificationsPage() {
       <NotificationDetailDialog
         open={!!selected}
         onOpenChange={(open) => !open && setSelected(null)}
-        quotation={selected?.item ?? null}
-        type={selected?.type ?? 'quotation_pending'}
+        data={selected ? (selected.kind === 'gatepass_pending' ? selected.entry : selected.quotation) : null}
+        type={selected?.kind ?? 'gatepass_pending'}
       />
     </div>
   )

@@ -1,75 +1,118 @@
+import { useMemo } from 'react'
+import { useQuery } from '@tanstack/react-query'
+import { gatepasses } from '../services/gatepass.service'
+import { useDeliveries } from './useDeliveries'
 import { useQuotations } from './useQuotations'
-import { useBills } from './useBills'
+import type { NotificationItem, GatePassPendingEntry } from '../../../types/notification'
 import type { Quotation } from '../../../types/quotation'
-import type { Bill } from '../../../types/bill'
-
-export interface NotificationItem {
-  id: string
-  type: 'quotation_pending' | 'quotation_accepted'
-  title: string
-  message: string
-  count: number
-  items: (Quotation | Bill)[]
-  route: string
-}
-
-export interface NotificationState {
-  pendingQuotations: Quotation[]
-  acceptedQuotations: Quotation[]
-  pendingCount: number
-  acceptedCount: number
-  totalCount: number
-}
+import type { GatePass } from '../../../types/operations'
 
 export function useNotifications() {
-  const { data: quotations = [], isLoading: quotationsLoading } = useQuotations()
-  const { data: billsData, isLoading: billsLoading } = useBills({ limit: 1000 })
-  const bills = billsData?.items ?? []
+  const { data: gatePasses = [], isLoading: gpLoading } = useQuery<GatePass[]>({
+    queryKey: ['notifications', 'gatepasses'],
+    queryFn: () => gatepasses.list(),
+    staleTime: 60_000,
+  })
 
-  const billQuotationIds = new Set(bills.map(b => String(b.quotation_id)))
+  const { data: deliveryList = [], isLoading: dLoading } = useDeliveries()
 
-  const pendingQuotations = quotations.filter(
-    q => q.status === 'draft'
+  const { data: quotations = [], isLoading: qLoading } = useQuotations()
+
+  const gatePassPending: GatePassPendingEntry[] = useMemo(() => {
+    const deliveredByPass = new Map<string, Map<string, number>>()
+    for (const d of deliveryList) {
+      const key = d.gate_pass_id
+      let m = deliveredByPass.get(key)
+      if (!m) {
+        m = new Map()
+        deliveredByPass.set(key, m)
+      }
+      for (const it of d.items ?? []) {
+        m.set(it.item_name, (m.get(it.item_name) ?? 0) + (Number(it.quantity) || 0))
+      }
+    }
+
+    const result: GatePassPendingEntry[] = []
+    for (const gp of gatePasses) {
+      const lookupKeys = [gp.id, (gp as { _id?: string })._id, gp.gate_pass_number].filter(
+        Boolean,
+      ) as string[]
+      let delMap: Map<string, number> | undefined
+      for (const k of lookupKeys) {
+        const found = deliveredByPass.get(k)
+        if (found) {
+          delMap = found
+          break
+        }
+      }
+
+      for (const item of gp.items ?? []) {
+        const received = Number(item.received_qty) || 0
+        const delivered = Number(delMap?.get(item.item_name) ?? 0)
+        const pending = Math.max(0, received - delivered)
+        if (pending > 0) {
+          result.push({
+            gate_pass_id: gp.id ?? (gp as { _id?: string })._id ?? '',
+            gate_pass_number: gp.gate_pass_number,
+            client_name: gp.client_name,
+            item_name: item.item_name,
+            received,
+            delivered,
+            pending,
+          })
+        }
+      }
+    }
+    return result
+  }, [gatePasses, deliveryList])
+
+  const acceptedQuotations: Quotation[] = useMemo(
+    () => quotations.filter((q) => q.status === 'accepted'),
+    [quotations],
   )
 
-  const acceptedQuotations = quotations.filter(
-    q => q.status === 'accepted' && !billQuotationIds.has(String(q.id))
-  )
-
-  const pendingCount = pendingQuotations.length
+  const pendingCount = gatePassPending.reduce((sum, e) => sum + e.pending, 0)
   const acceptedCount = acceptedQuotations.length
   const totalCount = pendingCount + acceptedCount
 
-  const allNotifications: NotificationItem[] = [
-    {
-      id: 'quotation_pending',
-      type: 'quotation_pending' as const,
-      title: 'Pending to Send',
-      message: `${pendingCount} quotation${pendingCount !== 1 ? 's' : ''} waiting to be sent`,
-      count: pendingCount,
-      items: pendingQuotations,
-      route: '/quotations?filter=draft',
-    },
-    {
-      id: 'quotation_accepted',
-      type: 'quotation_accepted' as const,
-      title: 'Ready for Billing',
-      message: `${acceptedCount} accepted quotation${acceptedCount !== 1 ? 's' : ''} need billing`,
-      count: acceptedCount,
-      items: acceptedQuotations,
-      route: '/quotations?filter=accepted',
-    },
-  ]
+  const notificationItems: NotificationItem[] = useMemo(() => {
+    const items: NotificationItem[] = []
 
-  const notificationItems = allNotifications.filter(item => item.count > 0)
+    if (gatePassPending.length > 0) {
+      const gpCount = new Set(gatePassPending.map((e) => e.gate_pass_number)).size
+      items.push({
+        id: 'gatepass_pending',
+        type: 'gatepass_pending',
+        title: 'Pending to Send',
+        message: `${pendingCount} item${pendingCount !== 1 ? 's' : ''} pending to be sent across ${gpCount} gate pass${gpCount !== 1 ? 'es' : ''}`,
+        count: pendingCount,
+        route: '/gate-passes',
+        gatePassItems: gatePassPending,
+      })
+    }
+
+    if (acceptedQuotations.length > 0) {
+      items.push({
+        id: 'quotation_accepted',
+        type: 'quotation_accepted',
+        title: 'Ready for Billing',
+        message: `${acceptedQuotations.length} accepted quotation${acceptedQuotations.length !== 1 ? 's' : ''} awaiting billing`,
+        count: acceptedQuotations.length,
+        route: '/quotations',
+        quotations: acceptedQuotations,
+      })
+    }
+
+    return items
+  }, [gatePassPending, pendingCount, acceptedQuotations])
 
   return {
-    pendingQuotations,
-    acceptedQuotations,
+    notificationItems,
+    totalCount,
     pendingCount,
     acceptedCount,
-    totalCount,
-    notificationItems,
-    isLoading: quotationsLoading || billsLoading,
+    gatePassPending,
+    acceptedQuotations,
+    isLoading: gpLoading || dLoading || qLoading,
   }
 }

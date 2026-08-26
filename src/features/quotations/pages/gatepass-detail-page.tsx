@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, Fragment } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import {
     ArrowLeft, ClipboardList, Calendar, User, AlertCircle,
@@ -207,7 +207,7 @@ export default function GatePassDetailPage() {
                             </thead>
                             <tbody className="divide-y divide-[#F9FAFB]">
                                 {gp.items.map((item: any) => (
-                                    <>
+                                    <Fragment key={item.item_name}>
                                         <tr key={item.item_name} className="group">
                                             <td className="py-3 pr-3 font-medium text-[#101828]">{item.item_name}</td>
                                             <td className="py-3 pr-3 text-[#6B7280]">{item.category || '—'}</td>
@@ -289,7 +289,7 @@ export default function GatePassDetailPage() {
                                                 </tr>
                                             )}
                                         </AnimatePresence>
-                                    </>
+                                    </Fragment>
                                 ))}
                             </tbody>
                         </table>
