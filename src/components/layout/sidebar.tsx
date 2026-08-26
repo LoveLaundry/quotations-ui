@@ -34,8 +34,8 @@ const navGroups = [
     items: [
       { to: '/gate-passes', label: 'Gate Passes', icon: ClipboardText, end: false, permission: 'view_gate_passes' },
       { to: '/deliveries', label: 'Deliveries', icon: Truck, end: false, permission: 'view_deliveries' },
-      { to: '/workers', label: 'Staff Management', icon: Users, end: false },
-      { to: '/workers/daily-tasks', label: 'Staff Daily Tasks', icon: UsersThree, end: false },
+      { to: '/workers', label: 'Staff Management', icon: Users, end: true },
+      { to: '/workers/daily-tasks', label: 'Staff Daily Tasks', icon: UsersThree, end: false, indent: true },
       { to: '/bills', label: 'Bills', icon: CurrencyCircleDollar, end: false, permission: 'view_bills' },
     ],
   },
@@ -204,7 +204,7 @@ function SidebarContent({
               </p>
             )}
             <div className="space-y-px">
-              {items.map(({ to, label, icon: Icon, end }) => (
+              {items.map(({ to, label, icon: Icon, end, indent }: { to: string; label: string; icon: any; end?: boolean; indent?: boolean }) => (
                 <NavLink
                   key={to}
                   to={to}
@@ -216,6 +216,7 @@ function SidebarContent({
                     cn(
                       'group flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-[13px] font-medium transition-all duration-150',
                       collapsed && 'justify-center px-2',
+                      indent && !collapsed && 'pl-9',
                       isActive
                         ? 'bg-[#DC2626] text-white'
                         : 'text-[#9CA3AF] hover:bg-[#F3F4F6] hover:text-[#111827]'

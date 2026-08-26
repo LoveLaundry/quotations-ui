@@ -39,6 +39,7 @@ export interface TaskEntry {
     hours_spent?: number | null
     gate_pass_id?: string | null
     gate_pass_number?: string | null
+    remark?: string | null
 }
 
 export interface Worker {

@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import {
   Plus,
   MagnifyingGlass,
@@ -22,7 +22,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion'
 import { useWorkers, useDailyTasks, useCreateDailyTask, useUpdateDailyTask, useDeleteDailyTask, useGatePassesForWorker } from '../hooks/useWorkers'
 import type { DailyLog, TaskEntry, Worker } from '../types'
-import type { GatePass } from '../../../types/operations'
+import type { GatePass, GatePassItem } from '../../../types/operations'
 import { ErrorState } from '../../../components/ui/error-state'
 
 const taskTypes = [
@@ -322,7 +322,10 @@ export function DailyTasksPage() {
                           )}
                         </div>
                         {task.description && (
-                          <p className="text-[12px] text-[#6B7280] mt-0.5 line-clamp-2">{task.description}</p>
+                           <p className="text-[12px] text-[#6B7280] mt-0.5 line-clamp-2">{task.description}</p>
+                         )}
+                        {task.remark && (
+                           <p className="text-[11px] text-[#9CA3AF] mt-0.5 line-clamp-1 italic">Remark: {task.remark}</p>
                         )}
                       </div>
                       <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
@@ -455,40 +458,199 @@ interface TaskDialogProps {
   isPending: boolean
 }
 
+interface TaskRow {
+  key: string
+  task_type: string
+  description: string
+  quantity: string
+  unit: string
+  hours_spent: string
+  remark: string
+  gate_pass_id?: string
+  gate_pass_number?: string
+  fromGatePass?: boolean
+}
+
+function GatePassPicker({
+  gatePasses,
+  gatePassNumber,
+  setGatePassNumber,
+  search,
+  setSearch,
+  showPicker,
+  setShowPicker,
+}: {
+  gatePasses: GatePass[]
+  gatePassNumber: string
+  setGatePassNumber: (v: string) => void
+  search: string
+  setSearch: (v: string) => void
+  showPicker: boolean
+  setShowPicker: (v: boolean) => void
+}) {
+  const filtered = gatePasses.filter(gp =>
+    !search ||
+    gp.gate_pass_number.toLowerCase().includes(search.toLowerCase()) ||
+    gp.client_name.toLowerCase().includes(search.toLowerCase())
+  )
+  const selected = gatePasses.find(gp => gp.gate_pass_number === gatePassNumber)
+
+  if (gatePassNumber && selected) {
+    return (
+      <div>
+        <label className="text-[12px] font-medium text-[#374151] block mb-1">Linked Gate Pass</label>
+        <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[#EFF6FF] border border-[#BFDBFE] text-[12px]">
+          <ClipboardText size={13} className="text-[#2563EB] shrink-0" />
+          <span className="font-medium text-[#1E40AF]">{selected.gate_pass_number}</span>
+          <span className="text-[#6B7280] truncate">— {selected.client_name}, {selected.items.length} items</span>
+          <button
+            type="button"
+            onClick={() => { setGatePassNumber(''); setSearch('') }}
+            className="ml-auto p-0.5 rounded hover:bg-[#DBEAFE] cursor-pointer shrink-0"
+            aria-label="Clear gate pass"
+          >
+            <X size={13} className="text-[#2563EB]" />
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div>
+      <label className="text-[12px] font-medium text-[#374151] block mb-1">Link to Gate Pass (optional)</label>
+      <div className="relative">
+        <ClipboardText size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#9CA3AF]" />
+        <input
+          type="text"
+          value={search}
+          onChange={e => { setSearch(e.target.value); setShowPicker(true) }}
+          onFocus={() => setShowPicker(true)}
+          placeholder="Search gate pass number or client..."
+          className="w-full rounded-lg border border-[#E5E7EB] bg-white pl-9 pr-3 py-2.5 text-[13px] text-[#111827] placeholder-[#9CA3AF] focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/10 transition-all"
+        />
+        {showPicker && filtered.length > 0 && (
+          <div className="absolute z-10 top-full left-0 right-0 mt-1 max-h-48 overflow-y-auto rounded-lg border border-[#E5E7EB] bg-white shadow-lg">
+            {filtered.slice(0, 20).map(gp => (
+              <button
+                type="button"
+                key={gp.gate_pass_number}
+                onClick={() => { setGatePassNumber(gp.gate_pass_number); setSearch(''); setShowPicker(false) }}
+                className="w-full text-left px-3 py-2.5 hover:bg-[#F9FAFB] transition-colors border-b border-[#F3F4F6] last:border-0 cursor-pointer"
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-[13px] font-medium text-[#111827]">{gp.gate_pass_number}</span>
+                  <span className="text-[11px] text-[#9CA3AF]">{gp.receiving_date}</span>
+                </div>
+                <p className="text-[11px] text-[#6B7280] mt-0.5">{gp.client_name} · {gp.items.length} item{gp.items.length !== 1 ? 's' : ''}</p>
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
 function TaskDialog({ open, onClose, editEntry, workers, gatePasses, onSubmit, isPending }: TaskDialogProps) {
 
+  const isEdit = !!editEntry
   const [workerName, setWorkerName] = useState(editEntry?.log.worker_name ?? (workers[0]?.worker_name ?? ''))
-  const [taskType, setTaskType] = useState(editEntry?.task.task_type ?? 'WASHING')
-  const [description, setDescription] = useState(editEntry?.task.description ?? '')
-  const [hoursSpent, setHoursSpent] = useState(editEntry?.task.hours_spent?.toString() ?? '')
-  const [quantity, setQuantity] = useState(editEntry?.task.quantity?.toString() ?? '')
-  const [unit, setUnit] = useState(editEntry?.task.unit ?? 'PIECES')
-  const [gatePassNumber, setGatePassNumber] = useState(editEntry?.task.gate_pass_number ?? '')
   const [workDate, setWorkDate] = useState(editEntry?.log.work_date ?? today())
-  const [showGatePassPicker, setShowGatePassPicker] = useState(false)
+  const [taskType, setTaskType] = useState(editEntry?.task.task_type ?? 'WASHING')
+  const [gatePassNumber, setGatePassNumber] = useState(editEntry?.task.gate_pass_number ?? '')
   const [gatePassSearch, setGatePassSearch] = useState('')
-
-  const filteredGatePasses = gatePasses.filter(gp =>
-    !gatePassSearch ||
-    gp.gate_pass_number.toLowerCase().includes(gatePassSearch.toLowerCase()) ||
-    gp.client_name.toLowerCase().includes(gatePassSearch.toLowerCase())
-  )
+  const [showGatePassPicker, setShowGatePassPicker] = useState(false)
+  const [rows, setRows] = useState<TaskRow[]>([])
+  const [editDescription, setEditDescription] = useState(editEntry?.task.description ?? '')
+  const [editQuantity, setEditQuantity] = useState(editEntry?.task.quantity?.toString() ?? '')
+  const [editUnit, setEditUnit] = useState(editEntry?.task.unit ?? 'PIECES')
+  const [editHours, setEditHours] = useState(editEntry?.task.hours_spent?.toString() ?? '')
+  const [editRemark, setEditRemark] = useState(editEntry?.task.remark ?? '')
 
   const selectedGatePass = gatePasses.find(gp => gp.gate_pass_number === gatePassNumber)
 
-  const handleSubmit = () => {
+  // Reset all state every time the dialog (re)opens.
+  useEffect(() => {
+    if (!open) return
+    setWorkerName(editEntry?.log.worker_name ?? (workers[0]?.worker_name ?? ''))
+    setWorkDate(editEntry?.log.work_date ?? today())
+    setTaskType(editEntry?.task.task_type ?? 'WASHING')
+    setGatePassNumber(editEntry?.task.gate_pass_number ?? '')
+    setGatePassSearch('')
+    setShowGatePassPicker(false)
+    setRows([])
+    setEditDescription(editEntry?.task.description ?? '')
+    setEditQuantity(editEntry?.task.quantity?.toString() ?? '')
+    setEditUnit(editEntry?.task.unit ?? 'PIECES')
+    setEditHours(editEntry?.task.hours_spent?.toString() ?? '')
+    setEditRemark(editEntry?.task.remark ?? '')
+  }, [open, editEntry])
+
+  const addGatePassItem = (item: GatePassItem) => {
+    if (!selectedGatePass) return
+    const key = `gp:${selectedGatePass.gate_pass_number}:${item.item_name}`
+    setRows(prev => prev.some(r => r.key === key)
+      ? prev
+      : [...prev, {
+          key,
+          task_type: taskType,
+          description: item.category ? `${item.item_name} (${item.category})` : item.item_name,
+          quantity: String(item.received_qty),
+          unit: 'PIECES',
+          hours_spent: '',
+          remark: '',
+          gate_pass_id: selectedGatePass.id,
+          gate_pass_number: selectedGatePass.gate_pass_number,
+          fromGatePass: true,
+        }])
+  }
+
+  const removeRow = (key: string) => setRows(prev => prev.filter(r => r.key !== key))
+
+  const addManualRow = () => setRows(prev => [...prev, {
+    key: `manual:${Date.now()}:${prev.length}`,
+    task_type: taskType,
+    description: '',
+    quantity: '1',
+    unit: 'PIECES',
+    hours_spent: '',
+    remark: '',
+    fromGatePass: false,
+  }])
+
+  const updateRow = (key: string, patch: Partial<TaskRow>) =>
+    setRows(prev => prev.map(r => r.key === key ? { ...r, ...patch } : r))
+
+  const handleCreateSubmit = () => {
+    if (!workerName.trim() || rows.length === 0) return
+    const tasks: TaskEntry[] = rows.map(r => ({
+      task_type: r.task_type,
+      description: r.description.trim() || undefined,
+      quantity: parseFloat(r.quantity) || 0,
+      unit: r.unit,
+      hours_spent: r.hours_spent ? parseFloat(r.hours_spent) : undefined,
+      remark: r.remark.trim() || undefined,
+      gate_pass_id: r.gate_pass_id,
+      gate_pass_number: r.gate_pass_number,
+    }))
+    onSubmit({ worker_name: workerName, work_date: workDate, tasks })
+  }
+
+  const handleEditSubmit = () => {
     if (!workerName.trim()) return
     onSubmit({
       worker_name: workerName,
       work_date: workDate,
       tasks: [{
         task_type: taskType,
-        description: description || undefined,
-        hours_spent: hoursSpent ? parseFloat(hoursSpent) : undefined,
-        quantity: quantity ? parseInt(quantity) : 0,
-        unit,
-        gate_pass_id: selectedGatePass?.gate_pass_number ?? undefined,
-        gate_pass_number: selectedGatePass?.gate_pass_number ?? undefined,
+        description: editDescription.trim() || undefined,
+        quantity: parseFloat(editQuantity) || 0,
+        unit: editUnit,
+        hours_spent: editHours ? parseFloat(editHours) : undefined,
+        remark: editRemark.trim() || undefined,
+        gate_pass_id: selectedGatePass?.id,
+        gate_pass_number: selectedGatePass?.gate_pass_number,
       }],
     })
   }
@@ -527,7 +689,7 @@ function TaskDialog({ open, onClose, editEntry, workers, gatePasses, onSubmit, i
               <select
                 value={workerName}
                 onChange={e => setWorkerName(e.target.value)}
-                disabled={!!editEntry}
+                disabled={isEdit}
                 className="w-full rounded-lg border border-[#E5E7EB] px-3 py-2.5 text-[13px] text-[#111827] focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/10 transition-all appearance-none cursor-pointer disabled:opacity-50"
               >
                 {workers.map(w => (
@@ -541,131 +703,229 @@ function TaskDialog({ open, onClose, editEntry, workers, gatePasses, onSubmit, i
                 type="date"
                 value={workDate}
                 onChange={e => setWorkDate(e.target.value)}
-                disabled={!!editEntry}
+                disabled={isEdit}
                 className="w-full rounded-lg border border-[#E5E7EB] px-3 py-2.5 text-[13px] text-[#111827] focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/10 transition-all disabled:opacity-50"
               />
             </div>
           </div>
 
-          <div>
-            <label className="text-[12px] font-medium text-[#374151] block mb-1">Task Type *</label>
-            <div className="grid grid-cols-4 gap-1.5">
-              {taskTypes.slice(0, 8).map(t => {
-                const isSelected = taskType === t.value
-                return (
-                  <button
-                    key={t.value}
-                    onClick={() => setTaskType(t.value)}
-                    className={`flex flex-col items-center gap-1 px-2 py-2.5 rounded-lg text-[11px] font-medium transition-all cursor-pointer border ${
-                      isSelected
-                        ? 'bg-[#DC2626] text-white border-[#DC2626] shadow-sm'
-                        : 'bg-white text-[#374151] border-[#E5E7EB] hover:border-[#D1D5DB] hover:bg-[#F9FAFB]'
-                    }`}
+          {isEdit ? (
+            <>
+              <div>
+                <label className="text-[12px] font-medium text-[#374151] block mb-1">Task Type *</label>
+                <div className="grid grid-cols-3 sm:grid-cols-4 gap-1.5">
+                  {taskTypes.map(t => {
+                    const isSelected = taskType === t.value
+                    return (
+                      <button
+                        key={t.value}
+                        type="button"
+                        onClick={() => setTaskType(t.value)}
+                        className={`flex flex-col items-center gap-1 px-2 py-2.5 rounded-lg text-[11px] font-medium transition-all cursor-pointer border ${
+                          isSelected
+                            ? 'bg-[#DC2626] text-white border-[#DC2626] shadow-sm'
+                            : 'bg-white text-[#374151] border-[#E5E7EB] hover:border-[#D1D5DB] hover:bg-[#F9FAFB]'
+                        }`}
+                      >
+                        <t.icon size={16} className={isSelected ? 'text-white' : 'text-[#6B7280]'} />
+                        <span className="truncate w-full text-center">{t.label}</span>
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-3 gap-3">
+                <div>
+                  <label className="text-[12px] font-medium text-[#374151] block mb-1">Quantity</label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={editQuantity}
+                    onChange={e => setEditQuantity(e.target.value)}
+                    placeholder="0"
+                    className="w-full rounded-lg border border-[#E5E7EB] px-3 py-2.5 text-[13px] text-[#111827] placeholder-[#9CA3AF] focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/10 transition-all"
+                  />
+                </div>
+                <div>
+                  <label className="text-[12px] font-medium text-[#374151] block mb-1">Unit</label>
+                  <select
+                    value={editUnit}
+                    onChange={e => setEditUnit(e.target.value)}
+                    className="w-full rounded-lg border border-[#E5E7EB] px-3 py-2.5 text-[13px] text-[#111827] focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/10 transition-all appearance-none cursor-pointer"
                   >
-                    <t.icon size={16} className={isSelected ? 'text-white' : 'text-[#6B7280]'} />
-                    <span className="truncate w-full text-center">{t.label}</span>
-                  </button>
-                )
-              })}
-            </div>
-          </div>
+                    <option value="PIECES">Pieces</option>
+                    <option value="KG">Kg</option>
+                    <option value="LOADS">Loads</option>
+                    <option value="HOURS">Hours</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-[12px] font-medium text-[#374151] block mb-1">Hours Spent</label>
+                  <input
+                    type="number"
+                    step="0.5"
+                    min="0"
+                    value={editHours}
+                    onChange={e => setEditHours(e.target.value)}
+                    placeholder="0"
+                    className="w-full rounded-lg border border-[#E5E7EB] px-3 py-2.5 text-[13px] text-[#111827] placeholder-[#9CA3AF] focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/10 transition-all"
+                  />
+                </div>
+              </div>
 
-          <div className="grid grid-cols-3 gap-3">
-            <div>
-              <label className="text-[12px] font-medium text-[#374151] block mb-1">Quantity</label>
-              <input
-                type="number"
-                min="0"
-                value={quantity}
-                onChange={e => setQuantity(e.target.value)}
-                placeholder="0"
-                className="w-full rounded-lg border border-[#E5E7EB] px-3 py-2.5 text-[13px] text-[#111827] placeholder-[#9CA3AF] focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/10 transition-all"
+              <GatePassPicker
+                gatePasses={gatePasses}
+                gatePassNumber={gatePassNumber}
+                setGatePassNumber={setGatePassNumber}
+                search={gatePassSearch}
+                setSearch={setGatePassSearch}
+                showPicker={showGatePassPicker}
+                setShowPicker={setShowGatePassPicker}
               />
-            </div>
-            <div>
-              <label className="text-[12px] font-medium text-[#374151] block mb-1">Unit</label>
-              <select
-                value={unit}
-                onChange={e => setUnit(e.target.value)}
-                className="w-full rounded-lg border border-[#E5E7EB] px-3 py-2.5 text-[13px] text-[#111827] focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/10 transition-all appearance-none cursor-pointer"
-              >
-                <option value="PIECES">Pieces</option>
-                <option value="KG">Kg</option>
-                <option value="LOADS">Loads</option>
-                <option value="HOURS">Hours</option>
-              </select>
-            </div>
-            <div>
-              <label className="text-[12px] font-medium text-[#374151] block mb-1">Hours Spent</label>
-              <input
-                type="number"
-                step="0.5"
-                min="0"
-                value={hoursSpent}
-                onChange={e => setHoursSpent(e.target.value)}
-                placeholder="0"
-                className="w-full rounded-lg border border-[#E5E7EB] px-3 py-2.5 text-[13px] text-[#111827] placeholder-[#9CA3AF] focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/10 transition-all"
-              />
-            </div>
-          </div>
 
-          <div>
-            <label className="text-[12px] font-medium text-[#374151] block mb-1">Link to Gate Pass (optional)</label>
-            <div className="relative">
-              <ClipboardText size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#9CA3AF]" />
-              <input
-                type="text"
-                value={gatePassSearch || gatePassNumber}
-                onChange={e => { setGatePassSearch(e.target.value); setGatePassNumber(''); setShowGatePassPicker(true) }}
-                onFocus={() => setShowGatePassPicker(true)}
-                placeholder="Search gate pass number or client..."
-                className="w-full rounded-lg border border-[#E5E7EB] bg-white pl-9 pr-3 py-2.5 text-[13px] text-[#111827] placeholder-[#9CA3AF] focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/10 transition-all"
+              <div>
+                <label className="text-[12px] font-medium text-[#374151] block mb-1">Item / Service</label>
+                <input
+                  value={editDescription}
+                  onChange={e => setEditDescription(e.target.value)}
+                  placeholder="e.g. 20 shirts, Washing load A"
+                  className="w-full rounded-lg border border-[#E5E7EB] px-3 py-2.5 text-[13px] text-[#111827] placeholder-[#9CA3AF] focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/10 transition-all"
+                />
+              </div>
+
+              <div>
+                <label className="text-[12px] font-medium text-[#374151] block mb-1">Remark</label>
+                <textarea
+                  value={editRemark}
+                  onChange={e => setEditRemark(e.target.value)}
+                  placeholder="Optional remark about this task..."
+                  rows={2}
+                  className="w-full rounded-lg border border-[#E5E7EB] px-3 py-2.5 text-[13px] text-[#111827] placeholder-[#9CA3AF] focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/10 transition-all resize-none"
+                />
+              </div>
+            </>
+          ) : (
+            <>
+              <GatePassPicker
+                gatePasses={gatePasses}
+                gatePassNumber={gatePassNumber}
+                setGatePassNumber={setGatePassNumber}
+                search={gatePassSearch}
+                setSearch={setGatePassSearch}
+                showPicker={showGatePassPicker}
+                setShowPicker={setShowGatePassPicker}
               />
-              {showGatePassPicker && filteredGatePasses.length > 0 && (
-                <div className="absolute z-10 top-full left-0 right-0 mt-1 max-h-48 overflow-y-auto rounded-lg border border-[#E5E7EB] bg-white shadow-lg">
-                  {filteredGatePasses.slice(0, 20).map(gp => (
-                    <button
-                      key={gp.gate_pass_number}
-                      onClick={() => { setGatePassNumber(gp.gate_pass_number); setGatePassSearch(''); setShowGatePassPicker(false) }}
-                      className="w-full text-left px-3 py-2.5 hover:bg-[#F9FAFB] transition-colors border-b border-[#F3F4F6] last:border-0 cursor-pointer"
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="text-[13px] font-medium text-[#111827]">{gp.gate_pass_number}</span>
-                        <span className="text-[11px] text-[#9CA3AF]">{gp.receiving_date}</span>
+
+              {selectedGatePass && (
+                <div className="rounded-lg border border-[#E5E7EB] p-3">
+                  <p className="text-[12px] font-medium text-[#374151] mb-2">
+                    Items in {selectedGatePass.gate_pass_number} — select what was worked on
+                  </p>
+                  <div className="space-y-1.5 max-h-44 overflow-y-auto">
+                    {selectedGatePass.items.map((item, i) => {
+                      const checked = rows.some(r => r.key === `gp:${selectedGatePass.gate_pass_number}:${item.item_name}`)
+                      return (
+                        <label key={`${item.item_name}-${i}`} className="flex items-center gap-2.5 px-2 py-2 rounded-md hover:bg-[#F9FAFB] cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={checked}
+                            onChange={e => e.target.checked ? addGatePassItem(item) : removeRow(`gp:${selectedGatePass.gate_pass_number}:${item.item_name}`)}
+                            className="accent-[#DC2626] w-4 h-4 shrink-0"
+                          />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-[13px] font-medium text-[#111827] truncate">{item.item_name}{item.category ? ` (${item.category})` : ''}</p>
+                            <p className="text-[11px] text-[#6B7280]">Client: {item.client_qty} · Received: {item.received_qty}</p>
+                          </div>
+                        </label>
+                      )
+                    })}
+                  </div>
+                </div>
+              )}
+
+              <div className="flex items-center justify-between">
+                <p className="text-[12px] font-medium text-[#374151]">Tasks to log ({rows.length})</p>
+                <button
+                  type="button"
+                  onClick={addManualRow}
+                  className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-[#E5E7EB] text-[12px] font-medium text-[#374151] hover:bg-[#F9FAFB] transition-colors cursor-pointer"
+                >
+                  <Plus size={13} weight="bold" /> Add item manually
+                </button>
+              </div>
+
+              {rows.length === 0 ? (
+                <p className="text-[12px] text-[#9CA3AF] text-center py-4 border border-dashed border-[#E5E7EB] rounded-lg">
+                  Select gate pass items above, or add an item manually
+                </p>
+              ) : (
+                <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
+                  {rows.map(row => (
+                    <div key={row.key} className="rounded-lg border border-[#E5E7EB] p-3 space-y-2 bg-[#FCFCFD]">
+                      <div className="flex items-center gap-2">
+                        <select
+                          value={row.task_type}
+                          onChange={e => updateRow(row.key, { task_type: e.target.value })}
+                          className="rounded-lg border border-[#E5E7EB] px-2 py-1.5 text-[12px] text-[#111827] focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/10 transition-all appearance-none cursor-pointer"
+                        >
+                          {taskTypes.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+                        </select>
+                        {row.fromGatePass && (
+                          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-[#EFF6FF] text-[10px] font-medium text-[#2563EB] border border-[#BFDBFE]">
+                            <ClipboardText size={9} /> GP
+                          </span>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => removeRow(row.key)}
+                          className="ml-auto p-1 rounded hover:bg-[#FEF2F2] cursor-pointer"
+                          aria-label="Remove"
+                        >
+                          <TrashSimple size={13} className="text-[#9CA3AF] hover:text-[#DC2626]" />
+                        </button>
                       </div>
-                      <p className="text-[11px] text-[#6B7280] mt-0.5">{gp.client_name} · {gp.items.length} item{gp.items.length !== 1 ? 's' : ''}</p>
-                    </button>
+                      <input
+                        value={row.description}
+                        onChange={e => updateRow(row.key, { description: e.target.value })}
+                        placeholder="Item / service description"
+                        className="w-full rounded-lg border border-[#E5E7EB] px-2.5 py-1.5 text-[12px] text-[#111827] placeholder-[#9CA3AF] focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/10 transition-all"
+                      />
+                      <div className="grid grid-cols-3 gap-2">
+                        <input
+                          type="number" min="0"
+                          value={row.quantity}
+                          onChange={e => updateRow(row.key, { quantity: e.target.value })}
+                          placeholder="Qty"
+                          className="rounded-lg border border-[#E5E7EB] px-2.5 py-1.5 text-[12px] text-[#111827] placeholder-[#9CA3AF] focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/10 transition-all"
+                        />
+                        <select
+                          value={row.unit}
+                          onChange={e => updateRow(row.key, { unit: e.target.value })}
+                          className="rounded-lg border border-[#E5E7EB] px-2 py-1.5 text-[12px] text-[#111827] focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/10 transition-all appearance-none cursor-pointer"
+                        >
+                          {['PIECES', 'KG', 'LOADS', 'HOURS'].map(u => <option key={u} value={u}>{u}</option>)}
+                        </select>
+                        <input
+                          type="number" step="0.5" min="0"
+                          value={row.hours_spent}
+                          onChange={e => updateRow(row.key, { hours_spent: e.target.value })}
+                          placeholder="Hrs"
+                          className="rounded-lg border border-[#E5E7EB] px-2.5 py-1.5 text-[12px] text-[#111827] placeholder-[#9CA3AF] focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/10 transition-all"
+                        />
+                      </div>
+                      <input
+                        value={row.remark}
+                        onChange={e => updateRow(row.key, { remark: e.target.value })}
+                        placeholder="Remark (optional)"
+                        className="w-full rounded-lg border border-[#E5E7EB] px-2.5 py-1.5 text-[12px] text-[#111827] placeholder-[#9CA3AF] focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/10 transition-all"
+                      />
+                    </div>
                   ))}
                 </div>
               )}
-              {gatePassNumber && (
-                <button
-                  onClick={() => { setGatePassNumber(''); setGatePassSearch('') }}
-                  className="absolute right-2.5 top-1/2 -translate-y-1/2 p-0.5 rounded hover:bg-[#F3F4F6] cursor-pointer"
-                >
-                  <X size={12} className="text-[#9CA3AF]" />
-                </button>
-              )}
-            </div>
-            {selectedGatePass && (
-              <div className="mt-2 flex items-center gap-2 px-3 py-2 rounded-lg bg-[#EFF6FF] border border-[#BFDBFE] text-[12px]">
-                <ClipboardText size={12} className="text-[#2563EB] shrink-0" />
-                <span className="font-medium text-[#1E40AF]">{selectedGatePass.gate_pass_number}</span>
-                <span className="text-[#6B7280]">— {selectedGatePass.client_name}, {selectedGatePass.items.length} items</span>
-              </div>
-            )}
-          </div>
-
-          <div>
-            <label className="text-[12px] font-medium text-[#374151] block mb-1">Notes / Description</label>
-            <textarea
-              value={description}
-              onChange={e => setDescription(e.target.value)}
-              placeholder="Optional notes about this task..."
-              rows={2}
-              className="w-full rounded-lg border border-[#E5E7EB] px-3 py-2.5 text-[13px] text-[#111827] placeholder-[#9CA3AF] focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/10 transition-all resize-none"
-            />
-          </div>
+            </>
+          )}
         </div>
 
         <div className="flex items-center justify-end gap-2 px-5 py-3.5 border-t border-[#F3F4F6]">
@@ -676,8 +936,8 @@ function TaskDialog({ open, onClose, editEntry, workers, gatePasses, onSubmit, i
             Cancel
           </button>
           <button
-            onClick={handleSubmit}
-            disabled={!workerName.trim() || isPending}
+            onClick={isEdit ? handleEditSubmit : handleCreateSubmit}
+            disabled={!workerName.trim() || (!isEdit && rows.length === 0) || isPending}
             className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#DC2626] text-[13px] font-semibold text-white hover:bg-[#B91C1C] disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
           >
             {isPending ? (
