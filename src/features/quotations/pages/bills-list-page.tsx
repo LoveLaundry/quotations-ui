@@ -53,7 +53,7 @@ export default function BillsListPage() {
       'Total Amount': bill.total_amount,
       'Paid Amount': bill.paid_amount || 0,
       'Outstanding Amount': bill.outstanding_amount ?? bill.total_amount,
-      'Status': bill.status || 'PENDING',
+      'Status': bill.payment_status || 'DRAFT',
       'Date': formatDate(bill.created_at)
     }))
     

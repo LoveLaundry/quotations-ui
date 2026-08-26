@@ -18,8 +18,11 @@ import { useRef } from 'react'
 function StatusBadge({ status }: { status?: string }) {
   if (!status) return null
   const colors = {
+    DRAFT: 'bg-[#F9FAFB] text-[#374151] border-[#E5E7EB]',
     PENDING: 'bg-[#FEF2F2] text-[#DC2626] border-[#FECACA]',
-    PARTIAL: 'bg-[#FFFBEB] text-[#D97706] border-[#FDE68A]',
+    ISSUED: 'bg-[#FFF7ED] text-[#C2410C] border-[#FED7AA]',
+    UNPAID: 'bg-[#FEF2F2] text-[#DC2626] border-[#FECACA]',
+    PARTIALLY_PAID: 'bg-[#FFFBEB] text-[#D97706] border-[#FDE68A]',
     PAID: 'bg-[#F0FDF4] text-[#16A34A] border-[#BBF7D0]',
     CANCELLED: 'bg-[#F3F4F6] text-[#4B5563] border-[#E5E7EB]',
   }
@@ -197,7 +200,7 @@ export default function BillDetailPage() {
               <ArrowLeft className="h-4 w-4" />
             </Link>
             <h1 className="text-dashboard-title">Bill Details</h1>
-            <StatusBadge status={bill?.status} />
+            <StatusBadge status={bill?.payment_status} />
           </div>
         </div>
 

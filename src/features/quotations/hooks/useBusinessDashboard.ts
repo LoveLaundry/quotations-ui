@@ -140,18 +140,21 @@ function computeMetrics(input: {
 }): PeriodMetrics {
   const { bills, gps, dels, quotes, start, end, clientFirstBill, period } = input
 
-  const curBills = bills.filter((b) => inWindow(b.created_at, start, end) && b.status !== 'CANCELLED')
+  const curBills = bills.filter((b) => inWindow(b.created_at, start, end) && (b.payment_status ?? '') !== 'CANCELLED')
 
-  const revenue = curBills.reduce((s, b) => s + (Number(b.total_amount) || 0), 0)
+  const revenue = curBills.reduce((s, b) => s + (Number(b.grand_total ?? b.total_amount) || 0), 0)
   const collected = curBills.reduce((s, b) => s + (Number(b.paid_amount) || 0), 0)
   const outstanding = curBills.reduce(
-    (s, b) => s + (Number(b.outstanding_amount ?? b.total_amount - (b.paid_amount ?? 0)) || 0),
+    (s, b) => s + (Number(b.outstanding_amount ?? (b.grand_total ?? b.total_amount) - (b.paid_amount ?? 0)) || 0),
     0,
   )
   const billCount = curBills.length
-  const paidBills = curBills.filter((b) => b.status === 'PAID').length
-  const partialBills = curBills.filter((b) => b.status === 'PARTIAL').length
-  const pendingBills = curBills.filter((b) => b.status === 'PENDING').length
+  const paidBills = curBills.filter((b) => b.payment_status === 'PAID').length
+  const partialBills = curBills.filter((b) => b.payment_status === 'PARTIALLY_PAID').length
+  const pendingBills = curBills.filter((b) => {
+    const s = b.payment_status
+    return s !== 'PAID' && s !== 'PARTIALLY_PAID' && s !== 'CANCELLED'
+  }).length
   const collectionRate = revenue > 0 ? (collected / revenue) * 100 : 0
   const avgBill = billCount > 0 ? revenue / billCount : 0
 
@@ -186,8 +189,8 @@ function computeMetrics(input: {
   const clientAgg = new Map<string, { revenue: number; outstanding: number; bills: number }>()
   for (const b of curBills) {
     const agg = clientAgg.get(b.client_name) ?? { revenue: 0, outstanding: 0, bills: 0 }
-    agg.revenue += Number(b.total_amount) || 0
-    agg.outstanding += Number(b.outstanding_amount ?? b.total_amount - (b.paid_amount ?? 0)) || 0
+    agg.revenue += Number(b.grand_total ?? b.total_amount) || 0
+    agg.outstanding += Number(b.outstanding_amount ?? (b.grand_total ?? b.total_amount) - (b.paid_amount ?? 0)) || 0
     agg.bills += 1
     clientAgg.set(b.client_name, agg)
   }
@@ -201,7 +204,7 @@ function computeMetrics(input: {
   for (const b of curBills) {
     const { key, label } = bucketKey(b.created_at, period)
     const entry = seriesMap.get(key) ?? { label, revenue: 0, collected: 0 }
-    entry.revenue += Number(b.total_amount) || 0
+    entry.revenue += Number(b.grand_total ?? b.total_amount) || 0
     entry.collected += Number(b.paid_amount) || 0
     seriesMap.set(key, entry)
   }
@@ -212,14 +215,15 @@ function computeMetrics(input: {
   // Payment status breakdown (by amount)
   const statusTotals = { PAID: 0, PARTIAL: 0, PENDING: 0 }
   for (const b of curBills) {
-    if (b.status === 'PAID') statusTotals.PAID += Number(b.total_amount) || 0
-    else if (b.status === 'PARTIAL') statusTotals.PARTIAL += Number(b.total_amount) || 0
-    else if (b.status === 'PENDING') statusTotals.PENDING += Number(b.total_amount) || 0
+    const amt = Number(b.grand_total ?? b.total_amount) || 0
+    if (b.payment_status === 'PAID') statusTotals.PAID += amt
+    else if (b.payment_status === 'PARTIALLY_PAID') statusTotals.PARTIAL += amt
+    else if (b.payment_status !== 'CANCELLED') statusTotals.PENDING += amt
   }
   const paymentStatus: StatusSlice[] = [
     { name: 'Paid', value: statusTotals.PAID, color: '#16A34A' },
     { name: 'Partial', value: statusTotals.PARTIAL, color: '#F59E0B' },
-    { name: 'Pending', value: statusTotals.PENDING, color: '#DC2626' },
+    { name: 'Unpaid', value: statusTotals.PENDING, color: '#DC2626' },
   ].filter((s) => s.value > 0)
 
   // Pending gate passes (items not yet delivered)

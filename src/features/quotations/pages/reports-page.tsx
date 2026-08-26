@@ -236,7 +236,7 @@ function ClientSearch() {
                         <td className="px-4 py-3" style={{ color: 'var(--text-secondary)' }}>{b.created_at ? new Date(b.created_at).toLocaleDateString() : '—'}</td>
                         <td className="px-4 py-3 font-semibold text-[#101828]">LKR {(b.total_amount || 0).toLocaleString()}</td>
                         <td className="px-4 py-3 font-semibold text-[#16A34A]">LKR {(b.paid_amount || 0).toLocaleString()}</td>
-                        <td className="px-4 py-3"><StatusBadge status={b.status} /></td>
+                        <td className="px-4 py-3"><StatusBadge status={b.payment_status} /></td>
                       </tr>
                     ))}
                   </tbody>

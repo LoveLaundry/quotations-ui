@@ -23,9 +23,11 @@ export interface Bill {
   items: BillItem[]
   total_quantity: number
   total_amount: number
+  grand_total?: number
   paid_amount?: number
   outstanding_amount?: number
-  status?: 'PENDING' | 'PARTIAL' | 'PAID' | 'CANCELLED'
+  status?: string
+  payment_status?: 'DRAFT' | 'PENDING' | 'ISSUED' | 'PARTIALLY_PAID' | 'PAID' | 'CANCELLED' | string
   notes?: string
   created_at: string
   updated_at?: string
