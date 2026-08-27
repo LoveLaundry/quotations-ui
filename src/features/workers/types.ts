@@ -88,6 +88,8 @@ export interface DailyLog {
     chemicals_used?: string | null
     notes?: string | null
     performance_rating?: number | null
+    is_group_work?: boolean
+    team_members?: string[]
     created_by?: string | null
     created_at?: string
     updated_at?: string
@@ -96,6 +98,8 @@ export interface DailyLog {
 export interface DailyLogCreate {
     work_date: string
     worker_name: string
+    is_group_work?: boolean
+    team_members?: string[]
     department?: string
     shift?: string
     attendance_status?: string

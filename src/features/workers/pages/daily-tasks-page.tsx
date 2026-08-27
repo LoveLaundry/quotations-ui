@@ -11,6 +11,7 @@ import {
   TrashSimple,
   PencilSimple,
   User,
+  Users,
   Package,
   TShirt,
   ArrowsClockwise,
@@ -21,7 +22,7 @@ import {
 } from '@phosphor-icons/react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useWorkers, useDailyTasks, useCreateDailyTask, useUpdateDailyTask, useDeleteDailyTask, useGatePassesForWorker } from '../hooks/useWorkers'
-import type { DailyLog, TaskEntry, Worker } from '../types'
+import type { DailyLog, DailyLogCreate, TaskEntry, Worker } from '../types'
 import type { GatePass, GatePassItem } from '../../../types/operations'
 import { ErrorState } from '../../../components/ui/error-state'
 
@@ -80,7 +81,10 @@ export function DailyTasksPage() {
 
   const filteredLogs = useMemo(() => {
     return allLogs.filter(log => {
-      const workerMatch = workerFilter === 'all' || log.worker_name === workerFilter
+      const workerMatch =
+        workerFilter === 'all' ||
+        log.worker_name === workerFilter ||
+        (log.team_members ?? []).includes(workerFilter)
       if (!workerMatch) return false
       const q = search.toLowerCase()
       if (!q) return true
@@ -107,7 +111,7 @@ export function DailyTasksPage() {
     const gatePassRefs = new Set(
       logsInRange.flatMap(l => l.tasks.filter(t => t.gate_pass_number).map(t => t.gate_pass_number))
     ).size
-    return { totalTasks, totalHours: totalHours.toFixed(1), gatePassRefs, uniqueWorkers: new Set(logsInRange.map(l => l.worker_name)).size }
+    return { totalTasks, totalHours: totalHours.toFixed(1), gatePassRefs, uniqueWorkers: new Set(logsInRange.flatMap(l => l.is_group_work ? (l.team_members ?? []) : [l.worker_name])).size }
   }, [allLogs, dateRange])
 
   const openCreate = () => {
@@ -282,17 +286,27 @@ export function DailyTasksPage() {
               <div className="flex items-center justify-between px-4 py-3 bg-[#F9FAFB] border-b border-[#F3F4F6]">
                 <div className="flex items-center gap-2.5">
                   <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#F3F4F6] text-[11px] font-bold text-[#6B7280] uppercase">
-                    {log.worker_name?.slice(0, 2) ?? '??'}
+                    {log.is_group_work ? 'GR' : log.worker_name?.slice(0, 2) ?? '??'}
                   </div>
                   <div>
-                    <p className="text-[13px] font-semibold text-[#111827]">{log.worker_name}</p>
+                    <p className="text-[13px] font-semibold text-[#111827]">
+                      {log.is_group_work ? 'Group Work' : log.worker_name}
+                    </p>
                     <p className="text-[11px] text-[#6B7280]">
                       {log.work_date} · {log.shift?.replace('_', ' ').toLowerCase()}
+                      {log.is_group_work && log.team_members?.length
+                        ? ` · ${log.team_members.join(', ')}`
+                        : ''}
                     </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-4 text-[11px] text-[#6B7280]">
                   <span>{log.tasks.length} task{log.tasks.length !== 1 ? 's' : ''}</span>
+                  {log.is_group_work && (
+                    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-[#EEF2FF] text-[#4338CA] border border-[#C7D2FE] text-[10px] font-medium">
+                      <Users size={10} /> Group
+                    </span>
+                  )}
                   <span>{log.attendance_status?.toLowerCase().replace('_', ' ')}</span>
                 </div>
               </div>
@@ -454,7 +468,7 @@ interface TaskDialogProps {
   editEntry: { log: DailyLog; taskIndex: number; task: TaskEntry } | null
   workers: Worker[]
   gatePasses: GatePass[]
-  onSubmit: (data: { worker_name: string; work_date: string; tasks: TaskEntry[] }) => void
+  onSubmit: (data: DailyLogCreate) => void
   isPending: boolean
 }
 
@@ -556,6 +570,8 @@ function TaskDialog({ open, onClose, editEntry, workers, gatePasses, onSubmit, i
 
   const isEdit = !!editEntry
   const [workerName, setWorkerName] = useState(editEntry?.log.worker_name ?? (workers[0]?.worker_name ?? ''))
+  const [isGroup, setIsGroup] = useState(!!editEntry?.log.is_group_work)
+  const [teamMembers, setTeamMembers] = useState<string[]>(editEntry?.log.team_members ?? [])
   const [workDate, setWorkDate] = useState(editEntry?.log.work_date ?? today())
   const [taskType, setTaskType] = useState(editEntry?.task.task_type ?? 'WASHING')
   const [gatePassNumber, setGatePassNumber] = useState(editEntry?.task.gate_pass_number ?? '')
@@ -574,6 +590,8 @@ function TaskDialog({ open, onClose, editEntry, workers, gatePasses, onSubmit, i
   useEffect(() => {
     if (!open) return
     setWorkerName(editEntry?.log.worker_name ?? (workers[0]?.worker_name ?? ''))
+    setIsGroup(!!editEntry?.log.is_group_work)
+    setTeamMembers(editEntry?.log.team_members ?? [])
     setWorkDate(editEntry?.log.work_date ?? today())
     setTaskType(editEntry?.task.task_type ?? 'WASHING')
     setGatePassNumber(editEntry?.task.gate_pass_number ?? '')
@@ -623,7 +641,6 @@ function TaskDialog({ open, onClose, editEntry, workers, gatePasses, onSubmit, i
     setRows(prev => prev.map(r => r.key === key ? { ...r, ...patch } : r))
 
   const handleCreateSubmit = () => {
-    if (!workerName.trim() || rows.length === 0) return
     const tasks: TaskEntry[] = rows.map(r => ({
       task_type: r.task_type,
       description: r.description.trim() || undefined,
@@ -634,7 +651,19 @@ function TaskDialog({ open, onClose, editEntry, workers, gatePasses, onSubmit, i
       gate_pass_id: r.gate_pass_id,
       gate_pass_number: r.gate_pass_number,
     }))
-    onSubmit({ worker_name: workerName, work_date: workDate, tasks })
+    if (isGroup) {
+      if (teamMembers.length < 2 || rows.length === 0) return
+      onSubmit({
+        worker_name: teamMembers.join(' + '),
+        work_date: workDate,
+        tasks,
+        is_group_work: true,
+        team_members: teamMembers,
+      })
+    } else {
+      if (!workerName.trim() || rows.length === 0) return
+      onSubmit({ worker_name: workerName, work_date: workDate, tasks })
+    }
   }
 
   const handleEditSubmit = () => {
@@ -685,17 +714,63 @@ function TaskDialog({ open, onClose, editEntry, workers, gatePasses, onSubmit, i
         <div className="px-5 py-4 space-y-4">
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-[12px] font-medium text-[#374151] block mb-1">Staff Member *</label>
-              <select
-                value={workerName}
-                onChange={e => setWorkerName(e.target.value)}
-                disabled={isEdit}
-                className="w-full rounded-lg border border-[#E5E7EB] px-3 py-2.5 text-[13px] text-[#111827] focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/10 transition-all appearance-none cursor-pointer disabled:opacity-50"
-              >
-                {workers.map(w => (
-                  <option key={w.id} value={w.worker_name}>{w.worker_name}</option>
-                ))}
-              </select>
+              <div className="flex items-center justify-between mb-1">
+                <label className="text-[12px] font-medium text-[#374151]">Staff *</label>
+                {!isEdit && (
+                  <label className="flex items-center gap-1.5 text-[11px] text-[#6B7280] cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      checked={isGroup}
+                      onChange={e => setIsGroup(e.target.checked)}
+                      className="accent-[#DC2626] w-3.5 h-3.5"
+                    />
+                    Group work
+                  </label>
+                )}
+              </div>
+              {isEdit ? (
+                <input
+                  value={workerName}
+                  disabled
+                  className="w-full rounded-lg border border-[#E5E7EB] px-3 py-2.5 text-[13px] text-[#111827] bg-[#F9FAFB] disabled:opacity-60 cursor-not-allowed"
+                />
+              ) : isGroup ? (
+                <div className="rounded-lg border border-[#E5E7EB] p-2 max-h-40 overflow-y-auto space-y-1 bg-white">
+                  {workers.map(w => {
+                    const checked = teamMembers.includes(w.worker_name)
+                    return (
+                      <label key={w.id} className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-[#F9FAFB] cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={checked}
+                          onChange={e =>
+                            setTeamMembers(prev =>
+                              e.target.checked
+                                ? [...prev, w.worker_name]
+                                : prev.filter(n => n !== w.worker_name)
+                            )
+                          }
+                          className="accent-[#DC2626] w-4 h-4 shrink-0"
+                        />
+                        <span className="text-[13px] text-[#111827]">{w.worker_name}</span>
+                      </label>
+                    )
+                  })}
+                  {teamMembers.length > 0 && (
+                    <p className="text-[11px] text-[#6B7280] px-2 pt-1">{teamMembers.length} member(s) selected</p>
+                  )}
+                </div>
+              ) : (
+                <select
+                  value={workerName}
+                  onChange={e => setWorkerName(e.target.value)}
+                  className="w-full rounded-lg border border-[#E5E7EB] px-3 py-2.5 text-[13px] text-[#111827] focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/10 transition-all appearance-none cursor-pointer"
+                >
+                  {workers.map(w => (
+                    <option key={w.id} value={w.worker_name}>{w.worker_name}</option>
+                  ))}
+                </select>
+              )}
             </div>
             <div>
               <label className="text-[12px] font-medium text-[#374151] block mb-1">Date *</label>
@@ -937,7 +1012,7 @@ function TaskDialog({ open, onClose, editEntry, workers, gatePasses, onSubmit, i
           </button>
           <button
             onClick={isEdit ? handleEditSubmit : handleCreateSubmit}
-            disabled={!workerName.trim() || (!isEdit && rows.length === 0) || isPending}
+            disabled={(isGroup ? teamMembers.length < 2 : !workerName.trim()) || (!isEdit && rows.length === 0) || isPending}
             className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#DC2626] text-[13px] font-semibold text-white hover:bg-[#B91C1C] disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
           >
             {isPending ? (
