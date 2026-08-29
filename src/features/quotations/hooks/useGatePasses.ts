@@ -90,3 +90,33 @@ export function useUpdateGatePassDate() {
         onError: () => toast.error('Failed to update receiving date'),
     })
 }
+
+export function useCreateBillFromGatePass() {
+    const qc = useQueryClient()
+    return useMutation({
+        mutationFn: ({
+            gate_pass_id,
+            instant,
+            notes,
+            quotation_id,
+            client_name,
+        }: {
+            gate_pass_id: string
+            instant?: boolean
+            notes?: string
+            quotation_id?: string
+            client_name?: string
+        }) =>
+            gatepasses.createBillFromGatePass(gate_pass_id, {
+                instant,
+                notes,
+                quotation_id,
+                client_name,
+            }),
+        onSuccess: () => {
+            qc.invalidateQueries({ queryKey: gatepassKeys.all })
+            toast.success('Bill created from gate pass')
+        },
+        onError: (e: any) => toast.error(e?.message || 'Failed to create bill'),
+    })
+}
