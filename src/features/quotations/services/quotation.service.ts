@@ -1,5 +1,5 @@
 import api from '../../../api/api'
-import type { Quotation, QuotationPayload } from '../../../types/quotation'
+import type { Quotation, QuotationPayload, OrderStatus } from '../../../types/quotation'
 
 async function getAllQuotations(): Promise<Quotation[]> {
   const response = await api.get<Quotation[]>('/quotations')
@@ -26,10 +26,23 @@ async function deleteQuotation(id: string): Promise<{ message: string }> {
   return response.data
 }
 
+async function advanceStatus(
+  id: string,
+  status: OrderStatus,
+  note?: string,
+): Promise<Quotation> {
+  const response = await api.post<Quotation>(`/quotations/${id}/status`, {
+    status,
+    note,
+  })
+  return response.data
+}
+
 export const quotationService = {
   getAllQuotations,
   getQuotation,
   createQuotation,
   updateQuotation,
   deleteQuotation,
+  advanceStatus,
 }

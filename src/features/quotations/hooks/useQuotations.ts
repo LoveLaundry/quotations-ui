@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { quotationService } from '../services/quotation.service'
-import type { Quotation, QuotationPayload } from '../../../types/quotation'
+import type { Quotation, QuotationPayload, OrderStatus } from '../../../types/quotation'
 
 export const quotationKeys = {
   all: ['quotations'] as const,
@@ -74,5 +74,19 @@ export function useDeleteQuotation() {
       qc.removeQueries({ queryKey: quotationKeys.detail(id) })
       toast.success('Quotation deleted')
     },
+  })
+}
+
+export function useAdvanceQuotationStatus() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, status, note }: { id: string; status: OrderStatus; note?: string }) =>
+      quotationService.advanceStatus(id, status, note),
+    onSuccess: (updated) => {
+      qc.setQueryData<Quotation>(quotationKeys.detail(String(updated.id)), updated)
+      qc.invalidateQueries({ queryKey: quotationKeys.list() })
+      toast.success(`Moved to "${updated.status}"`)
+    },
+    onError: (e: Error) => toast.error(e.message || 'Failed to update status'),
   })
 }

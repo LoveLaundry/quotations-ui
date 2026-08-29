@@ -7,7 +7,16 @@ import { ErrorState } from '../../../components/ui/error-state'
 import { Skeleton } from '../../../components/ui/skeleton'
 import { Breadcrumb } from '../../../components/ui/breadcrumb'
 import { formatDate } from '../../../lib/utils'
-import { useQuotation } from '../hooks/useQuotations'
+import {
+  useQuotation,
+  useAdvanceQuotationStatus,
+} from '../hooks/useQuotations'
+import {
+  ORDER_STATUS_LABELS,
+  ORDER_STATUS_TRANSITIONS,
+  ORDER_STATUS_STYLE,
+  type OrderStatus,
+} from '../../../types/quotation'
 
 function groupByCategory(
   items: Array<{
@@ -31,6 +40,11 @@ export default function QuotationDetailPage() {
   const navigate = useNavigate()
   const { id } = useParams()
   const { data: q, isLoading, isError, error } = useQuotation(id)
+  const advance = useAdvanceQuotationStatus()
+
+  const currentStatus = (q?.status ?? 'draft') as OrderStatus
+  const nextStages = ORDER_STATUS_TRANSITIONS[currentStatus] ?? []
+  const history = q?.status_history ?? []
 
   const grouped = q ? groupByCategory(q.line_items ?? []) : []
 
@@ -118,6 +132,84 @@ export default function QuotationDetailPage() {
                     </p>
                   </div>
                 </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="pt-5 pb-4">
+              <div className="flex flex-col gap-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-[11px] text-[#98A2B3] uppercase font-semibold tracking-wide">
+                      Order Status
+                    </p>
+                    <span
+                      className={`mt-1 inline-flex items-center px-2.5 py-1 rounded-full text-[12px] font-semibold border ${
+                        ORDER_STATUS_STYLE[currentStatus]
+                      }`}
+                    >
+                      {ORDER_STATUS_LABELS[currentStatus]}
+                    </span>
+                  </div>
+                </div>
+
+                {nextStages.length > 0 ? (
+                  <div className="flex flex-wrap gap-2">
+                    {nextStages.map((stage) => (
+                      <button
+                        key={stage}
+                        type="button"
+                        disabled={advance.isPending}
+                        onClick={() =>
+                          advance.mutate({
+                            id: String(id),
+                            status: stage,
+                          })
+                        }
+                        className={`rounded-lg px-3 py-2 text-[12px] font-semibold border transition-colors cursor-pointer disabled:opacity-50 ${
+                          stage === 'cancelled'
+                            ? 'bg-white text-[#B42318] border-[#FECDCA] hover:bg-[#FEF3F2]'
+                            : 'bg-[#E01E31] text-white border-[#E01E31] hover:bg-[#C11324]'
+                        }`}
+                      >
+                        {stage === 'cancelled'
+                          ? 'Cancel'
+                          : `Mark ${ORDER_STATUS_LABELS[stage]}`}
+                      </button>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-[12px] text-[#98A2B3]">
+                    This order is in a terminal state.
+                  </p>
+                )}
+
+                {history.length > 0 && (
+                  <div>
+                    <p className="text-[11px] text-[#98A2B3] uppercase font-semibold tracking-wide mb-2">
+                      History
+                    </p>
+                    <ol className="relative border-l border-[#E4E7EC] ml-1 space-y-2.5 pl-4">
+                      {history
+                        .slice()
+                        .reverse()
+                        .map((h, i) => (
+                          <li key={i} className="relative">
+                            <span className="absolute -left-[21px] top-1 h-2.5 w-2.5 rounded-full bg-[#E01E31] border-2 border-white" />
+                            <p className="text-[12px] font-medium text-[#101828]">
+                              {ORDER_STATUS_LABELS[h.status as OrderStatus] ?? h.status}
+                            </p>
+                            <p className="text-[11px] text-[#98A2B3]">
+                              {formatDate(h.changed_at)}
+                              {h.note ? ` · ${h.note}` : ''}
+                              {h.changed_by ? ` · ${h.changed_by}` : ''}
+                            </p>
+                          </li>
+                        ))}
+                    </ol>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
