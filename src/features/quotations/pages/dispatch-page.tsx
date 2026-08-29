@@ -9,8 +9,9 @@ import {
   useCreateDispatch,
   useUpdateDispatch,
   useDeleteDispatch,
+  useOptimizeRoute,
 } from '../hooks/useDispatch'
-import type { DispatchJob, DispatchStatus } from '../../../types/operations'
+import type { DispatchJob, DispatchStatus, RoutePlan } from '../../../types/operations'
 
 const STATUS_STYLE: Record<DispatchStatus, string> = {
   SCHEDULED: 'bg-[#EFF4FF] text-[#3538CD] border-[#C7D7FE]',
@@ -51,6 +52,8 @@ export default function DispatchPage() {
   const createJob = useCreateDispatch()
   const updateJob = useUpdateDispatch()
   const deleteJob = useDeleteDispatch()
+  const optimize = useOptimizeRoute()
+  const [routeOpen, setRouteOpen] = useState(false)
 
   return (
     <div className="space-y-6">
@@ -64,9 +67,14 @@ export default function DispatchPage() {
             Schedule customer pickups and deliveries, assign drivers and track each job.
           </p>
         </div>
-        <Button onClick={() => setOpen(true)}>
-          <Plus className="h-4 w-4" /> New Job
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => setRouteOpen(true)}>
+            Plan Route
+          </Button>
+          <Button onClick={() => setOpen(true)}>
+            <Plus className="h-4 w-4" /> New Job
+          </Button>
+        </div>
       </div>
 
       <div className="flex flex-wrap gap-2">
@@ -133,6 +141,17 @@ export default function DispatchPage() {
             createJob.mutate(data, { onSuccess: () => setOpen(false) })
           }
           creating={createJob.isPending}
+        />
+      )}
+
+      {routeOpen && (
+        <RoutePlannerModal
+          onClose={() => setRouteOpen(false)}
+          onPlan={(d, dt) =>
+            optimize.mutate({ assigned_to: d, date: dt })
+          }
+          planning={optimize.isPending}
+          plan={optimize.data}
         />
       )}
     </div>
@@ -248,6 +267,8 @@ function NewJobModal({
     contact_phone: '',
     scheduled_at: '',
     assigned_to: '',
+    latitude: '',
+    longitude: '',
     notes: '',
   })
 
@@ -323,6 +344,30 @@ function NewJobModal({
               className="w-full rounded-lg border border-[#E5E5E5] px-3 py-2 text-[13px] outline-none focus:border-[#E01E31]"
             />
           </Field>
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Latitude (optional)">
+              <input
+                type="number"
+                step="any"
+                value={form.latitude}
+                onChange={(e) =>
+                  set('latitude', e.target.value ? Number(e.target.value) : '')
+                }
+                className="w-full rounded-lg border border-[#E5E5E5] px-3 py-2 text-[13px] outline-none focus:border-[#E01E31]"
+              />
+            </Field>
+            <Field label="Longitude (optional)">
+              <input
+                type="number"
+                step="any"
+                value={form.longitude}
+                onChange={(e) =>
+                  set('longitude', e.target.value ? Number(e.target.value) : '')
+                }
+                className="w-full rounded-lg border border-[#E5E5E5] px-3 py-2 text-[13px] outline-none focus:border-[#E01E31]"
+              />
+            </Field>
+          </div>
           <Field label="Notes">
             <textarea
               value={form.notes}
@@ -341,6 +386,8 @@ function NewJobModal({
             onClick={() =>
               onCreate({
                 ...form,
+                latitude: form.latitude === '' ? undefined : Number(form.latitude),
+                longitude: form.longitude === '' ? undefined : Number(form.longitude),
                 scheduled_at: form.scheduled_at
                   ? new Date(form.scheduled_at).toISOString()
                   : undefined,
@@ -348,6 +395,89 @@ function NewJobModal({
             }
           >
             {creating ? 'Creating…' : 'Create Job'}
+          </Button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function RoutePlannerModal({
+  onClose,
+  onPlan,
+  planning,
+  plan,
+}: {
+  onClose: () => void
+  onPlan: (driver: string, date?: string) => void
+  planning: boolean
+  plan?: RoutePlan | null
+}) {
+  const [driver, setDriver] = useState('')
+  const [date, setDate] = useState('')
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+      <div className="w-full max-w-md rounded-2xl bg-white shadow-xl">
+        <div className="flex items-center justify-between border-b border-[#F2F2F2] px-5 py-4">
+          <h3 className="text-[15px] font-semibold text-[#101828]">Plan Driver Route</h3>
+          <button onClick={onClose} className="rounded-lg p-1.5 hover:bg-[#F5F5F5]">
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+        <div className="space-y-3 px-5 py-4">
+          <Field label="Driver">
+            <input
+              value={driver}
+              onChange={(e) => setDriver(e.target.value)}
+              placeholder="Driver name"
+              className="w-full rounded-lg border border-[#E5E5E5] px-3 py-2 text-[13px] outline-none focus:border-[#E01E31]"
+            />
+          </Field>
+          <Field label="Date (optional)">
+            <input
+              type="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+              className="w-full rounded-lg border border-[#E5E5E5] px-3 py-2 text-[13px] outline-none focus:border-[#E01E31]"
+            />
+          </Field>
+
+          {plan && plan.stops.length > 0 && (
+            <ol className="space-y-2 rounded-xl border border-[#EEF0F3] p-3">
+              {plan.stops.map((stop, i) => (
+                <li key={stop.id} className="flex items-start gap-3">
+                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#E01E31] text-[11px] font-bold text-white">
+                    {i + 1}
+                  </span>
+                  <div>
+                    <p className="text-[13px] font-semibold text-[#101828]">
+                      {stop.client_name}
+                    </p>
+                    <p className="text-[11px] text-[#667085]">
+                      {stop.job_type === 'pickup' ? 'Pickup' : 'Delivery'}
+                      {stop.address ? ` · ${stop.address}` : ''}
+                    </p>
+                  </div>
+                </li>
+              ))}
+            </ol>
+          )}
+          {plan && plan.stops.length === 0 && (
+            <p className="text-[12px] text-[#98A2B3]">
+              No active jobs found for this driver{date ? ` on ${date}` : ''}.
+            </p>
+          )}
+        </div>
+        <div className="flex justify-end gap-2 border-t border-[#F2F2F2] px-5 py-4">
+          <Button variant="outline" onClick={onClose}>
+            Close
+          </Button>
+          <Button
+            disabled={planning || !driver}
+            onClick={() => onPlan(driver, date || undefined)}
+          >
+            {planning ? 'Planning…' : 'Optimize'}
           </Button>
         </div>
       </div>

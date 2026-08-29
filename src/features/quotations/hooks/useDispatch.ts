@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { dispatch } from '../services/dispatch.service'
-import type { DispatchJob, DispatchCreate, DispatchUpdate } from '../../../types/operations'
+import type { DispatchJob, DispatchCreate, DispatchUpdate, RoutePlan } from '../../../types/operations'
 
 export const dispatchKeys = {
     all: ['dispatch'] as const,
@@ -54,5 +54,13 @@ export function useDeleteDispatch() {
             toast.success('Dispatch job removed')
         },
         onError: () => toast.error('Failed to remove job'),
+    })
+}
+
+export function useOptimizeRoute() {
+    return useMutation({
+        mutationFn: ({ assigned_to, date }: { assigned_to: string; date?: string }) =>
+            dispatch.optimize(assigned_to, date),
+        onError: () => toast.error('Could not plan route'),
     })
 }

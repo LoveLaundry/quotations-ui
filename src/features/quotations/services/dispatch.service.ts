@@ -23,4 +23,9 @@ export const dispatch = {
 
     remove: (id: string) =>
         billsApi.delete(`/dispatch/${id}`).then((r: any) => r.data),
+
+    optimize: (assigned_to: string, date?: string) =>
+        billsApi
+            .post<RoutePlan>('/dispatch/optimize', { assigned_to, date })
+            .then((r: any) => r.data),
 }

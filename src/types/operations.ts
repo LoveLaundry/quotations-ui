@@ -93,6 +93,8 @@ export interface DispatchJob {
     scheduled_at?: string | null
     status: DispatchStatus
     assigned_to?: string | null
+    latitude?: number | null
+    longitude?: number | null
     notes?: string | null
     created_at: string
     updated_at: string
@@ -107,7 +109,14 @@ export interface DispatchCreate {
     contact_phone?: string
     scheduled_at?: string
     assigned_to?: string
+    latitude?: number
+    longitude?: number
     notes?: string
+}
+
+export interface RoutePlan {
+    order: string[]
+    stops: DispatchJob[]
 }
 
 export interface DispatchUpdate {
