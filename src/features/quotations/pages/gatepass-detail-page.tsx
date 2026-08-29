@@ -12,7 +12,7 @@ import { ErrorState } from '../../../components/ui/error-state'
 import { Skeleton } from '../../../components/ui/skeleton'
 import { Breadcrumb } from '../../../components/ui/breadcrumb'
 import { formatDate } from '../../../lib/utils'
-import { useGatePass, useUpdateGatePassStatus, useAdjustGatePass } from '../hooks/useGatePasses'
+import { useGatePass, useUpdateGatePassStatus, useAdjustGatePass, useUpdateGatePassDate } from '../hooks/useGatePasses'
 import { useDeliveries } from '../hooks/useDeliveries'
 
 const STATUS_CONFIG: Record<string, { label: string; bg: string; text: string; border: string; dot: string }> = {
@@ -52,6 +52,11 @@ export default function GatePassDetailPage() {
     const [adjustQty, setAdjustQty] = useState(0)
     const [adjustReason, setAdjustReason] = useState('')
 
+    const updateDate = useUpdateGatePassDate()
+    const [editingDate, setEditingDate] = useState(false)
+    const [dateValue, setDateValue] = useState('')
+    const [dateReason, setDateReason] = useState('')
+
     if (isLoading) {
         return (
             <div className="space-y-3">
@@ -86,6 +91,20 @@ export default function GatePassDetailPage() {
         adjust.mutate(
             { id, item_name: adjustingItem, corrected_qty: adjustQty, reason: adjustReason },
             { onSuccess: () => setAdjustingItem(null) },
+        )
+    }
+
+    const startEditDate = () => {
+        setDateValue((gp.receiving_date || '').slice(0, 10))
+        setDateReason('')
+        setEditingDate(true)
+    }
+
+    const submitDate = () => {
+        if (!id || !dateValue) return
+        updateDate.mutate(
+            { id, receiving_date: dateValue, reason: dateReason },
+            { onSuccess: () => setEditingDate(false) },
         )
     }
 
@@ -164,8 +183,58 @@ export default function GatePassDetailPage() {
 
             {/* Info Strip */}
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                {/* Received date — editable to correct human error */}
+                <Card className="p-3">
+                    <div className="flex items-center justify-between mb-1">
+                        <div className="flex items-center gap-2">
+                            <Calendar className="h-3.5 w-3.5 text-[#98A2B3]" />
+                            <p className="text-[11px] text-[#98A2B3] font-medium uppercase tracking-wide">Received</p>
+                        </div>
+                        {!editingDate && !['DELIVERED', 'CANCELLED'].includes(gp.status) && (
+                            <button
+                                onClick={startEditDate}
+                                className="text-[#6B7280] hover:text-[#2563EB] transition"
+                                title="Correct receiving date"
+                            >
+                                <Pencil className="h-3.5 w-3.5" />
+                            </button>
+                        )}
+                    </div>
+                    {editingDate ? (
+                        <div className="flex flex-col gap-2">
+                            <input
+                                type="date"
+                                value={dateValue}
+                                onChange={e => setDateValue(e.target.value)}
+                                className="h-9 w-full rounded-lg border border-[#BFDBFE] bg-white px-3 text-[13px] outline-none focus:border-[#2563EB]"
+                            />
+                            <input
+                                type="text"
+                                value={dateReason}
+                                onChange={e => setDateReason(e.target.value)}
+                                placeholder="Reason (optional)"
+                                className="h-9 w-full rounded-lg border border-[#BFDBFE] bg-white px-3 text-[12px] outline-none focus:border-[#2563EB]"
+                            />
+                            <div className="flex gap-2">
+                                <Button
+                                    size="sm"
+                                    onClick={submitDate}
+                                    disabled={!dateValue || updateDate.isPending}
+                                    className="bg-[#2563EB] hover:bg-[#1D4ED8] text-white"
+                                >
+                                    <Check className="h-3.5 w-3.5" /> Save
+                                </Button>
+                                <Button size="sm" variant="ghost" onClick={() => setEditingDate(false)}>
+                                    <X className="h-3.5 w-3.5" /> Cancel
+                                </Button>
+                            </div>
+                        </div>
+                    ) : (
+                        <p className="text-[13px] font-semibold text-[#101828]">{formatDate(gp.receiving_date)}</p>
+                    )}
+                </Card>
+
                 {[
-                    { icon: Calendar, label: 'Received', value: formatDate(gp.receiving_date) },
                     { icon: User, label: 'Received By', value: gp.received_by },
                     { icon: ClipboardList, label: 'Items', value: `${gp.items.length} types · ${totalReceived} pcs` },
                     { icon: AlertCircle, label: 'Mismatches', value: mismatches.length > 0 ? `${mismatches.length} item${mismatches.length > 1 ? 's' : ''}` : 'None' },

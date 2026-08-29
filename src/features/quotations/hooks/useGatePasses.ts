@@ -70,3 +70,23 @@ export function useAdjustGatePass() {
         onError: () => toast.error('Failed to adjust quantity'),
     })
 }
+
+export function useUpdateGatePassDate() {
+    const qc = useQueryClient()
+    return useMutation({
+        mutationFn: ({
+            id,
+            receiving_date,
+            reason,
+        }: {
+            id: string
+            receiving_date: string
+            reason?: string
+        }) => gatepasses.updateDate(id, receiving_date, reason),
+        onSuccess: () => {
+            qc.invalidateQueries({ queryKey: gatepassKeys.all })
+            toast.success('Receiving date updated')
+        },
+        onError: () => toast.error('Failed to update receiving date'),
+    })
+}
