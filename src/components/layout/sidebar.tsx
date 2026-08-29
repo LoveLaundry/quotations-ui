@@ -36,6 +36,7 @@ const navGroups = [
     items: [
       { to: '/gate-passes', label: 'Gate Passes', icon: ClipboardText, end: false, permission: 'view_gate_passes' },
       { to: '/deliveries', label: 'Deliveries', icon: Truck, end: false, permission: 'view_deliveries' },
+      { to: '/dispatch', label: 'Dispatch', icon: Truck, end: false, indent: true },
       { to: '/workers', label: 'Staff Management', icon: Users, end: true },
       { to: '/workers/daily-tasks', label: 'Staff Daily Tasks', icon: UsersThree, end: false, indent: true },
       { to: '/bills', label: 'Bills', icon: CurrencyCircleDollar, end: false, permission: 'view_bills' },

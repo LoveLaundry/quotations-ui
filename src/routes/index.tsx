@@ -24,6 +24,7 @@ import CreateGatePassPage from '../features/quotations/pages/create-gatepass-pag
 import GatePassDetailPage from '../features/quotations/pages/gatepass-detail-page'
 import DeliveriesPage from '../features/quotations/pages/deliveries-page'
 import CreateDeliveryPage from '../features/quotations/pages/create-delivery-page'
+import DispatchPage from '../features/quotations/pages/dispatch-page'
 import DeliveryDetailPage from '../features/quotations/pages/delivery-detail-page'
 import ReportsPage from '../features/quotations/pages/reports-page'
 import LiveChatPage from '../features/quotations/pages/live-chat-page'
@@ -84,6 +85,9 @@ export const router = createBrowserRouter([
           { path: 'deliveries', element: <DeliveriesPage /> },
           { path: 'deliveries/new', element: <CreateDeliveryPage /> },
           { path: 'deliveries/:id', element: <DeliveryDetailPage /> },
+
+          // Dispatch (pickup / delivery scheduling)
+          { path: 'dispatch', element: <DispatchPage /> },
 
           // Workers
           { path: 'workers', element: <WorkersPage /> },
