@@ -26,5 +26,8 @@ export const gatepasses = {
 
     adjust: (id: string, item_name: string, corrected_qty: number, reason: string) =>
         billsApi.post<GatePass>(`/gatepasses/${id}/adjust`, { item_name, corrected_qty, reason }).then((r: any) => r.data),
+
+    updateDate: (id: string, receiving_date: string, reason?: string) =>
+        billsApi.patch<GatePass>(`/gatepasses/${id}/date`, { receiving_date: toISODatetime(receiving_date), reason }).then((r: any) => r.data),
 }
 
