@@ -77,6 +77,16 @@ export interface StatusHistoryEntry {
   note?: string | null
 }
 
+export interface GarmentTag {
+  id: string | number
+  code: string
+  quotation_id: string | number
+  line_item_id?: string | null
+  label?: string | null
+  created_at?: string
+  tracking_url: string
+}
+
 export interface Quotation {
   id: string | number
   client_name: string

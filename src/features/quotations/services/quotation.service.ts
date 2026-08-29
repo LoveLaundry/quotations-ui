@@ -1,5 +1,5 @@
 import api from '../../../api/api'
-import type { Quotation, QuotationPayload, OrderStatus } from '../../../types/quotation'
+import type { Quotation, QuotationPayload, OrderStatus, GarmentTag } from '../../../types/quotation'
 
 async function getAllQuotations(): Promise<Quotation[]> {
   const response = await api.get<Quotation[]>('/quotations')
@@ -38,6 +38,24 @@ async function advanceStatus(
   return response.data
 }
 
+interface TagsResponse {
+  quotation_id: string | number
+  tags: GarmentTag[]
+}
+
+async function createTags(
+  id: string,
+  body: { count?: number; per_item?: boolean; label?: string },
+): Promise<TagsResponse> {
+  const response = await api.post<TagsResponse>(`/quotations/${id}/tags`, body)
+  return response.data
+}
+
+async function listTags(id: string): Promise<TagsResponse> {
+  const response = await api.get<TagsResponse>(`/quotations/${id}/tags`)
+  return response.data
+}
+
 export const quotationService = {
   getAllQuotations,
   getQuotation,
@@ -45,4 +63,6 @@ export const quotationService = {
   updateQuotation,
   deleteQuotation,
   advanceStatus,
+  createTags,
+  listTags,
 }

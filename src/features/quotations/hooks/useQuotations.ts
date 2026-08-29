@@ -1,12 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { quotationService } from '../services/quotation.service'
-import type { Quotation, QuotationPayload, OrderStatus } from '../../../types/quotation'
+import type { Quotation, QuotationPayload, OrderStatus, GarmentTag } from '../../../types/quotation'
 
 export const quotationKeys = {
   all: ['quotations'] as const,
   list: () => [...quotationKeys.all] as const,
   detail: (id: string) => [...quotationKeys.all, id] as const,
+  tags: (id: string) => [...quotationKeys.all, 'tags', id] as const,
 }
 
 export function useQuotations() {
@@ -88,5 +89,33 @@ export function useAdvanceQuotationStatus() {
       toast.success(`Moved to "${updated.status}"`)
     },
     onError: (e: Error) => toast.error(e.message || 'Failed to update status'),
+  })
+}
+
+export function useQuotationTags(id?: string) {
+  return useQuery({
+    queryKey: quotationKeys.tags(id ?? ''),
+    queryFn: () => quotationService.listTags(id ?? ''),
+    enabled: Boolean(id),
+  })
+}
+
+export function useCreateTags() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({
+      id,
+      body,
+    }: {
+      id: string
+      body: { count?: number; per_item?: boolean; label?: string }
+    }) => quotationService.createTags(id, body),
+    onSuccess: (data) => {
+      qc.setQueryData<GarmentTag[]>(quotationKeys.tags(String(data.quotation_id)), data.tags)
+      toast.success(
+        data.tags.length === 1 ? 'Tag generated' : `${data.tags.length} tags generated`,
+      )
+    },
+    onError: () => toast.error('Failed to generate tags'),
   })
 }
