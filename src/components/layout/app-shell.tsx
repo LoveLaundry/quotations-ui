@@ -20,6 +20,7 @@ const pageTitles: Record<string, string> = {
   '/gate-passes/new': 'New Gate Pass',
   '/deliveries': 'Deliveries',
   '/dispatch': 'Dispatch',
+  '/customers': 'Customers',
   '/deliveries/new': 'New Delivery',
   '/reports': 'Reports',
   '/users': 'Users',

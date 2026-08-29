@@ -33,6 +33,7 @@ import UsersPage from '../features/quotations/pages/users-page'
 import GuestQuotationsPage from '../features/quotations/pages/guest-quotations-page'
 import NotificationsPage from '../features/quotations/pages/notifications-page'
 import DatabaseSyncPage from '../features/quotations/pages/database-sync-page'
+import CustomersPage from '../features/quotations/pages/customers-page'
 
 // Workers pages
 import { WorkersPage } from '../features/workers/pages/workers-page'
@@ -98,6 +99,7 @@ export const router = createBrowserRouter([
 
           // Analytics
           { path: 'reports', element: <ReportsPage /> },
+          { path: 'customers', element: <CustomersPage /> },
 
           // System
           { path: 'categories', element: <CategoriesPage /> },

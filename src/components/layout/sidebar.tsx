@@ -47,6 +47,7 @@ const navGroups = [
     items: [
       { to: '/quotations', label: 'Quotations', icon: FileText, end: false, permission: 'view_quotations' },
       { to: '/categories', label: 'By Client', icon: FolderOpen, end: false, permission: 'view_clients' },
+      { to: '/customers', label: 'Customers 360', icon: Users, end: false },
     ],
   },
   {
