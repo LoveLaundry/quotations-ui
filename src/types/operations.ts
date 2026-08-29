@@ -29,6 +29,7 @@ export interface GatePass {
     status: 'RECEIVED' | 'PROCESSING' | 'READY_FOR_DELIVERY' | 'PARTIALLY_DELIVERED' | 'DELIVERED' | 'CANCELLED'
     notes?: string
     adjustments?: object[]
+    quotation_id?: string
     created_at: string
     updated_at: string
     verification?: Verification

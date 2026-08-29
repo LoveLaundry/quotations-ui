@@ -2,7 +2,7 @@ import { useState, Fragment } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import {
     ArrowLeft, ClipboardList, Calendar, User, AlertCircle,
-    ChevronDown, Truck, CheckCircle2, Pencil, X, Check
+    ChevronDown, Truck, CheckCircle2, Pencil, X, Check, Receipt
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from '../../../components/ui/button'
@@ -12,7 +12,7 @@ import { ErrorState } from '../../../components/ui/error-state'
 import { Skeleton } from '../../../components/ui/skeleton'
 import { Breadcrumb } from '../../../components/ui/breadcrumb'
 import { formatDate } from '../../../lib/utils'
-import { useGatePass, useUpdateGatePassStatus, useAdjustGatePass, useUpdateGatePassDate } from '../hooks/useGatePasses'
+import { useGatePass, useUpdateGatePassStatus, useAdjustGatePass, useUpdateGatePassDate, useCreateBillFromGatePass } from '../hooks/useGatePasses'
 import { useDeliveries } from '../hooks/useDeliveries'
 
 const STATUS_CONFIG: Record<string, { label: string; bg: string; text: string; border: string; dot: string }> = {
@@ -56,6 +56,11 @@ export default function GatePassDetailPage() {
     const [editingDate, setEditingDate] = useState(false)
     const [dateValue, setDateValue] = useState('')
     const [dateReason, setDateReason] = useState('')
+
+    const createBill = useCreateBillFromGatePass()
+    const [billingOpen, setBillingOpen] = useState(false)
+    const [instantBill, setInstantBill] = useState(false)
+    const [billNotes, setBillNotes] = useState('')
 
     if (isLoading) {
         return (
@@ -105,6 +110,26 @@ export default function GatePassDetailPage() {
         updateDate.mutate(
             { id, receiving_date: dateValue, reason: dateReason },
             { onSuccess: () => setEditingDate(false) },
+        )
+    }
+
+    const submitBill = () => {
+        if (!id) return
+        createBill.mutate(
+            {
+                gate_pass_id: id,
+                instant: instantBill,
+                notes: billNotes,
+                quotation_id: gp.quotation_id,
+                client_name: gp.client_name,
+            },
+            {
+                onSuccess: () => {
+                    setBillingOpen(false)
+                    setBillNotes('')
+                    setInstantBill(false)
+                },
+            },
         )
     }
 
@@ -178,6 +203,15 @@ export default function GatePassDetailPage() {
                             <Truck className="h-3.5 w-3.5" /> Record Delivery
                         </Button>
                     </Link>
+
+                    <Button
+                        size="sm"
+                        variant="secondary"
+                        onClick={() => setBillingOpen(o => !o)}
+                        disabled={createBill.isPending}
+                    >
+                        <Receipt className="h-3.5 w-3.5" /> Create Bill
+                    </Button>
                 </div>
             </div>
 
@@ -248,6 +282,47 @@ export default function GatePassDetailPage() {
                     </Card>
                 ))}
             </div>
+
+            {/* Create Bill from Gate Pass */}
+            {billingOpen && (
+                <Card className="p-4">
+                    <div className="flex items-center justify-between mb-3">
+                        <p className="text-[13px] font-semibold text-[#101828]">Create Bill from this Gate Pass</p>
+                        <button
+                            onClick={() => setBillingOpen(false)}
+                            className="text-[#6B7280] hover:text-[#374151] transition"
+                        >
+                            <X className="h-4 w-4" />
+                        </button>
+                    </div>
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+                        <label className="flex items-center gap-2 text-[13px] text-[#374151] whitespace-nowrap">
+                            <input
+                                type="checkbox"
+                                checked={instantBill}
+                                onChange={e => setInstantBill(e.target.checked)}
+                                className="h-4 w-4 rounded border-[#D0D5DD]"
+                            />
+                            Instant (paid now)
+                        </label>
+                        <input
+                            type="text"
+                            value={billNotes}
+                            onChange={e => setBillNotes(e.target.value)}
+                            placeholder="Notes (optional)"
+                            className="h-9 flex-1 rounded-lg border border-[#D0D5DD] bg-white px-3 text-[13px] outline-none focus:border-[#2563EB]"
+                        />
+                        <Button
+                            size="sm"
+                            onClick={submitBill}
+                            disabled={createBill.isPending}
+                            className="bg-[#16A34A] hover:bg-[#15803D] text-white"
+                        >
+                            <Check className="h-3.5 w-3.5" /> {instantBill ? 'Create & Mark Paid' : 'Create Bill'}
+                        </Button>
+                    </div>
+                </Card>
+            )}
 
             {/* Notes */}
             {gp.notes && (
