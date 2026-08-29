@@ -16,24 +16,24 @@ type TabFilter = 'all' | 'pending' | 'accepted'
 
 type Row =
   | { kind: 'gatepass_pending'; entry: GatePassPendingEntry }
-  | { kind: 'quotation_accepted'; quotation: Quotation }
+  | { kind: 'quotation_delivered'; quotation: Quotation }
 
 export default function NotificationsPage() {
   const navigate = useNavigate()
-  const { gatePassPending, acceptedQuotations, pendingCount, acceptedCount, totalCount, isLoading } = useNotifications()
+  const { gatePassPending, deliveredQuotations, pendingCount, acceptedCount, totalCount, isLoading } = useNotifications()
   const [filter, setFilter] = useState<TabFilter>('all')
   const [search, setSearch] = useState('')
   const [selected, setSelected] = useState<Row | null>(null)
 
   const allRows: Row[] = [
     ...gatePassPending.map((entry) => ({ kind: 'gatepass_pending' as const, entry })),
-    ...acceptedQuotations.map((quotation) => ({ kind: 'quotation_accepted' as const, quotation })),
+    ...deliveredQuotations.map((quotation: Quotation) => ({ kind: 'quotation_delivered' as const, quotation })),
   ]
 
   const filtered = allRows
     .filter((row) => {
       if (filter === 'pending') return row.kind === 'gatepass_pending'
-      if (filter === 'accepted') return row.kind === 'quotation_accepted'
+      if (filter === 'accepted') return row.kind === 'quotation_delivered'
       return true
     })
     .filter((row) => {
@@ -53,7 +53,7 @@ export default function NotificationsPage() {
     })
 
   const handleAction = (row: Row) => {
-    if (row.kind === 'quotation_accepted') {
+    if (row.kind === 'quotation_delivered') {
       navigate(`/bills/new?quotation_id=${row.quotation.id}`)
     } else {
       navigate(`/gate-passes/${row.entry.gate_pass_id}`)

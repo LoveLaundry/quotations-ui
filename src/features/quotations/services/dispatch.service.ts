@@ -1,5 +1,5 @@
 import billsApi from '../../../api/bills-api'
-import type { DispatchJob, DispatchCreate, DispatchUpdate } from '../../../types/operations'
+import type { DispatchJob, DispatchCreate, DispatchUpdate, RoutePlan } from '../../../types/operations'
 
 export const dispatch = {
     list: (params?: {

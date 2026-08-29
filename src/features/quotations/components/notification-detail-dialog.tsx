@@ -153,8 +153,8 @@ export function NotificationDetailDialog({ open, onOpenChange, data, type }: Not
               <div className="flex items-center gap-2">
                 <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-[11px] font-semibold whitespace-nowrap ${
                   (data as Quotation).status === 'draft' ? 'bg-[#FEF2F2] text-[#DC2626] border-[#FECACA]' :
-                  (data as Quotation).status === 'sent' ? 'bg-[#FFFBEB] text-[#D97706] border-[#FDE68A]' :
-                  (data as Quotation).status === 'accepted' ? 'bg-[#F0FDF4] text-[#16A34A] border-[#BBF7D0]' :
+                  (data as Quotation).status === 'received' ? 'bg-[#EFF6FF] text-[#2563EB] border-[#BFDBFE]' :
+                  (data as Quotation).status === 'delivered' ? 'bg-[#F0FDF4] text-[#16A34A] border-[#BBF7D0]' :
                   'bg-[#F3F4F6] text-[#4B5563] border-[#E5E7EB]'
                 }`}>
                   {(data as Quotation).status?.toUpperCase()}

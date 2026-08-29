@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { dispatch } from '../services/dispatch.service'
-import type { DispatchJob, DispatchCreate, DispatchUpdate, RoutePlan } from '../../../types/operations'
+import type { DispatchCreate, DispatchUpdate } from '../../../types/operations'
 
 export const dispatchKeys = {
     all: ['dispatch'] as const,

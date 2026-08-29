@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
-import { Truck, Plus, X, MapPin, Phone, User, CalendarDays } from 'lucide-react'
+import { Truck, Plus, X, MapPin, User, CalendarDays } from 'lucide-react'
 import { Button } from '../../../components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card'
+import { Card, CardContent } from '../../../components/ui/card'
 import { EmptyState } from '../../../components/ui/empty-state'
 import { formatDate } from '../../../lib/utils'
 import {
@@ -117,7 +117,7 @@ export default function DispatchPage() {
         />
       ) : (
         <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
-          {jobs.map((job) => (
+          {jobs.map((job: DispatchJob) => (
             <JobCard
               key={job.id}
               job={job}
@@ -350,9 +350,7 @@ function NewJobModal({
                 type="number"
                 step="any"
                 value={form.latitude}
-                onChange={(e) =>
-                  set('latitude', e.target.value ? Number(e.target.value) : '')
-                }
+                onChange={(e) => set('latitude', e.target.value)}
                 className="w-full rounded-lg border border-[#E5E5E5] px-3 py-2 text-[13px] outline-none focus:border-[#E01E31]"
               />
             </Field>
@@ -361,9 +359,7 @@ function NewJobModal({
                 type="number"
                 step="any"
                 value={form.longitude}
-                onChange={(e) =>
-                  set('longitude', e.target.value ? Number(e.target.value) : '')
-                }
+                onChange={(e) => set('longitude', e.target.value)}
                 className="w-full rounded-lg border border-[#E5E5E5] px-3 py-2 text-[13px] outline-none focus:border-[#E01E31]"
               />
             </Field>

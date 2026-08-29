@@ -66,13 +66,13 @@ export function useNotifications() {
     return result
   }, [gatePasses, deliveryList])
 
-  const acceptedQuotations: Quotation[] = useMemo(
-    () => quotations.filter((q) => q.status === 'accepted'),
+  const deliveredQuotations: Quotation[] = useMemo(
+    () => quotations.filter((q) => q.status === 'delivered'),
     [quotations],
   )
 
   const pendingCount = gatePassPending.reduce((sum, e) => sum + e.pending, 0)
-  const acceptedCount = acceptedQuotations.length
+  const acceptedCount = deliveredQuotations.length
   const totalCount = pendingCount + acceptedCount
 
   const notificationItems: NotificationItem[] = useMemo(() => {
@@ -91,20 +91,20 @@ export function useNotifications() {
       })
     }
 
-    if (acceptedQuotations.length > 0) {
+    if (deliveredQuotations.length > 0) {
       items.push({
-        id: 'quotation_accepted',
-        type: 'quotation_accepted',
+        id: 'quotation_delivered',
+        type: 'quotation_delivered',
         title: 'Ready for Billing',
-        message: `${acceptedQuotations.length} accepted quotation${acceptedQuotations.length !== 1 ? 's' : ''} awaiting billing`,
-        count: acceptedQuotations.length,
+        message: `${deliveredQuotations.length} delivered order${deliveredQuotations.length !== 1 ? 's' : ''} awaiting billing`,
+        count: deliveredQuotations.length,
         route: '/quotations',
-        quotations: acceptedQuotations,
+        quotations: deliveredQuotations,
       })
     }
 
     return items
-  }, [gatePassPending, pendingCount, acceptedQuotations])
+  }, [gatePassPending, pendingCount, deliveredQuotations])
 
   return {
     notificationItems,
@@ -112,7 +112,7 @@ export function useNotifications() {
     pendingCount,
     acceptedCount,
     gatePassPending,
-    acceptedQuotations,
+    deliveredQuotations,
     isLoading: gpLoading || dLoading || qLoading,
   }
 }

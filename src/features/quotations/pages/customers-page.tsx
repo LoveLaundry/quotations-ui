@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Users, FileText, ClipboardText, Truck, CurrencyCircleDollar, Search } from 'lucide-react'
+import { Users, FileText, ClipboardCheck, Truck, CircleDollarSign, Search } from 'lucide-react'
 import { Button } from '../../../components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card'
 import { formatDate } from '../../../lib/utils'
@@ -112,7 +112,7 @@ export default function CustomersPage() {
               value={quotations.length}
             />
             <Stat
-              icon={<ClipboardText className="h-4 w-4" />}
+              icon={<ClipboardCheck className="h-4 w-4" />}
               label="Gate Passes"
               value={gatePasses.length}
             />
@@ -122,7 +122,7 @@ export default function CustomersPage() {
               value={deliveries.length}
             />
             <Stat
-              icon={<CurrencyCircleDollar className="h-4 w-4" />}
+              icon={<CircleDollarSign className="h-4 w-4" />}
               label="Outstanding"
               value={`LKR ${outstanding.toLocaleString()}`}
             />
@@ -133,7 +133,7 @@ export default function CustomersPage() {
               <CardContent className="flex flex-wrap items-center justify-between gap-3 pt-5">
                 <div className="flex items-center gap-4">
                   <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#FFF7ED] text-[#C2410C]">
-                    <CurrencyCircleDollar className="h-6 w-6" />
+                    <CircleDollarSign className="h-6 w-6" />
                   </div>
                   <div>
                     <p className="text-[11px] uppercase tracking-wide text-[#98A2B3]">
@@ -201,7 +201,7 @@ export default function CustomersPage() {
               </CardHeader>
               <CardContent className="space-y-2">
                 {gatePasses.length === 0 && <Empty text="No gate passes" />}
-                {gatePasses.slice(0, 5).map((g) => (
+                {gatePasses.slice(0, 5).map((g: any) => (
                   <Row
                     key={String(g.id)}
                     title={g.gate_pass_number || 'Gate Pass'}
@@ -218,7 +218,7 @@ export default function CustomersPage() {
               </CardHeader>
               <CardContent className="space-y-2">
                 {deliveries.length === 0 && <Empty text="No deliveries" />}
-                {deliveries.slice(0, 5).map((d) => (
+                {deliveries.slice(0, 5).map((d: any) => (
                   <Row
                     key={String(d.id)}
                     title={d.client_name}
