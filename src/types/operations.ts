@@ -74,6 +74,75 @@ export interface DeliveryCreate {
     notes?: string
 }
 
+// ── Dispatch (pickup / delivery scheduling) ────────────────────────────────────
+export type DispatchStatus =
+    | 'SCHEDULED'
+    | 'ASSIGNED'
+    | 'EN_ROUTE'
+    | 'COMPLETED'
+    | 'CANCELLED'
+
+export interface DispatchJob {
+    id: string
+    job_type: 'pickup' | 'delivery'
+    order_id?: string | null
+    client_name: string
+    address?: string | null
+    contact_name?: string | null
+    contact_phone?: string | null
+    scheduled_at?: string | null
+    status: DispatchStatus
+    assigned_to?: string | null
+    latitude?: number | null
+    longitude?: number | null
+    notes?: string | null
+    created_at: string
+    updated_at: string
+}
+
+export interface DispatchCreate {
+    job_type?: 'pickup' | 'delivery'
+    order_id?: string
+    client_name: string
+    address?: string
+    contact_name?: string
+    contact_phone?: string
+    scheduled_at?: string
+    assigned_to?: string
+    latitude?: number
+    longitude?: number
+    notes?: string
+}
+
+export interface RoutePlan {
+    order: string[]
+    stops: DispatchJob[]
+}
+
+// ── Loyalty ──────────────────────────────────────────────────────────────────
+export interface LoyaltyAccount {
+    id: string
+    client_name: string
+    points: number
+    tier: string
+    visits: number
+    created_at: string
+    updated_at: string
+}
+
+export interface LoyaltyAdjust {
+    client_name: string
+    delta_points: number
+    reason?: string
+}
+
+export interface DispatchUpdate {
+    status?: DispatchStatus
+    assigned_to?: string
+    scheduled_at?: string
+    notes?: string
+}
+
 // ── Payment ───────────────────────────────────────────────────────────────────
 export interface Payment {
     id: string

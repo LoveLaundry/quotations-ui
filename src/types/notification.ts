@@ -1,6 +1,6 @@
 import type { Quotation } from './quotation'
 
-export type NotificationType = 'gatepass_pending' | 'quotation_accepted'
+export type NotificationType = 'gatepass_pending' | 'quotation_accepted' | 'quotation_delivered'
 
 export interface GatePassPendingEntry {
   gate_pass_id: string

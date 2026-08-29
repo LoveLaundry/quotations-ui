@@ -15,10 +15,19 @@ import { QuotationPreviewDialog } from '../components/quotation-preview-dialog'
 import type { Quotation } from '../../../types/quotation'
 
 const STATUS_CONFIG = {
-  draft:    { label: 'Draft',    cls: 'bg-[#F9FAFB] text-[#6B7280] border-[#E4E7EC]' },
-  sent:     { label: 'Sent',     cls: 'bg-[#EFF6FF] text-[#2563EB] border-[#BFDBFE]' },
-  accepted: { label: 'Accepted', cls: 'bg-[#F0FDF4] text-[#16A34A] border-[#BBF7D0]' },
-  archived: { label: 'Archived', cls: 'bg-[#FAFAFA] text-[#9CA3AF] border-[#E4E7EC]' },
+  draft:           { label: 'Draft',    cls: 'bg-[#F9FAFB] text-[#6B7280] border-[#E4E7EC]' },
+  sent:            { label: 'Sent',     cls: 'bg-[#EFF6FF] text-[#2563EB] border-[#BFDBFE]' },
+  accepted:        { label: 'Accepted', cls: 'bg-[#F0FDF4] text-[#16A34A] border-[#BBF7D0]' },
+  archived:        { label: 'Archived', cls: 'bg-[#FAFAFA] text-[#9CA3AF] border-[#E4E7EC]' },
+  received:        { label: 'Received', cls: 'bg-[#EFF4FF] text-[#3538CD] border-[#C7D7FE]' },
+  washing:         { label: 'Washing',  cls: 'bg-[#EFF4FF] text-[#3538CD] border-[#C7D7FE]' },
+  pressing:        { label: 'Pressing', cls: 'bg-[#FEF6E7] text-[#B54708] border-[#FCE7C0]' },
+  folding:         { label: 'Folding',  cls: 'bg-[#FEF6E7] text-[#B54708] border-[#FCE7C0]' },
+  packing:         { label: 'Packing',  cls: 'bg-[#FEF6E7] text-[#B54708] border-[#FCE7C0]' },
+  ready:           { label: 'Ready',    cls: 'bg-[#ECFDF3] text-[#027A48] border-[#ABEFC6]' },
+  out_for_delivery:{ label: 'Out for Delivery', cls: 'bg-[#ECFDF3] text-[#027A48] border-[#ABEFC6]' },
+  delivered:       { label: 'Delivered', cls: 'bg-[#ECFDF3] text-[#027A48] border-[#ABEFC6]' },
+  cancelled:       { label: 'Cancelled', cls: 'bg-[#FEF3F2] text-[#B42318] border-[#FECDCA]' },
 }
 
 export default function QuotationsPage() {

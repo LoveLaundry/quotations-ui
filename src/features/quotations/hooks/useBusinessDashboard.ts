@@ -129,10 +129,10 @@ export function useBusinessDashboard(period: DashboardPeriod) {
     const applyQuotations = (m: PeriodMetrics): PeriodMetrics => ({
       ...m,
       quotationsDraft: quotes.filter((q) => q.status === 'draft').length,
-      quotationsSent: quotes.filter((q) => q.status === 'sent').length,
-      quotationsAccepted: quotes.filter((q) => q.status === 'accepted').length,
+      quotationsSent: quotes.filter((q) => q.status === 'received').length,
+      quotationsAccepted: quotes.filter((q) => q.status === 'delivered').length,
       quotationAcceptedValue: quotes
-        .filter((q) => q.status === 'accepted')
+        .filter((q) => q.status === 'delivered')
         .reduce((s, q) => s + (Number((q as { total_amount?: number }).total_amount) || 0), 0),
     })
 
