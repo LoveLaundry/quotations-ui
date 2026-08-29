@@ -7,6 +7,7 @@ import { useQuotations } from '../hooks/useQuotations'
 import { useGatePasses } from '../hooks/useGatePasses'
 import { useDeliveries } from '../hooks/useDeliveries'
 import { useBills } from '../hooks/useBills'
+import { useLoyaltyAccount, useAdjustLoyalty } from '../hooks/useLoyalty'
 
 export default function CustomersPage() {
   const [client, setClient] = useState('')
@@ -22,6 +23,9 @@ export default function CustomersPage() {
   const { data: billsResp } = useBills(active ? { client_name: active } : undefined)
 
   const bills = useMemo(() => billsResp?.items ?? [], [billsResp])
+
+  const { data: loyalty } = useLoyaltyAccount(active || undefined)
+  const adjustLoyalty = useAdjustLoyalty()
 
   const quotations = useMemo(() => {
     if (!active) return []
@@ -123,6 +127,38 @@ export default function CustomersPage() {
               value={`LKR ${outstanding.toLocaleString()}`}
             />
           </div>
+
+          {loyalty && (
+            <Card>
+              <CardContent className="flex flex-wrap items-center justify-between gap-3 pt-5">
+                <div className="flex items-center gap-4">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#FFF7ED] text-[#C2410C]">
+                    <CurrencyCircleDollar className="h-6 w-6" />
+                  </div>
+                  <div>
+                    <p className="text-[11px] uppercase tracking-wide text-[#98A2B3]">
+                      Loyalty · {loyalty.tier}
+                    </p>
+                    <p className="text-[20px] font-bold text-[#101828]">
+                      {loyalty.points} pts
+                    </p>
+                    <p className="text-[11px] text-[#667085]">
+                      {loyalty.visits} visit(s)
+                    </p>
+                  </div>
+                </div>
+                <LoyaltyAdjust
+                  onAdjust={(delta) =>
+                    adjustLoyalty.mutate({
+                      client_name: active,
+                      delta_points: delta,
+                    })
+                  }
+                  pending={adjustLoyalty.isPending}
+                />
+              </CardContent>
+            </Card>
+          )}
 
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
             <Card>
@@ -249,4 +285,37 @@ function Row({
 
 function Empty({ text }: { text: string }) {
   return <p className="text-[12px] text-[#98A2B3]">{text}</p>
+}
+
+function LoyaltyAdjust({
+  onAdjust,
+  pending,
+}: {
+  onAdjust: (delta: number) => void
+  pending: boolean
+}) {
+  const [delta, setDelta] = useState('')
+  const apply = (sign: number) => {
+    const n = Number(delta)
+    if (!n) return
+    onAdjust(sign * n)
+    setDelta('')
+  }
+  return (
+    <div className="flex items-center gap-2">
+      <input
+        type="number"
+        value={delta}
+        onChange={(e) => setDelta(e.target.value)}
+        placeholder="points"
+        className="w-20 rounded-lg border border-[#E5E5E5] px-2.5 py-1.5 text-[12px] outline-none focus:border-[#E01E31]"
+      />
+      <Button size="sm" variant="outline" disabled={pending} onClick={() => apply(1)}>
+        Earn
+      </Button>
+      <Button size="sm" variant="outline" disabled={pending} onClick={() => apply(-1)}>
+        Redeem
+      </Button>
+    </div>
+  )
 }

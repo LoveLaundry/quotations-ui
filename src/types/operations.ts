@@ -119,6 +119,23 @@ export interface RoutePlan {
     stops: DispatchJob[]
 }
 
+// ── Loyalty ──────────────────────────────────────────────────────────────────
+export interface LoyaltyAccount {
+    id: string
+    client_name: string
+    points: number
+    tier: string
+    visits: number
+    created_at: string
+    updated_at: string
+}
+
+export interface LoyaltyAdjust {
+    client_name: string
+    delta_points: number
+    reason?: string
+}
+
 export interface DispatchUpdate {
     status?: DispatchStatus
     assigned_to?: string
