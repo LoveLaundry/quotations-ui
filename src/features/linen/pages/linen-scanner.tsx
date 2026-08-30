@@ -1,19 +1,95 @@
-import { useState, useRef, useCallback } from 'react'
+import { useState, useRef, useCallback, useEffect } from 'react'
 import { Link } from 'react-router-dom'
+import { Html5Qrcode } from 'html5-qrcode'
 import { useLinenByCode, useScanLinen } from '../hooks/useLinen'
 import { LINEN_STATUS_CONFIG, SCAN_ACTIONS, type LinenStatus } from '../../../types/linen'
 import { Card, CardContent } from '../../../components/ui/card'
 import { Button } from '../../../components/ui/button'
 import { Breadcrumb } from '../../../components/ui/breadcrumb'
-import { Camera, Search, CheckCircle, Loader2 } from 'lucide-react'
+import { Camera, CameraOff, Keyboard, Search, CheckCircle, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 
+const SCANNER_ELEMENT_ID = 'linen-qr-scanner'
+
 export default function LinenScanner() {
+  const [mode, setMode] = useState<'camera' | 'manual'>('manual')
   const [code, setCode] = useState('')
   const [lastScanned, setLastScanned] = useState<string | null>(null)
+  const [cameraError, setCameraError] = useState<string | null>(null)
+  const [isStarting, setIsStarting] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
+  const scannerRef = useRef<Html5Qrcode | null>(null)
   const { data: linen, refetch, isFetching } = useLinenByCode(lastScanned ?? undefined)
   const scanMutation = useScanLinen()
+
+  const handleCodeScanned = useCallback((decodedText: string) => {
+    const trimmed = decodedText.trim().toUpperCase()
+    if (!trimmed || trimmed === lastScanned) return
+    setLastScanned(trimmed)
+    setCode(trimmed)
+    refetch()
+    toast.info(`Scanned: ${trimmed}`)
+  }, [lastScanned, refetch])
+
+  const startCamera = useCallback(async () => {
+    setCameraError(null)
+    setIsStarting(true)
+    try {
+      if (scannerRef.current) {
+        try { await scannerRef.current.stop() } catch { /* ignore */ }
+        scannerRef.current = null
+      }
+
+      const scanner = new Html5Qrcode(SCANNER_ELEMENT_ID)
+      scannerRef.current = scanner
+
+      await scanner.start(
+        { facingMode: 'environment' },
+        {
+          fps: 10,
+          qrbox: { width: 250, height: 250 },
+          aspectRatio: 1.0,
+        },
+        (decodedText) => handleCodeScanned(decodedText),
+        () => { /* ignore scan errors */ }
+      )
+      setIsStarting(false)
+    } catch (err: any) {
+      setIsStarting(false)
+      const msg = err?.message || String(err)
+      if (msg.includes('Permission')) {
+        setCameraError('Camera permission denied. Please allow camera access in your browser settings and try again.')
+      } else if (msg.includes('NotFound')) {
+        setCameraError('No camera found on this device.')
+      } else {
+        setCameraError(`Camera error: ${msg}`)
+      }
+    }
+  }, [handleCodeScanned])
+
+  const stopCamera = useCallback(async () => {
+    if (scannerRef.current) {
+      try { await scannerRef.current.stop() } catch { /* ignore */ }
+      scannerRef.current = null
+    }
+  }, [])
+
+  const switchToCamera = useCallback(async () => {
+    setMode('camera')
+    setCameraError(null)
+    await startCamera()
+  }, [startCamera])
+
+  const switchToManual = useCallback(async () => {
+    await stopCamera()
+    setMode('manual')
+    setCameraError(null)
+    setTimeout(() => inputRef.current?.focus(), 100)
+  }, [stopCamera])
+
+  useEffect(() => {
+    return () => { stopCamera() }
+  }, [stopCamera])
 
   const handleLookup = useCallback(() => {
     const trimmed = code.trim().toUpperCase()
@@ -50,32 +126,87 @@ export default function LinenScanner() {
         <p className="text-sm text-[var(--text-muted)]">Scan a QR code or enter a linen ID manually</p>
       </div>
 
-      {/* Scanner input */}
-      <Card className="border border-[var(--border)] shadow-sm">
-        <CardContent className="p-5">
-          <div className="flex gap-3">
-            <div className="relative flex-1">
-              <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)]" />
-              <input
-                ref={inputRef}
-                value={code}
-                onChange={e => setCode(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && handleLookup()}
-                placeholder="Enter linen ID (e.g. LL-7K4P92) or scan QR..."
-                autoFocus
-                className="w-full pl-10 pr-4 py-3 text-lg font-mono border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[#DC2626]/20 focus:border-[#DC2626] transition-colors"
-              />
+      {/* Mode toggle */}
+      <div className="flex gap-2">
+        <Button
+          variant={mode === 'camera' ? 'default' : 'outline'}
+          size="sm"
+          onClick={switchToCamera}
+          className="gap-2"
+        >
+          <Camera size={14} /> Camera Scan
+        </Button>
+        <Button
+          variant={mode === 'manual' ? 'default' : 'outline'}
+          size="sm"
+          onClick={switchToManual}
+          className="gap-2"
+        >
+          <Keyboard size={14} /> Manual Entry
+        </Button>
+      </div>
+
+      {/* Camera scanner */}
+      {mode === 'camera' && (
+        <Card className="border border-[var(--border)] shadow-sm overflow-hidden">
+          <CardContent className="p-0">
+            <div className="relative bg-black">
+              <div id={SCANNER_ELEMENT_ID} className="w-full min-h-[300px]" />
+              {isStarting && (
+                <div className="absolute inset-0 flex items-center justify-center bg-black/70 z-10">
+                  <div className="text-center text-white">
+                    <Loader2 size={32} className="animate-spin mx-auto mb-2" />
+                    <p className="text-sm">Starting camera...</p>
+                  </div>
+                </div>
+              )}
             </div>
-            <Button onClick={handleLookup} disabled={!code.trim() || isFetching} className="px-6">
-              {isFetching ? <Loader2 size={16} className="animate-spin" /> : 'Lookup'}
-            </Button>
-          </div>
-          <p className="text-xs text-[var(--text-muted)] mt-2 flex items-center gap-1">
-            <Camera size={12} />
-            Point your phone camera at the QR code, or type the linen ID above
-          </p>
-        </CardContent>
-      </Card>
+            {cameraError && (
+              <div className="p-4 bg-red-50 border-t border-red-200">
+                <div className="flex items-start gap-3">
+                  <CameraOff size={18} className="text-red-600 flex-shrink-0 mt-0.5" />
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-red-800">{cameraError}</p>
+                    <Button size="sm" variant="outline" className="mt-2 text-red-700 border-red-300" onClick={startCamera}>
+                      Try Again
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
+            {!cameraError && !isStarting && (
+              <div className="p-3 text-center text-xs text-[var(--text-muted)] border-t border-[var(--border)]">
+                Point camera at a QR code — scanning is automatic
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Manual input */}
+      {mode === 'manual' && (
+        <Card className="border border-[var(--border)] shadow-sm">
+          <CardContent className="p-5">
+            <div className="flex gap-3">
+              <div className="relative flex-1">
+                <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)]" />
+                <input
+                  ref={inputRef}
+                  value={code}
+                  onChange={e => setCode(e.target.value)}
+                  onKeyDown={e => e.key === 'Enter' && handleLookup()}
+                  placeholder="Enter linen ID (e.g. LL-7K4P92)"
+                  autoFocus
+                  className="w-full pl-10 pr-4 py-3 text-lg font-mono border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[#DC2626]/20 focus:border-[#DC2626] transition-colors"
+                />
+              </div>
+              <Button onClick={handleLookup} disabled={!code.trim() || isFetching} className="px-6">
+                {isFetching ? <Loader2 size={16} className="animate-spin" /> : 'Lookup'}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Not found */}
       {!linen && lastScanned && !isFetching && (
