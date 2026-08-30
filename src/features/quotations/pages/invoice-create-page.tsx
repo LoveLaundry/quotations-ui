@@ -37,8 +37,8 @@ export default function InvoiceCreatePage() {
   const [selected, setSelected] = useState<Set<string>>(new Set())
 
   const { data, isLoading, isError, error } = useBills({
-    date_from: dateFrom || undefined,
-    date_to: dateTo || undefined,
+    gate_pass_date_from: dateFrom || undefined,
+    gate_pass_date_to: dateTo || undefined,
     limit: 1000,
   })
 

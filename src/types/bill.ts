@@ -66,6 +66,8 @@ export interface BillListParams {
   payment_status?: string
   date_from?: string
   date_to?: string
+  gate_pass_date_from?: string
+  gate_pass_date_to?: string
   skip?: number
   limit?: number
 }
