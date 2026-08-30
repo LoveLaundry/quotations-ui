@@ -47,8 +47,7 @@ export const ConsolidatedInvoiceTemplate = React.forwardRef<HTMLDivElement, Cons
         <style dangerouslySetInnerHTML={{ __html: printStyles }} />
 
         <div
-          className="bg-white text-black"
-          style={{ width: '210mm', minHeight: '297mm', margin: '0 auto', padding: '15mm', boxSizing: 'border-box', fontSize: '13px' }}
+          style={{ width: '210mm', minHeight: '297mm', margin: '0 auto', padding: '15mm', boxSizing: 'border-box', fontSize: '13px', background: '#fff', color: '#000' }}
         >
           {/* Header — matches quotation print */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '3px double #000', paddingBottom: 16, marginBottom: 20 }}>

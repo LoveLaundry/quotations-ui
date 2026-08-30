@@ -10,9 +10,197 @@ interface BillPrintTemplateProps {
   gatePass?: string
 }
 
+const billPrintStyles = `
+  @media print {
+    .bill-print-page { margin: 0; padding: 0; width: 100%; min-height: auto; }
+    .bill-print-page * { display: inherit !important; }
+    @page { size: A4; margin: 0; }
+    @page :first { margin: 0; }
+    .no-print { display: none !important; }
+  }
+  @page { size: A4; margin: 0; }
+  @page :first { margin: 0; }
+
+  .bill-print-page {
+    font-family: "Spectral", Georgia, serif;
+    color: #000;
+    background: #fff;
+  }
+  .bp-sheet {
+    width: 210mm;
+    min-height: 297mm;
+    padding: 12mm;
+    box-sizing: border-box;
+    font-size: 13px;
+    line-height: 1.4;
+  }
+  .bp-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    border-bottom: 2px solid #000;
+    padding-bottom: 8px;
+    margin-bottom: 8px;
+  }
+  .bp-logo {
+    width: 80px;
+    height: 80px;
+    object-fit: contain;
+    border: 2px solid #DC2626;
+    border-radius: 50%;
+    padding: 4px;
+  }
+  .bp-company-center {
+    text-align: center;
+    flex: 1;
+  }
+  .bp-company-name {
+    font-size: 28px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    line-height: 1.2;
+    margin: 0;
+    font-family: "Spectral", Georgia, serif;
+  }
+  .bp-company-tagline {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 2px 0 0 0;
+    font-family: "Spectral", Georgia, serif;
+  }
+  .bp-services {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    border-bottom: 2px solid #000;
+    padding-bottom: 8px;
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+  }
+  .bp-service-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: #000;
+    display: inline-block;
+    margin-right: 4px;
+  }
+  .bp-contact {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    font-weight: 700;
+    margin-bottom: 10px;
+  }
+  .bp-customer-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    font-size: 12px;
+    font-weight: 700;
+  }
+  .bp-customer-left {
+    width: 55%;
+  }
+  .bp-detail-line {
+    display: flex;
+    margin-bottom: 3px;
+  }
+  .bp-detail-label {
+    width: 90px;
+    flex-shrink: 0;
+  }
+  .bp-detail-value {
+    flex: 1;
+    border-bottom: 1px dotted #000;
+    padding-left: 4px;
+  }
+  .bp-dates-box {
+    width: 40%;
+    display: flex;
+    justify-content: flex-end;
+  }
+  .bp-dates-table {
+    width: 200px;
+    border-collapse: collapse;
+    border: 2px solid #000;
+    font-size: 12px;
+  }
+  .bp-dates-table td {
+    border: 2px solid #000;
+    padding: 3px 6px;
+  }
+  .bp-items-table {
+    width: 100%;
+    border-collapse: collapse;
+    border: 2px solid #000;
+    font-size: 12px;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+  .bp-items-table th,
+  .bp-items-table td {
+    border: 2px solid #000;
+    padding: 4px 6px;
+  }
+  .bp-items-table th {
+    font-weight: 700;
+    text-align: left;
+  }
+  .bp-items-table td {
+    height: 22px;
+  }
+  .bp-status-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    font-weight: 700;
+    margin-top: 4px;
+    margin-bottom: 8px;
+  }
+  .bp-red { color: #DC2626; }
+  .bp-conditions {
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 1.3;
+    margin-bottom: 20px;
+  }
+  .bp-conditions p { margin: 0 0 3px 0; }
+  .bp-conditions ul {
+    margin: 0;
+    padding-left: 16px;
+  }
+  .bp-conditions li { margin-bottom: 1px; }
+  .bp-signatures {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-top: 30px;
+    font-size: 12px;
+    font-weight: 700;
+    text-align: center;
+  }
+  .bp-sig-box {
+    width: 150px;
+  }
+  .bp-sig-line {
+    border-top: 2px dotted #000;
+    padding-top: 4px;
+  }
+  .bp-id-line {
+    border-bottom: 2px dotted #000;
+    padding-bottom: 2px;
+    margin-bottom: 4px;
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+`
+
 export const BillPrintTemplate = React.forwardRef<HTMLDivElement, BillPrintTemplateProps>(
   ({ bill, contactNo, address, receivedDate, deliveryDate, gatePass }, ref) => {
-    // We render exactly 15 rows for the table as per format, padding with empty if needed
     const paddedItems = [...bill.items]
     while (paddedItems.length < 15) {
       paddedItems.push({ item_name: '', quantity: 0, unit_price: 0, line_total: 0 })
@@ -20,133 +208,146 @@ export const BillPrintTemplate = React.forwardRef<HTMLDivElement, BillPrintTempl
     const displayItems = paddedItems.slice(0, 15)
 
     return (
-      <div ref={ref} className="bg-white text-black p-8 font-sans" style={{ width: '210mm', minHeight: '297mm', margin: '0 auto', fontSize: '14px' }}>
-        {/* Header Section */}
-        <div className="flex justify-between items-start border-b-2 border-black pb-2 mb-2">
-          <div className="flex items-center gap-4">
-            {/* Logo Placeholder */}
-            <div className="w-24 h-24 border-2 border-red-500 rounded-full flex items-center justify-center text-red-500 font-bold italic text-3xl">
-              L<br /><span className="text-sm">Love Laundry</span>
+      <div ref={ref} className="bill-print-page">
+        <style dangerouslySetInnerHTML={{ __html: billPrintStyles }} />
+
+        <div className="bp-sheet">
+          {/* Header */}
+          <div className="bp-header">
+            <div>
+              <img src="/icon.png" alt="Love Laundry" className="bp-logo" />
+            </div>
+            <div className="bp-company-center">
+              <h1 className="bp-company-name">Love Laundry</h1>
+              <h2 className="bp-company-tagline">and dry cleaning experts</h2>
             </div>
           </div>
-          <div className="text-center flex-1">
-            <h1 className="text-4xl font-extrabold uppercase tracking-widest">Love Laundry</h1>
-            <h2 className="text-2xl font-bold">and dry cleaning experts</h2>
-          </div>
-        </div>
 
-        {/* Services List */}
-        <div className="flex justify-center gap-6 font-bold text-sm mb-4 border-b-2 border-black pb-2">
-          <div className="flex items-center gap-2"><span className="w-2 h-2 bg-black rounded-full inline-block"></span> Dry Cleaning</div>
-          <div className="flex items-center gap-2"><span className="w-2 h-2 bg-black rounded-full inline-block"></span> Free Pickup & Delivery</div>
-          <div className="flex items-center gap-2"><span className="w-2 h-2 bg-black rounded-full inline-block"></span> Wash & Pressed</div>
-          <div className="flex items-center gap-2"><span className="w-2 h-2 bg-black rounded-full inline-block"></span> Wash & Fold</div>
-          <div className="flex items-center gap-2"><span className="w-2 h-2 bg-black rounded-full inline-block"></span> Laundered Pressed</div>
-        </div>
-
-        {/* Contact Info */}
-        <div className="flex justify-between text-sm font-bold mb-4">
-          <div>
-            <p>Tel: 077-2400919 / 071-2978922</p>
-            <p>Email: lovelaundry01@gmail.com</p>
+          {/* Services */}
+          <div className="bp-services">
+            {['Dry Cleaning', 'Free Pickup & Delivery', 'Wash & Pressed', 'Wash & Fold', 'Laundered Pressed'].map(s => (
+              <span key={s}><span className="bp-service-dot" />{s}</span>
+            ))}
           </div>
-          <div className="text-right">
-            <p>Kuda bingiriya, Panirendawa.</p>
-          </div>
-        </div>
 
-        {/* Customer Details & Dates */}
-        <div className="flex justify-between mb-4 font-bold text-sm">
-          <div className="space-y-1 w-1/2">
-            <div className="flex"><span className="w-24">Name:</span><span className="border-b border-dotted border-black flex-1">{bill.client_name}</span></div>
-            <div className="flex"><span className="w-24">Address:</span><span className="border-b border-dotted border-black flex-1">{address || ''}</span></div>
-            <div className="flex"><span className="w-24">Contact No:</span><span className="border-b border-dotted border-black flex-1">{contactNo || ''}</span></div>
+          {/* Contact */}
+          <div className="bp-contact">
+            <div>
+              <p style={{ margin: 0 }}>Tel: 077-2400919 / 071-2978922</p>
+              <p style={{ margin: 0 }}>Email: lovelaundry01@gmail.com</p>
+            </div>
+            <div style={{ textAlign: 'right' }}>
+              <p style={{ margin: 0 }}>Kuda bingiriya, Panirendawa.</p>
+            </div>
           </div>
-          <div className="w-1/3">
-            <table className="w-full border-collapse border-2 border-black">
-              <tbody>
-                <tr>
-                  <td className="border-2 border-black p-1">Received</td>
-                  <td className="border-2 border-black p-1 text-center">{receivedDate || ''}</td>
-                </tr>
-                <tr>
-                  <td className="border-2 border-black p-1">Delivery</td>
-                  <td className="border-2 border-black p-1 text-center">{deliveryDate || ''}</td>
-                </tr>
-              </tbody>
-            </table>
+
+          {/* Customer Details & Dates */}
+          <div className="bp-customer-row">
+            <div className="bp-customer-left">
+              <div className="bp-detail-line">
+                <span className="bp-detail-label">Name:</span>
+                <span className="bp-detail-value">{bill.client_name}</span>
+              </div>
+              <div className="bp-detail-line">
+                <span className="bp-detail-label">Address:</span>
+                <span className="bp-detail-value">{address || ''}</span>
+              </div>
+              <div className="bp-detail-line">
+                <span className="bp-detail-label">Contact No:</span>
+                <span className="bp-detail-value">{contactNo || ''}</span>
+              </div>
+            </div>
+            <div className="bp-dates-box">
+              <table className="bp-dates-table">
+                <tbody>
+                  <tr>
+                    <td>Received</td>
+                    <td style={{ textAlign: 'center' }}>{receivedDate || ''}</td>
+                  </tr>
+                  <tr>
+                    <td>Delivery</td>
+                    <td style={{ textAlign: 'center' }}>{deliveryDate || ''}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
-        </div>
 
-        {/* Main Table */}
-        <table className="w-full border-collapse border-2 border-black mb-2 text-sm font-bold">
-          <thead>
-            <tr>
-              <th className="border-2 border-black p-1 text-left w-12">No.</th>
-              <th className="border-2 border-black p-1 text-left">Description of Item</th>
-              <th className="border-2 border-black p-1 text-center w-16">QTY</th>
-              <th className="border-2 border-black p-1 text-right w-20">Rate</th>
-              <th className="border-2 border-black p-1 text-right w-24">Amount</th>
-              <th className="border-2 border-black p-1 text-center w-12">CTs.</th>
-            </tr>
-          </thead>
-          <tbody>
-            {displayItems.map((item, index) => {
-              const amountWhole = item.line_total > 0 ? Math.floor(item.line_total) : '';
-              const amountCts = item.line_total > 0 ? Math.round((item.line_total % 1) * 100).toString().padStart(2, '0') : '';
-              return (
-                <tr key={index}>
-                  <td className="border-2 border-black p-1 text-center">{index + 1}.</td>
-                  <td className="border-2 border-black p-1">{item.item_name}</td>
-                  <td className="border-2 border-black p-1 text-center">{item.quantity || ''}</td>
-                  <td className="border-2 border-black p-1 text-right">{item.unit_price > 0 ? item.unit_price.toFixed(2) : ''}</td>
-                  <td className="border-2 border-black p-1 text-right">{amountWhole}</td>
-                  <td className="border-2 border-black p-1 text-center">{amountCts}</td>
-                </tr>
-              )
-            })}
-            <tr>
-              <td colSpan={2} className="border-2 border-black p-1 text-right">Total:</td>
-              <td className="border-2 border-black p-1 text-center">{bill.total_quantity || ''}</td>
-              <td className="border-2 border-black p-1"></td>
-              <td className="border-2 border-black p-1 text-right">{Math.floor(bill.grand_total ?? bill.total_amount)}</td>
-              <td className="border-2 border-black p-1 text-center">{Math.round(((bill.grand_total ?? bill.total_amount) % 1) * 100).toString().padStart(2, '0')}</td>
-            </tr>
-          </tbody>
-        </table>
+          {/* Items Table */}
+          <table className="bp-items-table">
+            <thead>
+              <tr>
+                <th style={{ width: 40, textAlign: 'center' }}>No.</th>
+                <th>Description of Item</th>
+                <th style={{ width: 60, textAlign: 'center' }}>QTY</th>
+                <th style={{ width: 80, textAlign: 'right' }}>Rate</th>
+                <th style={{ width: 90, textAlign: 'right' }}>Amount</th>
+                <th style={{ width: 50, textAlign: 'center' }}>CTs.</th>
+              </tr>
+            </thead>
+            <tbody>
+              {displayItems.map((item, index) => {
+                const amountWhole = item.line_total > 0 ? Math.floor(item.line_total) : ''
+                const amountCts = item.line_total > 0 ? Math.round((item.line_total % 1) * 100).toString().padStart(2, '0') : ''
+                return (
+                  <tr key={index}>
+                    <td style={{ textAlign: 'center' }}>{index + 1}.</td>
+                    <td>{item.item_name}</td>
+                    <td style={{ textAlign: 'center' }}>{item.quantity || ''}</td>
+                    <td style={{ textAlign: 'right' }}>{item.unit_price > 0 ? item.unit_price.toFixed(2) : ''}</td>
+                    <td style={{ textAlign: 'right' }}>{amountWhole}</td>
+                    <td style={{ textAlign: 'center' }}>{amountCts}</td>
+                  </tr>
+                )
+              })}
+              <tr>
+                <td colSpan={2} style={{ textAlign: 'right' }}>Total:</td>
+                <td style={{ textAlign: 'center' }}>{bill.total_quantity || ''}</td>
+                <td></td>
+                <td style={{ textAlign: 'right' }}>{Math.floor(bill.grand_total ?? bill.total_amount)}</td>
+                <td style={{ textAlign: 'center' }}>{Math.round(((bill.grand_total ?? bill.total_amount) % 1) * 100).toString().padStart(2, '0')}</td>
+              </tr>
+            </tbody>
+          </table>
 
-        <div className="flex justify-between text-xs font-bold mt-2 mb-1">
-          <span>STATUS: {bill.payment_status || '—'}</span>
-          <span>PAID: LKR {(bill.paid_amount ?? 0).toFixed(2)}</span>
-          <span className={((bill.outstanding_amount ?? 0) > 0) ? 'text-red-700' : ''}>
-            BALANCE: LKR {(bill.outstanding_amount ?? 0).toFixed(2)}
-          </span>
-        </div>
-
-        {/* Conditions */}
-        <div className="text-xs font-bold leading-tight mb-8">
-          <p>CONDITIONS:</p>
-          <ul className="list-disc pl-4 space-y-0.5">
-            <li>Garments will only be returned on production of the bill, in case of loss of the bill National card of the customer should be produced.</li>
-            <li>Garments should be collected within 10 days from the date of delivery, after which the management will not be responsible for any loss or damage.</li>
-            <li>The management is not responsible for any shrinkage or color fading of garments after cleaning.</li>
-            <li>Any complaints regarding the quality of cleaning should be made within 24 hours of delivery.</li>
-            <li>The management reserves the right to change the terms and conditions without prior notice.</li>
-          </ul>
-        </div>
-
-        {/* Signatures */}
-        <div className="flex justify-between items-end mt-12 text-sm font-bold text-center">
-          <div className="w-40 border-t-2 border-dotted border-black pt-1">Cashier Signature</div>
-          <div>
-            <div className="border-b-2 border-dotted border-black mb-1 px-4">{bill.id.slice(0, 10).toUpperCase()}</div>
-            <div>Bill Number</div>
+          {/* Status */}
+          <div className="bp-status-row">
+            <span>STATUS: {bill.payment_status || '—'}</span>
+            <span>PAID: LKR {(bill.paid_amount ?? 0).toFixed(2)}</span>
+            <span className={((bill.outstanding_amount ?? 0) > 0) ? 'bp-red' : ''}>
+              BALANCE: LKR {(bill.outstanding_amount ?? 0).toFixed(2)}
+            </span>
           </div>
-          <div>
-            <div className="border-b-2 border-dotted border-black mb-1 px-4">{gatePass || 'N/A'}</div>
-            <div>Gate Pass</div>
+
+          {/* Conditions */}
+          <div className="bp-conditions">
+            <p>CONDITIONS:</p>
+            <ul>
+              <li>Garments will only be returned on production of the bill, in case of loss of the bill National card of the customer should be produced.</li>
+              <li>Garments should be collected within 10 days from the date of delivery, after which the management will not be responsible for any loss or damage.</li>
+              <li>The management is not responsible for any shrinkage or color fading of garments after cleaning.</li>
+              <li>Any complaints regarding the quality of cleaning should be made within 24 hours of delivery.</li>
+              <li>The management reserves the right to change the terms and conditions without prior notice.</li>
+            </ul>
           </div>
-          <div className="w-40 border-t-2 border-dotted border-black pt-1">Customer Signature</div>
+
+          {/* Signatures */}
+          <div className="bp-signatures">
+            <div className="bp-sig-box">
+              <div className="bp-sig-line">Cashier Signature</div>
+            </div>
+            <div className="bp-sig-box">
+              <div className="bp-id-line">{bill.id.slice(0, 10).toUpperCase()}</div>
+              <div>Bill Number</div>
+            </div>
+            <div className="bp-sig-box">
+              <div className="bp-id-line">{gatePass || 'N/A'}</div>
+              <div>Gate Pass</div>
+            </div>
+            <div className="bp-sig-box">
+              <div className="bp-sig-line">Customer Signature</div>
+            </div>
+          </div>
         </div>
       </div>
     )
