@@ -6,20 +6,21 @@ import { LINEN_STATUS_CONFIG, SCAN_ACTIONS, type LinenStatus } from '../../../ty
 import { Card, CardContent } from '../../../components/ui/card'
 import { Button } from '../../../components/ui/button'
 import { Breadcrumb } from '../../../components/ui/breadcrumb'
-import { Camera, CameraOff, Keyboard, Search, CheckCircle, Loader2 } from 'lucide-react'
+import { Camera, CameraOff, Keyboard, Search, CheckCircle, Loader2, RefreshCw } from 'lucide-react'
 import { toast } from 'sonner'
 
 export default function LinenScanner() {
   const [mode, setMode] = useState<'camera' | 'manual'>('manual')
   const [cameraActive, setCameraActive] = useState(false)
+  const [cameraStarting, setCameraStarting] = useState(false)
   const [code, setCode] = useState('')
   const [lastScanned, setLastScanned] = useState<string | null>(null)
   const [cameraError, setCameraError] = useState<string | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
-  const videoRef = useRef<HTMLVideoElement>(null)
-  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const videoRef = useRef<HTMLVideoElement | null>(null)
   const streamRef = useRef<MediaStream | null>(null)
-  const rafRef = useRef<number>(0)
+  const scanLoopRef = useRef<number>(0)
+  const containerRef = useRef<HTMLDivElement>(null)
   const { data: linen, refetch, isFetching } = useLinenByCode(lastScanned ?? undefined)
   const scanMutation = useScanLinen()
 
@@ -33,103 +34,108 @@ export default function LinenScanner() {
   }, [lastScanned, refetch])
 
   const stopCamera = useCallback(() => {
-    if (rafRef.current) cancelAnimationFrame(rafRef.current)
+    if (scanLoopRef.current) {
+      cancelAnimationFrame(scanLoopRef.current)
+      scanLoopRef.current = 0
+    }
     if (streamRef.current) {
       streamRef.current.getTracks().forEach(t => t.stop())
       streamRef.current = null
     }
+    if (videoRef.current) {
+      videoRef.current.srcObject = null
+      videoRef.current = null
+    }
     setCameraActive(false)
   }, [])
 
-  const scanFrame = useCallback(() => {
-    const video = videoRef.current
-    const canvas = canvasRef.current
-    if (!video || !canvas || video.readyState !== video.HAVE_ENOUGH_DATA) {
-      rafRef.current = requestAnimationFrame(scanFrame)
-      return
-    }
-
-    const ctx = canvas.getContext('2d', { willReadFrequently: true })
-    if (!ctx) return
-
-    canvas.width = video.videoWidth
-    canvas.height = video.videoHeight
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
-
-    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
-    const qr = jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: 'dontInvert' })
-
-    if (qr?.data) {
-      handleCodeScanned(qr.data)
-      return // stop scanning after successful read
-    }
-
-    rafRef.current = requestAnimationFrame(scanFrame)
-  }, [handleCodeScanned])
-
-  // MUST be called from a user click for mobile permission
-  const startCamera = useCallback(async () => {
+  const startCamera = useCallback(async (e: React.MouseEvent) => {
+    // Prevent default to ensure this is treated as user gesture
+    e.preventDefault()
     setCameraError(null)
-    setMode('camera')
-
-    // Check secure context
-    if (!window.isSecureContext && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
-      setCameraError('HTTPS required. Mobile browsers block camera on insecure pages.')
-      return
-    }
-
-    // Check getUserMedia support
-    if (!navigator.mediaDevices?.getUserMedia) {
-      setCameraError('Camera not supported in this browser.')
-      return
-    }
+    setCameraStarting(true)
 
     try {
       stopCamera()
 
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: {
-          facingMode: 'environment',
-          width: { ideal: 1280 },
-          height: { ideal: 720 },
-        },
+        video: { facingMode: 'environment' },
         audio: false,
       })
 
       streamRef.current = stream
+
+      // Create video element directly in the container
+      const container = containerRef.current
+      if (!container) throw new Error('Container not found')
+
+      // Remove old video if any
+      const oldVideo = container.querySelector('video')
+      if (oldVideo) oldVideo.remove()
+
+      const video = document.createElement('video')
+      video.setAttribute('autoplay', '')
+      video.setAttribute('playsinline', '')
+      video.setAttribute('muted', '')
+      video.style.width = '100%'
+      video.style.minHeight = '300px'
+      video.style.objectFit = 'cover'
+      video.srcObject = stream
+      container.prepend(video)
+      videoRef.current = video
+
+      await video.play()
       setCameraActive(true)
+      setCameraStarting(false)
 
-      // Wait for video element to mount
-      await new Promise(r => setTimeout(r, 100))
+      // Start scanning loop
+      const scanCanvas = document.createElement('canvas')
+      const scanCtx = scanCanvas.getContext('2d', { willReadFrequently: true })
 
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream
-        await videoRef.current.play()
-        rafRef.current = requestAnimationFrame(scanFrame)
+      const scanLoop = () => {
+        if (!videoRef.current || videoRef.current.readyState < 2) {
+          scanLoopRef.current = requestAnimationFrame(scanLoop)
+          return
+        }
+
+        const v = videoRef.current
+        scanCanvas.width = v.videoWidth
+        scanCanvas.height = v.videoHeight
+        scanCtx!.drawImage(v, 0, 0)
+
+        const imageData = scanCtx!.getImageData(0, 0, scanCanvas.width, scanCanvas.height)
+        const qr = jsQR(imageData.data, imageData.width, imageData.height, {
+          inversionAttempts: 'dontInvert',
+        })
+
+        if (qr?.data) {
+          handleCodeScanned(qr.data)
+          return
+        }
+
+        scanLoopRef.current = requestAnimationFrame(scanLoop)
       }
+
+      scanLoopRef.current = requestAnimationFrame(scanLoop)
     } catch (err: any) {
+      setCameraStarting(false)
+      setCameraActive(false)
       const name = err?.name || ''
-      if (name === 'NotAllowedError' || name === 'PermissionDeniedError') {
-        setCameraError('Camera permission denied. Please allow camera access and try again.')
-      } else if (name === 'NotFoundError' || name === 'DevicesNotFoundError') {
-        setCameraError('No camera found on this device.')
-      } else if (name === 'NotReadableError' || name === 'TrackStartError') {
-        setCameraError('Camera is in use by another app.')
+      if (name === 'NotAllowedError') {
+        setCameraError('Camera blocked. Go to browser Settings → Site Settings → Camera → Allow this site, then reload.')
+      } else if (name === 'NotFoundError') {
+        setCameraError('No camera found.')
+      } else if (name === 'NotReadableError') {
+        setCameraError('Camera in use by another app.')
       } else {
-        setCameraError(`Camera error: ${err?.message || name}`)
+        setCameraError(`${name}: ${err?.message}`)
       }
     }
-  }, [stopCamera, scanFrame])
+  }, [stopCamera, handleCodeScanned, lastScanned])
 
-  // Cleanup on unmount
   useEffect(() => {
-    return () => {
-      if (rafRef.current) cancelAnimationFrame(rafRef.current)
-      if (streamRef.current) {
-        streamRef.current.getTracks().forEach(t => t.stop())
-      }
-    }
-  }, [])
+    return () => stopCamera()
+  }, [stopCamera])
 
   const switchToManual = useCallback(() => {
     stopCamera()
@@ -176,8 +182,9 @@ export default function LinenScanner() {
       {/* Mode toggle */}
       <div className="flex gap-2">
         {!cameraActive ? (
-          <Button variant="outline" size="sm" onClick={startCamera} className="gap-2">
-            <Camera size={14} /> Start Camera
+          <Button variant="outline" size="sm" onClick={startCamera} disabled={cameraStarting} className="gap-2">
+            {cameraStarting ? <Loader2 size={14} className="animate-spin" /> : <Camera size={14} />}
+            {cameraStarting ? 'Starting...' : 'Start Camera'}
           </Button>
         ) : (
           <Button variant="default" size="sm" onClick={switchToManual} className="gap-2">
@@ -194,43 +201,45 @@ export default function LinenScanner() {
         </Button>
       </div>
 
-      {/* Camera scanner */}
-      {cameraActive && (
-        <Card className="border border-[var(--border)] shadow-sm overflow-hidden">
-          <CardContent className="p-0">
-            <div className="relative bg-black">
-              <video
-                ref={videoRef}
-                autoPlay
-                playsInline
-                muted
-                className="w-full"
-                style={{ minHeight: 300, objectFit: 'cover' }}
-              />
-              {/* Hidden canvas for QR processing */}
-              <canvas ref={canvasRef} style={{ display: 'none' }} />
-              {/* Scan overlay */}
-              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <div className="w-56 h-56 border-2 border-white/60 rounded-2xl" />
-              </div>
-              <div className="absolute bottom-0 inset-x-0 p-2 text-center text-xs text-white/80 bg-black/40">
-                Point camera at a QR code
-              </div>
+      {/* Camera container — video element is created here via DOM */}
+      <div
+        ref={containerRef}
+        className="relative bg-black rounded-xl overflow-hidden border border-[var(--border)]"
+        style={{ display: cameraActive || cameraStarting ? 'block' : 'none', minHeight: 300 }}
+      >
+        {cameraStarting && (
+          <div className="absolute inset-0 flex items-center justify-center bg-black/70 z-10">
+            <div className="text-center text-white">
+              <Loader2 size={32} className="animate-spin mx-auto mb-2" />
+              <p className="text-sm">Starting camera...</p>
+              <p className="text-xs mt-1 opacity-70">Accept the permission prompt on your phone</p>
             </div>
-          </CardContent>
-        </Card>
-      )}
+          </div>
+        )}
+        {cameraActive && (
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
+            <div className="w-56 h-56 border-2 border-white/60 rounded-2xl" />
+          </div>
+        )}
+        {cameraActive && (
+          <div className="absolute bottom-0 inset-x-0 p-2 text-center text-xs text-white/80 bg-black/40 z-10">
+            Point camera at a QR code — scanning is automatic
+          </div>
+        )}
+      </div>
 
       {/* Camera error */}
       {cameraError && (
         <Card className="border border-red-200 bg-red-50 shadow-sm">
-          <CardContent className="p-4 flex items-start gap-3">
-            <CameraOff size={18} className="text-red-600 flex-shrink-0 mt-0.5" />
-            <div className="flex-1">
-              <p className="text-sm font-medium text-red-800">{cameraError}</p>
-              <Button size="sm" variant="outline" className="mt-2 text-red-700 border-red-300" onClick={startCamera}>
-                Try Again
-              </Button>
+          <CardContent className="p-4">
+            <div className="flex items-start gap-3">
+              <CameraOff size={18} className="text-red-600 flex-shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <p className="text-sm font-medium text-red-800">{cameraError}</p>
+                <Button size="sm" variant="outline" className="mt-2 text-red-700 border-red-300" onClick={startCamera}>
+                  <RefreshCw size={12} className="mr-1" /> Try Again
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>
