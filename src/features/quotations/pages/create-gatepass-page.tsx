@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useMemo, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ClipboardList, Plus, Trash2, AlertCircle, ArrowLeft, Link2, X, ChevronDown, Sparkles } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -15,6 +15,7 @@ import { quotationService } from '../services/quotation.service'
 const EMPTY_ITEM: GatePassItem = {
     item_name: '',
     category: '',
+    specification: '',
     client_qty: 0,
     received_qty: 0,
     difference: 0,
@@ -33,18 +34,45 @@ const MISMATCH_REASONS = [
 // ─── Item Name Autocomplete ───────────────────────────────────────────────────
 interface ItemNameInputProps {
     value: string
-    onChange: (name: string, category?: string) => void
-    quotationItems: Array<{ item_name: string; category?: string }>
+    onChange: (name: string, category?: string, specification?: string) => void
+    quotationItems: Array<{ item_name: string; category?: string; specifications?: Array<{ specification: string; unit_price: number }> }>
     inputClass: string
     labelClass: string
     isCustom: boolean
     hasQuotation: boolean
 }
 
+/** Expand a line item into one or more selectable entries (specs → individual rows) */
+function expandQuotationItems(items: ItemNameInputProps['quotationItems']): Array<{ item_name: string; category?: string; specification?: string; label: string }> {
+    const expanded: Array<{ item_name: string; category?: string; specification?: string; label: string }> = []
+    for (const li of items) {
+        if (li.specifications && li.specifications.length > 0) {
+            for (const spec of li.specifications) {
+                expanded.push({
+                    item_name: li.item_name,
+                    category: li.category,
+                    specification: spec.specification,
+                    label: `${li.item_name} — ${spec.specification}`,
+                })
+            }
+        } else {
+            expanded.push({
+                item_name: li.item_name,
+                category: li.category,
+                specification: undefined,
+                label: li.item_name,
+            })
+        }
+    }
+    return expanded
+}
+
 export function ItemNameInput({ value, onChange, quotationItems, inputClass, labelClass, isCustom, hasQuotation }: ItemNameInputProps) {
     const [open, setOpen] = useState(false)
     const [search, setSearch] = useState(value)
     const ref = useRef<HTMLDivElement>(null)
+
+    const expandedItems = useMemo(() => expandQuotationItems(quotationItems), [quotationItems])
 
     useEffect(() => { setSearch(value) }, [value])
 
@@ -56,13 +84,13 @@ export function ItemNameInput({ value, onChange, quotationItems, inputClass, lab
         return () => document.removeEventListener('mousedown', handler)
     }, [])
 
-    const filtered = quotationItems.filter(qi =>
-        qi.item_name.toLowerCase().includes(search.trim().toLowerCase())
+    const filtered = expandedItems.filter(qi =>
+        qi.label.toLowerCase().includes(search.trim().toLowerCase())
     )
 
-    const handleSelect = (qi: { item_name: string; category?: string }) => {
-        onChange(qi.item_name, qi.category)
-        setSearch(qi.item_name)
+    const handleSelect = (qi: { item_name: string; category?: string; specification?: string; label: string }) => {
+        onChange(qi.item_name, qi.category, qi.specification)
+        setSearch(qi.label)
         setOpen(false)
     }
 
@@ -123,18 +151,25 @@ export function ItemNameInput({ value, onChange, quotationItems, inputClass, lab
                             </div>
                         ) : (
                             <div className="max-h-44 overflow-y-auto">
-                                {filtered.map(qi => (
+                                {filtered.map((qi, i) => (
                                     <button
-                                        key={qi.item_name}
+                                        key={`${qi.item_name}-${qi.specification ?? 'no-spec'}-${i}`}
                                         type="button"
                                         onMouseDown={e => { e.preventDefault(); handleSelect(qi) }}
                                         className="flex w-full items-center gap-2 px-3 py-2.5 text-left hover:bg-[#F9FAFB] transition cursor-pointer"
                                     >
-                                        <div>
-                                            <p className="text-[13px] font-medium text-[#101828]">{qi.item_name}</p>
-                                            {qi.category && (
-                                                <p className="text-[11px] text-[#98A2B3]">{qi.category}</p>
-                                            )}
+                                        <div className="min-w-0">
+                                            <p className="text-[13px] font-medium text-[#101828] truncate">{qi.item_name}</p>
+                                            <div className="flex items-center gap-1.5">
+                                                {qi.category && (
+                                                    <span className="text-[11px] text-[#98A2B3]">{qi.category}</span>
+                                                )}
+                                                {qi.specification && (
+                                                    <span className="inline-flex items-center rounded bg-[#FFF7ED] border border-[#FED7AA] px-1.5 py-px text-[10px] font-semibold text-[#EA580C]">
+                                                        {qi.specification}
+                                                    </span>
+                                                )}
+                                            </div>
                                         </div>
                                     </button>
                                 ))}
@@ -206,11 +241,12 @@ export default function CreateGatePassPage() {
         })
     }
 
-    const updateItemName = (index: number, name: string, category?: string) => {
+    const updateItemName = (index: number, name: string, category?: string, specification?: string) => {
         setItems(prev => {
             const updated = [...prev]
             const item = { ...updated[index], item_name: name }
             if (category !== undefined) item.category = category
+            if (specification !== undefined) (item as any).specification = specification
             updated[index] = item
             return updated
         })
@@ -483,12 +519,12 @@ export default function CreateGatePassPage() {
                                             : 'border-[#E4E7EC] bg-[#FAFAFA]'
                                     }`}
                                 >
-                                    {/* Row 1: Name, Category, ClientQty, ReceivedQty */}
-                                    <div className="grid gap-3 grid-cols-2 sm:grid-cols-4">
+                                    {/* Row 1: Name, Category, Spec, ClientQty, ReceivedQty */}
+                                    <div className="grid gap-3 grid-cols-2 sm:grid-cols-5">
                                         <div className="col-span-2 sm:col-span-1">
                                             <ItemNameInput
                                                 value={item.item_name}
-                                                onChange={(name, category) => updateItemName(idx, name, category)}
+                                                onChange={(name, category, specification) => updateItemName(idx, name, category, specification)}
                                                 quotationItems={quotationItemList}
                                                 inputClass={inputClass}
                                                 labelClass={labelClass}
@@ -503,6 +539,16 @@ export default function CreateGatePassPage() {
                                                 value={item.category ?? ''}
                                                 onChange={e => updateItem(idx, 'category', e.target.value)}
                                                 placeholder="Linen type"
+                                                className={inputClass}
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className={labelClass}>Spec</label>
+                                            <input
+                                                type="text"
+                                                value={(item as any).specification ?? ''}
+                                                onChange={e => (updateItem as any)(idx, 'specification', e.target.value)}
+                                                placeholder="e.g. Red, XL"
                                                 className={inputClass}
                                             />
                                         </div>

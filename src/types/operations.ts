@@ -12,6 +12,7 @@ export interface Verification {
 export interface GatePassItem {
     item_name: string
     category?: string
+    specification?: string
     client_qty: number
     received_qty: number
     difference: number

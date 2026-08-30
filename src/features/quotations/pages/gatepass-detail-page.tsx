@@ -75,12 +75,20 @@ export default function GatePassDetailPage() {
     // Optional: pick items from the linked quotation while editing
     const quotationQuery = useQuotation(gp?.quotation_id)
     const quotationItemList = useMemo(
-        () => (quotationQuery.data?.line_items ?? []).map(li => ({ item_name: li.item_name, category: li.category })),
+        () => (quotationQuery.data?.line_items ?? []).map(li => ({
+            item_name: li.item_name,
+            category: li.category,
+            specifications: li.specifications,
+        })),
         [quotationQuery.data],
+    )
+    const allQuotationItemNames = useMemo(
+        () => new Set(quotationItemList.map(qi => qi.item_name.toLowerCase())),
+        [quotationItemList],
     )
     const isEditCustomItem = (name: string) =>
         !!quotationQuery.data && name.trim() !== '' &&
-        !quotationItemList.some(qi => qi.item_name.toLowerCase() === name.trim().toLowerCase())
+        !allQuotationItemNames.has(name.trim().toLowerCase())
 
     if (isLoading) {
         return (
@@ -163,15 +171,20 @@ export default function GatePassDetailPage() {
         setEditing(true)
     }
 
-    const updateEditItem = (idx: number, field: 'item_name' | 'category' | 'client_qty' | 'received_qty', value: string | number) => {
+    const updateEditItem = (idx: number, field: 'item_name' | 'category' | 'specification' | 'client_qty' | 'received_qty', value: string | number) => {
         setEditItems(prev => {
             const next = prev.map((it, i) => (i === idx ? { ...it, [field]: value } : it))
             return next
         })
     }
 
-    const updateEditItemName = (idx: number, name: string, category?: string) => {
-        setEditItems(prev => prev.map((it, i) => (i === idx ? { ...it, item_name: name, ...(category !== undefined ? { category } : {}) } : it)))
+    const updateEditItemName = (idx: number, name: string, category?: string, specification?: string) => {
+        setEditItems(prev => prev.map((it, i) => (i === idx ? {
+            ...it,
+            item_name: name,
+            ...(category !== undefined ? { category } : {}),
+            ...(specification !== undefined ? { specification } : {}),
+        } : it)))
     }
 
     const addEditItem = () => {
@@ -183,6 +196,7 @@ export default function GatePassDetailPage() {
                 client_qty: 0,
                 received_qty: 0,
                 difference: 0,
+                specification: null,
                 mismatch_reason: null,
                 mismatch_notes: null,
             },
@@ -200,6 +214,7 @@ export default function GatePassDetailPage() {
             .map((it: any) => ({
                 item_name: it.item_name.trim(),
                 category: it.category?.trim() || null,
+                specification: it.specification?.trim() || null,
                 client_qty: Number(it.client_qty) || 0,
                 received_qty: Number(it.received_qty) || 0,
                 mismatch_reason: it.mismatch_reason || null,
@@ -491,11 +506,11 @@ export default function GatePassDetailPage() {
 
                         <div className="space-y-2">
                             {editItems.map((item: any, idx: number) => (
-                                <div key={idx} className="grid grid-cols-1 gap-2 rounded-lg border border-[#E4E7EC] bg-white p-3 sm:grid-cols-[1fr_1fr_74px_74px_36px] items-center">
+                                <div key={idx} className="grid grid-cols-1 gap-2 rounded-lg border border-[#E4E7EC] bg-white p-3 sm:grid-cols-[1fr_1fr_1fr_74px_74px_36px] items-center">
                                     <div>
                                         <ItemNameInput
                                             value={item.item_name}
-                                            onChange={(name, category) => updateEditItemName(idx, name, category)}
+                                            onChange={(name, category, specification) => updateEditItemName(idx, name, category, specification)}
                                             quotationItems={quotationItemList}
                                             inputClass="h-9 w-full rounded-lg border border-[#D0D5DD] bg-white px-3 text-[13px] outline-none focus:border-[#2563EB]"
                                             labelClass="block text-[10px] text-[#98A2B3] mb-0.5"
@@ -509,6 +524,15 @@ export default function GatePassDetailPage() {
                                             value={item.category ?? ''}
                                             onChange={e => updateEditItem(idx, 'category', e.target.value)}
                                             placeholder="e.g. Bed Linen"
+                                            className="h-9 w-full rounded-lg border border-[#D0D5DD] bg-white px-3 text-[13px] outline-none focus:border-[#2563EB]"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-[10px] text-[#98A2B3] mb-0.5">Spec</label>
+                                        <input
+                                            value={item.specification ?? ''}
+                                            onChange={e => updateEditItem(idx, 'specification', e.target.value)}
+                                            placeholder="e.g. Red, XL"
                                             className="h-9 w-full rounded-lg border border-[#D0D5DD] bg-white px-3 text-[13px] outline-none focus:border-[#2563EB]"
                                         />
                                     </div>
@@ -563,7 +587,7 @@ export default function GatePassDetailPage() {
                         <table className="w-full text-[13px]">
                             <thead>
                                 <tr className="border-b border-[#F2F4F7]">
-                                    {['Item', 'Category', 'Client Qty', 'Received', 'Diff', 'Reason', ''].map(h => (
+                                    {['Item', 'Spec', 'Category', 'Client Qty', 'Received', 'Diff', 'Reason', ''].map(h => (
                                         <th key={h} className="py-3 pr-3 text-left text-[11px] font-semibold uppercase tracking-wide text-[#98A2B3] first:pl-0">
                                             {h}
                                         </th>
@@ -575,6 +599,15 @@ export default function GatePassDetailPage() {
                                     <Fragment key={item.item_name}>
                                         <tr key={item.item_name} className="group">
                                             <td className="py-3 pr-3 font-medium text-[#101828]">{item.item_name}</td>
+                                            <td className="py-3 pr-3">
+                                                {item.specification ? (
+                                                    <span className="inline-flex items-center rounded bg-[#FFF7ED] border border-[#FED7AA] px-1.5 py-0.5 text-[11px] font-semibold text-[#EA580C]">
+                                                        {item.specification}
+                                                    </span>
+                                                ) : (
+                                                    <span className="text-[#D0D5DD]">—</span>
+                                                )}
+                                            </td>
                                             <td className="py-3 pr-3 text-[#6B7280]">{item.category || '—'}</td>
                                             <td className="py-3 pr-3 text-[#6B7280]">{item.client_qty}</td>
                                             <td className="py-3 pr-3 font-semibold text-[#101828]">{item.received_qty}</td>
@@ -605,7 +638,7 @@ export default function GatePassDetailPage() {
                                         <AnimatePresence>
                                             {adjustingItem === item.item_name && (
                                                 <tr key={`${item.item_name}-adj`}>
-                                                    <td colSpan={7} className="pb-3">
+                                                    <td colSpan={8} className="pb-3">
                                                         <motion.div
                                                             initial={{ opacity: 0, height: 0 }}
                                                             animate={{ opacity: 1, height: 'auto' }}
