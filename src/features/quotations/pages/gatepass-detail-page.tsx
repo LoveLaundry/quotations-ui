@@ -111,6 +111,20 @@ export default function GatePassDetailPage() {
     const totalReceived = gp.items.reduce((s: number, i: any) => s + i.received_qty, 0)
     const mismatches = gp.items.filter((i: any) => i.difference !== 0)
 
+    const deliveredMap = useMemo(() => {
+        const map: Record<string, number> = {}
+        for (const d of deliveries) {
+            if (d.status === 'CANCELLED') continue
+            for (const it of d.items) {
+                map[it.item_name] = (map[it.item_name] || 0) + it.quantity
+            }
+        }
+        return map
+    }, [deliveries])
+
+    const totalDelivered = gp.items.reduce((s: number, i: any) => s + (deliveredMap[i.item_name] || 0), 0)
+    const totalPending = totalReceived - totalDelivered
+
     const handleAdjust = (itemName: string) => {
         const item = gp.items.find((i: any) => i.item_name === itemName)
         if (!item) return
@@ -394,6 +408,8 @@ export default function GatePassDetailPage() {
                 {[
                     { icon: User, label: 'Received By', value: gp.received_by },
                     { icon: ClipboardList, label: 'Items', value: `${gp.items.length} types · ${totalReceived} pcs` },
+                    { icon: Truck, label: 'Delivered', value: totalDelivered > 0 ? `${totalDelivered} pcs` : 'None yet' },
+                    { icon: AlertCircle, label: 'Pending', value: totalPending > 0 ? `${totalPending} pcs` : 'All delivered' },
                     { icon: AlertCircle, label: 'Mismatches', value: mismatches.length > 0 ? `${mismatches.length} item${mismatches.length > 1 ? 's' : ''}` : 'None' },
                 ].map(({ icon: Icon, label, value }) => (
                     <Card key={label} className="p-3">
@@ -587,7 +603,7 @@ export default function GatePassDetailPage() {
                         <table className="w-full text-[13px]">
                             <thead>
                                 <tr className="border-b border-[#F2F4F7]">
-                                    {['Item', 'Spec', 'Category', 'Client Qty', 'Received', 'Diff', 'Reason', ''].map(h => (
+                                    {['Item', 'Spec', 'Category', 'Client Qty', 'Received', 'Delivered', 'Pending', 'Diff', 'Reason', ''].map(h => (
                                         <th key={h} className="py-3 pr-3 text-left text-[11px] font-semibold uppercase tracking-wide text-[#98A2B3] first:pl-0">
                                             {h}
                                         </th>
@@ -611,6 +627,17 @@ export default function GatePassDetailPage() {
                                             <td className="py-3 pr-3 text-[#6B7280]">{item.category || '—'}</td>
                                             <td className="py-3 pr-3 text-[#6B7280]">{item.client_qty}</td>
                                             <td className="py-3 pr-3 font-semibold text-[#101828]">{item.received_qty}</td>
+                                            <td className="py-3 pr-3 text-[#6B7280]">{deliveredMap[item.item_name] || 0}</td>
+                                            <td className="py-3 pr-3">
+                                                {(() => {
+                                                    const pending = item.received_qty - (deliveredMap[item.item_name] || 0)
+                                                    return pending > 0 ? (
+                                                        <span className="font-semibold text-[#EA580C]">{pending}</span>
+                                                    ) : (
+                                                        <span className="font-semibold text-[#16A34A]">0</span>
+                                                    )
+                                                })()}
+                                            </td>
                                             <td className="py-3 pr-3">
                                                 <span className={`font-semibold ${item.difference === 0 ? 'text-[#16A34A]' :
                                                         item.difference > 0 ? 'text-[#2563EB]' : 'text-[#C2410C]'
@@ -638,7 +665,7 @@ export default function GatePassDetailPage() {
                                         <AnimatePresence>
                                             {adjustingItem === item.item_name && (
                                                 <tr key={`${item.item_name}-adj`}>
-                                                    <td colSpan={8} className="pb-3">
+                                                    <td colSpan={10} className="pb-3">
                                                         <motion.div
                                                             initial={{ opacity: 0, height: 0 }}
                                                             animate={{ opacity: 1, height: 'auto' }}
