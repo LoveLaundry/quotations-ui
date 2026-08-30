@@ -26,6 +26,11 @@ const pageTitles: Record<string, string> = {
   '/reports': 'Reports',
   '/users': 'Users',
   '/database-sync': 'Database Sync',
+  '/linen': 'Linen Dashboard',
+  '/linen/inventory': 'Linen Inventory',
+  '/linen/scanner': 'Scan Linen',
+  '/linen/bulk-scan': 'Bulk Scan',
+  '/linen/tags': 'Tag Generator',
 }
 
 function getPageTitle(pathname: string): string {
@@ -34,6 +39,7 @@ function getPageTitle(pathname: string): string {
   if (pathname.match(/^\/bills\/[^/]+$/)) return 'Bill Details'
   if (pathname.match(/^\/gate-passes\/[^/]+$/)) return 'Gate Pass Details'
   if (pathname.match(/^\/deliveries\/[^/]+$/)) return 'Delivery Details'
+  if (pathname.match(/^\/linen\/[^/]+$/)) return 'Linen Profile'
   return pageTitles[pathname] ?? 'Love Laundry'
 }
 

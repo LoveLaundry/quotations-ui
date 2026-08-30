@@ -15,6 +15,7 @@ import {
   CaretLeft,
   CaretRight,
   ChatCircleDots,
+  Scan,
 } from '@phosphor-icons/react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Logo } from '../brand/logo'
@@ -41,6 +42,16 @@ const navGroups = [
       { to: '/workers/daily-tasks', label: 'Staff Daily Tasks', icon: UsersThree, end: false, indent: true },
       { to: '/bills', label: 'Bills', icon: CurrencyCircleDollar, end: false, permission: 'view_bills' },
       { to: '/invoices/new', label: 'Invoices', icon: FileText, end: false, permission: 'view_bills' },
+    ],
+  },
+  {
+    label: 'Linen Tracking',
+    items: [
+      { to: '/linen', label: 'Dashboard', icon: House, end: false },
+      { to: '/linen/inventory', label: 'Inventory', icon: ClipboardText, end: false },
+      { to: '/linen/scanner', label: 'Scan Linen', icon: Scan, end: false },
+      { to: '/linen/bulk-scan', label: 'Bulk Scan', icon: Scan, end: false },
+      { to: '/linen/tags', label: 'Tag Generator', icon: FileText, end: false },
     ],
   },
   {

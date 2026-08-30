@@ -1,0 +1,198 @@
+import { useState, useRef, useEffect } from 'react'
+import { QRCodeSVG } from 'qrcode.react'
+import JsBarcode from 'jsbarcode'
+import { useGenerateTags } from '../hooks/useLinen'
+import { LINEN_CATEGORIES } from '../../../types/linen'
+import { Card, CardContent } from '../../../components/ui/card'
+import { Button } from '../../../components/ui/button'
+import { Breadcrumb } from '../../../components/ui/breadcrumb'
+import { Printer, Plus } from 'lucide-react'
+
+interface TagItem {
+  linen_id: string
+  category: string
+  item_type: string
+  client_name: string
+}
+
+function TagCard({ tag }: { tag: TagItem }) {
+  const barcodeRef = useRef<SVGSVGElement>(null)
+
+  useEffect(() => {
+    if (barcodeRef.current) {
+      JsBarcode(barcodeRef.current, tag.linen_id, {
+        format: 'CODE128',
+        width: 1.5,
+        height: 30,
+        displayValue: false,
+        margin: 0,
+      })
+    }
+  }, [tag.linen_id])
+
+  return (
+    <div className="tag-card border-2 border-black p-3 flex flex-col items-center gap-1" style={{ width: '70mm', height: '38mm', pageBreakInside: 'avoid' }}>
+      <p className="text-[8px] font-bold uppercase tracking-widest">Love Laundry</p>
+      <QRCodeSVG value={tag.linen_id} size={50} level="M" />
+      <svg ref={barcodeRef} style={{ width: '80%', height: 20 }} />
+      <p className="text-[9px] font-bold font-mono tracking-wider">{tag.linen_id}</p>
+    </div>
+  )
+}
+
+export default function LinenTagGenerator() {
+  const [category, setCategory] = useState('BEDSHEET')
+  const [itemType, setItemType] = useState('')
+  const [clientName, setClientName] = useState('')
+  const [quantity, setQuantity] = useState(10)
+  const [size, setSize] = useState('')
+  const [color, setColor] = useState('')
+  const [department, setDepartment] = useState('')
+  const [generatedTags, setGeneratedTags] = useState<TagItem[]>([])
+  const generateMutation = useGenerateTags()
+
+  const handleGenerate = () => {
+    if (!itemType || !clientName || quantity <= 0) return
+    generateMutation.mutate(
+      { category, item_type: itemType, client_name: clientName, quantity, size: size || undefined, color: color || undefined, department: department || undefined },
+      {
+        onSuccess: (data) => {
+          setGeneratedTags(data.items.map(i => ({
+            linen_id: i.linen_id,
+            category: i.category,
+            item_type: i.item_type,
+            client_name: i.client_name,
+          })))
+        },
+      }
+    )
+  }
+
+  const handlePrint = () => {
+    const printWindow = window.open('', '_blank')
+    if (!printWindow) return
+    const tagHTML = generatedTags.map(tag => {
+      const barcodeId = `bc-${tag.linen_id}`
+      return `
+        <div class="tag-card" style="border:2px solid #000;padding:8px;display:inline-flex;flex-direction:column;align-items:center;gap:2px;width:70mm;height:38mm;page-break-inside:avoid;margin:2mm;">
+          <p style="font-size:8px;font-weight:bold;text-transform:uppercase;letter-spacing:2px;margin:0">Love Laundry</p>
+          <div id="qr-${tag.linen_id}"></div>
+          <svg id="${barcodeId}"></svg>
+          <p style="font-size:9px;font-weight:bold;font-family:monospace;letter-spacing:1px;margin:0">${tag.linen_id}</p>
+        </div>
+      `
+    }).join('')
+
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html><head>
+        <title>Linen Tags</title>
+        <script src="https://cdn.jsdelivr.net/npm/qrcode@1/build/qrcode.min.js"><\/script>
+        <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"><\/script>
+        <style>
+          @page { size: A4; margin: 10mm; }
+          body { font-family: 'Spectral', Georgia, serif; margin: 0; }
+          .tags-grid { display: flex; flex-wrap: wrap; gap: 0; justify-content: flex-start; }
+        </style>
+      </head><body>
+        <div class="tags-grid">${tagHTML}</div>
+        <script>
+          ${generatedTags.map(tag => `
+            JsBarcode('#bc-${tag.linen_id}', '${tag.linen_id}', { format: 'CODE128', width: 1.5, height: 30, displayValue: false, margin: 0 });
+            QRCode.toCanvas(document.createElement('canvas'), '${tag.linen_id}', { width: 50, margin: 0 }, function(err, canvas) {
+              if (!err) { document.getElementById('qr-${tag.linen_id}').appendChild(canvas); }
+            });
+          `).join('')}
+          setTimeout(function() { window.print(); }, 500);
+        <\/script>
+      </body></html>
+    `)
+    printWindow.document.close()
+  }
+
+  return (
+    <div className="space-y-5">
+      <Breadcrumb items={[{ label: 'Linen' }, { label: 'Tag Generator' }]} />
+
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold text-[var(--text-primary)]" style={{ fontFamily: '"Spectral", Georgia, serif' }}>Generate Linen Tags</h1>
+          <p className="text-sm text-[var(--text-muted)]">Create linen IDs and preview printable tags</p>
+        </div>
+        {generatedTags.length > 0 && (
+          <Button onClick={handlePrint}><Printer size={16} className="mr-2" />Print {generatedTags.length} Tags</Button>
+        )}
+      </div>
+
+      <div className="flex flex-col lg:flex-row gap-5">
+        {/* Form */}
+        <Card className="lg:w-96 border-0 shadow-sm">
+          <CardContent className="p-5 space-y-4">
+            <div>
+              <label className="text-xs font-semibold text-[var(--text-muted)] uppercase mb-1 block">Category</label>
+              <select value={category} onChange={e => setCategory(e.target.value)}
+                className="w-full px-3 py-2 text-sm border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)]">
+                {LINEN_CATEGORIES.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="text-xs font-semibold text-[var(--text-muted)] uppercase mb-1 block">Item Type *</label>
+              <input value={itemType} onChange={e => setItemType(e.target.value)} placeholder="e.g. King Bedsheet"
+                className="w-full px-3 py-2 text-sm border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)]" />
+            </div>
+            <div>
+              <label className="text-xs font-semibold text-[var(--text-muted)] uppercase mb-1 block">Client / Hotel *</label>
+              <input value={clientName} onChange={e => setClientName(e.target.value)} placeholder="e.g. Hotel Riu"
+                className="w-full px-3 py-2 text-sm border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)]" />
+            </div>
+            <div>
+              <label className="text-xs font-semibold text-[var(--text-muted)] uppercase mb-1 block">Quantity *</label>
+              <input type="number" value={quantity} onChange={e => setQuantity(Number(e.target.value))} min={1} max={10000}
+                className="w-full px-3 py-2 text-sm border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)]" />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-xs font-semibold text-[var(--text-muted)] uppercase mb-1 block">Size</label>
+                <input value={size} onChange={e => setSize(e.target.value)} placeholder="e.g. King"
+                  className="w-full px-3 py-2 text-sm border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)]" />
+              </div>
+              <div>
+                <label className="text-xs font-semibold text-[var(--text-muted)] uppercase mb-1 block">Color</label>
+                <input value={color} onChange={e => setColor(e.target.value)} placeholder="e.g. White"
+                  className="w-full px-3 py-2 text-sm border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)]" />
+              </div>
+            </div>
+            <div>
+              <label className="text-xs font-semibold text-[var(--text-muted)] uppercase mb-1 block">Department</label>
+              <input value={department} onChange={e => setDepartment(e.target.value)} placeholder="e.g. Housekeeping"
+                className="w-full px-3 py-2 text-sm border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)]" />
+            </div>
+            <Button onClick={handleGenerate} disabled={!itemType || !clientName || quantity <= 0 || generateMutation.isPending} className="w-full">
+              <Plus size={16} className="mr-2" />
+              {generateMutation.isPending ? 'Generating...' : `Generate ${quantity} Tags`}
+            </Button>
+          </CardContent>
+        </Card>
+
+        {/* Preview */}
+        <div className="flex-1">
+          {generatedTags.length > 0 ? (
+            <div>
+              <p className="text-sm font-semibold text-[var(--text-muted)] mb-3">Preview — {generatedTags.length} tags</p>
+              <div className="flex flex-wrap gap-2">
+                {generatedTags.map(tag => <TagCard key={tag.linen_id} tag={tag} />)}
+              </div>
+            </div>
+          ) : (
+            <Card className="border-0 shadow-sm">
+              <CardContent className="p-12 text-center">
+                <Printer size={40} className="mx-auto mb-3 text-[var(--text-muted)] opacity-30" />
+                <p className="text-sm text-[var(--text-muted)]">Fill in the form and click Generate to preview tags</p>
+              </CardContent>
+            </Card>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}

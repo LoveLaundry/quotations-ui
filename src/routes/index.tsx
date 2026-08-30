@@ -40,6 +40,14 @@ import CustomersPage from '../features/quotations/pages/customers-page'
 import { WorkersPage } from '../features/workers/pages/workers-page'
 import { DailyTasksPage } from '../features/workers/pages/daily-tasks-page'
 
+// Linen Tracking pages
+import LinenDashboard from '../features/linen/pages/linen-dashboard'
+import LinenInventory from '../features/linen/pages/linen-inventory'
+import LinenProfile from '../features/linen/pages/linen-profile'
+import LinenScanner from '../features/linen/pages/linen-scanner'
+import LinenBulkScan from '../features/linen/pages/linen-bulk-scan'
+import LinenTagGenerator from '../features/linen/pages/linen-tag-generator'
+
 export const router = createBrowserRouter([
   // ── Public routes ─────────────────────────────────────────────────────────────
   {
@@ -95,6 +103,14 @@ export const router = createBrowserRouter([
           // Workers
           { path: 'workers', element: <WorkersPage /> },
           { path: 'workers/daily-tasks', element: <DailyTasksPage /> },
+
+          // Linen Tracking
+          { path: 'linen', element: <LinenDashboard /> },
+          { path: 'linen/inventory', element: <LinenInventory /> },
+          { path: 'linen/:id', element: <LinenProfile /> },
+          { path: 'linen/scanner', element: <LinenScanner /> },
+          { path: 'linen/bulk-scan', element: <LinenBulkScan /> },
+          { path: 'linen/tags', element: <LinenTagGenerator /> },
 
           // Public chatbot (ADMIN / MANAGER)
           { path: 'live-chat', element: <LiveChatPage /> },
