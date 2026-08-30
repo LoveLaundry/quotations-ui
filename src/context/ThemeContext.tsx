@@ -27,6 +27,12 @@ const FONT_SIZE_MAP: Record<FontSize, string> = {
   lg: '15px',
 }
 
+const FONT_ZOOM_MAP: Record<FontSize, number> = {
+  sm: 0.92,
+  md: 1,
+  lg: 1.08,
+}
+
 const THEME_ATTR = 'data-theme'
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
@@ -39,6 +45,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     document.documentElement.style.setProperty('--body-font-size', FONT_SIZE_MAP[fontSize])
+    document.documentElement.style.setProperty('--body-font-zoom', String(FONT_ZOOM_MAP[fontSize]))
   }, [fontSize])
 
   useEffect(() => {
@@ -47,10 +54,9 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   }, [theme])
 
   useEffect(() => {
-    // Apply persisted values on first mount
     document.documentElement.style.setProperty('--body-font-size', FONT_SIZE_MAP[fontSize])
+    document.documentElement.style.setProperty('--body-font-zoom', String(FONT_ZOOM_MAP[fontSize]))
     document.documentElement.setAttribute(THEME_ATTR, theme)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const setFontSize = (s: FontSize) => {

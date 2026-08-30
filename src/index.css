@@ -1,6 +1,10 @@
 @import 'tailwindcss';
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
+#root {
+  zoom: var(--body-font-zoom, 1);
+}
+
 @layer base {
   /* ─────────────────────────────────────────────────────────────
      THEME TOKENS
