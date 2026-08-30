@@ -41,7 +41,7 @@ interface ItemNameInputProps {
     hasQuotation: boolean
 }
 
-function ItemNameInput({ value, onChange, quotationItems, inputClass, labelClass, isCustom, hasQuotation }: ItemNameInputProps) {
+export function ItemNameInput({ value, onChange, quotationItems, inputClass, labelClass, isCustom, hasQuotation }: ItemNameInputProps) {
     const [open, setOpen] = useState(false)
     const [search, setSearch] = useState(value)
     const ref = useRef<HTMLDivElement>(null)
