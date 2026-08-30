@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useLinens } from '../hooks/useLinen'
 import { LINEN_STATUS_CONFIG, LINEN_CATEGORIES, LINEN_CONDITIONS, type LinenStatus } from '../../../types/linen'
@@ -9,7 +9,7 @@ import { ErrorState } from '../../../components/ui/error-state'
 import { EmptyState } from '../../../components/ui/empty-state'
 import { Breadcrumb } from '../../../components/ui/breadcrumb'
 import { formatDate } from '../../../lib/utils'
-import { Search, ChevronLeft, ChevronRight, Download } from 'lucide-react'
+import { Search, ChevronLeft, ChevronRight, Download, X } from 'lucide-react'
 
 export default function LinenInventory() {
   const [search, setSearch] = useState('')
@@ -20,8 +20,7 @@ export default function LinenInventory() {
   const [page, setPage] = useState(0)
   const perPage = 50
 
-  // Debounce search
-  useMemo(() => {
+  useEffect(() => {
     const t = setTimeout(() => { setDebouncedSearch(search); setPage(0) }, 350)
     return () => clearTimeout(t)
   }, [search])
@@ -36,6 +35,16 @@ export default function LinenInventory() {
   })
 
   const totalPages = data ? Math.ceil(data.total / perPage) : 0
+  const hasFilters = Boolean(debouncedSearch || category || status || condition)
+
+  const clearFilters = () => {
+    setSearch('')
+    setDebouncedSearch('')
+    setCategory('')
+    setStatus('')
+    setCondition('')
+    setPage(0)
+  }
 
   const handleExport = () => {
     if (!data?.items?.length) return
@@ -62,39 +71,46 @@ export default function LinenInventory() {
         <div className="flex gap-2">
           <Link to="/linen/scanner"><Button variant="outline" size="sm">Scan</Button></Link>
           <Link to="/linen/tags"><Button variant="outline" size="sm">Generate Tags</Button></Link>
-          <Button variant="outline" size="sm" onClick={handleExport}><Download size={14} className="mr-1" />Export</Button>
+          <Button variant="outline" size="sm" onClick={handleExport} disabled={!data?.items?.length}><Download size={14} className="mr-1" />Export</Button>
         </div>
       </div>
 
       {/* Filters */}
-      <Card className="border-0 shadow-sm">
-        <CardContent className="p-4 flex flex-wrap gap-3">
-          <div className="relative flex-1 min-w-[200px]">
-            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)]" />
-            <input
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              placeholder="Search linen ID, type, client..."
-              className="w-full pl-9 pr-3 py-2 text-sm border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)]"
-            />
+      <Card className="border border-[var(--border)] shadow-sm">
+        <CardContent className="p-4">
+          <div className="flex flex-wrap gap-3">
+            <div className="relative flex-1 min-w-[200px]">
+              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)]" />
+              <input
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                placeholder="Search linen ID, type, client..."
+                className="w-full pl-9 pr-3 py-2 text-sm border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[#DC2626]/20 focus:border-[#DC2626] transition-colors"
+              />
+            </div>
+            <select value={category} onChange={e => { setCategory(e.target.value); setPage(0) }}
+              className="px-3 py-2 text-sm border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[#DC2626]/20 focus:border-[#DC2626] transition-colors">
+              <option value="">All Categories</option>
+              {LINEN_CATEGORIES.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
+            </select>
+            <select value={status} onChange={e => { setStatus(e.target.value); setPage(0) }}
+              className="px-3 py-2 text-sm border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[#DC2626]/20 focus:border-[#DC2626] transition-colors">
+              <option value="">All Statuses</option>
+              {(Object.keys(LINEN_STATUS_CONFIG) as LinenStatus[]).map(s => (
+                <option key={s} value={s}>{LINEN_STATUS_CONFIG[s].label}</option>
+              ))}
+            </select>
+            <select value={condition} onChange={e => { setCondition(e.target.value); setPage(0) }}
+              className="px-3 py-2 text-sm border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[#DC2626]/20 focus:border-[#DC2626] transition-colors">
+              <option value="">All Conditions</option>
+              {LINEN_CONDITIONS.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
+            </select>
+            {hasFilters && (
+              <Button variant="ghost" size="sm" onClick={clearFilters} className="text-[var(--text-muted)] hover:text-[#DC2626]">
+                <X size={14} className="mr-1" />Clear
+              </Button>
+            )}
           </div>
-          <select value={category} onChange={e => { setCategory(e.target.value); setPage(0) }}
-            className="px-3 py-2 text-sm border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)]">
-            <option value="">All Categories</option>
-            {LINEN_CATEGORIES.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
-          </select>
-          <select value={status} onChange={e => { setStatus(e.target.value); setPage(0) }}
-            className="px-3 py-2 text-sm border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)]">
-            <option value="">All Statuses</option>
-            {(Object.keys(LINEN_STATUS_CONFIG) as LinenStatus[]).map(s => (
-              <option key={s} value={s}>{LINEN_STATUS_CONFIG[s].label}</option>
-            ))}
-          </select>
-          <select value={condition} onChange={e => { setCondition(e.target.value); setPage(0) }}
-            className="px-3 py-2 text-sm border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)]">
-            <option value="">All Conditions</option>
-            {LINEN_CONDITIONS.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
-          </select>
         </CardContent>
       </Card>
 
@@ -104,13 +120,13 @@ export default function LinenInventory() {
       ) : isError ? <ErrorState /> : !data?.items?.length ? (
         <EmptyState title="No linen found" description="Try adjusting your filters or generate new linen tags." />
       ) : (
-        <Card className="border-0 shadow-sm overflow-hidden">
+        <Card className="border border-[var(--border)] shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-[var(--border)] bg-[var(--surface)]">
                   {['Linen ID', 'Type', 'Client', 'Status', 'Condition', 'Washes', 'Last Scan', ''].map(h => (
-                    <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wide whitespace-nowrap">{h}</th>
+                    <th key={h} className="px-4 py-3 text-left text-[11px] font-semibold text-[var(--text-muted)] uppercase tracking-wide whitespace-nowrap">{h}</th>
                   ))}
                 </tr>
               </thead>
@@ -118,12 +134,12 @@ export default function LinenInventory() {
                 {data.items.map(linen => {
                   const stCfg = LINEN_STATUS_CONFIG[linen.status as LinenStatus] ?? { label: linen.status, color: '#6B7280', bg: '#F3F4F6' }
                   return (
-                    <tr key={linen.id} className="border-b border-[var(--border)] hover:bg-[var(--surface-hover)] transition-colors">
-                      <td className="px-4 py-3 font-mono font-semibold text-[var(--text-primary)]">{linen.linen_id}</td>
+                    <tr key={linen.id} className="border-b border-[var(--border)] last:border-b-0 hover:bg-[var(--surface-hover)] transition-colors">
+                      <td className="px-4 py-3 font-mono text-[13px] font-semibold text-[var(--text-primary)]">{linen.linen_id}</td>
                       <td className="px-4 py-3 text-[var(--text-secondary)]">{linen.item_type}</td>
                       <td className="px-4 py-3 text-[var(--text-secondary)]">{linen.client_name}</td>
                       <td className="px-4 py-3">
-                        <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-semibold" style={{ backgroundColor: stCfg.bg, color: stCfg.color }}>
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold" style={{ backgroundColor: stCfg.bg, color: stCfg.color }}>
                           <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: stCfg.color }} />
                           {stCfg.label}
                         </span>

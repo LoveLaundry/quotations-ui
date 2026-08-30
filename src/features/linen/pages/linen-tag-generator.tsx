@@ -31,7 +31,7 @@ function TagCard({ tag }: { tag: TagItem }) {
   }, [tag.linen_id])
 
   return (
-    <div className="tag-card border-2 border-black p-3 flex flex-col items-center gap-1" style={{ width: '70mm', height: '38mm', pageBreakInside: 'avoid' }}>
+    <div className="border-2 border-black p-3 flex flex-col items-center gap-1 bg-white" style={{ width: '70mm', height: '38mm', pageBreakInside: 'avoid' }}>
       <p className="text-[8px] font-bold uppercase tracking-widest">Love Laundry</p>
       <QRCodeSVG value={tag.linen_id} size={50} level="M" />
       <svg ref={barcodeRef} style={{ width: '80%', height: 20 }} />
@@ -69,44 +69,50 @@ export default function LinenTagGenerator() {
   }
 
   const handlePrint = () => {
-    const printWindow = window.open('', '_blank')
-    if (!printWindow) return
-    const tagHTML = generatedTags.map(tag => {
-      const barcodeId = `bc-${tag.linen_id}`
+    // Build self-contained print HTML using the same approach as other print templates
+    const tagCards = generatedTags.map(tag => {
       return `
-        <div class="tag-card" style="border:2px solid #000;padding:8px;display:inline-flex;flex-direction:column;align-items:center;gap:2px;width:70mm;height:38mm;page-break-inside:avoid;margin:2mm;">
-          <p style="font-size:8px;font-weight:bold;text-transform:uppercase;letter-spacing:2px;margin:0">Love Laundry</p>
-          <div id="qr-${tag.linen_id}"></div>
-          <svg id="${barcodeId}"></svg>
-          <p style="font-size:9px;font-weight:bold;font-family:monospace;letter-spacing:1px;margin:0">${tag.linen_id}</p>
+        <div class="tag-card">
+          <div class="tag-brand">LOVE LAUNDRY</div>
+          <div class="tag-qr" id="qr-${tag.linen_id}"></div>
+          <svg class="tag-barcode" id="bc-${tag.linen_id}"></svg>
+          <div class="tag-id">${tag.linen_id}</div>
         </div>
       `
     }).join('')
 
-    printWindow.document.write(`
-      <!DOCTYPE html>
-      <html><head>
-        <title>Linen Tags</title>
-        <script src="https://cdn.jsdelivr.net/npm/qrcode@1/build/qrcode.min.js"><\/script>
-        <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"><\/script>
-        <style>
-          @page { size: A4; margin: 10mm; }
-          body { font-family: 'Spectral', Georgia, serif; margin: 0; }
-          .tags-grid { display: flex; flex-wrap: wrap; gap: 0; justify-content: flex-start; }
-        </style>
-      </head><body>
-        <div class="tags-grid">${tagHTML}</div>
-        <script>
-          ${generatedTags.map(tag => `
-            JsBarcode('#bc-${tag.linen_id}', '${tag.linen_id}', { format: 'CODE128', width: 1.5, height: 30, displayValue: false, margin: 0 });
-            QRCode.toCanvas(document.createElement('canvas'), '${tag.linen_id}', { width: 50, margin: 0 }, function(err, canvas) {
-              if (!err) { document.getElementById('qr-${tag.linen_id}').appendChild(canvas); }
-            });
-          `).join('')}
-          setTimeout(function() { window.print(); }, 500);
-        <\/script>
-      </body></html>
-    `)
+    const printWindow = window.open('', '_blank')
+    if (!printWindow) return
+
+    printWindow.document.write(`<!DOCTYPE html>
+<html><head><title>Linen Tags</title>
+<style>
+  @page { size: A4; margin: 10mm; }
+  body { margin: 0; font-family: 'Courier New', monospace; }
+  .tags-grid { display: flex; flex-wrap: wrap; gap: 2mm; }
+  .tag-card {
+    border: 2px solid #000; padding: 3mm; width: 64mm; height: 34mm;
+    display: flex; flex-direction: column; align-items: center; gap: 1mm;
+    box-sizing: border-box; page-break-inside: avoid; background: #fff;
+  }
+  .tag-brand { font-size: 7px; font-weight: bold; text-transform: uppercase; letter-spacing: 2px; }
+  .tag-qr { display: flex; justify-content: center; }
+  .tag-barcode { width: 80%; height: 22px; }
+  .tag-id { font-size: 9px; font-weight: bold; letter-spacing: 1px; }
+</style></head><body>
+<div class="tags-grid">${tagCards}</div>
+<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"><\/script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1/build/qrcode.min.js"><\/script>
+<script>
+  var tags = ${JSON.stringify(generatedTags)};
+  tags.forEach(function(tag) {
+    JsBarcode('#bc-' + tag.linen_id, tag.linen_id, { format: 'CODE128', width: 1.5, height: 30, displayValue: false, margin: 0 });
+    QRCode.toCanvas(document.createElement('canvas'), tag.linen_id, { width: 60, margin: 0 }, function(err, canvas) {
+      if (!err) document.getElementById('qr-' + tag.linen_id).appendChild(canvas);
+    });
+  });
+  setTimeout(function() { window.print(); }, 600);
+<\/script></body></html>`)
     printWindow.document.close()
   }
 
@@ -126,46 +132,46 @@ export default function LinenTagGenerator() {
 
       <div className="flex flex-col lg:flex-row gap-5">
         {/* Form */}
-        <Card className="lg:w-96 border-0 shadow-sm">
+        <Card className="lg:w-96 border border-[var(--border)] shadow-sm">
           <CardContent className="p-5 space-y-4">
             <div>
-              <label className="text-xs font-semibold text-[var(--text-muted)] uppercase mb-1 block">Category</label>
+              <label className="text-[11px] font-semibold text-[var(--text-muted)] uppercase tracking-wide mb-1.5 block">Category</label>
               <select value={category} onChange={e => setCategory(e.target.value)}
-                className="w-full px-3 py-2 text-sm border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)]">
+                className="w-full px-3 py-2 text-sm border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[#DC2626]/20 focus:border-[#DC2626] transition-colors">
                 {LINEN_CATEGORIES.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
               </select>
             </div>
             <div>
-              <label className="text-xs font-semibold text-[var(--text-muted)] uppercase mb-1 block">Item Type *</label>
+              <label className="text-[11px] font-semibold text-[var(--text-muted)] uppercase tracking-wide mb-1.5 block">Item Type *</label>
               <input value={itemType} onChange={e => setItemType(e.target.value)} placeholder="e.g. King Bedsheet"
-                className="w-full px-3 py-2 text-sm border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)]" />
+                className="w-full px-3 py-2 text-sm border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[#DC2626]/20 focus:border-[#DC2626] transition-colors" />
             </div>
             <div>
-              <label className="text-xs font-semibold text-[var(--text-muted)] uppercase mb-1 block">Client / Hotel *</label>
+              <label className="text-[11px] font-semibold text-[var(--text-muted)] uppercase tracking-wide mb-1.5 block">Client / Hotel *</label>
               <input value={clientName} onChange={e => setClientName(e.target.value)} placeholder="e.g. Hotel Riu"
-                className="w-full px-3 py-2 text-sm border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)]" />
+                className="w-full px-3 py-2 text-sm border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[#DC2626]/20 focus:border-[#DC2626] transition-colors" />
             </div>
             <div>
-              <label className="text-xs font-semibold text-[var(--text-muted)] uppercase mb-1 block">Quantity *</label>
+              <label className="text-[11px] font-semibold text-[var(--text-muted)] uppercase tracking-wide mb-1.5 block">Quantity *</label>
               <input type="number" value={quantity} onChange={e => setQuantity(Number(e.target.value))} min={1} max={10000}
-                className="w-full px-3 py-2 text-sm border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)]" />
+                className="w-full px-3 py-2 text-sm border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[#DC2626]/20 focus:border-[#DC2626] transition-colors" />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-xs font-semibold text-[var(--text-muted)] uppercase mb-1 block">Size</label>
+                <label className="text-[11px] font-semibold text-[var(--text-muted)] uppercase tracking-wide mb-1.5 block">Size</label>
                 <input value={size} onChange={e => setSize(e.target.value)} placeholder="e.g. King"
-                  className="w-full px-3 py-2 text-sm border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)]" />
+                  className="w-full px-3 py-2 text-sm border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[#DC2626]/20 focus:border-[#DC2626] transition-colors" />
               </div>
               <div>
-                <label className="text-xs font-semibold text-[var(--text-muted)] uppercase mb-1 block">Color</label>
+                <label className="text-[11px] font-semibold text-[var(--text-muted)] uppercase tracking-wide mb-1.5 block">Color</label>
                 <input value={color} onChange={e => setColor(e.target.value)} placeholder="e.g. White"
-                  className="w-full px-3 py-2 text-sm border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)]" />
+                  className="w-full px-3 py-2 text-sm border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[#DC2626]/20 focus:border-[#DC2626] transition-colors" />
               </div>
             </div>
             <div>
-              <label className="text-xs font-semibold text-[var(--text-muted)] uppercase mb-1 block">Department</label>
+              <label className="text-[11px] font-semibold text-[var(--text-muted)] uppercase tracking-wide mb-1.5 block">Department</label>
               <input value={department} onChange={e => setDepartment(e.target.value)} placeholder="e.g. Housekeeping"
-                className="w-full px-3 py-2 text-sm border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)]" />
+                className="w-full px-3 py-2 text-sm border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[#DC2626]/20 focus:border-[#DC2626] transition-colors" />
             </div>
             <Button onClick={handleGenerate} disabled={!itemType || !clientName || quantity <= 0 || generateMutation.isPending} className="w-full">
               <Plus size={16} className="mr-2" />
@@ -184,7 +190,7 @@ export default function LinenTagGenerator() {
               </div>
             </div>
           ) : (
-            <Card className="border-0 shadow-sm">
+            <Card className="border border-[var(--border)] shadow-sm">
               <CardContent className="p-12 text-center">
                 <Printer size={40} className="mx-auto mb-3 text-[var(--text-muted)] opacity-30" />
                 <p className="text-sm text-[var(--text-muted)]">Fill in the form and click Generate to preview tags</p>

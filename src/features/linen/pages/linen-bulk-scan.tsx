@@ -17,7 +17,6 @@ export default function LinenBulkScan() {
   const addCode = () => {
     const raw = input.trim().toUpperCase()
     if (!raw) return
-    // Support newline-separated or space-separated
     const newCodes = raw.split(/[\n\s]+/).filter(c => c && !codes.includes(c))
     setCodes(prev => [...prev, ...newCodes])
     setInput('')
@@ -31,12 +30,7 @@ export default function LinenBulkScan() {
     if (!codes.length) return
     bulkMutation.mutate(
       { codes, action, location: location || undefined },
-      {
-        onSuccess: () => {
-          setCodes([])
-          setInput('')
-        },
-      }
+      { onSuccess: () => { setCodes([]); setInput('') } }
     )
   }
 
@@ -54,31 +48,31 @@ export default function LinenBulkScan() {
       <div className="flex flex-col lg:flex-row gap-5">
         {/* Left — input */}
         <div className="flex-1 space-y-4">
-          <Card className="border-0 shadow-sm">
+          <Card className="border border-[var(--border)] shadow-sm">
             <CardContent className="p-5 space-y-4">
               <div>
-                <label className="text-xs font-semibold text-[var(--text-muted)] uppercase mb-1 block">Action</label>
+                <label className="text-[11px] font-semibold text-[var(--text-muted)] uppercase tracking-wide mb-1.5 block">Action</label>
                 <select
                   value={action}
                   onChange={e => setAction(e.target.value)}
-                  className="w-full px-3 py-2 text-sm border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)]"
+                  className="w-full px-3 py-2 text-sm border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[#DC2626]/20 focus:border-[#DC2626] transition-colors"
                 >
                   {SCAN_ACTIONS.map(sa => <option key={sa.value} value={sa.value}>{sa.label}</option>)}
                 </select>
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-[var(--text-muted)] uppercase mb-1 block">Location (optional)</label>
+                <label className="text-[11px] font-semibold text-[var(--text-muted)] uppercase tracking-wide mb-1.5 block">Location (optional)</label>
                 <input
                   value={location}
                   onChange={e => setLocation(e.target.value)}
                   placeholder="e.g. Hotel Floor 3, Room 301"
-                  className="w-full px-3 py-2 text-sm border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)]"
+                  className="w-full px-3 py-2 text-sm border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[#DC2626]/20 focus:border-[#DC2626] transition-colors"
                 />
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-[var(--text-muted)] uppercase mb-1 block">
+                <label className="text-[11px] font-semibold text-[var(--text-muted)] uppercase tracking-wide mb-1.5 block">
                   Linen IDs ({codes.length} added)
                 </label>
                 <textarea
@@ -88,9 +82,9 @@ export default function LinenBulkScan() {
                   onKeyDown={e => {
                     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); addCode() }
                   }}
-                  placeholder="Enter linen IDs, one per line or space-separated...&#10;e.g. LL-7K4P92 LL-82M7QF"
+                  placeholder={"Enter linen IDs, one per line or space-separated...\ne.g. LL-7K4P92 LL-82M7QF"}
                   rows={4}
-                  className="w-full px-3 py-2 text-sm font-mono border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)] resize-none"
+                  className="w-full px-3 py-2 text-sm font-mono border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)] resize-none focus:outline-none focus:ring-2 focus:ring-[#DC2626]/20 focus:border-[#DC2626] transition-colors"
                 />
                 <div className="flex gap-2 mt-2">
                   <Button variant="outline" size="sm" onClick={addCode} disabled={!input.trim()}>Add</Button>
@@ -103,27 +97,28 @@ export default function LinenBulkScan() {
           <Button
             onClick={handleBulkScan}
             disabled={codes.length === 0 || bulkMutation.isPending}
-            className="w-full"
+            className="w-full h-11"
+            size="lg"
           >
             <Zap size={16} className="mr-2" />
             {bulkMutation.isPending ? 'Processing...' : `Process ${codes.length} Items`}
           </Button>
         </div>
 
-        {/* Right — preview + results */}
+        {/* Right — queue + results */}
         <div className="lg:w-80 space-y-4">
           {/* Queued codes */}
-          <Card className="border-0 shadow-sm">
+          <Card className="border border-[var(--border)] shadow-sm">
             <CardContent className="p-4">
-              <p className="text-xs font-semibold text-[var(--text-muted)] uppercase mb-2">Queued ({codes.length})</p>
+              <p className="text-[11px] font-semibold text-[var(--text-muted)] uppercase tracking-wide mb-2">Queued ({codes.length})</p>
               {codes.length === 0 ? (
                 <p className="text-xs text-[var(--text-muted)]">No codes queued yet</p>
               ) : (
                 <div className="max-h-64 overflow-y-auto space-y-1">
                   {codes.map((code) => (
-                    <div key={code} className="flex items-center justify-between text-xs font-mono py-1 px-2 rounded bg-[var(--surface)]">
+                    <div key={code} className="flex items-center justify-between text-xs font-mono py-1.5 px-2 rounded bg-[var(--surface)] border border-[var(--border)]">
                       <span className="text-[var(--text-primary)]">{code}</span>
-                      <button onClick={() => removeCode(code)} className="text-[var(--text-muted)] hover:text-red-500"><X size={12} /></button>
+                      <button onClick={() => removeCode(code)} className="text-[var(--text-muted)] hover:text-red-500 transition-colors"><X size={12} /></button>
                     </div>
                   ))}
                 </div>
@@ -133,7 +128,7 @@ export default function LinenBulkScan() {
 
           {/* Results */}
           {bulkMutation.data && (
-            <Card className="border-0 shadow-sm">
+            <Card className="border border-[var(--border)] shadow-sm">
               <CardContent className="p-4 space-y-3">
                 <div className="flex items-center gap-2">
                   <CheckCircle size={16} className="text-green-600" />
@@ -146,9 +141,9 @@ export default function LinenBulkScan() {
                   </div>
                 )}
                 {bulkMutation.data.errors?.length > 0 && (
-                  <div className="space-y-1">
+                  <div className="space-y-1 mt-2">
                     {bulkMutation.data.errors.map((e: any) => (
-                      <p key={e.linen_id} className="text-xs text-[var(--text-muted)]">{e.linen_id}: {e.error}</p>
+                      <p key={e.linen_id} className="text-xs text-[var(--text-muted)] font-mono">{e.linen_id}: {e.error}</p>
                     ))}
                   </div>
                 )}
