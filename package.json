@@ -21,7 +21,6 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "framer-motion": "^12.43.0",
-    "html5-qrcode": "^2.3.8",
     "jsbarcode": "^3.12.3",
     "jsqr": "^1.4.0",
     "lucide-react": "^1.28.0",
