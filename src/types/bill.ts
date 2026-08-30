@@ -24,10 +24,15 @@ export interface Bill {
   total_quantity: number
   total_amount: number
   grand_total?: number
+  discounts?: number
+  transport_fee?: number
+  taxes?: number
+  additional_charges?: number
   paid_amount?: number
   outstanding_amount?: number
   status?: string
   payment_status?: 'DRAFT' | 'PENDING' | 'ISSUED' | 'PARTIALLY_PAID' | 'PAID' | 'CANCELLED' | string
+  gate_pass_id?: string
   notes?: string
   created_at: string
   updated_at?: string
@@ -45,12 +50,20 @@ export interface BillPayload {
     quantity: number
   }>
   notes?: string
+  instant?: boolean
+  discounts?: number
+  transport_fee?: number
+  taxes?: number
+  additional_charges?: number
+  delivery_ids?: string[]
+  gate_pass_id?: string
 }
 
 export interface BillListParams {
   search?: string
   client_name?: string
   quotation_id?: string
+  payment_status?: string
   date_from?: string
   date_to?: string
   skip?: number

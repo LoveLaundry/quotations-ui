@@ -13,26 +13,8 @@ import { useBill, useDeleteBill } from '../hooks/useBills'
 import { usePayments, useCreatePayment } from '../hooks/usePayments'
 import { useReactToPrint } from 'react-to-print'
 import { BillPrintTemplate } from '../components/bill-print-template'
+import { BillStatusBadge } from '../../../components/ui/bill-status-badge'
 import { useRef } from 'react'
-
-function StatusBadge({ status }: { status?: string }) {
-  if (!status) return null
-  const colors = {
-    DRAFT: 'bg-[#F9FAFB] text-[#374151] border-[#E5E7EB]',
-    PENDING: 'bg-[#FEF2F2] text-[#DC2626] border-[#FECACA]',
-    ISSUED: 'bg-[#FFF7ED] text-[#C2410C] border-[#FED7AA]',
-    UNPAID: 'bg-[#FEF2F2] text-[#DC2626] border-[#FECACA]',
-    PARTIALLY_PAID: 'bg-[#FFFBEB] text-[#D97706] border-[#FDE68A]',
-    PAID: 'bg-[#F0FDF4] text-[#16A34A] border-[#BBF7D0]',
-    CANCELLED: 'bg-[#F3F4F6] text-[#4B5563] border-[#E5E7EB]',
-  }
-  const color = colors[status as keyof typeof colors] || colors.PENDING
-  return (
-    <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-[11px] font-semibold whitespace-nowrap ${color}`}>
-      {status}
-    </span>
-  )
-}
 
 function RecordPaymentModal({
   isOpen,
@@ -182,7 +164,8 @@ export default function BillDetailPage() {
     deleteBill.mutate(bill.id, { onSuccess: () => navigate('/bills') })
   }
 
-  const outstanding = bill?.outstanding_amount ?? bill?.total_amount ?? 0
+  const outstanding = bill?.outstanding_amount ?? (bill ? (bill.grand_total ?? bill.total_amount) : 0)
+  const grandTotal = bill?.grand_total ?? bill?.total_amount ?? 0
 
   return (
     <div className="space-y-5 pb-10">
@@ -200,7 +183,7 @@ export default function BillDetailPage() {
               <ArrowLeft className="h-4 w-4" />
             </Link>
             <h1 className="text-dashboard-title">Bill Details</h1>
-            <StatusBadge status={bill?.payment_status} />
+            <BillStatusBadge status={bill?.payment_status} />
           </div>
         </div>
 
@@ -303,8 +286,36 @@ export default function BillDetailPage() {
               </CardHeader>
               <CardContent className="pt-4 space-y-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-[13px] text-[#6B7280]">Total</span>
+                  <span className="text-[13px] text-[#6B7280]">Gross Amount</span>
                   <span className="text-[14px] font-semibold text-[#101828]">LKR {bill.total_amount.toFixed(2)}</span>
+                </div>
+                {(bill.discounts ?? 0) > 0 && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-[13px] text-[#6B7280]">Discount</span>
+                    <span className="text-[14px] font-semibold text-[#D97706]">- LKR {(bill.discounts ?? 0).toFixed(2)}</span>
+                  </div>
+                )}
+                {(bill.transport_fee ?? 0) > 0 && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-[13px] text-[#6B7280]">Transport</span>
+                    <span className="text-[14px] font-semibold text-[#101828]">+ LKR {(bill.transport_fee ?? 0).toFixed(2)}</span>
+                  </div>
+                )}
+                {(bill.taxes ?? 0) > 0 && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-[13px] text-[#6B7280]">Taxes</span>
+                    <span className="text-[14px] font-semibold text-[#101828]">+ LKR {(bill.taxes ?? 0).toFixed(2)}</span>
+                  </div>
+                )}
+                {(bill.additional_charges ?? 0) > 0 && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-[13px] text-[#6B7280]">Other Charges</span>
+                    <span className="text-[14px] font-semibold text-[#101828]">+ LKR {(bill.additional_charges ?? 0).toFixed(2)}</span>
+                  </div>
+                )}
+                <div className="flex items-center justify-between pt-2 border-t border-[#F2F4F7]">
+                  <span className="text-[13px] font-semibold text-[#101828]">Grand Total</span>
+                  <span className="text-[15px] font-bold text-[#101828]">LKR {grandTotal.toFixed(2)}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-[13px] text-[#6B7280]">Paid</span>

@@ -109,11 +109,19 @@ export const BillPrintTemplate = React.forwardRef<HTMLDivElement, BillPrintTempl
               <td colSpan={2} className="border-2 border-black p-1 text-right">Total:</td>
               <td className="border-2 border-black p-1 text-center">{bill.total_quantity || ''}</td>
               <td className="border-2 border-black p-1"></td>
-              <td className="border-2 border-black p-1 text-right">{Math.floor(bill.total_amount)}</td>
-              <td className="border-2 border-black p-1 text-center">{Math.round((bill.total_amount % 1) * 100).toString().padStart(2, '0')}</td>
+              <td className="border-2 border-black p-1 text-right">{Math.floor(bill.grand_total ?? bill.total_amount)}</td>
+              <td className="border-2 border-black p-1 text-center">{Math.round(((bill.grand_total ?? bill.total_amount) % 1) * 100).toString().padStart(2, '0')}</td>
             </tr>
           </tbody>
         </table>
+
+        <div className="flex justify-between text-xs font-bold mt-2 mb-1">
+          <span>STATUS: {bill.payment_status || '—'}</span>
+          <span>PAID: LKR {(bill.paid_amount ?? 0).toFixed(2)}</span>
+          <span className={((bill.outstanding_amount ?? 0) > 0) ? 'text-red-700' : ''}>
+            BALANCE: LKR {(bill.outstanding_amount ?? 0).toFixed(2)}
+          </span>
+        </div>
 
         {/* Conditions */}
         <div className="text-xs font-bold leading-tight mb-8">

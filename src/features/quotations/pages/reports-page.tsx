@@ -23,13 +23,15 @@ const TABS: { id: ReportTab; label: string; icon: ElementType }[] = [
 function StatusBadge({ status }: { status: string }) {
   const s = (status || '').toLowerCase()
   const cfg =
-    s === 'delivered' || s === 'paid' || s === 'completed'
+    s === 'delivered' || s === 'paid' || s === 'completed' || s === 'full'
       ? 'bg-[#F0FDF4] text-[#16A34A] border-[#BBF7D0]'
       : s === 'pending' || s === 'draft'
         ? 'bg-[#FFF7ED] text-[#C2410C] border-[#FED7AA]'
-        : s === 'partial'
+        : s === 'partial' || s === 'partially_paid'
           ? 'bg-[#EFF6FF] text-[#2563EB] border-[#BFDBFE]'
-          : 'bg-[#F9FAFB] text-[#374151] border-[#E4E7EC]'
+          : s === 'cancelled'
+            ? 'bg-[#F3F4F6] text-[#4B5563] border-[#E5E7EB]'
+            : 'bg-[#F9FAFB] text-[#374151] border-[#E4E7EC]'
   return (
     <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-semibold capitalize ${cfg}`}>
       {status || '—'}

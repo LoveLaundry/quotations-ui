@@ -5,6 +5,7 @@ import * as XLSX from 'xlsx'
 import { Card } from '../../../components/ui/card'
 import { Button } from '../../../components/ui/button'
 import { Badge } from '../../../components/ui/badge'
+import { BillStatusBadge, BILL_STATUS_FILTERS } from '../../../components/ui/bill-status-badge'
 import { EmptyState } from '../../../components/ui/empty-state'
 import { ErrorState } from '../../../components/ui/error-state'
 import { Skeleton } from '../../../components/ui/skeleton'
@@ -18,6 +19,7 @@ export default function BillsListPage() {
   const [search, setSearch] = useState('')
   const [dateFrom, setDateFrom] = useState('')
   const [dateTo, setDateTo] = useState('')
+  const [paymentStatus, setPaymentStatus] = useState('')
 
   useEffect(() => {
     const t = setTimeout(() => setSearch(searchInput.trim()), 350)
@@ -28,17 +30,19 @@ export default function BillsListPage() {
     search: search || undefined,
     date_from: dateFrom || undefined,
     date_to: dateTo || undefined,
+    payment_status: paymentStatus || undefined,
     limit: 50,
   })
 
   const bills = data?.items ?? []
-  const hasFilters = Boolean(search || dateFrom || dateTo)
+  const hasFilters = Boolean(search || dateFrom || dateTo || paymentStatus)
 
   const clearFilters = () => {
     setSearchInput('')
     setSearch('')
     setDateFrom('')
     setDateTo('')
+    setPaymentStatus('')
   }
   
   const handleExportExcel = () => {
@@ -51,6 +55,7 @@ export default function BillsListPage() {
       'Quotation Title': bill.quotation_title || 'N/A',
       'Total Quantity': bill.total_quantity,
       'Total Amount': bill.total_amount,
+      'Grand Total': bill.grand_total ?? bill.total_amount,
       'Paid Amount': bill.paid_amount || 0,
       'Outstanding Amount': bill.outstanding_amount ?? bill.total_amount,
       'Status': bill.payment_status || 'DRAFT',
@@ -132,6 +137,24 @@ export default function BillsListPage() {
         </div>
       </div>
 
+      {/* Payment status filter */}
+      <div className="flex flex-wrap items-center gap-1.5">
+        {BILL_STATUS_FILTERS.map(f => (
+          <button
+            key={f.value || 'all'}
+            type="button"
+            onClick={() => setPaymentStatus(f.value)}
+            className={`rounded-full border px-3 py-1 text-[12px] font-medium transition cursor-pointer ${
+              paymentStatus === f.value
+                ? 'border-[#DC2626] bg-[#FFF1F1] text-[#DC2626]'
+                : 'border-[#E4E7EC] bg-white text-[#6B7280] hover:border-[#D0D5DD] hover:text-[#374151]'
+            }`}
+          >
+            {f.label}
+          </button>
+        ))}
+      </div>
+
       {isLoading ? (
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {Array.from({ length: 6 }).map((_, i) => (
@@ -165,7 +188,13 @@ export default function BillsListPage() {
               <Card hover className="cursor-pointer p-4 h-full">
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex items-start gap-3 min-w-0">
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#FFF1F1] text-[#DC2626] border border-[#FECACA]">
+                    <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border ${
+                      bill.payment_status === 'PAID'
+                        ? 'bg-[#F0FDF4] text-[#16A34A] border-[#BBF7D0]'
+                        : bill.payment_status === 'PARTIALLY_PAID'
+                          ? 'bg-[#FFFBEB] text-[#D97706] border-[#FDE68A]'
+                          : 'bg-[#FFF1F1] text-[#DC2626] border-[#FECACA]'
+                    }`}>
                       <Receipt className="h-4 w-4" />
                     </div>
                     <div className="min-w-0">
@@ -177,16 +206,31 @@ export default function BillsListPage() {
                       </p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <VerificationStatus status={bill.verification?.status} showLabel={false} />
-                    <Badge variant="secondary">{bill.total_quantity} items</Badge>
+                  <div className="flex flex-col items-end gap-1.5">
+                    <BillStatusBadge status={bill.payment_status} />
+                    <div className="flex items-center gap-1.5">
+                      <VerificationStatus status={bill.verification?.status} showLabel={false} />
+                      <Badge variant="secondary">{bill.total_quantity} items</Badge>
+                    </div>
                   </div>
                 </div>
 
-                <div className="mt-3 flex items-center justify-between border-t border-[#F2F4F7] pt-3">
-                  <span className="text-[11px] text-[#98A2B3]">{formatDate(bill.created_at)}</span>
+                <div className="mt-3 flex items-end justify-between border-t border-[#F2F4F7] pt-3">
+                  <div className="flex flex-col gap-0.5">
+                    <span className="text-[11px] text-[#98A2B3]">{formatDate(bill.created_at)}</span>
+                    {(bill.payment_status === 'PAID' || (bill.paid_amount ?? 0) > 0) && (
+                      <span className="text-[11px] font-medium text-[#16A34A]">
+                        Paid LKR {(bill.paid_amount ?? 0).toFixed(2)}
+                      </span>
+                    )}
+                    {(bill.outstanding_amount ?? 0) > 0 && (
+                      <span className="text-[11px] font-medium text-[#DC2626]">
+                        Owed LKR {(bill.outstanding_amount ?? 0).toFixed(2)}
+                      </span>
+                    )}
+                  </div>
                   <span className="text-[14px] font-bold text-[#101828]">
-                    LKR {bill.total_amount.toFixed(2)}
+                    LKR {(bill.grand_total ?? bill.total_amount).toFixed(2)}
                   </span>
                 </div>
               </Card>
