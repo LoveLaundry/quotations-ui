@@ -91,6 +91,24 @@ export function useUpdateGatePassDate() {
     })
 }
 
+export function useUpdateGatePass() {
+    const qc = useQueryClient()
+    return useMutation({
+        mutationFn: ({
+            id,
+            payload,
+        }: {
+            id: string
+            payload: Parameters<typeof gatepasses.update>[1]
+        }) => gatepasses.update(id, payload),
+        onSuccess: () => {
+            qc.invalidateQueries({ queryKey: gatepassKeys.all })
+            toast.success('Gate pass updated')
+        },
+        onError: () => toast.error('Failed to update gate pass'),
+    })
+}
+
 export function useCreateBillFromGatePass() {
     const qc = useQueryClient()
     return useMutation({

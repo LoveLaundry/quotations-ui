@@ -30,6 +30,24 @@ export const gatepasses = {
     updateDate: (id: string, receiving_date: string, reason?: string) =>
         billsApi.patch<GatePass>(`/gatepasses/${id}/date`, { receiving_date: toISODatetime(receiving_date), reason }).then((r: any) => r.data),
 
+    update: (
+        id: string,
+        payload: {
+            client_name?: string
+            received_by?: string
+            notes?: string
+            items?: Array<{
+                item_name: string
+                category?: string | null
+                client_qty: number
+                received_qty: number
+                mismatch_reason?: string | null
+                mismatch_notes?: string | null
+            }>
+        },
+    ) =>
+        billsApi.patch<GatePass>(`/gatepasses/${id}`, payload).then((r: any) => r.data),
+
     createBillFromGatePass: (
         gate_pass_id: string,
         data: { instant?: boolean; notes?: string; quotation_id?: string; client_name?: string },
