@@ -31,42 +31,6 @@ export default function LinenScanner() {
     toast.info(`Scanned: ${trimmed}`)
   }, [lastScanned, refetch])
 
-  const startCamera = useCallback(async () => {
-    setCameraError(null)
-    setIsStarting(true)
-    try {
-      if (scannerRef.current) {
-        try { await scannerRef.current.stop() } catch { /* ignore */ }
-        scannerRef.current = null
-      }
-
-      const scanner = new Html5Qrcode(SCANNER_ELEMENT_ID)
-      scannerRef.current = scanner
-
-      await scanner.start(
-        { facingMode: 'environment' },
-        {
-          fps: 10,
-          qrbox: { width: 250, height: 250 },
-          aspectRatio: 1.0,
-        },
-        (decodedText) => handleCodeScanned(decodedText),
-        () => { /* ignore scan errors */ }
-      )
-      setIsStarting(false)
-    } catch (err: any) {
-      setIsStarting(false)
-      const msg = err?.message || String(err)
-      if (msg.includes('Permission')) {
-        setCameraError('Camera permission denied. Please allow camera access in your browser settings and try again.')
-      } else if (msg.includes('NotFound')) {
-        setCameraError('No camera found on this device.')
-      } else {
-        setCameraError(`Camera error: ${msg}`)
-      }
-    }
-  }, [handleCodeScanned])
-
   const stopCamera = useCallback(async () => {
     if (scannerRef.current) {
       try { await scannerRef.current.stop() } catch { /* ignore */ }
@@ -74,21 +38,64 @@ export default function LinenScanner() {
     }
   }, [])
 
-  const switchToCamera = useCallback(async () => {
-    setMode('camera')
-    setCameraError(null)
-    await startCamera()
-  }, [startCamera])
+  // Start camera when mode switches to 'camera' and DOM element is ready
+  useEffect(() => {
+    if (mode !== 'camera') return
+
+    let cancelled = false
+    const el = document.getElementById(SCANNER_ELEMENT_ID)
+    if (!el) return
+
+    const start = async () => {
+      setCameraError(null)
+      setIsStarting(true)
+      try {
+        await stopCamera()
+
+        const scanner = new Html5Qrcode(SCANNER_ELEMENT_ID)
+        if (cancelled) return
+        scannerRef.current = scanner
+
+        await scanner.start(
+          { facingMode: 'environment' },
+          {
+            fps: 10,
+            qrbox: { width: 250, height: 250 },
+            aspectRatio: 1.0,
+          },
+          (decodedText) => handleCodeScanned(decodedText),
+          () => { /* ignore scan errors */ }
+        )
+        if (!cancelled) setIsStarting(false)
+      } catch (err: any) {
+        if (cancelled) return
+        setIsStarting(false)
+        const msg = err?.message || String(err)
+        if (msg.includes('Permission') || msg.includes('permission')) {
+          setCameraError('Camera permission denied. Please allow camera access in your browser settings and try again.')
+        } else if (msg.includes('NotFound') || msg.includes('not found')) {
+          setCameraError('No camera found on this device.')
+        } else {
+          setCameraError(`Camera error: ${msg}`)
+        }
+      }
+    }
+
+    // Small delay to ensure DOM element is painted
+    const timer = setTimeout(start, 150)
+
+    return () => {
+      cancelled = true
+      clearTimeout(timer)
+      stopCamera()
+    }
+  }, [mode, stopCamera, handleCodeScanned])
 
   const switchToManual = useCallback(async () => {
     await stopCamera()
     setMode('manual')
     setCameraError(null)
     setTimeout(() => inputRef.current?.focus(), 100)
-  }, [stopCamera])
-
-  useEffect(() => {
-    return () => { stopCamera() }
   }, [stopCamera])
 
   const handleLookup = useCallback(() => {
@@ -131,7 +138,7 @@ export default function LinenScanner() {
         <Button
           variant={mode === 'camera' ? 'default' : 'outline'}
           size="sm"
-          onClick={switchToCamera}
+          onClick={() => { setMode('camera'); setCameraError(null) }}
           className="gap-2"
         >
           <Camera size={14} /> Camera Scan
@@ -146,7 +153,7 @@ export default function LinenScanner() {
         </Button>
       </div>
 
-      {/* Camera scanner */}
+      {/* Camera scanner — always in DOM when camera mode active, useEffect starts it */}
       {mode === 'camera' && (
         <Card className="border border-[var(--border)] shadow-sm overflow-hidden">
           <CardContent className="p-0">
@@ -167,7 +174,7 @@ export default function LinenScanner() {
                   <CameraOff size={18} className="text-red-600 flex-shrink-0 mt-0.5" />
                   <div className="flex-1">
                     <p className="text-sm font-medium text-red-800">{cameraError}</p>
-                    <Button size="sm" variant="outline" className="mt-2 text-red-700 border-red-300" onClick={startCamera}>
+                    <Button size="sm" variant="outline" className="mt-2 text-red-700 border-red-300" onClick={() => setMode(m => m)}>
                       Try Again
                     </Button>
                   </div>
