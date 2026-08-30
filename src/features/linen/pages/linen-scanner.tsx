@@ -13,6 +13,7 @@ const SCANNER_ELEMENT_ID = 'linen-qr-scanner'
 
 export default function LinenScanner() {
   const [mode, setMode] = useState<'camera' | 'manual'>('manual')
+  const [cameraActive, setCameraActive] = useState(false)
   const [code, setCode] = useState('')
   const [lastScanned, setLastScanned] = useState<string | null>(null)
   const [cameraError, setCameraError] = useState<string | null>(null)
@@ -34,62 +35,69 @@ export default function LinenScanner() {
   const stopCamera = useCallback(async () => {
     if (scannerRef.current) {
       try { await scannerRef.current.stop() } catch { /* ignore */ }
+      try { scannerRef.current.clear() } catch { /* ignore */ }
       scannerRef.current = null
     }
+    setCameraActive(false)
   }, [])
 
-  // Start camera when mode switches to 'camera' and DOM element is ready
-  useEffect(() => {
-    if (mode !== 'camera') return
+  // This MUST be called from a user click (not useEffect) for mobile permission
+  const startCamera = useCallback(async () => {
+    setCameraError(null)
+    setIsStarting(true)
+    setCameraActive(true)
 
-    let cancelled = false
-    const el = document.getElementById(SCANNER_ELEMENT_ID)
-    if (!el) return
+    // Wait for DOM element to render
+    await new Promise(r => setTimeout(r, 200))
 
-    const start = async () => {
-      setCameraError(null)
-      setIsStarting(true)
-      try {
-        await stopCamera()
+    try {
+      await stopCamera()
 
-        const scanner = new Html5Qrcode(SCANNER_ELEMENT_ID)
-        if (cancelled) return
-        scannerRef.current = scanner
+      const el = document.getElementById(SCANNER_ELEMENT_ID)
+      if (!el) {
+        throw new Error('Scanner element not found')
+      }
 
-        await scanner.start(
-          { facingMode: 'environment' },
-          {
-            fps: 10,
-            qrbox: { width: 250, height: 250 },
-            aspectRatio: 1.0,
-          },
-          (decodedText) => handleCodeScanned(decodedText),
-          () => { /* ignore scan errors */ }
-        )
-        if (!cancelled) setIsStarting(false)
-      } catch (err: any) {
-        if (cancelled) return
-        setIsStarting(false)
-        const msg = err?.message || String(err)
-        if (msg.includes('Permission') || msg.includes('permission')) {
-          setCameraError('Camera permission denied. Please allow camera access in your browser settings and try again.')
-        } else if (msg.includes('NotFound') || msg.includes('not found')) {
-          setCameraError('No camera found on this device.')
-        } else {
-          setCameraError(`Camera error: ${msg}`)
-        }
+      const scanner = new Html5Qrcode(SCANNER_ELEMENT_ID)
+      scannerRef.current = scanner
+
+      await scanner.start(
+        { facingMode: 'environment' },
+        {
+          fps: 10,
+          qrbox: { width: 250, height: 250 },
+          aspectRatio: 1.0,
+        },
+        (decodedText) => handleCodeScanned(decodedText),
+        () => { /* ignore scan errors */ }
+      )
+      setIsStarting(false)
+    } catch (err: any) {
+      setIsStarting(false)
+      setCameraActive(false)
+      const msg = err?.message || String(err)
+      if (msg.includes('Permission') || msg.includes('permission') || msg.includes('NotAllowed')) {
+        setCameraError('Camera permission denied. Tap the lock icon in the address bar and allow camera access, then try again.')
+      } else if (msg.includes('NotFound') || msg.includes('not found') || msg.includes('DevicesNotFound')) {
+        setCameraError('No camera found on this device.')
+      } else if (msg.includes('NotReadable') || msg.includes('not readable')) {
+        setCameraError('Camera is in use by another app. Close other camera apps and try again.')
+      } else {
+        setCameraError(`Camera error: ${msg}`)
       }
     }
+  }, [stopCamera, handleCodeScanned])
 
-    // Small delay to ensure DOM element is painted
-    const timer = setTimeout(start, 150)
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => { stopCamera() }
+  }, [stopCamera])
 
-    return () => {
-      cancelled = true
-      clearTimeout(timer)
-      stopCamera()
-    }
-  }, [mode, stopCamera, handleCodeScanned])
+  const handleStartCamera = useCallback(async () => {
+    setMode('camera')
+    setCameraError(null)
+    await startCamera()
+  }, [startCamera])
 
   const switchToManual = useCallback(async () => {
     await stopCamera()
@@ -122,6 +130,8 @@ export default function LinenScanner() {
 
   const stCfg = linen ? (LINEN_STATUS_CONFIG[linen.status as LinenStatus] ?? { label: linen.status, color: '#6B7280', bg: '#F3F4F6' }) : null
 
+  const isSecure = typeof window !== 'undefined' && (window.isSecureContext || location.hostname === 'localhost' || location.hostname === '127.0.0.1')
+
   return (
     <div className="space-y-5">
       <Breadcrumb items={[{ label: 'Linen' }, { label: 'Scanner' }]} />
@@ -133,16 +143,30 @@ export default function LinenScanner() {
         <p className="text-sm text-[var(--text-muted)]">Scan a QR code or enter a linen ID manually</p>
       </div>
 
-      {/* Mode toggle */}
+      {/* Insecure context warning */}
+      {!isSecure && mode === 'camera' && (
+        <Card className="border border-yellow-300 bg-yellow-50 shadow-sm">
+          <CardContent className="p-4 flex items-start gap-3">
+            <CameraOff size={18} className="text-yellow-600 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="text-sm font-medium text-yellow-800">HTTPS required for camera</p>
+              <p className="text-xs text-yellow-700 mt-1">Mobile browsers block camera on HTTP. Access this site via HTTPS to use the scanner.</p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Mode toggle — camera button is a user gesture for mobile permission */}
       <div className="flex gap-2">
-        <Button
-          variant={mode === 'camera' ? 'default' : 'outline'}
-          size="sm"
-          onClick={() => { setMode('camera'); setCameraError(null) }}
-          className="gap-2"
-        >
-          <Camera size={14} /> Camera Scan
-        </Button>
+        {!cameraActive ? (
+          <Button variant="outline" size="sm" onClick={handleStartCamera} className="gap-2">
+            <Camera size={14} /> Start Camera
+          </Button>
+        ) : (
+          <Button variant="default" size="sm" onClick={switchToManual} className="gap-2">
+            <CameraOff size={14} /> Stop Camera
+          </Button>
+        )}
         <Button
           variant={mode === 'manual' ? 'default' : 'outline'}
           size="sm"
@@ -153,8 +177,8 @@ export default function LinenScanner() {
         </Button>
       </div>
 
-      {/* Camera scanner — always in DOM when camera mode active, useEffect starts it */}
-      {mode === 'camera' && (
+      {/* Camera scanner */}
+      {cameraActive && (
         <Card className="border border-[var(--border)] shadow-sm overflow-hidden">
           <CardContent className="p-0">
             <div className="relative bg-black">
@@ -164,6 +188,7 @@ export default function LinenScanner() {
                   <div className="text-center text-white">
                     <Loader2 size={32} className="animate-spin mx-auto mb-2" />
                     <p className="text-sm">Starting camera...</p>
+                    <p className="text-xs mt-1 opacity-70">Accept the camera permission prompt</p>
                   </div>
                 </div>
               )}
@@ -174,7 +199,7 @@ export default function LinenScanner() {
                   <CameraOff size={18} className="text-red-600 flex-shrink-0 mt-0.5" />
                   <div className="flex-1">
                     <p className="text-sm font-medium text-red-800">{cameraError}</p>
-                    <Button size="sm" variant="outline" className="mt-2 text-red-700 border-red-300" onClick={() => setMode(m => m)}>
+                    <Button size="sm" variant="outline" className="mt-2 text-red-700 border-red-300" onClick={handleStartCamera}>
                       Try Again
                     </Button>
                   </div>
@@ -191,7 +216,7 @@ export default function LinenScanner() {
       )}
 
       {/* Manual input */}
-      {mode === 'manual' && (
+      {mode === 'manual' && !cameraActive && (
         <Card className="border border-[var(--border)] shadow-sm">
           <CardContent className="p-5">
             <div className="flex gap-3">
