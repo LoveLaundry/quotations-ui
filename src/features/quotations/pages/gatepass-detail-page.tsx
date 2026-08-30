@@ -1,4 +1,4 @@
-import { useState, Fragment } from 'react'
+import { useState, useMemo, Fragment } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import {
     ArrowLeft, ClipboardList, Calendar, User, AlertCircle,
@@ -15,6 +15,8 @@ import { Breadcrumb } from '../../../components/ui/breadcrumb'
 import { formatDate } from '../../../lib/utils'
 import { useGatePass, useUpdateGatePassStatus, useAdjustGatePass, useUpdateGatePassDate, useCreateBillFromGatePass, useUpdateGatePass } from '../hooks/useGatePasses'
 import { useDeliveries } from '../hooks/useDeliveries'
+import { useQuotation } from '../hooks/useQuotations'
+import { ItemNameInput } from './create-gatepass-page'
 
 const STATUS_CONFIG: Record<string, { label: string; bg: string; text: string; border: string; dot: string }> = {
     RECEIVED: { label: 'Received', bg: '#EFF6FF', text: '#2563EB', border: '#BFDBFE', dot: '#3B82F6' },
@@ -69,6 +71,16 @@ export default function GatePassDetailPage() {
     const [editReceivedBy, setEditReceivedBy] = useState('')
     const [editNotes, setEditNotes] = useState('')
     const [editItems, setEditItems] = useState<any[]>([])
+
+    // Optional: pick items from the linked quotation while editing
+    const quotationQuery = useQuotation(gp?.quotation_id)
+    const quotationItemList = useMemo(
+        () => (quotationQuery.data?.line_items ?? []).map(li => ({ item_name: li.item_name, category: li.category })),
+        [quotationQuery.data],
+    )
+    const isEditCustomItem = (name: string) =>
+        !!quotationQuery.data && name.trim() !== '' &&
+        !quotationItemList.some(qi => qi.item_name.toLowerCase() === name.trim().toLowerCase())
 
     if (isLoading) {
         return (
@@ -156,6 +168,10 @@ export default function GatePassDetailPage() {
             const next = prev.map((it, i) => (i === idx ? { ...it, [field]: value } : it))
             return next
         })
+    }
+
+    const updateEditItemName = (idx: number, name: string, category?: string) => {
+        setEditItems(prev => prev.map((it, i) => (i === idx ? { ...it, item_name: name, ...(category !== undefined ? { category } : {}) } : it)))
     }
 
     const addEditItem = () => {
@@ -460,7 +476,14 @@ export default function GatePassDetailPage() {
                         </div>
 
                         <div className="flex items-center justify-between">
-                            <p className="text-[12px] font-semibold text-[#6B7280] uppercase tracking-wider">Items</p>
+                            <div className="flex items-center gap-2">
+                                <p className="text-[12px] font-semibold text-[#6B7280] uppercase tracking-wider">Items</p>
+                                {quotationItemList.length > 0 && (
+                                    <span className="inline-flex items-center gap-1 rounded-full bg-[#EFF6FF] border border-[#BFDBFE] px-2 py-0.5 text-[10px] font-medium text-[#2563EB]">
+                                        Linked to quotation · {quotationItemList.length} items
+                                    </span>
+                                )}
+                            </div>
                             <Button type="button" variant="secondary" size="sm" onClick={addEditItem}>
                                 <Plus className="h-3.5 w-3.5" /> Add Item
                             </Button>
@@ -470,12 +493,14 @@ export default function GatePassDetailPage() {
                             {editItems.map((item: any, idx: number) => (
                                 <div key={idx} className="grid grid-cols-1 gap-2 rounded-lg border border-[#E4E7EC] bg-white p-3 sm:grid-cols-[1fr_1fr_74px_74px_36px] items-center">
                                     <div>
-                                        <label className="block text-[10px] text-[#98A2B3] mb-0.5">Item Name</label>
-                                        <input
+                                        <ItemNameInput
                                             value={item.item_name}
-                                            onChange={e => updateEditItem(idx, 'item_name', e.target.value)}
-                                            placeholder="e.g. Bed Sheet"
-                                            className="h-9 w-full rounded-lg border border-[#D0D5DD] bg-white px-3 text-[13px] outline-none focus:border-[#2563EB]"
+                                            onChange={(name, category) => updateEditItemName(idx, name, category)}
+                                            quotationItems={quotationItemList}
+                                            inputClass="h-9 w-full rounded-lg border border-[#D0D5DD] bg-white px-3 text-[13px] outline-none focus:border-[#2563EB]"
+                                            labelClass="block text-[10px] text-[#98A2B3] mb-0.5"
+                                            isCustom={isEditCustomItem(item.item_name)}
+                                            hasQuotation={!!quotationQuery.data}
                                         />
                                     </div>
                                     <div>
