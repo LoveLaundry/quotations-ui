@@ -1,12 +1,28 @@
 import React from 'react'
 import { type Bill } from '../../../types/bill'
 import { formatDate } from '../../../lib/utils'
+import { COMPANY } from '../../../config/company'
 
 interface ConsolidatedInvoiceTemplateProps {
   bills: Bill[]
   dateFrom?: string
   dateTo?: string
 }
+
+const printStyles = `
+  @media print {
+    .invoice-print-page { margin: 0; padding: 0; width: 100%; min-height: auto; }
+    .invoice-print-page * { display: inherit !important; }
+    @page { size: A4; margin: 0; }
+    @page :first { margin: 0; }
+    @page :left { margin: 0; }
+    @page :right { margin: 0; }
+    .avoid-break { page-break-inside: avoid !important; break-inside: avoid !important; }
+    .no-print { display: none !important; }
+  }
+  @page { size: A4; margin: 0; }
+  @page :first { margin: 0; }
+`
 
 export const ConsolidatedInvoiceTemplate = React.forwardRef<HTMLDivElement, ConsolidatedInvoiceTemplateProps>(
   ({ bills, dateFrom, dateTo }, ref) => {
@@ -21,107 +37,142 @@ export const ConsolidatedInvoiceTemplate = React.forwardRef<HTMLDivElement, Cons
     return (
       <div
         ref={ref}
-        className="bg-white text-black p-10 font-sans"
-        style={{ width: '210mm', minHeight: '297mm', margin: '0 auto', fontSize: '13px' }}
+        className="invoice-print-page"
+        style={{
+          fontFamily: '"Spectral", Georgia, serif',
+          color: '#000',
+          background: '#fff',
+        }}
       >
-        {/* Header */}
-        <div className="flex items-start justify-between border-b-4 border-[#DC2626] pb-5">
-          <div className="flex items-center gap-4">
-            <div className="flex h-20 w-20 items-center justify-center rounded-full border-2 border-[#DC2626]">
-              <div className="text-center leading-none">
-                <span className="block text-3xl font-extrabold italic text-[#DC2626]">L</span>
-                <span className="text-[9px] font-bold text-[#DC2626]">LOVE</span>
-              </div>
-            </div>
-            <div>
-              <h1 className="text-3xl font-extrabold uppercase tracking-wide leading-none">Love Laundry</h1>
-              <p className="text-[12px] font-semibold text-[#6B7280]">and dry cleaning experts</p>
-            </div>
-          </div>
-          <div className="text-right">
-            <h2 className="text-xl font-extrabold uppercase tracking-widest mb-1">Consolidated Invoice</h2>
-            <p className="text-[11px]">Tel: 077-2400919 / 071-2978922</p>
-            <p className="text-[11px]">Email: lovelaundry01@gmail.com</p>
-            <p className="text-[11px]">Kuda bingiriya, Panirendawa.</p>
-          </div>
-        </div>
+        <style dangerouslySetInnerHTML={{ __html: printStyles }} />
 
-        {/* Invoice meta */}
-        <div className="mt-5 flex justify-between text-sm">
-          <div className="space-y-1">
-            <p className="font-bold">Invoice Period</p>
-            <p>{dateFrom || '—'} to {dateTo || '—'}</p>
+        <div
+          className="bg-white text-black"
+          style={{ width: '210mm', minHeight: '297mm', margin: '0 auto', padding: '15mm', boxSizing: 'border-box', fontSize: '13px' }}
+        >
+          {/* Header — matches quotation print */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '3px double #000', paddingBottom: 16, marginBottom: 20 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+              <img
+                src="/icon.png"
+                alt="Love Laundry Logo"
+                style={{ width: 80, height: 80, objectFit: 'contain', border: '2px solid #000', borderRadius: 0, padding: 4, background: '#fafafa' }}
+              />
+            </div>
+            <div style={{ textAlign: 'center', flex: 1 }}>
+              <h1 style={{ fontSize: 24, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 2, lineHeight: 1.2, margin: '0 0 4px 0', fontFamily: '"Spectral", Georgia, serif' }}>
+                {COMPANY.name}
+              </h1>
+              <h2 style={{ fontSize: 14, fontWeight: 500, fontStyle: 'italic', margin: 0, color: '#333', fontFamily: '"Spectral", Georgia, serif' }}>
+                {COMPANY.tagline}
+              </h2>
+            </div>
+            <div style={{ fontSize: 12, fontWeight: 600, textAlign: 'right', whiteSpace: 'nowrap', border: '1px solid #000', padding: '6px 12px', background: '#f9f9f9', borderRadius: 0 }}>
+              Reg. No: {COMPANY.registrationNo}
+            </div>
           </div>
-          <div className="text-right space-y-1">
-            <p className="font-bold">Generated</p>
-            <p>{formatDate(new Date().toISOString())}</p>
-          </div>
-        </div>
 
-        {/* Bills summary table */}
-        <table className="w-full border-collapse mt-6 text-sm">
-          <thead>
-            <tr className="bg-[#DC2626] text-white">
-              <th className="border border-[#DC2626] p-2 text-left">Bill No.</th>
-              <th className="border border-[#DC2626] p-2 text-left">Client</th>
-              <th className="border border-[#DC2626] p-2 text-left">Date</th>
-              <th className="border border-[#DC2626] p-2 text-right">Amount</th>
-              <th className="border border-[#DC2626] p-2 text-right">Paid</th>
-              <th className="border border-[#DC2626] p-2 text-right">Outstanding</th>
-            </tr>
-          </thead>
-          <tbody>
-            {unpaid.length === 0 && (
-              <tr>
-                <td colSpan={6} className="border border-[#D1D5DB] p-4 text-center text-[#6B7280]">
-                  No unpaid bills in the selected period.
-                </td>
-              </tr>
-            )}
-            {unpaid.map((b, i) => (
-              <tr key={b.id} className={i % 2 ? 'bg-[#F9FAFB]' : 'bg-white'}>
-                <td className="border border-[#D1D5DB] p-2 font-medium">{b.id.slice(0, 10).toUpperCase()}</td>
-                <td className="border border-[#D1D5DB] p-2">{b.client_name}</td>
-                <td className="border border-[#D1D5DB] p-2">{formatDate(b.created_at)}</td>
-                <td className="border border-[#D1D5DB] p-2 text-right">{g(b.grand_total ?? b.total_amount)}</td>
-                <td className="border border-[#D1D5DB] p-2 text-right">{g(b.paid_amount ?? 0)}</td>
-                <td className="border border-[#D1D5DB] p-2 text-right font-semibold">{g(b.outstanding_amount ?? (b.grand_total ?? b.total_amount))}</td>
-              </tr>
+          {/* Services row */}
+          <div style={{ display: 'flex', justifyContent: 'center', gap: 20, fontSize: 11, fontWeight: 600, borderBottom: '2px solid #000', paddingBottom: 12, marginBottom: 16, flexWrap: 'wrap' }}>
+            {['Dry Cleaning', 'Free Pickup & Delivery', 'Wash & Pressed', 'Wash & Fold', 'Laundered Pressed'].map(s => (
+              <span key={s} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#DC2626', display: 'inline-block' }} />
+                {s}
+              </span>
             ))}
-          </tbody>
-          <tfoot>
-            <tr className="bg-[#F9FAFB] font-bold">
-              <td colSpan={3} className="border border-[#D1D5DB] p-2 text-right">TOTALS</td>
-              <td className="border border-[#D1D5DB] p-2 text-right">{g(totalBilled)}</td>
-              <td className="border border-[#D1D5DB] p-2 text-right">{g(unpaid.reduce((s, b) => s + (b.paid_amount ?? 0), 0))}</td>
-              <td className="border border-[#DC2626] p-2 text-right text-[#DC2626]">{g(totalOutstanding)}</td>
-            </tr>
-          </tfoot>
-        </table>
-
-        {/* Outstanding notice */}
-        <div className="mt-8 flex items-center justify-between rounded-lg border-2 border-[#DC2626] bg-[#FFF1F1] px-5 py-4">
-          <div>
-            <p className="font-extrabold uppercase text-[#DC2626] text-sm">Total Outstanding</p>
-            <p className="text-[11px] text-[#6B7280] mt-0.5">This amount is due across {unpaid.length} unpaid bill{unpaid.length === 1 ? '' : 's'} in the selected period.</p>
           </div>
-          <p className="text-2xl font-extrabold text-[#DC2626]">LKR {g(totalOutstanding)}</p>
-        </div>
 
-        {/* Conditions */}
-        <div className="mt-8 text-[10px] text-[#6B7280] leading-relaxed border-t border-[#D1D5DB] pt-4">
-          <p className="font-bold text-black mb-1">Notes:</p>
-          <ul className="list-disc pl-5 space-y-0.5">
-            <li>Payments received after the generated date are not reflected on this invoice.</li>
-            <li>Any complaints regarding the quality of cleaning should be made within 24 hours of delivery.</li>
-            <li>Garments should be collected within 10 days from the date of delivery, after which the management will not be responsible for any loss or damage.</li>
-          </ul>
-        </div>
+          {/* Contact row */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, marginBottom: 16 }}>
+            <div>
+              <p style={{ margin: 0 }}>Tel: {COMPANY.phone.primary} / {COMPANY.phone.secondary}</p>
+              <p style={{ margin: 0 }}>Email: {COMPANY.email}</p>
+            </div>
+            <div style={{ textAlign: 'right' }}>
+              <p style={{ margin: 0 }}>{COMPANY.address.line1}</p>
+              <p style={{ margin: 0 }}>{COMPANY.address.line2}</p>
+            </div>
+          </div>
 
-        {/* Signature */}
-        <div className="mt-12 flex justify-between items-end text-sm font-bold text-center">
-          <div className="w-48 border-t-2 border-dotted border-black pt-1">Authorized Signature</div>
-          <div className="w-48 border-t-2 border-dotted border-black pt-1">Received Signature</div>
+          {/* Title */}
+          <h3 style={{ fontSize: 18, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 2, textAlign: 'center', margin: '0 0 16px 0', fontFamily: '"Spectral", Georgia, serif' }}>
+            CONSOLIDATED INVOICE
+          </h3>
+
+          {/* Invoice meta */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
+            <div>
+              <p style={{ fontWeight: 700, margin: '0 0 2px 0' }}>Invoice Period</p>
+              <p style={{ margin: 0 }}>{dateFrom || '—'} to {dateTo || '—'}</p>
+            </div>
+            <div style={{ textAlign: 'right' }}>
+              <p style={{ fontWeight: 700, margin: '0 0 2px 0' }}>Generated</p>
+              <p style={{ margin: 0 }}>{formatDate(new Date().toISOString())}</p>
+            </div>
+          </div>
+
+          {/* Bills summary table */}
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
+            <thead>
+              <tr style={{ background: '#DC2626', color: '#fff' }}>
+                {['Bill No.', 'Client', 'Date', 'Amount', 'Paid', 'Outstanding'].map(h => (
+                  <th key={h} style={{ border: '1px solid #DC2626', padding: '6px 8px', textAlign: h === 'Bill No.' || h === 'Client' || h === 'Date' ? 'left' : 'right', fontWeight: 600 }}>{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {unpaid.length === 0 && (
+                <tr>
+                  <td colSpan={6} style={{ border: '1px solid #D1D5DB', padding: 12, textAlign: 'center', color: '#6B7280' }}>
+                    No unpaid bills in the selected period.
+                  </td>
+                </tr>
+              )}
+              {unpaid.map((b, i) => (
+                <tr key={b.id} style={{ background: i % 2 ? '#F9FAFB' : '#fff' }}>
+                  <td style={{ border: '1px solid #D1D5DB', padding: '5px 8px', fontWeight: 500 }}>{b.id.slice(0, 10).toUpperCase()}</td>
+                  <td style={{ border: '1px solid #D1D5DB', padding: '5px 8px' }}>{b.client_name}</td>
+                  <td style={{ border: '1px solid #D1D5DB', padding: '5px 8px' }}>{formatDate(b.created_at)}</td>
+                  <td style={{ border: '1px solid #D1D5DB', padding: '5px 8px', textAlign: 'right' }}>{g(b.grand_total ?? b.total_amount)}</td>
+                  <td style={{ border: '1px solid #D1D5DB', padding: '5px 8px', textAlign: 'right' }}>{g(b.paid_amount ?? 0)}</td>
+                  <td style={{ border: '1px solid #D1D5DB', padding: '5px 8px', textAlign: 'right', fontWeight: 600 }}>{g(b.outstanding_amount ?? (b.grand_total ?? b.total_amount))}</td>
+                </tr>
+              ))}
+            </tbody>
+            <tfoot>
+              <tr style={{ background: '#F9FAFB', fontWeight: 700 }}>
+                <td colSpan={3} style={{ border: '1px solid #D1D5DB', padding: '6px 8px', textAlign: 'right' }}>TOTALS</td>
+                <td style={{ border: '1px solid #D1D5DB', padding: '6px 8px', textAlign: 'right' }}>{g(totalBilled)}</td>
+                <td style={{ border: '1px solid #D1D5DB', padding: '6px 8px', textAlign: 'right' }}>{g(unpaid.reduce((s, b) => s + (b.paid_amount ?? 0), 0))}</td>
+                <td style={{ border: '1px solid #DC2626', padding: '6px 8px', textAlign: 'right', color: '#DC2626' }}>{g(totalOutstanding)}</td>
+              </tr>
+            </tfoot>
+          </table>
+
+          {/* Outstanding notice */}
+          <div style={{ marginTop: 24, display: 'flex', alignItems: 'center', justifyContent: 'space-between', border: '2px solid #DC2626', background: '#FFF1F1', padding: '12px 20px', borderRadius: 4 }}>
+            <div>
+              <p style={{ fontWeight: 800, textTransform: 'uppercase', color: '#DC2626', fontSize: 13, margin: 0 }}>Total Outstanding</p>
+              <p style={{ fontSize: 11, color: '#6B7280', marginTop: 4, margin: '4px 0 0 0' }}>This amount is due across {unpaid.length} unpaid bill{unpaid.length === 1 ? '' : 's'} in the selected period.</p>
+            </div>
+            <p style={{ fontSize: 22, fontWeight: 800, color: '#DC2626', margin: 0 }}>LKR {g(totalOutstanding)}</p>
+          </div>
+
+          {/* Notes */}
+          <div style={{ marginTop: 24, fontSize: 10, color: '#6B7280', lineHeight: 1.6, borderTop: '1px solid #D1D5DB', paddingTop: 12 }}>
+            <p style={{ fontWeight: 700, color: '#000', margin: '0 0 4px 0' }}>Notes:</p>
+            <ul style={{ margin: 0, paddingLeft: 20 }}>
+              <li>Payments received after the generated date are not reflected on this invoice.</li>
+              <li>Any complaints regarding the quality of cleaning should be made within 24 hours of delivery.</li>
+              <li>Garments should be collected within 10 days from the date of delivery, after which the management will not be responsible for any loss or damage.</li>
+            </ul>
+          </div>
+
+          {/* Signature */}
+          <div style={{ marginTop: 48, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', fontWeight: 700, fontSize: 13, textAlign: 'center' }}>
+            <div style={{ width: 192, borderTop: '2px dotted #000', paddingTop: 4 }}>Authorized Signature</div>
+            <div style={{ width: 192, borderTop: '2px dotted #000', paddingTop: 4 }}>Received Signature</div>
+          </div>
         </div>
       </div>
     )
