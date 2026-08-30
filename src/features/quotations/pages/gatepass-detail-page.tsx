@@ -90,6 +90,17 @@ export default function GatePassDetailPage() {
         !!quotationQuery.data && name.trim() !== '' &&
         !allQuotationItemNames.has(name.trim().toLowerCase())
 
+    const deliveredMap = useMemo(() => {
+        const map: Record<string, number> = {}
+        for (const d of deliveries) {
+            if (d.status === 'CANCELLED') continue
+            for (const it of d.items) {
+                map[it.item_name] = (map[it.item_name] || 0) + it.quantity
+            }
+        }
+        return map
+    }, [deliveries])
+
     if (isLoading) {
         return (
             <div className="space-y-3">
@@ -110,17 +121,6 @@ export default function GatePassDetailPage() {
 
     const totalReceived = gp.items.reduce((s: number, i: any) => s + i.received_qty, 0)
     const mismatches = gp.items.filter((i: any) => i.difference !== 0)
-
-    const deliveredMap = useMemo(() => {
-        const map: Record<string, number> = {}
-        for (const d of deliveries) {
-            if (d.status === 'CANCELLED') continue
-            for (const it of d.items) {
-                map[it.item_name] = (map[it.item_name] || 0) + it.quantity
-            }
-        }
-        return map
-    }, [deliveries])
 
     const totalDelivered = gp.items.reduce((s: number, i: any) => s + (deliveredMap[i.item_name] || 0), 0)
     const totalPending = totalReceived - totalDelivered
