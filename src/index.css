@@ -390,7 +390,23 @@
 [data-theme='dark'] .bg-white\/80 { background-color: color-mix(in srgb, var(--surface) 80%, transparent) !important; }
 
 @media print {
-  body > *:not(#printable-receipt):not(.quotation-print-page) { display: none !important; }
+  /* Hide app chrome (sidebar, topbar, nav) — only when printing from inside the app.
+     react-to-print opens a new window that doesn't have these elements,
+     so these rules are harmless there. */
+  .sidebar-dark,
+  header.fixed.top-0,
+  .no-print { display: none !important; }
+  /* Reset main content to fill the page */
+  main {
+    padding-left: 0 !important;
+    padding-top: 0 !important;
+  }
+  main > .mx-auto {
+    padding: 0 !important;
+    max-width: none !important;
+  }
+
+  /* Printable areas */
   #printable-receipt {
     display: block !important;
     border: none !important;
