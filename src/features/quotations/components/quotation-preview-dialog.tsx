@@ -99,6 +99,16 @@ export function QuotationPreviewDialog({ quotation, open, onOpenChange }: Props)
                               {li.notes && (
                                 <span className="text-[11px]">{li.notes}</span>
                               )}
+                              {li.specifications && li.specifications.length > 0 && (
+                                <div className="mt-0.5 space-y-0.5">
+                                  {li.specifications.map((s, i) => (
+                                    <div key={i} className="text-[11px] leading-tight">
+                                      <span>{s.specification}</span>
+                                      <span className="opacity-70"> — LKR {s.unit_price.toFixed(2)}</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
                             </div>
                           </div>
                           <span className="text-[13px] font-semibold shrink-0 ml-3">

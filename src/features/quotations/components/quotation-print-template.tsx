@@ -491,7 +491,19 @@ export const QuotationPrintTemplate = React.forwardRef<HTMLDivElement, Quotation
                     pageItems.map((item: typeof pageItems[0], index: number) => (
                       <tr key={item.id ?? index} className="avoid-break" style={{ background: (startNum + index) % 2 === 0 ? '#f5f5f5' : 'transparent' }}>
                         <td className="col-no">{startNum + index + 1}.</td>
-                        <td className="col-item">{item.item_name}</td>
+                        <td className="col-item">
+                          <div>{item.item_name}</div>
+                          {item.specifications && item.specifications.length > 0 && (
+                            <div style={{ marginTop: 2, fontSize: '10px' }}>
+                              {item.specifications.map((s, i) => (
+                                <div key={i} style={{ lineHeight: 1.3 }}>
+                                  <span style={{ color: '#DC2626' }}>• </span>
+                                  {s.specification} — LKR {s.unit_price.toFixed(2)}
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </td>
                         <td className="col-category">{item.category || 'General'}</td>
                         <td className="col-price">{item.unit_price.toFixed(2)}</td>
                       </tr>

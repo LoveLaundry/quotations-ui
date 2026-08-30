@@ -1,9 +1,15 @@
+export interface QuotationSpecification {
+  specification: string
+  unit_price: number
+}
+
 export interface QuotationLineItem {
   id: string | number
   item_name: string
   category?: string
   unit_price: number
   notes?: string
+  specifications?: QuotationSpecification[]
 }
 
 export type OrderStatus =
@@ -107,6 +113,7 @@ export interface QuotationPayload {
     category?: string
     unit_price: number
     notes?: string
+    specifications?: Array<{ specification: string; unit_price: number }>
   }>
   status?: OrderStatus
   tag?: 'shop' | 'hotel'
@@ -122,5 +129,6 @@ export interface QuotationFormValues {
     category: string
     unit_price: string
     notes: string
+    specifications: Array<{ specification: string; unit_price: string }>
   }>
 }
