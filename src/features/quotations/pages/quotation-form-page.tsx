@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { ArrowLeft, Plus, Trash2, GripVertical } from 'lucide-react'
+import { ArrowLeft, Plus, Trash2, GripVertical, X } from 'lucide-react'
 import { useEffect, useMemo } from 'react'
 import { useFieldArray, useForm } from 'react-hook-form'
 import { useNavigate, useParams } from 'react-router-dom'
@@ -60,12 +60,18 @@ const COMMON_CATEGORIES = [
   'Miscellaneous',
 ]
 
+const specSchema = z.object({
+  specification: z.string().trim().min(1, 'Required'),
+  unit_price: z.string().trim().min(1, 'Required'),
+})
+
 const lineItemSchema = z.object({
   id: z.string(),
   item_name: z.string().trim().min(1, 'Required'),
   category: z.string(),
   unit_price: z.string().trim().min(1, 'Required'),
   notes: z.string(),
+  specifications: z.array(specSchema),
 })
 
 const formSchema = z.object({
@@ -81,6 +87,7 @@ const newItem = () => ({
   category: '',
   unit_price: '',
   notes: '',
+  specifications: [],
 })
 
 const defaultValues: QuotationFormValues = {
@@ -96,6 +103,88 @@ function Label({ children }: { children: React.ReactNode }) {
 
 function FieldErr({ msg }: { msg?: string }) {
   return msg ? <p className="mt-1 text-[11px] text-[#DC2626]">{msg}</p> : null
+}
+
+function SpecFields({
+  index,
+  register,
+  control,
+  errors,
+}: {
+  index: number
+  register: any
+  control: any
+  errors: any
+}) {
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: `line_items.${index}.specifications`,
+  })
+  const specErrors = errors?.line_items?.[index]?.specifications
+
+  return (
+    <div className="mt-2 border-t border-[#F2F4F7] pt-2">
+      <div className="flex items-center justify-between mb-1.5">
+        <p className="text-[11px] font-semibold text-[#6B7280] uppercase tracking-wider">
+          Specifications / Variants
+        </p>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={() => append({ specification: '', unit_price: '' })}
+          className="text-[#2563EB] hover:bg-[#EFF4FF]"
+        >
+          <Plus className="h-3.5 w-3.5" /> Add Specification
+        </Button>
+      </div>
+
+      {fields.length === 0 ? (
+        <p className="text-[11px] text-[#98A2B3]">
+          No variants for this item — it uses the unit price above. Add a colour / size with its own
+          price if needed.
+        </p>
+      ) : (
+        <div className="space-y-1.5">
+          {fields.map((field, sIdx) => (
+            <div key={field.id} className="flex items-center gap-2">
+              <div className="flex-1">
+                <Input
+                  {...register(`line_items.${index}.specifications.${sIdx}.specification` as const)}
+                  placeholder="e.g. White - M"
+                />
+                <FieldErr msg={specErrors?.[sIdx]?.specification?.message} />
+              </div>
+              <div className="relative w-28">
+                <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[11px] text-[#9CA3AF]">
+                  LKR
+                </span>
+                <Input
+                  type="number"
+                  min={0}
+                  step={0.01}
+                  {...register(`line_items.${index}.specifications.${sIdx}.unit_price` as const)}
+                  placeholder="150.00"
+                  className="pl-9"
+                />
+                <FieldErr msg={specErrors?.[sIdx]?.unit_price?.message} />
+              </div>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                onClick={() => remove(sIdx)}
+                aria-label="Remove specification"
+                className="text-[#DC2626] hover:bg-[#FFF1F1] shrink-0"
+              >
+                <X className="h-3.5 w-3.5" />
+              </Button>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
 }
 
 export default function QuotationFormPage() {
@@ -129,6 +218,10 @@ export default function QuotationFormPage() {
         category: li.category ?? '',
         unit_price: String(li.unit_price),
         notes: li.notes ?? '',
+        specifications: (li.specifications ?? []).map(s => ({
+          specification: s.specification,
+          unit_price: String(s.unit_price),
+        })),
       })),
     })
   }, [existing, reset])
@@ -149,12 +242,25 @@ export default function QuotationFormPage() {
       client_name: v.client_name.trim(),
       quotation_title: v.quotation_title.trim() || undefined,
       tag: v.tag,
-      line_items: v.line_items.map(li => ({
-        item_name: li.item_name.trim(),
-        category: li.category.trim() || undefined,
-        unit_price: Number(li.unit_price),
-        notes: li.notes.trim() || undefined,
-      })),
+      line_items: v.line_items.map(li => {
+        const item: {
+          item_name: string
+          category?: string
+          unit_price: number
+          notes?: string
+          specifications?: Array<{ specification: string; unit_price: number }>
+        } = {
+          item_name: li.item_name.trim(),
+          category: li.category.trim() || undefined,
+          unit_price: Number(li.unit_price),
+          notes: li.notes.trim() || undefined,
+        }
+        const specs = (li.specifications ?? [])
+          .filter(s => s.specification.trim() && s.unit_price.trim())
+          .map(s => ({ specification: s.specification.trim(), unit_price: Number(s.unit_price) }))
+        if (specs.length > 0) item.specifications = specs
+        return item
+      }),
     }
     if (isEdit && id) {
       updateMutation.mutate({ id, payload }, { onSuccess: () => navigate('/quotations') })
@@ -302,8 +408,9 @@ export default function QuotationFormPage() {
                 {fields.map((field, idx) => (
                   <div
                     key={field.id}
-                    className="grid gap-2 rounded-lg border border-[#E4E7EC] bg-white p-3 grid-cols-1 sm:grid-cols-[28px_1fr_180px_120px_120px_36px] items-center hover:border-[#D1D5DB] transition-colors"
+                    className="rounded-lg border border-[#E4E7EC] bg-white p-3 hover:border-[#D1D5DB] transition-colors"
                   >
+                    <div className="grid gap-2 grid-cols-1 sm:grid-cols-[28px_1fr_180px_120px_120px_36px] items-center">
                     <div className="hidden sm:flex items-center justify-center text-[#D1D5DB]">
                       <GripVertical className="h-4 w-4" />
                     </div>
@@ -366,6 +473,14 @@ export default function QuotationFormPage() {
                     >
                       <Trash2 className="h-3.5 w-3.5" />
                     </Button>
+                    </div>
+
+                    <SpecFields
+                      index={idx}
+                      register={register}
+                      control={control}
+                      errors={errors}
+                    />
                   </div>
                 ))}
               </div>

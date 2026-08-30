@@ -29,6 +29,7 @@ function groupByCategory(
     unit_price: number
     notes?: string
     id?: string | number
+    specifications?: Array<{ specification: string; unit_price: number }>
   }>,
 ) {
   const groups: Record<string, typeof items> = {}
@@ -363,6 +364,22 @@ export default function QuotationDetailPage() {
                                 <span className="ml-1.5 text-[12px] text-[#98A2B3]">
                                   ({li.notes})
                                 </span>
+                              )}
+                              {li.specifications && li.specifications.length > 0 && (
+                                <div className="mt-1 space-y-0.5">
+                                  {li.specifications.map((s, i) => (
+                                    <div key={i} className="flex items-center gap-2 text-[11px]">
+                                      <span className="text-[#475467]">
+                                        <span className="text-[#DC2626] mr-1.5">•</span>
+                                        {s.specification}
+                                      </span>
+                                      <span className="text-[#6B7280]">—</span>
+                                      <span className="font-medium text-[#101828]">
+                                        LKR {s.unit_price.toFixed(2)}
+                                      </span>
+                                    </div>
+                                  ))}
+                                </div>
                               )}
                             </td>
                             <td className="px-4 py-2.5 text-right">
