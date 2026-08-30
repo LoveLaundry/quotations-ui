@@ -121,15 +121,6 @@ export default function QuotationPrintPage() {
         </button>
       </div>
 
-      <script
-        dangerouslySetInnerHTML={{
-          __html: `
-            window.onload = function() {
-              setTimeout(function() { window.print(); }, 300);
-            }
-          `,
-        }}
-      />
       <div style={{ display: 'flex', justifyContent: 'center', minHeight: 'calc(100vh - 40px)', paddingTop: '60px' }}>
         <QuotationPrintTemplate quotation={q} />
       </div>

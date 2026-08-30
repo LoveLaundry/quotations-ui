@@ -16,9 +16,6 @@ const printStyles = `
       width: 100%;
       min-height: auto;
     }
-    .quotation-print-page * {
-      display: inherit !important;
-    }
     @page {
       size: A4;
       margin: 0;

@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import { QRCodeSVG } from 'qrcode.react'
 import JsBarcode from 'jsbarcode'
 import { useGenerateTags } from '../hooks/useLinen'
@@ -15,8 +15,15 @@ interface TagItem {
   client_name: string
 }
 
-function TagCard({ tag }: { tag: TagItem }) {
+function generateBarcodeSvgString(value: string): string {
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
+  JsBarcode(svg, value, { format: 'CODE128', width: 1.5, height: 30, displayValue: false, margin: 0 })
+  return svg.outerHTML
+}
+
+function TagCard({ tag, onReady }: { tag: TagItem; onReady?: (linenId: string, qrSvg: string) => void }) {
   const barcodeRef = useRef<SVGSVGElement>(null)
+  const qrRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (barcodeRef.current) {
@@ -30,10 +37,19 @@ function TagCard({ tag }: { tag: TagItem }) {
     }
   }, [tag.linen_id])
 
+  useEffect(() => {
+    if (qrRef.current && onReady) {
+      const svgEl = qrRef.current.querySelector('svg')
+      if (svgEl) {
+        onReady(tag.linen_id, svgEl.outerHTML)
+      }
+    }
+  }, [tag.linen_id, onReady])
+
   return (
     <div className="border-2 border-black p-3 flex flex-col items-center gap-1 bg-white" style={{ width: '70mm', height: '38mm', pageBreakInside: 'avoid' }}>
       <p className="text-[8px] font-bold uppercase tracking-widest">Love Laundry</p>
-      <QRCodeSVG value={tag.linen_id} size={50} level="M" />
+      <div ref={qrRef}><QRCodeSVG value={tag.linen_id} size={50} level="M" /></div>
       <svg ref={barcodeRef} style={{ width: '80%', height: 20 }} />
       <p className="text-[9px] font-bold font-mono tracking-wider">{tag.linen_id}</p>
     </div>
@@ -49,10 +65,19 @@ export default function LinenTagGenerator() {
   const [color, setColor] = useState('')
   const [department, setDepartment] = useState('')
   const [generatedTags, setGeneratedTags] = useState<TagItem[]>([])
+  const [qrSvgs, setQrSvgs] = useState<Record<string, string>>({})
   const generateMutation = useGenerateTags()
+
+  const handleQrReady = useCallback((linenId: string, svg: string) => {
+    setQrSvgs(prev => {
+      if (prev[linenId] === svg) return prev
+      return { ...prev, [linenId]: svg }
+    })
+  }, [])
 
   const handleGenerate = () => {
     if (!itemType || !clientName || quantity <= 0) return
+    setQrSvgs({})
     generateMutation.mutate(
       { category, item_type: itemType, client_name: clientName, quantity, size: size || undefined, color: color || undefined, department: department || undefined },
       {
@@ -68,14 +93,19 @@ export default function LinenTagGenerator() {
     )
   }
 
-  const handlePrint = () => {
-    // Build self-contained print HTML using the same approach as other print templates
+  const allQrReady = generatedTags.length > 0 && generatedTags.every(t => qrSvgs[t.linen_id])
+
+  const handlePrint = useCallback(() => {
+    if (!allQrReady) return
+
     const tagCards = generatedTags.map(tag => {
+      const qrSvg = qrSvgs[tag.linen_id] || ''
+      const barcodeSvg = generateBarcodeSvgString(tag.linen_id)
       return `
         <div class="tag-card">
           <div class="tag-brand">LOVE LAUNDRY</div>
-          <div class="tag-qr" id="qr-${tag.linen_id}"></div>
-          <svg class="tag-barcode" id="bc-${tag.linen_id}"></svg>
+          <div class="tag-qr">${qrSvg}</div>
+          <div class="tag-barcode">${barcodeSvg}</div>
           <div class="tag-id">${tag.linen_id}</div>
         </div>
       `
@@ -97,24 +127,17 @@ export default function LinenTagGenerator() {
   }
   .tag-brand { font-size: 7px; font-weight: bold; text-transform: uppercase; letter-spacing: 2px; }
   .tag-qr { display: flex; justify-content: center; }
-  .tag-barcode { width: 80%; height: 22px; }
+  .tag-qr svg { display: block; }
+  .tag-barcode { width: 80%; }
+  .tag-barcode svg { width: 100%; height: 22px; }
   .tag-id { font-size: 9px; font-weight: bold; letter-spacing: 1px; }
 </style></head><body>
 <div class="tags-grid">${tagCards}</div>
-<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"><\/script>
-<script src="https://cdn.jsdelivr.net/npm/qrcode@1/build/qrcode.min.js"><\/script>
 <script>
-  var tags = ${JSON.stringify(generatedTags)};
-  tags.forEach(function(tag) {
-    JsBarcode('#bc-' + tag.linen_id, tag.linen_id, { format: 'CODE128', width: 1.5, height: 30, displayValue: false, margin: 0 });
-    QRCode.toCanvas(document.createElement('canvas'), tag.linen_id, { width: 60, margin: 0 }, function(err, canvas) {
-      if (!err) document.getElementById('qr-' + tag.linen_id).appendChild(canvas);
-    });
-  });
-  setTimeout(function() { window.print(); }, 600);
+  setTimeout(function() { window.print(); }, 300);
 <\/script></body></html>`)
     printWindow.document.close()
-  }
+  }, [generatedTags, qrSvgs, allQrReady])
 
   return (
     <div className="space-y-5">
@@ -126,7 +149,10 @@ export default function LinenTagGenerator() {
           <p className="text-sm text-[var(--text-muted)]">Create linen IDs and preview printable tags</p>
         </div>
         {generatedTags.length > 0 && (
-          <Button onClick={handlePrint}><Printer size={16} className="mr-2" />Print {generatedTags.length} Tags</Button>
+          <Button onClick={handlePrint} disabled={!allQrReady}>
+            <Printer size={16} className="mr-2" />
+            {allQrReady ? `Print ${generatedTags.length} Tags` : 'Loading...'}
+          </Button>
         )}
       </div>
 
@@ -186,7 +212,7 @@ export default function LinenTagGenerator() {
             <div>
               <p className="text-sm font-semibold text-[var(--text-muted)] mb-3">Preview — {generatedTags.length} tags</p>
               <div className="flex flex-wrap gap-2">
-                {generatedTags.map(tag => <TagCard key={tag.linen_id} tag={tag} />)}
+                {generatedTags.map(tag => <TagCard key={tag.linen_id} tag={tag} onReady={handleQrReady} />)}
               </div>
             </div>
           ) : (
