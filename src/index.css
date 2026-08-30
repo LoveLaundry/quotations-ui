@@ -2,30 +2,125 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
 @layer base {
-  :root {
+  /* ─────────────────────────────────────────────────────────────
+     THEME TOKENS
+     Light is the default (current look). Contrast and Midnight are
+     professional presets. Components reference these semantic vars,
+     so picking a preset re-skins the whole application.
+  ───────────────────────────────────────────────────────────── */
+  :root,
+  [data-theme='light'] {
     --red-50: #FFF1F1;
     --red-100: #FFE0E0;
     --red-500: #EF4444;
     --red-600: #DC2626;
     --red-700: #B91C1C;
+
     --bg: #F9FAFB;
     --surface: #FFFFFF;
+    --surface-2: #F9FAFB;
+    --surface-hover: #F9FAFB;
+    --surface-sunken: #FAFAFA;
     --border: #E5E7EB;
     --border-2: #D1D5DB;
+    --border-strong: #D0D5DD;
+
     --text-primary: #101828;
     --text-secondary: #1D2939;
     --text-tertiary: #344054;
     --text-muted: #475467;
+    --text-faint: #98A2B3;
+    --text-placeholder: #9CA3AF;
+
     --body-font-size: 14px;
     --sidebar-bg: #1F2937;
     --sidebar-border: #374151;
     --sidebar-text: #9CA3AF;
+    --sidebar-label: #6B7280;
     --sidebar-active: #FFFFFF;
     --sidebar-hover-bg: #374151;
+    --sidebar-hover-text: #FFFFFF;
+
+    --skeleton-from: #F3F4F6;
+    --skeleton-via: #E5E7EB;
+    --skeleton-to: #F3F4F6;
+
     --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
     --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
     --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
     --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  }
+
+  /* High-contrast light: darker text, stronger borders, crisper surfaces */
+  [data-theme='contrast'] {
+    --bg: #F3F4F6;
+    --surface: #FFFFFF;
+    --surface-2: #FCFCFD;
+    --surface-hover: #EAECEF;
+    --surface-sunken: #F1F2F4;
+    --border: #CBD5E1;
+    --border-2: #94A3B8;
+    --border-strong: #64748B;
+
+    --text-primary: #0B1220;
+    --text-secondary: #111827;
+    --text-tertiary: #1F2937;
+    --text-muted: #334155;
+    --text-faint: #52525B;
+    --text-placeholder: #71717A;
+
+    --sidebar-bg: #111827;
+    --sidebar-border: #1F2937;
+    --sidebar-text: #9CA3AF;
+    --sidebar-label: #6B7280;
+    --sidebar-hover-bg: #1F2937;
+    --sidebar-hover-text: #FFFFFF;
+
+    --skeleton-from: #E5E7EB;
+    --skeleton-via: #D1D5DB;
+    --skeleton-to: #E5E7EB;
+
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.08);
+    --shadow-md: 0 4px 8px -1px rgb(0 0 0 / 0.14), 0 2px 4px -2px rgb(0 0 0 / 0.12);
+  }
+
+  /* Midnight (dark): professional dark surfaces + light text */
+  [data-theme='dark'] {
+    --red-50: #3B1116;
+    --red-100: #4C1D24;
+    --red-600: #F87171;
+    --red-700: #FCA5A5;
+
+    --bg: #0F141B;
+    --surface: #171E27;
+    --surface-2: #1D2631;
+    --surface-hover: #202A36;
+    --surface-sunken: #131A22;
+    --border: #26303C;
+    --border-2: #33404E;
+    --border-strong: #3F4D5C;
+
+    --text-primary: #F4F7FB;
+    --text-secondary: #D7DEE7;
+    --text-tertiary: #B6C0CC;
+    --text-muted: #93A0AE;
+    --text-faint: #7C8A99;
+    --text-placeholder: #64748B;
+
+    --sidebar-bg: #0B0F14;
+    --sidebar-border: #1B232D;
+    --sidebar-text: #9AA7B5;
+    --sidebar-label: #7C8A99;
+    --sidebar-hover-bg: #1A222C;
+    --sidebar-hover-text: #F4F7FB;
+
+    --skeleton-from: #1D2631;
+    --skeleton-via: #2A3543;
+    --skeleton-to: #1D2631;
+
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.4);
+    --shadow-md: 0 4px 10px -2px rgb(0 0 0 / 0.5);
+    --shadow-lg: 0 12px 20px -4px rgb(0 0 0 / 0.55);
   }
 
   *, *::before, *::after {
@@ -133,14 +228,14 @@
 .icon-36 { width: 16px !important; height: 16px !important; }
 
 .card-surface {
-  background: #FFFFFF;
+  background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 12px;
   box-shadow: 0 1px 2px rgba(16, 24, 40, 0.05);
 }
 
 .luxury-card {
-  background: #FFFFFF;
+  background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 12px;
   box-shadow: var(--shadow-sm);
@@ -149,7 +244,7 @@
 
 .luxury-card:hover {
   box-shadow: var(--shadow-md);
-  border-color: #FCA5A5;
+  border-color: var(--red-500);
   transform: translateY(-2px);
 }
 
@@ -220,13 +315,75 @@
 
 ::-webkit-scrollbar { width: 4px; height: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #D1D5DB; border-radius: 99px; }
-::-webkit-scrollbar-thumb:hover { background: #9CA3AF; }
+::-webkit-scrollbar-thumb { background: var(--border-2); border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-faint); }
 
 @keyframes fadeSlideIn {
   from { opacity: 0; transform: translateY(6px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+/* ═════════════════════════════════════════════════════════════
+   DARK PRESET OVERRIDES
+   The app historically hardcodes grey hexes in utility classes.
+   Midnight preset remaps those dominant greys to the dark palette
+   so every page stays readable. Unlayered rules win over Tailwind's
+   utility layer. Print documents are excluded so bills stay white.
+═════════════════════════════════════════════════════════════ */
+@media print {
+  [data-theme='dark'] { --bg: #FFFFFF; --surface: #FFFFFF; }
+}
+
+/* Apply remaps only for the dark preset, and never inside print sheets */
+[data-theme='dark'] .bg-\[\#F9FAFB\],
+[data-theme='dark'] .bg-\[\#FAFAFA\],
+[data-theme='dark'] .bg-\[\#F3F4F6\],
+[data-theme='dark'] .bg-\[\#F4F4F5\],
+[data-theme='dark'] .bg-\[\#F2F4F7\],
+[data-theme='dark'] .bg-\[\#EAECF0\],
+[data-theme='dark'] .bg-\[\#E5E7EB\],
+[data-theme='dark'] .bg-\[\#E4E7EC\],
+[data-theme='dark'] .bg-\[\#FCFCFD\] {
+  background-color: var(--surface-2) !important;
+}
+[data-theme='dark'] .hover\:bg-\[\#F3F4F6\]:hover,
+[data-theme='dark'] .hover\:bg-\[\#F9FAFB\]:hover,
+[data-theme='dark'] .hover\:bg-\[\#EAECF0\]:hover {
+  background-color: var(--surface-hover) !important;
+}
+
+/* Dark text → light text */
+[data-theme='dark'] .text-\[\#101828\],
+[data-theme='dark'] .text-\[\#111827\],
+[data-theme='dark'] .text-\[\#1D2939\] { color: var(--text-primary) !important; }
+[data-theme='dark'] .text-\[\#344054\],
+[data-theme='dark'] .text-\[\#374151\] { color: var(--text-secondary) !important; }
+[data-theme='dark'] .text-\[\#475467\],
+[data-theme='dark'] .text-\[\#4B5563\],
+[data-theme='dark'] .text-\[\#667085\] { color: var(--text-muted) !important; }
+[data-theme='dark'] .text-\[\#6B7280\] { color: var(--text-faint) !important; }
+[data-theme='dark'] .text-\[\#98A2B3\],
+[data-theme='dark'] .text-\[\#9CA3AF\] { color: var(--text-faint) !important; }
+[data-theme='dark'] .hover\:text-\[\#111827\]:hover,
+[data-theme='dark'] .hover\:text-\[\#374151\]:hover { color: var(--text-primary) !important; }
+
+/* Grey borders → dark borders */
+[data-theme='dark'] .border-\[\#E5E7EB\],
+[data-theme='dark'] .border-\[\#E4E7EC\],
+[data-theme='dark'] .border-\[\#F2F4F7\],
+[data-theme='dark'] .border-\[\#EAECF0\],
+[data-theme='dark'] .border-\[\#F3F4F6\] { border-color: var(--border) !important; }
+[data-theme='dark'] .border-\[\#D1D5DB\],
+[data-theme='dark'] .border-\[\#D0D5DD\] { border-color: var(--border-2) !important; }
+[data-theme='dark'] .divide-\[\#F2F4F7\] > :not([hidden]) ~ :not([hidden]) { border-color: var(--border) !important; }
+[data-theme='dark'] .ring-\[\#E5E7EB\],
+[data-theme='dark'] .ring-\[\#E4E7EC\] { --tw-ring-color: var(--border) !important; }
+
+/* Raw white surfaces get remapped for dark (never inside print sheets) */
+[data-theme='dark'] .bg-white:not(.quotation-print-page *):not(.page-sheet *):not(#printable-receipt *) {
+  background-color: var(--surface) !important;
+}
+[data-theme='dark'] .bg-white\/80 { background-color: color-mix(in srgb, var(--surface) 80%, transparent) !important; }
 
 @media print {
   body > *:not(#printable-receipt):not(.quotation-print-page) { display: none !important; }

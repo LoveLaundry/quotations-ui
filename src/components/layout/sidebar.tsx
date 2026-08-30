@@ -40,6 +40,7 @@ const navGroups = [
       { to: '/workers', label: 'Staff Management', icon: Users, end: true },
       { to: '/workers/daily-tasks', label: 'Staff Daily Tasks', icon: UsersThree, end: false, indent: true },
       { to: '/bills', label: 'Bills', icon: CurrencyCircleDollar, end: false, permission: 'view_bills' },
+      { to: '/invoices/new', label: 'Invoices', icon: FileText, end: false, permission: 'view_bills' },
     ],
   },
   {
@@ -171,10 +172,11 @@ function SidebarContent({
   })).filter(g => g.items.length > 0)
 
   return (
-    <div className="flex h-full flex-col bg-white">
+    <div className="flex h-full flex-col bg-[var(--sidebar-bg)]">
       <div
         className={cn(
-          'flex h-[52px] shrink-0 items-center border-b border-[#1F2937] px-4',
+          'flex h-[52px] shrink-0 items-center border-b px-4',
+          'border-[var(--sidebar-border)]',
           collapsed && 'justify-center px-0'
         )}
       >
@@ -207,7 +209,7 @@ function SidebarContent({
         {navGroupsWithRole.map(({ label: groupLabel, items }) => (
           <div key={groupLabel}>
             {!collapsed && (
-              <p className="px-2.5 pb-1.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-[#6B7280]">
+              <p className="px-2.5 pb-1.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-[var(--sidebar-label)]">
                 {groupLabel}
               </p>
             )}
@@ -227,7 +229,7 @@ function SidebarContent({
                       indent && !collapsed && 'pl-9',
                       isActive
                         ? 'bg-[#DC2626] text-white'
-                        : 'text-[#9CA3AF] hover:bg-[#F3F4F6] hover:text-[#111827]'
+                        : 'text-[var(--sidebar-text)] hover:bg-[var(--sidebar-hover-bg)] hover:text-[var(--sidebar-hover-text)]'
                     )
                   }
                 >
@@ -240,7 +242,7 @@ function SidebarContent({
                           'shrink-0 transition-colors duration-150',
                           isActive
                             ? 'text-white'
-                            : 'text-[#6B7280] group-hover:text-[#111827]'
+                            : 'text-[var(--sidebar-label)] group-hover:text-[var(--sidebar-hover-text)]'
                         )}
                       />
                       {!collapsed && <span className="truncate">{label}</span>}
@@ -254,11 +256,11 @@ function SidebarContent({
       </nav>
 
       {!isMobile && (
-        <div className="border-t border-[#1F2937] p-2">
+        <div className="border-t p-2 border-[var(--sidebar-border)]">
           <button
             type="button"
             onClick={onToggle}
-            className="flex w-full items-center justify-center gap-1.5 rounded-lg px-2.5 py-2 text-[12px] font-medium text-[#6B7280] hover:bg-[#F3F4F6] hover:text-[#111827] transition cursor-pointer"
+            className="flex w-full items-center justify-center gap-1.5 rounded-lg px-2.5 py-2 text-[12px] font-medium text-[var(--sidebar-label)] hover:bg-[var(--sidebar-hover-bg)] hover:text-[var(--sidebar-hover-text)] transition cursor-pointer"
             aria-label={collapsed ? 'Expand' : 'Collapse'}
           >
             {collapsed ? (
@@ -281,10 +283,10 @@ function LogoDark() {
     <div className="flex items-center gap-2.5 select-none">
       <Logo size="sm" showText={false} />
       <div className="min-w-0 leading-none">
-        <p className="text-[14px] font-pacifico text-black tracking-tight">
+        <p className="text-[14px] font-pacifico text-white tracking-tight">
           Love Laundry
         </p>
-        <p className="text-[10px] text-[#6B7280]">
+        <p className="text-[10px] text-[var(--sidebar-label)]">
           Manager
         </p>
       </div>

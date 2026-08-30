@@ -1,7 +1,9 @@
-﻿import { RiSettings3Line, RiPaletteLine, RiTextSpacing, RiContrastLine, RiCheckLine } from 'react-icons/ri'
+﻿import {
+  RiSettings3Line, RiTextSpacing, RiSunLine, RiContrastLine, RiMoonLine, RiCheckLine, RiPaletteLine,
+} from 'react-icons/ri'
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card'
 import { Breadcrumb } from '../../../components/ui/breadcrumb'
-import { useTheme, type FontSize, type Contrast } from '../../../context/ThemeContext'
+import { useTheme, type FontSize, type ThemePreset } from '../../../context/ThemeContext'
 
 const FONT_OPTIONS: { value: FontSize; label: string; desc: string; px: string }[] = [
   { value: 'sm', label: 'Small', desc: 'Compact, more content visible', px: '13px' },
@@ -9,10 +11,53 @@ const FONT_OPTIONS: { value: FontSize; label: string; desc: string; px: string }
   { value: 'lg', label: 'Large', desc: 'Easier on the eyes', px: '15px' },
 ]
 
-const CONTRAST_OPTIONS: { value: Contrast; label: string; desc: string; secondary: string; tertiary: string }[] = [
-  { value: 'normal', label: 'Normal', desc: 'Standard grey tones', secondary: '#374151', tertiary: '#4B5563' },
-  { value: 'dark',   label: 'Dark',   desc: 'Darker grey, easier to read', secondary: '#1D2939', tertiary: '#344054' },
-  { value: 'darkest', label: 'Maximum', desc: 'Near-black for all text', secondary: '#101828', tertiary: '#1D2939' },
+interface ThemePresetOption {
+  value: ThemePreset
+  label: string
+  desc: string
+  icon: React.ReactNode
+  // Sample swatches for the picker preview
+  swatchBg: string
+  swatchSurface: string
+  swatchBorder: string
+  swatchText: string
+  swatchMuted: string
+}
+
+const THEME_OPTIONS: ThemePresetOption[] = [
+  {
+    value: 'light',
+    label: 'Light',
+    desc: 'The classic clean look — the default',
+    icon: <RiSunLine className="h-4 w-4 text-[#F59E0B]" />,
+    swatchBg: '#F9FAFB',
+    swatchSurface: '#FFFFFF',
+    swatchBorder: '#E5E7EB',
+    swatchText: '#101828',
+    swatchMuted: '#6B7280',
+  },
+  {
+    value: 'contrast',
+    label: 'High Contrast',
+    desc: 'Stronger borders and darker text for maximum clarity',
+    icon: <RiContrastLine className="h-4 w-4 text-[#2563EB]" />,
+    swatchBg: '#F3F4F6',
+    swatchSurface: '#FFFFFF',
+    swatchBorder: '#94A3B8',
+    swatchText: '#0B1220',
+    swatchMuted: '#334155',
+  },
+  {
+    value: 'dark',
+    label: 'Midnight',
+    desc: 'A professional dark mode, easy on the eyes',
+    icon: <RiMoonLine className="h-4 w-4 text-[#7C8A99]" />,
+    swatchBg: '#0F141B',
+    swatchSurface: '#171E27',
+    swatchBorder: '#2A3543',
+    swatchText: '#F4F7FB',
+    swatchMuted: '#93A0AE',
+  },
 ]
 
 function OptionButton({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
@@ -23,12 +68,12 @@ function OptionButton({ active, onClick, children }: { active: boolean; onClick:
       className={[
         'relative flex flex-col gap-1 rounded-xl border-2 px-4 py-3 text-left transition-all cursor-pointer',
         active
-          ? 'border-[#DC2626] bg-[#FFF1F1]'
-          : 'border-[#E4E7EC] bg-white hover:border-[#FCA5A5] hover:bg-[#FFF7F7]',
+          ? 'border-[var(--red-600)] bg-[color-mix(in_srgb,var(--red-600)_8%,var(--surface))]'
+          : 'border-[var(--border)] bg-[var(--surface)] hover:border-[var(--red-500)] hover:bg-[var(--surface-hover)]',
       ].join(' ')}
     >
       {active && (
-        <span className="absolute right-2.5 top-2.5 flex h-4 w-4 items-center justify-center rounded-full bg-[#DC2626]">
+        <span className="absolute right-2.5 top-2.5 flex h-4 w-4 items-center justify-center rounded-full bg-[var(--red-600)]">
           <RiCheckLine className="h-2.5 w-2.5 text-white" />
         </span>
       )}
@@ -38,15 +83,15 @@ function OptionButton({ active, onClick, children }: { active: boolean; onClick:
 }
 
 export default function SettingsPage() {
-  const { fontSize, contrast, setFontSize, setContrast } = useTheme()
+  const { fontSize, theme, setFontSize, setTheme } = useTheme()
 
   return (
     <div className="space-y-6 pb-10 select-none">
       <div>
         <Breadcrumb items={[{ label: 'Dashboard', href: '/' }, { label: 'Settings' }]} />
         <div className="flex items-center gap-3 mt-1">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#F3F4F6] border border-[#E4E7EC]">
-            <RiSettings3Line className="h-4 w-4 text-[#374151]" />
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[var(--surface-2)] border border-[var(--border)]">
+            <RiSettings3Line className="h-4 w-4" style={{ color: 'var(--text-secondary)' }} />
           </div>
           <div>
             <h1 className="text-dashboard-title">Settings</h1>
@@ -57,9 +102,47 @@ export default function SettingsPage() {
         </div>
       </div>
 
+      {/* Theme Preset */}
+      <Card>
+        <CardHeader className="border-b pb-4" style={{ borderColor: 'var(--border)' }}>
+          <div className="flex items-center gap-3">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#EFF6FF] border border-[#BFDBFE]">
+              <RiPaletteLine className="h-4 w-4 text-[#2563EB]" />
+            </div>
+            <div>
+              <CardTitle>Appearance Theme</CardTitle>
+              <p className="text-[12px] mt-0.5" style={{ color: 'var(--text-tertiary)' }}>
+                Pick the overall look of the application. Changes apply instantly.
+              </p>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="pt-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {THEME_OPTIONS.map(opt => (
+              <OptionButton key={opt.value} active={theme === opt.value} onClick={() => setTheme(opt.value)}>
+                <div className="flex items-center gap-2">
+                  {opt.icon}
+                  <span className="font-semibold text-[13px]">{opt.label}</span>
+                </div>
+                <span className="text-[11px]" style={{ color: 'var(--text-tertiary)' }}>{opt.desc}</span>
+                {/* Mini mock preview of the theme */}
+                <div className="mt-2 rounded-lg border p-2" style={{ background: opt.swatchBg, borderColor: opt.swatchBorder }}>
+                  <div className="h-5 w-14 rounded-md border" style={{ background: opt.swatchSurface, borderColor: opt.swatchBorder }}>
+                    <div className="h-full w-1/3 rounded-l-md" style={{ background: opt.swatchBorder }} />
+                  </div>
+                  <div className="mt-1.5 h-2 w-2/3 rounded-sm" style={{ background: opt.swatchText }} />
+                  <div className="mt-1 h-2 w-1/2 rounded-sm" style={{ background: opt.swatchMuted }} />
+                </div>
+              </OptionButton>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Font Size */}
       <Card>
-        <CardHeader className="border-b border-[#F2F4F7] pb-4">
+        <CardHeader className="border-b pb-4" style={{ borderColor: 'var(--border)' }}>
           <div className="flex items-center gap-3">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#EFF6FF] border border-[#BFDBFE]">
               <RiTextSpacing className="h-4 w-4 text-[#2563EB]" />
@@ -76,41 +159,9 @@ export default function SettingsPage() {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             {FONT_OPTIONS.map(opt => (
               <OptionButton key={opt.value} active={fontSize === opt.value} onClick={() => setFontSize(opt.value)}>
-                <span className="font-semibold text-[#101828]" style={{ fontSize: opt.px }}>{opt.label}</span>
+                <span className="font-semibold" style={{ fontSize: opt.px }}>{opt.label}</span>
                 <span className="text-[11px]" style={{ color: 'var(--text-tertiary)' }}>{opt.desc}</span>
-                <span className="text-[10px] font-mono text-[#98A2B3]">{opt.px}</span>
-              </OptionButton>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Text Contrast */}
-      <Card>
-        <CardHeader className="border-b border-[#F2F4F7] pb-4">
-          <div className="flex items-center gap-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#F0FDF4] border border-[#BBF7D0]">
-              <RiContrastLine className="h-4 w-4 text-[#16A34A]" />
-            </div>
-            <div>
-              <CardTitle>Text Contrast</CardTitle>
-              <p className="text-[12px] mt-0.5" style={{ color: 'var(--text-tertiary)' }}>
-                Make secondary text darker for better readability
-              </p>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent className="pt-4">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            {CONTRAST_OPTIONS.map(opt => (
-              <OptionButton key={opt.value} active={contrast === opt.value} onClick={() => setContrast(opt.value)}>
-                <span className="font-semibold text-[#101828] text-[13px]">{opt.label}</span>
-                <span className="text-[11px]" style={{ color: opt.tertiary }}>{opt.desc}</span>
-                <div className="mt-1.5 flex gap-1.5 items-center">
-                  <div className="h-3 w-3 rounded-full border border-[#E4E7EC]" style={{ background: opt.secondary }} />
-                  <div className="h-2.5 w-2.5 rounded-full border border-[#E4E7EC]" style={{ background: opt.tertiary }} />
-                  <span className="text-[10px] font-mono" style={{ color: opt.tertiary }}>{opt.secondary}</span>
-                </div>
+                <span className="text-[10px] font-mono" style={{ color: 'var(--text-faint)' }}>{opt.px}</span>
               </OptionButton>
             ))}
           </div>
@@ -119,7 +170,7 @@ export default function SettingsPage() {
 
       {/* Live Preview */}
       <Card>
-        <CardHeader className="border-b border-[#F2F4F7] pb-4">
+        <CardHeader className="border-b pb-4" style={{ borderColor: 'var(--border)' }}>
           <div className="flex items-center gap-3">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#FFF7ED] border border-[#FED7AA]">
               <RiPaletteLine className="h-4 w-4 text-[#EA580C]" />
@@ -127,14 +178,14 @@ export default function SettingsPage() {
             <div>
               <CardTitle>Live Preview</CardTitle>
               <p className="text-[12px] mt-0.5" style={{ color: 'var(--text-tertiary)' }}>
-                How your text looks with current settings
+                How your text and colors look with current settings
               </p>
             </div>
           </div>
         </CardHeader>
         <CardContent className="pt-4">
-          <div className="rounded-xl border border-[#E4E7EC] bg-[#FAFAFA] p-5 space-y-3">
-            <h3 className="font-bold text-[#101828]" style={{ fontSize: 'calc(var(--body-font-size) + 4px)' }}>
+          <div className="rounded-xl border p-5 space-y-3" style={{ borderColor: 'var(--border)', background: 'var(--surface-sunken)' }}>
+            <h3 className="font-bold" style={{ fontSize: 'calc(var(--body-font-size) + 4px)', color: 'var(--text-primary)' }}>
               Invoice #INV-20260811-0001
             </h3>
             <p style={{ color: 'var(--text-secondary)', fontSize: 'var(--body-font-size)' }}>
@@ -144,15 +195,15 @@ export default function SettingsPage() {
               This is tertiary text — labels, captions, and metadata appear here.
             </p>
             <div className="flex gap-3 pt-1">
-              <div className="rounded-lg border border-[#E4E7EC] bg-white px-3 py-2">
+              <div className="rounded-lg border px-3 py-2" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
                 <p className="text-[10px] font-semibold uppercase tracking-wide" style={{ color: 'var(--text-tertiary)' }}>Client Name</p>
-                <p className="font-semibold text-[#101828]" style={{ fontSize: 'var(--body-font-size)' }}>Hilton Colombo</p>
+                <p className="font-semibold" style={{ fontSize: 'var(--body-font-size)', color: 'var(--text-primary)' }}>Hilton Colombo</p>
               </div>
-              <div className="rounded-lg border border-[#E4E7EC] bg-white px-3 py-2">
+              <div className="rounded-lg border px-3 py-2" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
                 <p className="text-[10px] font-semibold uppercase tracking-wide" style={{ color: 'var(--text-tertiary)' }}>Amount</p>
-                <p className="font-semibold text-[#101828]" style={{ fontSize: 'var(--body-font-size)' }}>LKR 84,500</p>
+                <p className="font-semibold" style={{ fontSize: 'var(--body-font-size)', color: 'var(--text-primary)' }}>LKR 84,500</p>
               </div>
-              <div className="rounded-lg border border-[#E4E7EC] bg-white px-3 py-2">
+              <div className="rounded-lg border px-3 py-2" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
                 <p className="text-[10px] font-semibold uppercase tracking-wide" style={{ color: 'var(--text-tertiary)' }}>Status</p>
                 <p className="font-semibold text-[#16A34A]" style={{ fontSize: 'var(--body-font-size)' }}>Paid</p>
               </div>

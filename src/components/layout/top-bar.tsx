@@ -60,7 +60,7 @@ export function TopBar({ title, sidebarCollapsed, onMobileMenuToggle }: TopBarPr
         className={cn(
         'fixed top-0 right-0 z-30 h-16',
         'flex items-center justify-between px-6',
-        'bg-white/80 backdrop-blur-md border-b border-[#E5E7EB]',
+        'bg-white/80 backdrop-blur-md border-b border-[var(--border)]',
         'transition-[left] duration-200 select-none',
         'shadow-sm',
         sidebarCollapsed ? 'left-0 lg:left-[60px]' : 'left-0 lg:left-[232px]',
@@ -70,7 +70,7 @@ export function TopBar({ title, sidebarCollapsed, onMobileMenuToggle }: TopBarPr
         <button
           type="button"
           onClick={onMobileMenuToggle}
-          className="flex h-9 w-9 items-center justify-center rounded-xl text-[#6B7280] hover:bg-[#F3F4F6] hover:text-[#111827] transition-all duration-200 lg:hidden"
+          className="flex h-9 w-9 items-center justify-center rounded-xl text-[var(--text-muted)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] transition-all duration-200 lg:hidden"
           aria-label="Menu"
         >
           <List size={20} />
@@ -82,7 +82,7 @@ export function TopBar({ title, sidebarCollapsed, onMobileMenuToggle }: TopBarPr
             initial={{ opacity: 0, y: -4 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.2, ease: 'easeOut' }}
-            className="text-[15px] font-semibold text-[#111827] tracking-tight truncate"
+            className="text-[15px] font-semibold text-[var(--text-primary)] tracking-tight truncate"
           >
             {title}
           </motion.p>
@@ -95,7 +95,7 @@ export function TopBar({ title, sidebarCollapsed, onMobileMenuToggle }: TopBarPr
           <button
             type="button"
             onClick={() => setShowNotifications(v => !v)}
-            className="relative flex h-9 w-9 items-center justify-center rounded-xl border border-[#E5E7EB] bg-white text-[#6B7280] hover:bg-[#F9FAFB] hover:text-[#111827] hover:border-[#D1D5DB] transition-all duration-200 cursor-pointer shadow-sm"
+            className="relative flex h-9 w-9 items-center justify-center rounded-xl border border-[var(--border)] bg-[var(--surface)] text-[var(--text-muted)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] hover:border-[var(--border-2)] transition-all duration-200 cursor-pointer shadow-sm"
             aria-label={isLoading ? 'Loading notifications...' : `Notifications${totalCount > 0 ? ` (${totalCount})` : ''}`}
             title={isLoading ? 'Loading notifications...' : totalCount > 0 ? `${totalCount} notification${totalCount !== 1 ? 's' : ''}` : 'No new notifications'}
           >
@@ -121,11 +121,11 @@ export function TopBar({ title, sidebarCollapsed, onMobileMenuToggle }: TopBarPr
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.95, y: -8 }}
                   transition={{ duration: 0.15 }}
-                  className="absolute right-0 top-full mt-2 z-50 w-96 rounded-xl border border-[#E4E7EC] bg-white shadow-[0_16px_40px_-4px_rgba(16,24,40,0.15)] overflow-hidden"
+                  className="absolute right-0 top-full mt-2 z-50 w-96 rounded-xl border bg-[var(--surface)] shadow-[0_16px_40px_-4px_rgba(16,24,40,0.15)] overflow-hidden"
                 >
                   {/* Header */}
-                  <div className="px-4 py-3 border-b border-[#F2F4F7] flex items-center justify-between">
-                    <h3 className="text-[13px] font-semibold text-[#101828]">
+                  <div className="px-4 py-3 border-b border-[var(--border)] flex items-center justify-between">
+                    <h3 className="text-[13px] font-semibold text-[var(--text-primary)]">
                       Notifications {totalCount > 0 && (
                         <span className="ml-2 inline-flex items-center justify-center w-5 h-5 rounded-full bg-[#DC2626] text-white text-[10px] font-bold">
                           {totalCount}
@@ -145,22 +145,22 @@ export function TopBar({ title, sidebarCollapsed, onMobileMenuToggle }: TopBarPr
                   {/* Content */}
                   <div className="max-h-[400px] overflow-y-auto">
                     {isLoading ? (
-                      <div className="px-4 py-8 text-center text-[#98A2B3]">
+                      <div className="px-4 py-8 text-center text-[var(--text-faint)]">
                         <div className="animate-spin inline-block w-5 h-5 border-2 border-[#16A34A] border-t-transparent rounded-full mb-2" />
                         <p className="text-[13px]">Loading notifications...</p>
                       </div>
                     ) : notificationItems.length === 0 ? (
-                      <div className="px-4 py-8 text-center text-[#98A2B3]">
+                      <div className="px-4 py-8 text-center text-[var(--text-faint)]">
                         <Bell size={32} className="mx-auto mb-2 opacity-50" />
-                        <p className="text-[13px] font-medium text-[#101828]">No notifications</p>
-                        <p className="text-[11px] text-[#98A2B3] mt-1">You're all caught up!</p>
+                        <p className="text-[13px] font-medium text-[var(--text-primary)]">No notifications</p>
+                        <p className="text-[11px] text-[var(--text-faint)] mt-1">You're all caught up!</p>
                       </div>
                     ) : (
-                      <div className="divide-y divide-[#F2F4F7] p-2">
+                      <div className="divide-y divide-[var(--border)] p-2">
                         {notificationItems.map((notification) => (
                           <div
                             key={notification.id}
-                            className="px-3 py-3 hover:bg-[#F9FAFB] transition-colors cursor-pointer"
+                            className="px-3 py-3 hover:bg-[var(--surface-hover)] transition-colors cursor-pointer"
                             onClick={() => handleNotificationGroupClick('/notifications')}
                           >
                             <div className="flex items-start gap-3">
@@ -176,10 +176,10 @@ export function TopBar({ title, sidebarCollapsed, onMobileMenuToggle }: TopBarPr
                                  )}
                               </div>
                               <div className="flex-1 min-w-0">
-                                <p className="text-[13px] font-semibold text-[#101828] truncate">
+                                <p className="text-[13px] font-semibold text-[var(--text-primary)] truncate">
                                   {notification.title}
                                 </p>
-                                <p className="text-[11px] text-[#6B7280] mt-0.5 truncate">
+                                <p className="text-[11px] text-[var(--text-muted)] mt-0.5 truncate">
                                   {notification.message}
                                 </p>
                                  {((notification.type === 'gatepass_pending' ? notification.gatePassItems : notification.quotations) ?? []).length > 0 && (
@@ -191,15 +191,15 @@ export function TopBar({ title, sidebarCollapsed, onMobileMenuToggle }: TopBarPr
                                            e.stopPropagation()
                                            handleNotificationItemClick(item, notification.type)
                                          }}
-                                         className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-[#F3F4F6] text-[10px] font-medium text-[#374151] border border-[#E5E7EB] hover:bg-[#E5E7EB] transition-colors cursor-pointer"
-                                       >
-                                         {item.client_name}
-                                       </button>
-                                     ))}
-                                     {((notification.type === 'gatepass_pending' ? notification.gatePassItems : notification.quotations) ?? []).length > 3 && (
-                                       <button
+                                         className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-[var(--surface-2)] text-[10px] font-medium text-[var(--text-secondary)] border border-[var(--border)] hover:bg-[var(--surface-hover)] transition-colors cursor-pointer"
+                                        >
+                                          {item.client_name}
+                                        </button>
+                                      ))}
+                                      {((notification.type === 'gatepass_pending' ? notification.gatePassItems : notification.quotations) ?? []).length > 3 && (
+                                        <button
                              onClick={() => handleNotificationGroupClick('/notifications')}
-                                         className="inline-flex items-center px-2 py-0.5 rounded bg-[#F3F4F6] text-[10px] font-medium text-[#6B7280] border border-[#E5E7EB] hover:bg-[#E5E7EB] transition-colors cursor-pointer"
+                                         className="inline-flex items-center px-2 py-0.5 rounded bg-[var(--surface-2)] text-[10px] font-medium text-[var(--text-muted)] border border-[var(--border)] hover:bg-[var(--surface-hover)] transition-colors cursor-pointer"
                                        >
                                          +{((notification.type === 'gatepass_pending' ? notification.gatePassItems : notification.quotations) ?? []).length - 3} more
                                        </button>
@@ -224,7 +224,7 @@ export function TopBar({ title, sidebarCollapsed, onMobileMenuToggle }: TopBarPr
           <button
             type="button"
             onClick={() => setShowMenu(v => !v)}
-            className="flex items-center gap-2.5 rounded-xl border border-[#E5E7EB] bg-white px-3 py-2 cursor-pointer hover:bg-[#F9FAFB] hover:border-[#D1D5DB] transition-all duration-200 shadow-sm max-w-[220px]"
+            className="flex items-center gap-2.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3 py-2 cursor-pointer hover:bg-[var(--surface-hover)] hover:border-[var(--border-2)] transition-all duration-200 shadow-sm max-w-[220px]"
           >
             <div className="flex h-7 w-7 items-center justify-center rounded-lg overflow-hidden bg-gradient-to-br from-[#16A34A] to-[#15803D] text-white shadow-sm text-[11px] font-bold shrink-0">
               {user?.user_dp ? (
@@ -236,10 +236,10 @@ export function TopBar({ title, sidebarCollapsed, onMobileMenuToggle }: TopBarPr
               )}
             </div>
             <div className="hidden sm:block leading-none text-left min-w-0">
-              <p className="text-[13px] font-semibold text-[#111827] truncate">
+              <p className="text-[13px] font-semibold text-[var(--text-primary)] truncate">
                 {user?.user_name ?? 'User'}
               </p>
-              <p className="text-[11px] text-[#6B7280] mt-0.5 capitalize truncate">
+              <p className="text-[11px] text-[var(--text-muted)] mt-0.5 capitalize truncate">
                 {user?.role_id?.toLowerCase() ?? 'staff'}
               </p>
             </div>
@@ -254,13 +254,13 @@ export function TopBar({ title, sidebarCollapsed, onMobileMenuToggle }: TopBarPr
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.95, y: -8 }}
                   transition={{ duration: 0.15 }}
-                  className="absolute right-0 top-full mt-2 z-50 w-64 rounded-xl border border-[#E4E7EC] bg-white shadow-[0_16px_40px_-4px_rgba(16,24,40,0.15)] py-1.5"
+                  className="absolute right-0 top-full mt-2 z-50 w-64 rounded-xl border bg-[var(--surface)] shadow-[0_16px_40px_-4px_rgba(16,24,40,0.15)] py-1.5"
                 >
-                  <div className="px-4 py-3 border-b border-[#F2F4F7]">
-                    <p className="text-[13px] font-semibold text-[#101828] truncate">
+                  <div className="px-4 py-3 border-b border-[var(--border)]">
+                    <p className="text-[13px] font-semibold text-[var(--text-primary)] truncate">
                       {user?.user_name ?? 'User'}
                     </p>
-                    <p className="text-[12px] text-[#6B7280] mt-0.5 truncate" title={user?.email ?? user?.auth_id ?? ''}>
+                    <p className="text-[12px] text-[var(--text-muted)] mt-0.5 truncate" title={user?.email ?? user?.auth_id ?? ''}>
                       {user?.email ?? user?.auth_id ?? ''}
                     </p>
                   </div>
@@ -272,7 +272,7 @@ export function TopBar({ title, sidebarCollapsed, onMobileMenuToggle }: TopBarPr
                         setShowMenu(false)
                         navigate('/profile')
                       }}
-                      className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2.5 text-[13px] font-medium text-[#344054] hover:bg-[#F9FAFB] transition-colors cursor-pointer"
+                      className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2.5 text-[13px] font-medium text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] transition-colors cursor-pointer"
                     >
                       <UserCircle size={16} />
                       My Profile

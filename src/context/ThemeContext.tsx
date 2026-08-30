@@ -1,20 +1,20 @@
 ﻿import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
 
 export type FontSize = 'sm' | 'md' | 'lg'
-export type Contrast = 'normal' | 'dark' | 'darkest'
+export type ThemePreset = 'light' | 'contrast' | 'dark'
 
 interface ThemeSettings {
   fontSize: FontSize
-  contrast: Contrast
+  theme: ThemePreset
   setFontSize: (s: FontSize) => void
-  setContrast: (c: Contrast) => void
+  setTheme: (t: ThemePreset) => void
 }
 
 const ThemeContext = createContext<ThemeSettings>({
   fontSize: 'md',
-  contrast: 'dark',
+  theme: 'light',
   setFontSize: () => {},
-  setContrast: () => {},
+  setTheme: () => {},
 })
 
 export function useTheme() {
@@ -27,45 +27,43 @@ const FONT_SIZE_MAP: Record<FontSize, string> = {
   lg: '15px',
 }
 
-const CONTRAST_MAP: Record<Contrast, { secondary: string; tertiary: string; muted: string }> = {
-  normal:  { secondary: '#374151', tertiary: '#4B5563', muted: '#6B7280' },
-  dark:    { secondary: '#1D2939', tertiary: '#344054', muted: '#475467' },
-  darkest: { secondary: '#101828', tertiary: '#1D2939', muted: '#344054' },
-}
-
-function applyTheme(fontSize: FontSize, contrast: Contrast) {
-  const root = document.documentElement
-  root.style.setProperty('--body-font-size', FONT_SIZE_MAP[fontSize])
-  const c = CONTRAST_MAP[contrast]
-  root.style.setProperty('--text-secondary', c.secondary)
-  root.style.setProperty('--text-tertiary', c.tertiary)
-  root.style.setProperty('--text-muted', c.muted)
-}
+const THEME_ATTR = 'data-theme'
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [fontSize, setFontSizeState] = useState<FontSize>(() => {
     return (localStorage.getItem('theme-font-size') as FontSize) || 'md'
   })
-  const [contrast, setContrastState] = useState<Contrast>(() => {
-    return (localStorage.getItem('theme-contrast') as Contrast) || 'dark'
+  const [theme, setThemeState] = useState<ThemePreset>(() => {
+    return (localStorage.getItem('theme-preset') as ThemePreset) || 'light'
   })
 
-  useEffect(() => { applyTheme(fontSize, contrast) }, [fontSize, contrast])
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => { applyTheme(fontSize, contrast) }, [])
+  useEffect(() => {
+    document.documentElement.style.setProperty('--body-font-size', FONT_SIZE_MAP[fontSize])
+  }, [fontSize])
+
+  useEffect(() => {
+    document.documentElement.setAttribute(THEME_ATTR, theme)
+    localStorage.setItem('theme-preset', theme)
+  }, [theme])
+
+  useEffect(() => {
+    // Apply persisted values on first mount
+    document.documentElement.style.setProperty('--body-font-size', FONT_SIZE_MAP[fontSize])
+    document.documentElement.setAttribute(THEME_ATTR, theme)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const setFontSize = (s: FontSize) => {
     setFontSizeState(s)
     localStorage.setItem('theme-font-size', s)
   }
 
-  const setContrast = (c: Contrast) => {
-    setContrastState(c)
-    localStorage.setItem('theme-contrast', c)
+  const setTheme = (t: ThemePreset) => {
+    setThemeState(t)
   }
 
   return (
-    <ThemeContext.Provider value={{ fontSize, contrast, setFontSize, setContrast }}>
+    <ThemeContext.Provider value={{ fontSize, theme, setFontSize, setTheme }}>
       {children}
     </ThemeContext.Provider>
   )

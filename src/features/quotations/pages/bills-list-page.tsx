@@ -76,8 +76,7 @@ export default function BillsListPage() {
           <h1 className="text-dashboard-title mt-1">Bills</h1>
           <p className="text-[13px] text-[#98A2B3] mt-0.5">
             {data ? `${data.total} bill${data.total === 1 ? '' : 's'}` : 'Saved bills'}
-          </p>
-        </div>
+          </p>        </div>
         <div className="flex gap-2">
           <Button variant="secondary" onClick={handleExportExcel} disabled={!bills.length}>
             <Download className="h-4 w-4 mr-2" /> Export
@@ -92,13 +91,13 @@ export default function BillsListPage() {
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
         <div className="relative flex-1">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#98A2B3]" />
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--text-faint)]" />
           <input
             type="text"
             value={searchInput}
             onChange={e => setSearchInput(e.target.value)}
             placeholder="Search by client, quotation title, or item…"
-            className="h-10 w-full rounded-lg border border-[#E4E7EC] bg-white pl-9 pr-8 text-[13px] text-[#101828] outline-none focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/10 shadow-sm"
+            className="h-10 w-full rounded-lg border border-[var(--border)] bg-[var(--surface)] pl-9 pr-8 text-[13px] text-[var(--text-primary)] outline-none focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/10 shadow-sm"
           />
           {searchInput && (
             <button
@@ -114,20 +113,20 @@ export default function BillsListPage() {
 
         <div className="flex items-center gap-2">
           <div className="relative">
-            <Calendar className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[#98A2B3]" />
+            <Calendar className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[var(--text-faint)]" />
             <input
               type="date"
               value={dateFrom}
               onChange={e => setDateFrom(e.target.value)}
-              className="h-10 rounded-lg border border-[#E4E7EC] bg-white pl-8 pr-2.5 text-[13px] text-[#101828] outline-none focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/10 shadow-sm"
+              className="h-10 rounded-lg border border-[var(--border)] bg-[var(--surface)] pl-8 pr-2.5 text-[13px] text-[var(--text-primary)] outline-none focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/10 shadow-sm"
             />
           </div>
-          <span className="text-[12px] text-[#98A2B3]">to</span>
+          <span className="text-[12px] text-[var(--text-faint)]">to</span>
           <input
             type="date"
             value={dateTo}
             onChange={e => setDateTo(e.target.value)}
-            className="h-10 rounded-lg border border-[#E4E7EC] bg-white px-2.5 text-[13px] text-[#101828] outline-none focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/10 shadow-sm"
+            className="h-10 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-2.5 text-[13px] text-[var(--text-primary)] outline-none focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/10 shadow-sm"
           />
           {hasFilters && (
             <Button variant="ghost" size="sm" onClick={clearFilters}>
@@ -147,7 +146,7 @@ export default function BillsListPage() {
             className={`rounded-full border px-3 py-1 text-[12px] font-medium transition cursor-pointer ${
               paymentStatus === f.value
                 ? 'border-[#DC2626] bg-[#FFF1F1] text-[#DC2626]'
-                : 'border-[#E4E7EC] bg-white text-[#6B7280] hover:border-[#D0D5DD] hover:text-[#374151]'
+                : 'border-[var(--border)] bg-[var(--surface)] text-[var(--text-muted)] hover:border-[var(--border-strong)] hover:text-[var(--text-secondary)]'
             }`}
           >
             {f.label}
@@ -198,10 +197,10 @@ export default function BillsListPage() {
                       <Receipt className="h-4 w-4" />
                     </div>
                     <div className="min-w-0">
-                      <p className="text-[13px] font-semibold text-[#101828] truncate">
+                      <p className="text-[13px] font-semibold text-[var(--text-primary)] truncate">
                         {bill.client_name}
                       </p>
-                      <p className="text-[12px] text-[#98A2B3] truncate">
+                      <p className="text-[12px] text-[var(--text-faint)] truncate">
                         {bill.quotation_title || 'Price List'}
                       </p>
                     </div>
@@ -215,9 +214,9 @@ export default function BillsListPage() {
                   </div>
                 </div>
 
-                <div className="mt-3 flex items-end justify-between border-t border-[#F2F4F7] pt-3">
+                <div className="mt-3 flex items-end justify-between border-t pt-3" style={{ borderColor: 'var(--border)' }}>
                   <div className="flex flex-col gap-0.5">
-                    <span className="text-[11px] text-[#98A2B3]">{formatDate(bill.created_at)}</span>
+                    <span className="text-[11px] text-[var(--text-faint)]">{formatDate(bill.created_at)}</span>
                     {(bill.payment_status === 'PAID' || (bill.paid_amount ?? 0) > 0) && (
                       <span className="text-[11px] font-medium text-[#16A34A]">
                         Paid LKR {(bill.paid_amount ?? 0).toFixed(2)}
@@ -229,7 +228,7 @@ export default function BillsListPage() {
                       </span>
                     )}
                   </div>
-                  <span className="text-[14px] font-bold text-[#101828]">
+                  <span className="text-[14px] font-bold text-[var(--text-primary)]">
                     LKR {(bill.grand_total ?? bill.total_amount).toFixed(2)}
                   </span>
                 </div>

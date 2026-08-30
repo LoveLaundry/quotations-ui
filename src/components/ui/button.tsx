@@ -24,21 +24,21 @@ const buttonVariants = cva(
           'hover:shadow-md hover:shadow-red-600/30',
         ].join(' '),
         secondary: [
-          'bg-white border-[#E5E7EB] text-[#374151]',
+          'bg-[var(--surface)] border border-[var(--border)] text-[var(--text-secondary)]',
           'shadow-sm',
-          'hover:bg-[#F9FAFB] hover:border-[#D1D5DB] hover:text-[#111827]',
+          'hover:bg-[var(--surface-hover)] hover:border-[var(--border-2)] hover:text-[var(--text-primary)]',
         ].join(' '),
         outline: [
-          'bg-transparent border-[#FECACA] text-[#DC2626]',
-          'hover:bg-[#FFF1F1] hover:border-[#FCA5A5]',
+          'bg-transparent border-[var(--red-100)] text-[var(--red-600)]',
+          'hover:bg-[var(--red-50)] hover:border-[var(--red-600)]',
         ].join(' '),
         ghost: [
-          'bg-transparent border-transparent text-[#6B7280]',
-          'hover:bg-[#F3F4F6] hover:text-[#111827]',
+          'bg-transparent border-transparent text-[var(--text-muted)]',
+          'hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]',
         ].join(' '),
         destructive: [
-          'bg-[#FEF2F2] border-[#FECACA] text-[#DC2626]',
-          'hover:bg-[#FEE2E2] hover:border-[#FCA5A5]',
+          'bg-[var(--red-50)] border-[var(--red-100)] text-[var(--red-600)]',
+          'hover:bg-[var(--red-100)] hover:border-[var(--red-600)]',
         ].join(' '),
       },
       size: {
