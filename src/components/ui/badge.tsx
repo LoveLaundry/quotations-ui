@@ -7,8 +7,8 @@ interface BadgeProps {
 }
 
 const v = {
-  default:   'border-[#FECACA] bg-[#FFF1F1] text-[#DC2626]',
-  secondary: 'border-[#E4E7EC] bg-[#F9FAFB] text-[#374151]',
+  default:   'border-[var(--red-100)] bg-[var(--red-50)] text-[var(--red-600)]',
+  secondary: 'border-[var(--border)] bg-[var(--surface-2)] text-[var(--text-secondary)]',
   success:   'border-emerald-100 bg-emerald-50 text-emerald-700',
   warning:   'border-amber-100  bg-amber-50  text-amber-700',
 }

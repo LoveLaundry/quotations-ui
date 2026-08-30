@@ -10,8 +10,8 @@ export const Card = React.forwardRef<HTMLDivElement, CardProps>(
     <div
       ref={ref}
       className={cn(
-        'rounded-xl border border-[#E5E7EB] bg-white',
-        'shadow-sm',
+        'rounded-xl border bg-[var(--surface)] shadow-sm',
+        'border-[var(--border)]',
         hover && 'luxury-card cursor-pointer',
         className,
       )}
@@ -33,6 +33,6 @@ export function CardContent({ className, ...props }: React.HTMLAttributes<HTMLDi
 
 export function CardTitle({ className, ...props }: React.HTMLAttributes<HTMLHeadingElement>) {
   return (
-    <h3 className={cn('text-[15px] font-semibold text-[#111827] tracking-tight leading-snug', className)} {...props} />
+    <h3 className={cn('text-[15px] font-semibold text-[var(--text-primary)] tracking-tight leading-snug', className)} {...props} />
   )
 }

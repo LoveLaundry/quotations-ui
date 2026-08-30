@@ -5,7 +5,7 @@ export function Skeleton({ className }: { className?: string }) {
     <div
       className={cn(
         'rounded-xl',
-        'bg-gradient-to-r from-[#F3F4F6] via-[#E5E7EB] to-[#F3F4F6]',
+        'bg-gradient-to-r from-[var(--skeleton-from)] via-[var(--skeleton-via)] to-[var(--skeleton-to)]',
         'bg-[length:200%_100%]',
         'shadow-sm',
         'animate-shimmer',

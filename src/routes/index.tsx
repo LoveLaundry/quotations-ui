@@ -17,6 +17,7 @@ import NotFoundPage from '../features/quotations/pages/not-found-page'
 import BillsListPage from '../features/quotations/pages/bills-list-page'
 import CreateBillPage from '../features/quotations/pages/create-bill-page'
 import BillDetailPage from '../features/quotations/pages/bill-detail-page'
+import InvoiceCreatePage from '../features/quotations/pages/invoice-create-page'
 
 // Operations pages
 import GatePassesPage from '../features/quotations/pages/gatepasses-page'
@@ -76,6 +77,7 @@ export const router = createBrowserRouter([
           { path: 'bills', element: <BillsListPage /> },
           { path: 'bills/new', element: <CreateBillPage /> },
           { path: 'bills/:id', element: <BillDetailPage /> },
+          { path: 'invoices/new', element: <InvoiceCreatePage /> },
 
           // Gate Passes (Receiving)
           { path: 'gate-passes', element: <GatePassesPage /> },
