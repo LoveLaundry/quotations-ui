@@ -8,6 +8,7 @@ import { ErrorState } from '../../../components/ui/error-state'
 import { Skeleton } from '../../../components/ui/skeleton'
 import { Breadcrumb } from '../../../components/ui/breadcrumb'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogBody, DialogFooter } from '../../../components/ui/dialog'
+import { ConfirmDialog } from '../../../components/ui/confirm-dialog'
 import { formatDate } from '../../../lib/utils'
 import { useBill, useDeleteBill } from '../hooks/useBills'
 import { usePayments, useCreatePayment } from '../hooks/usePayments'
@@ -151,6 +152,7 @@ export default function BillDetailPage() {
 
   const deleteBill = useDeleteBill()
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   
   const printRef = useRef<HTMLDivElement>(null)
   const handlePrint = useReactToPrint({
@@ -160,7 +162,12 @@ export default function BillDetailPage() {
 
   const handleDelete = () => {
     if (!bill) return
-    if (!window.confirm('Delete this bill? This cannot be undone.')) return
+    setShowDeleteConfirm(true)
+  }
+
+  const confirmDelete = () => {
+    if (!bill) return
+    setShowDeleteConfirm(false)
     deleteBill.mutate(bill.id, { onSuccess: () => navigate('/bills') })
   }
 
@@ -399,6 +406,17 @@ export default function BillDetailPage() {
           />
         </div>
       )}
+
+      {/* Delete Confirmation */}
+      <ConfirmDialog
+        open={showDeleteConfirm}
+        title="Delete Bill"
+        description={`Delete this bill for ${bill?.client_name || 'this client'}? This action cannot be undone.`}
+        confirmLabel="Delete"
+        variant="danger"
+        onConfirm={confirmDelete}
+        onCancel={() => setShowDeleteConfirm(false)}
+      />
     </div>
   )
 }

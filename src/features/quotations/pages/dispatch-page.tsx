@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { Truck, Plus, X, MapPin, User, CalendarDays } from 'lucide-react'
 import { Button } from '../../../components/ui/button'
 import { Card, CardContent } from '../../../components/ui/card'
+import { ConfirmDialog } from '../../../components/ui/confirm-dialog'
 import { EmptyState } from '../../../components/ui/empty-state'
 import { formatDate } from '../../../lib/utils'
 import {
@@ -172,9 +173,12 @@ function JobCard({
   onDelete: () => void
 }) {
   const [driver, setDriver] = useState(job.assigned_to ?? '')
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [showCancelConfirm, setShowCancelConfirm] = useState(false)
   const next = NEXT_STATUS[job.status]
 
   return (
+    <>
     <Card>
       <CardContent className="space-y-3 pt-5">
         <div className="flex items-start justify-between gap-2">
@@ -232,7 +236,7 @@ function JobCard({
             </Button>
           )}
           {job.status !== 'CANCELLED' && job.status !== 'COMPLETED' && (
-            <Button size="sm" variant="outline" onClick={onCancel}>
+            <Button size="sm" variant="outline" onClick={() => setShowCancelConfirm(true)}>
               Cancel
             </Button>
           )}
@@ -240,13 +244,33 @@ function JobCard({
             size="sm"
             variant="ghost"
             className="text-[#B42318]"
-            onClick={onDelete}
+            onClick={() => setShowDeleteConfirm(true)}
           >
             Delete
           </Button>
         </div>
       </CardContent>
     </Card>
+
+    <ConfirmDialog
+      open={showDeleteConfirm}
+      title="Delete Dispatch Job"
+      description={`Delete this ${job.job_type} job for ${job.client_name}? This cannot be undone.`}
+      confirmLabel="Delete"
+      variant="danger"
+      onConfirm={() => { setShowDeleteConfirm(false); onDelete() }}
+      onCancel={() => setShowDeleteConfirm(false)}
+    />
+    <ConfirmDialog
+      open={showCancelConfirm}
+      title="Cancel Dispatch Job"
+      description={`Cancel this ${job.job_type} job for ${job.client_name}?`}
+      confirmLabel="Cancel Job"
+      variant="warning"
+      onConfirm={() => { setShowCancelConfirm(false); onCancel() }}
+      onCancel={() => setShowCancelConfirm(false)}
+    />
+    </>
   )
 }
 
