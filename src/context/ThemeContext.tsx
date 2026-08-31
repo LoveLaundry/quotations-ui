@@ -1,7 +1,10 @@
 ﻿import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
 
-export type FontSize = 'sm' | 'md' | 'lg'
-export type ThemePreset = 'light' | 'contrast' | 'dark'
+export type FontSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'xxl'
+export type ThemePreset = 'light' | 'contrast' | 'dark' | 'ocean' | 'forest' | 'sepia' | 'slate' | 'nightblue' | 'contrast-dark'
+
+export const DARK_THEMES: ThemePreset[] = ['dark', 'nightblue', 'contrast-dark']
+export const isDarkTheme = (t: ThemePreset) => DARK_THEMES.includes(t)
 
 interface ThemeSettings {
   fontSize: FontSize
@@ -22,15 +25,21 @@ export function useTheme() {
 }
 
 const FONT_SIZE_MAP: Record<FontSize, string> = {
+  xs: '12px',
   sm: '13px',
   md: '14px',
   lg: '15px',
+  xl: '17px',
+  xxl: '19px',
 }
 
 const FONT_ZOOM_MAP: Record<FontSize, number> = {
+  xs: 0.85,
   sm: 0.92,
   md: 1,
   lg: 1.08,
+  xl: 1.18,
+  xxl: 1.3,
 }
 
 const THEME_ATTR = 'data-theme'
@@ -51,12 +60,23 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     document.documentElement.setAttribute(THEME_ATTR, theme)
     localStorage.setItem('theme-preset', theme)
+    // Toggle dark-mode override layer
+    if (isDarkTheme(theme)) {
+      document.documentElement.classList.add('dark-theme')
+    } else {
+      document.documentElement.classList.remove('dark-theme')
+    }
   }, [theme])
 
   useEffect(() => {
     document.documentElement.style.setProperty('--body-font-size', FONT_SIZE_MAP[fontSize])
     document.documentElement.style.setProperty('--body-font-zoom', String(FONT_ZOOM_MAP[fontSize]))
     document.documentElement.setAttribute(THEME_ATTR, theme)
+    if (isDarkTheme(theme)) {
+      document.documentElement.classList.add('dark-theme')
+    } else {
+      document.documentElement.classList.remove('dark-theme')
+    }
   }, [])
 
   const setFontSize = (s: FontSize) => {
