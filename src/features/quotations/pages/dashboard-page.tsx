@@ -395,60 +395,60 @@ function BalancesOverview({ data, onShowDetails }: { data: DashboardOverviewData
   const maxClientOutstanding = Math.max(...clients.map(c => c.outstanding), 1)
 
   return (
-    <Card className="overflow-hidden border-2" style={{ borderColor: totalOutstanding > 0 ? '#FEF3C7' : '#BBF7D0' }}>
+    <Card className="overflow-hidden">
       {/* Hero banner */}
-      <div className={`px-6 py-5 ${totalOutstanding > 0 ? 'bg-gradient-to-r from-[#FFFBEB] via-[#FEF3C7] to-[#FDE68A]' : 'bg-gradient-to-r from-[#F0FDF4] via-[#BBF7D0] to-[#86EFAC]'}`}>
+      <div className="px-6 py-5 bg-gray-50">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <p className="text-[12px] font-semibold uppercase tracking-wide" style={{ color: totalOutstanding > 0 ? '#92400E' : '#166534' }}>Total Outstanding</p>
-            <p className={`text-[36px] font-extrabold leading-tight tracking-tight ${totalOutstanding > 0 ? 'text-[#92400E]' : 'text-[#166534]'}`}>
+            <p className="text-[12px] font-semibold uppercase tracking-wide text-gray-500">Total Outstanding</p>
+            <p className="text-[36px] font-extrabold leading-tight tracking-tight text-gray-900">
               LKR {totalOutstanding.toLocaleString('en', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
             </p>
           </div>
           <div className="flex gap-4 sm:gap-6">
             <div className="text-center">
-              <p className="text-[11px] font-semibold uppercase tracking-wide text-[#166534]">Collected</p>
-              <p className="text-[20px] font-bold text-[#166534]">LKR {fmt(totalCollected)}</p>
-              <p className="text-[11px] text-[#16A34A] font-semibold">{collectedPct.toFixed(0)}%</p>
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-500">Collected</p>
+              <p className="text-[20px] font-bold text-gray-900">LKR {fmt(totalCollected)}</p>
+              <p className="text-[11px] text-gray-500 font-semibold">{collectedPct.toFixed(0)}%</p>
             </div>
             <div className="text-center">
-              <p className="text-[11px] font-semibold uppercase tracking-wide" style={{ color: totalOutstanding > 0 ? '#92400E' : '#6B7280' }}>Pending</p>
-              <p className={`text-[20px] font-bold ${totalOutstanding > 0 ? 'text-[#92400E]' : 'text-[#6B7280]'}`}>LKR {fmt(totalOutstanding)}</p>
-              <p className="text-[11px] font-semibold" style={{ color: totalOutstanding > 0 ? '#D97706' : '#6B7280' }}>{outstandingPct.toFixed(0)}%</p>
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-500">Pending</p>
+              <p className="text-[20px] font-bold text-gray-900">LKR {fmt(totalOutstanding)}</p>
+              <p className="text-[11px] text-gray-500 font-semibold">{outstandingPct.toFixed(0)}%</p>
             </div>
             <div className="text-center">
-              <p className="text-[11px] font-semibold uppercase tracking-wide text-[#6B7280]">Bills</p>
-              <p className="text-[20px] font-bold text-[var(--text-primary)]">{c.billCount}</p>
-              <p className="text-[11px] text-[#6B7280]">{c.paidBills} paid</p>
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-500">Bills</p>
+              <p className="text-[20px] font-bold text-gray-900">{c.billCount}</p>
+              <p className="text-[11px] text-gray-500">{c.paidBills} paid</p>
             </div>
           </div>
         </div>
         {/* Visual bar */}
-        <div className="mt-4 h-4 rounded-full overflow-hidden flex bg-white/50 shadow-inner">
+        <div className="mt-4 h-3 rounded-full overflow-hidden flex bg-gray-200">
           <motion.div
             initial={{ width: 0 }}
             animate={{ width: `${collectedPct}%` }}
             transition={{ duration: 0.8, ease: 'easeOut' }}
-            className="h-full bg-[#16A34A] rounded-l-full"
+            className="h-full bg-gray-600 rounded-l-full"
             title="Collected"
           />
           <motion.div
             initial={{ width: 0 }}
             animate={{ width: `${outstandingPct}%` }}
             transition={{ duration: 0.8, ease: 'easeOut', delay: 0.3 }}
-            className="h-full bg-[#D97706]"
+            className="h-full bg-gray-400"
             title="Outstanding"
           />
         </div>
-        <div className="flex justify-between mt-1.5 text-[10px] font-semibold">
-          <span className="text-[#16A34A]">Collected {collectedPct.toFixed(0)}%</span>
-          <span className="text-[#D97706]">Outstanding {outstandingPct.toFixed(0)}%</span>
+        <div className="flex justify-between mt-1.5 text-[10px] font-semibold text-gray-500">
+          <span>Collected {collectedPct.toFixed(0)}%</span>
+          <span>Outstanding {outstandingPct.toFixed(0)}%</span>
         </div>
         {totalOutstanding > 0 && (
           <div className="mt-3 flex justify-end">
             <button
               onClick={onShowDetails}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[12px] font-semibold text-amber-700 bg-white/70 hover:bg-white rounded-lg border border-amber-200 transition cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[12px] font-medium text-gray-600 bg-white hover:bg-gray-100 rounded-lg border border-gray-200 transition cursor-pointer"
             >
               <Eye className="h-3.5 w-3.5" />
               View Full Details
@@ -460,13 +460,10 @@ function BalancesOverview({ data, onShowDetails }: { data: DashboardOverviewData
       {/* Per-client breakdown */}
       {clients.length > 0 && (
         <CardContent className="pt-4">
-          <p className="text-[13px] font-semibold mb-3" style={{ color: 'var(--text-secondary)' }}>Outstanding by Client</p>
+          <p className="text-[13px] font-semibold mb-3 text-gray-500">Outstanding by Client</p>
           <div className="space-y-4">
             {clients.map((cl, i) => {
               const barPct = (cl.outstanding / maxClientOutstanding) * 100
-              const severity = cl.outstanding > maxClientOutstanding * 0.7 ? 'high' : cl.outstanding > maxClientOutstanding * 0.3 ? 'medium' : 'low'
-              const barColor = severity === 'high' ? '#DC2626' : severity === 'medium' ? '#D97706' : '#2563EB'
-              const bgColor = severity === 'high' ? '#FEE2E2' : severity === 'medium' ? '#FEF3C7' : '#DBEAFE'
               const specColors = ['#7C3AED', '#0891B2', '#059669', '#D946EF', '#EA580C', '#4F46E5']
               return (
                 <motion.div
@@ -474,39 +471,32 @@ function BalancesOverview({ data, onShowDetails }: { data: DashboardOverviewData
                   initial={{ opacity: 0, x: -8 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: i * 0.04 }}
-                  className="pb-3 border-b border-[var(--border)] last:border-0 last:pb-0"
+                  className="pb-3 border-b border-gray-100 last:border-0 last:pb-0"
                 >
                   <div className="flex items-center justify-between mb-1">
                     <div className="flex items-center gap-2 min-w-0">
-                      <div
-                        className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[11px] font-bold text-white"
-                        style={{ backgroundColor: barColor }}
-                      >
+                      <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[11px] font-bold text-white bg-gray-600">
                         {cl.client_name.charAt(0).toUpperCase()}
                       </div>
-                      <span className="text-[13px] font-semibold truncate">{cl.client_name}</span>
+                      <span className="text-[13px] font-semibold truncate text-gray-900">{cl.client_name}</span>
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
-                      <span className="text-[13px] font-bold" style={{ color: barColor }}>
+                      <span className="text-[13px] font-bold text-gray-900">
                         LKR {cl.outstanding.toLocaleString()}
                       </span>
                       {cl.total_billed > 0 && (
-                        <span
-                          className="rounded-full px-2 py-0.5 text-[10px] font-semibold"
-                          style={{ backgroundColor: bgColor, color: barColor }}
-                        >
+                        <span className="rounded-full px-2 py-0.5 text-[10px] font-semibold bg-gray-100 text-gray-600">
                           {((cl.outstanding / Math.max(1, cl.total_billed)) * 100).toFixed(0)}% of bill
                         </span>
                       )}
                     </div>
                   </div>
-                  <div className="h-2 bg-[var(--border)] rounded-full overflow-hidden mb-2">
+                  <div className="h-2 bg-gray-100 rounded-full overflow-hidden mb-2">
                     <motion.div
                       initial={{ width: 0 }}
                       animate={{ width: `${barPct}%` }}
                       transition={{ duration: 0.5, delay: i * 0.05 }}
-                      className="h-full rounded-full"
-                      style={{ backgroundColor: barColor }}
+                      className="h-full rounded-full bg-gray-500"
                     />
                   </div>
                   {/* Pending items with specs */}
@@ -526,7 +516,7 @@ function BalancesOverview({ data, onShowDetails }: { data: DashboardOverviewData
                           <span className="text-[11px]" style={{ color: 'var(--text-tertiary)' }}>
                             {item.delivered}/{item.received}
                           </span>
-                          <span className="text-[11px] font-semibold" style={{ color: barColor }}>
+                          <span className="text-[11px] font-semibold text-gray-600">
                             {item.pending} pending
                           </span>
                         </div>

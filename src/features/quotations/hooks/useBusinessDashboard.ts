@@ -88,6 +88,12 @@ export interface ClientWiseItem {
   pending: number
 }
 
+export interface GatePassSummary {
+  gate_pass_number: string
+  receiving_date: string
+  items: { item_name: string; specification: string; received: number }[]
+}
+
 export interface ClientWiseEntry {
   client_name: string
   total_received: number
@@ -99,6 +105,7 @@ export interface ClientWiseEntry {
   outstanding: number
   gate_pass_count: number
   items: ClientWiseItem[]
+  gate_passes: GatePassSummary[]
 }
 
 export interface ItemWiseEntry {
