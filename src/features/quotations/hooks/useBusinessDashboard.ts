@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useQuotations } from './useQuotations'
-import { dashboardApi } from '../services/dashboard.service'
+import { dashboardApi, type ActivityEntry } from '../services/dashboard.service'
 import type { Quotation } from '../../../types/quotation'
 
 export type DashboardPeriod = 'day' | 'week' | 'month' | 'quarter' | 'year'
@@ -69,10 +69,34 @@ export interface DashboardSummaryResponse {
   previous: PeriodMetrics
 }
 
-export interface BusinessDashboardData {
+export interface ClientWiseEntry {
+  client_name: string
+  total_received: number
+  total_delivered: number
+  total_pending: number
+  total_mismatches: number
+  total_billed: number
+  paid_amount: number
+  outstanding: number
+  gate_pass_count: number
+}
+
+export interface ItemWiseEntry {
+  item_name: string
+  total_received: number
+  total_delivered: number
+  pending: number
+  mismatch_count: number
+  client_count: number
+}
+
+export interface DashboardOverviewData {
   current: PeriodMetrics
   previous: PeriodMetrics
   alerts: DashboardAlert[]
+  activity: ActivityEntry[]
+  clientWise: ClientWiseEntry[]
+  itemWise: ItemWiseEntry[]
 }
 
 function buildAlerts(m: PeriodMetrics): DashboardAlert[] {
@@ -112,17 +136,29 @@ function buildAlerts(m: PeriodMetrics): DashboardAlert[] {
   return alerts
 }
 
-export function useBusinessDashboard(period: DashboardPeriod) {
+export function useDashboardOverview(period: DashboardPeriod) {
   const quotesQ = useQuotations()
   const summaryQ = useQuery({
     queryKey: ['dashboard', 'summary', period],
     queryFn: () => dashboardApi.getSummary(period),
   })
+  const activityQ = useQuery({
+    queryKey: ['dashboard', 'activity'],
+    queryFn: () => dashboardApi.getRecentActivity(10),
+  })
+  const clientWiseQ = useQuery({
+    queryKey: ['reports', 'client-wise'],
+    queryFn: dashboardApi.getClientWise,
+  })
+  const itemWiseQ = useQuery({
+    queryKey: ['reports', 'item-wise'],
+    queryFn: dashboardApi.getItemWise,
+  })
 
   const isLoading = quotesQ.isLoading || summaryQ.isLoading
   const error = (summaryQ.error || quotesQ.error) as Error | null
 
-  const data = useMemo<BusinessDashboardData | null>(() => {
+  const data = useMemo<DashboardOverviewData | null>(() => {
     if (!summaryQ.data || !quotesQ.data) return null
     const quotes = quotesQ.data as Quotation[]
 
@@ -139,8 +175,15 @@ export function useBusinessDashboard(period: DashboardPeriod) {
     const current = applyQuotations(summaryQ.data.current)
     const previous = applyQuotations(summaryQ.data.previous)
     const alerts = buildAlerts(current)
-    return { current, previous, alerts }
-  }, [summaryQ.data, quotesQ.data])
+    return {
+      current,
+      previous,
+      alerts,
+      activity: activityQ.data ?? [],
+      clientWise: clientWiseQ.data ?? [],
+      itemWise: itemWiseQ.data ?? [],
+    }
+  }, [summaryQ.data, quotesQ.data, activityQ.data, clientWiseQ.data, itemWiseQ.data])
 
   return {
     data,
@@ -149,6 +192,11 @@ export function useBusinessDashboard(period: DashboardPeriod) {
     refetch: () => {
       summaryQ.refetch()
       quotesQ.refetch()
+      activityQ.refetch()
+      clientWiseQ.refetch()
+      itemWiseQ.refetch()
     },
   }
 }
+
+export { useDashboardOverview as useBusinessDashboard }
