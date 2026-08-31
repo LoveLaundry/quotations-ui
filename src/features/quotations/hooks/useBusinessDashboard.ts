@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useQuotations } from './useQuotations'
-import { dashboardApi, type ActivityEntry } from '../services/dashboard.service'
+import { dashboardApi, type ActivityEntry, type OutstandingAging, type YearlyTrendPoint } from '../services/dashboard.service'
 import type { Quotation } from '../../../types/quotation'
 
 export type DashboardPeriod = 'day' | 'week' | 'month' | 'quarter' | 'year'
@@ -107,6 +107,8 @@ export interface DashboardOverviewData {
   activity: ActivityEntry[]
   clientWise: ClientWiseEntry[]
   itemWise: ItemWiseEntry[]
+  aging: OutstandingAging
+  yearlyTrend: YearlyTrendPoint[]
 }
 
 function buildAlerts(m: PeriodMetrics): DashboardAlert[] {
@@ -164,6 +166,14 @@ export function useDashboardOverview(period: DashboardPeriod) {
     queryKey: ['reports', 'item-wise'],
     queryFn: dashboardApi.getItemWise,
   })
+  const agingQ = useQuery({
+    queryKey: ['dashboard', 'outstanding-aging'],
+    queryFn: dashboardApi.getOutstandingAging,
+  })
+  const yearlyQ = useQuery({
+    queryKey: ['dashboard', 'yearly-trend'],
+    queryFn: dashboardApi.getYearlyTrend,
+  })
 
   const isLoading = quotesQ.isLoading || summaryQ.isLoading
   const error = (summaryQ.error || quotesQ.error) as Error | null
@@ -192,8 +202,10 @@ export function useDashboardOverview(period: DashboardPeriod) {
       activity: activityQ.data ?? [],
       clientWise: clientWiseQ.data ?? [],
       itemWise: itemWiseQ.data ?? [],
+      aging: agingQ.data ?? { current: 0, '30_day': 0, '60_day': 0, '90_day': 0, over_90: 0 },
+      yearlyTrend: yearlyQ.data ?? [],
     }
-  }, [summaryQ.data, quotesQ.data, activityQ.data, clientWiseQ.data, itemWiseQ.data])
+  }, [summaryQ.data, quotesQ.data, activityQ.data, clientWiseQ.data, itemWiseQ.data, agingQ.data, yearlyQ.data])
 
   return {
     data,
@@ -205,6 +217,8 @@ export function useDashboardOverview(period: DashboardPeriod) {
       activityQ.refetch()
       clientWiseQ.refetch()
       itemWiseQ.refetch()
+      agingQ.refetch()
+      yearlyQ.refetch()
     },
   }
 }

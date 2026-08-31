@@ -11,6 +11,22 @@ export interface ActivityEntry {
   timestamp: string | null
 }
 
+export interface OutstandingAging {
+  current: number
+  '30_day': number
+  '60_day': number
+  '90_day': number
+  over_90: number
+}
+
+export interface YearlyTrendPoint {
+  key: string
+  label: string
+  revenue: number
+  collected: number
+  bills: number
+}
+
 export const dashboardApi = {
   getSummary: (period: string) =>
     billsApi
@@ -20,6 +36,16 @@ export const dashboardApi = {
   getRecentActivity: (limit = 10) =>
     billsApi
       .get<ActivityEntry[]>('/dashboard/recent-activity', { params: { limit } })
+      .then((r) => r.data),
+
+  getOutstandingAging: () =>
+    billsApi
+      .get<OutstandingAging>('/dashboard/outstanding-aging')
+      .then((r) => r.data),
+
+  getYearlyTrend: () =>
+    billsApi
+      .get<YearlyTrendPoint[]>('/dashboard/yearly-trend')
       .then((r) => r.data),
 
   getClientWise: () =>

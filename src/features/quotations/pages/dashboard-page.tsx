@@ -3,12 +3,13 @@ import { Link } from 'react-router-dom'
 import {
   Plus, DollarSign, Wallet, AlertTriangle, TrendingUp,
   ClipboardList, Users, Package, Clock,
-  Download, Activity,
+  Download, Activity, ArrowUpRight, ArrowDownRight,
+  BarChart3, Target, Layers, Timer,
 } from 'lucide-react'
 import { motion } from 'framer-motion'
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip,
-  ResponsiveContainer, PieChart, Pie, Cell, Legend,
+  ResponsiveContainer, PieChart, Pie, Cell, Legend, ComposedChart, Bar,
 } from 'recharts'
 import { Button } from '../../../components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card'
@@ -373,6 +374,265 @@ function ActivityTimeline({ data }: { data: DashboardOverviewData }) {
   )
 }
 
+// ── Period Comparison ────────────────────────────────────────────────────────
+
+function PeriodComparison({ data }: { data: DashboardOverviewData }) {
+  const { current: c, previous: p } = data
+  const comparisons = [
+    { label: 'Revenue', cur: c.revenue, prev: p.revenue, format: 'lkr' as const },
+    { label: 'Collected', cur: c.collected, prev: p.collected, format: 'lkr' as const },
+    { label: 'Outstanding', cur: c.outstanding, prev: p.outstanding, format: 'lkr' as const, invert: true },
+    { label: 'Avg Bill', cur: c.avgBill, prev: p.avgBill, format: 'lkr' as const },
+    { label: 'Bills', cur: c.billCount, prev: p.billCount, format: 'num' as const },
+    { label: 'Clients', cur: c.activeClients, prev: p.activeClients, format: 'num' as const },
+  ]
+
+  return (
+    <Card>
+      <CardHeader className="border-b border-[var(--border)] pb-3">
+        <CardTitle className="flex items-center gap-2 text-[14px]">
+          <Timer className="h-4 w-4" style={{ color: 'var(--text-tertiary)' }} /> Period Comparison
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="pt-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+          {comparisons.map((cmp) => {
+            const diff = cmp.prev === 0 ? (cmp.cur > 0 ? 100 : 0) : ((cmp.cur - cmp.prev) / Math.max(1, cmp.prev)) * 100
+            const improved = cmp.invert ? diff < 0 : diff > 0
+            const val = cmp.format === 'lkr' ? `LKR ${fmt(cmp.cur)}` : cmp.cur.toString()
+            return (
+              <div key={cmp.label} className="text-center">
+                <p className="text-[11px] font-semibold uppercase tracking-wide mb-1" style={{ color: 'var(--text-tertiary)' }}>{cmp.label}</p>
+                <p className="text-[16px] font-bold" style={{ color: 'var(--text-primary)' }}>{val}</p>
+                <div className={`inline-flex items-center gap-0.5 mt-1 text-[11px] font-semibold ${improved ? 'text-[#16A34A]' : 'text-[#DC2626]'}`}>
+                  {improved ? <ArrowUpRight className="h-3 w-3" /> : <ArrowDownRight className="h-3 w-3" />}
+                  {Math.abs(diff).toFixed(0)}% vs prev
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
+
+// ── Item Analytics ───────────────────────────────────────────────────────────
+
+function ItemAnalytics({ data }: { data: DashboardOverviewData }) {
+  const items = (data.itemWise || []).slice(0, 8)
+  const maxReceived = Math.max(...items.map(i => i.total_received), 1)
+
+  return (
+    <Card>
+      <CardHeader className="border-b border-[var(--border)] pb-3">
+        <CardTitle className="flex items-center gap-2 text-[14px]">
+          <Layers className="h-4 w-4" style={{ color: 'var(--text-tertiary)' }} /> Item Analytics
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="pt-0 overflow-x-auto">
+        {items.length === 0 ? (
+          <div className="py-8 text-center text-[13px]" style={{ color: 'var(--text-tertiary)' }}>No item data yet</div>
+        ) : (
+          <table className="w-full text-[13px]">
+            <thead className="border-b border-[var(--border)]">
+              <tr>
+                {['Item', 'Received', 'Delivered', 'Pending', 'Clients'].map(h => (
+                  <th key={h} className="px-3 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wide" style={{ color: 'var(--text-tertiary)' }}>{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-[var(--border)]">
+              {items.map((item, i) => (
+                <motion.tr key={item.item_name} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.03 }} className="hover:bg-[var(--surface-hover)]">
+                  <td className="px-3 py-2.5 font-medium">{item.item_name}</td>
+                  <td className="px-3 py-2.5">
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold">{item.total_received}</span>
+                      <div className="h-1.5 flex-1 bg-[var(--border)] rounded-full overflow-hidden max-w-[60px]">
+                        <div className="h-full bg-[#2563EB] rounded-full" style={{ width: `${(item.total_received / maxReceived) * 100}%` }} />
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-3 py-2.5 text-[#16A34A] font-semibold">{item.total_delivered}</td>
+                  <td className="px-3 py-2.5">
+                    {item.pending > 0 ? (
+                      <span className="inline-flex items-center rounded-full bg-[#FFF7ED] border border-[#FED7AA] px-2 py-0.5 text-[11px] font-semibold text-[#C2410C]">{item.pending}</span>
+                    ) : (
+                      <span className="text-[#16A34A]">—</span>
+                    )}
+                  </td>
+                  <td className="px-3 py-2.5" style={{ color: 'var(--text-tertiary)' }}>{item.client_count}</td>
+                </motion.tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </CardContent>
+    </Card>
+  )
+}
+
+// ── Outstanding Aging ────────────────────────────────────────────────────────
+
+function OutstandingAgingChart({ data }: { data: DashboardOverviewData }) {
+  const aging = data.aging
+  const total = aging.current + aging['30_day'] + aging['60_day'] + aging['90_day'] + aging.over_90
+
+  const bars = [
+    { label: 'Current', value: aging.current, color: '#16A34A' },
+    { label: '1-30 days', value: aging['30_day'], color: '#F59E0B' },
+    { label: '31-60 days', value: aging['60_day'], color: '#F97316' },
+    { label: '61-90 days', value: aging['90_day'], color: '#EF4444' },
+    { label: '90+ days', value: aging.over_90, color: '#991B1B' },
+  ]
+
+  return (
+    <Card>
+      <CardHeader className="border-b border-[var(--border)] pb-3">
+        <div className="flex items-center justify-between">
+          <CardTitle className="flex items-center gap-2 text-[14px]">
+            <BarChart3 className="h-4 w-4" style={{ color: 'var(--text-tertiary)' }} /> Outstanding Aging
+          </CardTitle>
+          <span className="text-[13px] font-semibold" style={{ color: 'var(--text-primary)' }}>LKR {fmt(total)}</span>
+        </div>
+      </CardHeader>
+      <CardContent className="pt-4">
+        {total === 0 ? (
+          <div className="py-8 text-center text-[13px]" style={{ color: 'var(--text-tertiary)' }}>No outstanding bills</div>
+        ) : (
+          <div className="space-y-3">
+            {bars.map((b) => {
+              const pct = total > 0 ? (b.value / total) * 100 : 0
+              return (
+                <div key={b.label}>
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-[12px] font-medium">{b.label}</span>
+                    <span className="text-[12px] font-semibold">LKR {fmt(b.value)} <span className="font-normal" style={{ color: 'var(--text-tertiary)' }}>({pct.toFixed(0)}%)</span></span>
+                  </div>
+                  <div className="h-2.5 bg-[var(--border)] rounded-full overflow-hidden">
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: `${pct}%` }}
+                      transition={{ duration: 0.6, ease: 'easeOut' }}
+                      className="h-full rounded-full"
+                      style={{ backgroundColor: b.color }}
+                    />
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  )
+}
+
+// ── Quotation Funnel ─────────────────────────────────────────────────────────
+
+function QuotationFunnel({ data }: { data: DashboardOverviewData }) {
+  const { current: c } = data
+  const total = c.quotationsDraft + c.quotationsSent + c.quotationsAccepted
+  const stages = [
+    { label: 'Draft', count: c.quotationsDraft, color: '#6B7280', bg: '#F9FAFB' },
+    { label: 'Sent', count: c.quotationsSent, color: '#2563EB', bg: '#EFF6FF' },
+    { label: 'Accepted', count: c.quotationsAccepted, color: '#16A34A', bg: '#F0FDF4' },
+  ]
+
+  return (
+    <Card>
+      <CardHeader className="border-b border-[var(--border)] pb-3">
+        <CardTitle className="flex items-center gap-2 text-[14px]">
+          <Target className="h-4 w-4" style={{ color: 'var(--text-tertiary)' }} /> Quotation Funnel
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="pt-4">
+        {total === 0 ? (
+          <div className="py-8 text-center text-[13px]" style={{ color: 'var(--text-tertiary)' }}>No quotations yet</div>
+        ) : (
+          <div className="space-y-3">
+            {stages.map((s, i) => {
+              const pct = total > 0 ? (s.count / total) * 100 : 0
+              const width = Math.max(pct, 8)
+              return (
+                <div key={s.label} className="flex items-center gap-3">
+                  <span className="w-16 text-right text-[12px] font-medium" style={{ color: s.color }}>{s.label}</span>
+                  <div className="flex-1 flex items-center">
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: `${width}%` }}
+                      transition={{ duration: 0.5, delay: i * 0.1 }}
+                      className="h-8 rounded-lg flex items-center px-3"
+                      style={{ backgroundColor: s.bg, border: `1px solid ${s.color}20` }}
+                    >
+                      <span className="text-[13px] font-bold" style={{ color: s.color }}>{s.count}</span>
+                    </motion.div>
+                  </div>
+                  <span className="text-[12px] w-12 text-right" style={{ color: 'var(--text-tertiary)' }}>{pct.toFixed(0)}%</span>
+                </div>
+              )
+            })}
+            {c.quotationAcceptedValue > 0 && (
+              <div className="pt-2 border-t border-[var(--border)] text-center">
+                <span className="text-[12px]" style={{ color: 'var(--text-tertiary)' }}>Accepted Value: </span>
+                <span className="text-[14px] font-bold text-[#16A34A]">LKR {fmt(c.quotationAcceptedValue)}</span>
+              </div>
+            )}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  )
+}
+
+// ── 12-Month Trend ───────────────────────────────────────────────────────────
+
+function YearlyTrendChart({ data }: { data: DashboardOverviewData }) {
+  const trend = data.yearlyTrend || []
+
+  return (
+    <Card>
+      <CardHeader className="border-b border-[var(--border)] pb-3">
+        <CardTitle className="flex items-center gap-2 text-[14px]">
+          <TrendingUp className="h-4 w-4" style={{ color: 'var(--text-tertiary)' }} /> 12-Month Trend
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="pt-4" style={{ height: 280 }}>
+        {trend.length === 0 ? (
+          <div className="flex items-center justify-center h-full text-[13px]" style={{ color: 'var(--text-tertiary)' }}>No data yet</div>
+        ) : (
+          <ResponsiveContainer width="100%" height="100%">
+            <ComposedChart data={trend}>
+              <defs>
+                <linearGradient id="gradYearRevenue" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#DC2626" stopOpacity={0.15} />
+                  <stop offset="100%" stopColor="#DC2626" stopOpacity={0} />
+                </linearGradient>
+                <linearGradient id="gradYearCollected" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#16A34A" stopOpacity={0.15} />
+                  <stop offset="100%" stopColor="#16A34A" stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+              <XAxis dataKey="label" tick={{ fontSize: 10, fill: 'var(--text-tertiary)' }} />
+              <YAxis tick={{ fontSize: 10, fill: 'var(--text-tertiary)' }} />
+              <RechartsTooltip
+                contentStyle={{ borderRadius: 8, border: '1px solid var(--border)', fontSize: 12 }}
+                formatter={(v: number, name: string) => [`LKR ${v.toLocaleString()}`, name]}
+              />
+              <Area type="monotone" dataKey="revenue" stroke="#DC2626" fill="url(#gradYearRevenue)" strokeWidth={2} name="Revenue" />
+              <Area type="monotone" dataKey="collected" stroke="#16A34A" fill="url(#gradYearCollected)" strokeWidth={2} name="Collected" />
+              <Bar dataKey="bills" fill="#E5E7EB" radius={[3, 3, 0, 0]} name="Bills" barSize={16} />
+              <Legend wrapperStyle={{ fontSize: 11 }} />
+            </ComposedChart>
+          </ResponsiveContainer>
+        )}
+      </CardContent>
+    </Card>
+  )
+}
+
 // ── Main Dashboard ───────────────────────────────────────────────────────────
 
 export default function DashboardPage() {
@@ -471,8 +731,17 @@ export default function DashboardPage() {
         >
           <AlertBanners data={data} />
           <KpiCards data={data} />
+          <PeriodComparison data={data} />
           <ChartsRow data={data} />
           <TablesRow data={data} />
+          <div className="grid gap-4 lg:grid-cols-2">
+            <ItemAnalytics data={data} />
+            <OutstandingAgingChart data={data} />
+          </div>
+          <div className="grid gap-4 lg:grid-cols-2">
+            <QuotationFunnel data={data} />
+            <YearlyTrendChart data={data} />
+          </div>
           <ActivityTimeline data={data} />
         </motion.div>
       ) : (
