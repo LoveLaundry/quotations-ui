@@ -49,6 +49,7 @@ export interface GatePassCreate {
 // ── Delivery ─────────────────────────────────────────────────────────────────
 export interface DeliveryItem {
     item_name: string
+    specification?: string
     quantity: number
 }
 

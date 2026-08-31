@@ -95,7 +95,8 @@ export default function GatePassDetailPage() {
         for (const d of deliveries) {
             if (d.status === 'CANCELLED') continue
             for (const it of d.items) {
-                map[it.item_name] = (map[it.item_name] || 0) + it.quantity
+                const key = `${it.item_name}||${it.specification || ''}`
+                map[key] = (map[key] || 0) + it.quantity
             }
         }
         return map
@@ -122,7 +123,7 @@ export default function GatePassDetailPage() {
     const totalReceived = gp.items.reduce((s: number, i: any) => s + i.received_qty, 0)
     const mismatches = gp.items.filter((i: any) => i.difference !== 0)
 
-    const totalDelivered = gp.items.reduce((s: number, i: any) => s + (deliveredMap[i.item_name] || 0), 0)
+    const totalDelivered = gp.items.reduce((s: number, i: any) => s + (deliveredMap[`${i.item_name}||${i.specification || ''}`] || 0), 0)
     const totalPending = totalReceived - totalDelivered
 
     const handleAdjust = (itemName: string) => {
@@ -612,8 +613,8 @@ export default function GatePassDetailPage() {
                             </thead>
                             <tbody className="divide-y divide-[#F9FAFB]">
                                 {gp.items.map((item: any) => (
-                                    <Fragment key={item.item_name}>
-                                        <tr key={item.item_name} className="group">
+                                    <Fragment key={`${item.item_name}||${item.specification || ''}`}>
+                                        <tr key={`${item.item_name}||${item.specification || ''}`} className="group">
                                             <td className="py-3 pr-3 font-medium text-[#101828]">{item.item_name}</td>
                                             <td className="py-3 pr-3">
                                                 {item.specification ? (
@@ -627,10 +628,10 @@ export default function GatePassDetailPage() {
                                             <td className="py-3 pr-3 text-[#6B7280]">{item.category || '—'}</td>
                                             <td className="py-3 pr-3 text-[#6B7280]">{item.client_qty}</td>
                                             <td className="py-3 pr-3 font-semibold text-[#101828]">{item.received_qty}</td>
-                                            <td className="py-3 pr-3 text-[#6B7280]">{deliveredMap[item.item_name] || 0}</td>
+                                            <td className="py-3 pr-3 text-[#6B7280]">{deliveredMap[`${item.item_name}||${item.specification || ''}`] || 0}</td>
                                             <td className="py-3 pr-3">
                                                 {(() => {
-                                                    const pending = item.received_qty - (deliveredMap[item.item_name] || 0)
+                                                    const pending = item.received_qty - (deliveredMap[`${item.item_name}||${item.specification || ''}`] || 0)
                                                     return pending > 0 ? (
                                                         <span className="font-semibold text-[#EA580C]">{pending}</span>
                                                     ) : (

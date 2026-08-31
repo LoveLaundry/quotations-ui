@@ -13,6 +13,7 @@ import type { GatePass } from '../../../types/operations'
 
 interface DeliveryItem {
     item_name: string
+    specification: string
     quantity: number
     available: number
 }
@@ -46,12 +47,13 @@ export default function CreateDeliveryPage() {
 
     const handleSelectGP = (gp: GatePass) => {
         setSelectedGP(gp)
-        // Pre-populate items from gate pass with 0 qty
+        // Pre-populate items from gate pass with 0 qty, each spec is a separate row
         setItems(
             gp.items.map(i => ({
                 item_name: i.item_name,
+                specification: (i as any).specification || '',
                 quantity: 0,
-                available: i.received_qty, // simplified; real app would subtract prior deliveries
+                available: i.received_qty,
             }))
         )
     }
@@ -94,7 +96,11 @@ export default function CreateDeliveryPage() {
                 delivered_by: deliveredBy.trim(),
                 received_by: receivedBy.trim(),
                 notes: notes.trim() || undefined,
-                items: activeItems.map(({ item_name, quantity }) => ({ item_name, quantity: Math.floor(Number(quantity)) })),
+                items: activeItems.map(({ item_name, specification, quantity }) => ({
+                    item_name,
+                    specification: specification || undefined,
+                    quantity: Math.floor(Number(quantity)),
+                })),
             },
             { onSuccess: () => navigate('/deliveries') },
         )
@@ -284,13 +290,20 @@ export default function CreateDeliveryPage() {
                             <AnimatePresence initial={false}>
                                 {items.map((item, idx) => (
                                     <motion.div
-                                        key={item.item_name}
+                                        key={`${item.item_name}||${item.specification}`}
                                         initial={{ opacity: 0 }}
                                         animate={{ opacity: 1 }}
                                         className="flex items-center gap-3 rounded-xl border border-[#E4E7EC] bg-[#FAFAFA] px-4 py-3"
                                     >
                                         <div className="flex-1 min-w-0">
-                                            <p className="text-[13px] font-medium text-[#101828] truncate">{item.item_name}</p>
+                                            <p className="text-[13px] font-medium text-[#101828] truncate">
+                                                {item.item_name}
+                                                {item.specification && (
+                                                    <span className="ml-2 inline-flex items-center rounded bg-[#FFF7ED] border border-[#FED7AA] px-1.5 py-0.5 text-[10px] font-semibold text-[#EA580C]">
+                                                        {item.specification}
+                                                    </span>
+                                                )}
+                                            </p>
                                             <p className="text-[11px] text-[#98A2B3]">Available: {item.available}</p>
                                         </div>
                                         <div className="flex items-center gap-2 shrink-0">

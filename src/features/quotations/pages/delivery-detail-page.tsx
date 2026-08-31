@@ -96,7 +96,14 @@ export default function DeliveryDetailPage() {
                                     <div className="h-8 w-8 flex items-center justify-center rounded-lg bg-[#F0FDF4] border border-[#BBF7D0] text-[#16A34A] font-bold text-[12px]">
                                         {item.item_name.charAt(0).toUpperCase()}
                                     </div>
-                                    <p className="text-[13px] font-medium text-[#101828]">{item.item_name}</p>
+                                    <p className="text-[13px] font-medium text-[#101828]">
+                                        {item.item_name}
+                                        {item.specification && (
+                                            <span className="ml-2 inline-flex items-center rounded bg-[#FFF7ED] border border-[#FED7AA] px-1.5 py-0.5 text-[10px] font-semibold text-[#EA580C]">
+                                                {item.specification}
+                                            </span>
+                                        )}
+                                    </p>
                                 </div>
                                 <span className="text-[14px] font-semibold text-[#101828]">{item.quantity} pcs</span>
                             </div>
