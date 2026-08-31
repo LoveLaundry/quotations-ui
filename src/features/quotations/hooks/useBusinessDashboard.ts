@@ -79,6 +79,15 @@ export interface DashboardSummaryResponse {
   previous: PeriodMetrics
 }
 
+export interface ClientWiseItem {
+  item_name: string
+  specification: string
+  category: string
+  received: number
+  delivered: number
+  pending: number
+}
+
 export interface ClientWiseEntry {
   client_name: string
   total_received: number
@@ -89,6 +98,7 @@ export interface ClientWiseEntry {
   paid_amount: number
   outstanding: number
   gate_pass_count: number
+  items: ClientWiseItem[]
 }
 
 export interface ItemWiseEntry {

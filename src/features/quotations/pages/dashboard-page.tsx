@@ -446,18 +446,20 @@ function BalancesOverview({ data }: { data: DashboardOverviewData }) {
       {clients.length > 0 && (
         <CardContent className="pt-4">
           <p className="text-[13px] font-semibold mb-3" style={{ color: 'var(--text-secondary)' }}>Outstanding by Client</p>
-          <div className="space-y-3">
+          <div className="space-y-4">
             {clients.map((cl, i) => {
               const barPct = (cl.outstanding / maxClientOutstanding) * 100
               const severity = cl.outstanding > maxClientOutstanding * 0.7 ? 'high' : cl.outstanding > maxClientOutstanding * 0.3 ? 'medium' : 'low'
               const barColor = severity === 'high' ? '#DC2626' : severity === 'medium' ? '#D97706' : '#2563EB'
               const bgColor = severity === 'high' ? '#FEE2E2' : severity === 'medium' ? '#FEF3C7' : '#DBEAFE'
+              const specColors = ['#7C3AED', '#0891B2', '#059669', '#D946EF', '#EA580C', '#4F46E5']
               return (
                 <motion.div
                   key={cl.client_name}
                   initial={{ opacity: 0, x: -8 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: i * 0.04 }}
+                  className="pb-3 border-b border-[var(--border)] last:border-0 last:pb-0"
                 >
                   <div className="flex items-center justify-between mb-1">
                     <div className="flex items-center gap-2 min-w-0">
@@ -483,7 +485,7 @@ function BalancesOverview({ data }: { data: DashboardOverviewData }) {
                       )}
                     </div>
                   </div>
-                  <div className="h-2 bg-[var(--border)] rounded-full overflow-hidden">
+                  <div className="h-2 bg-[var(--border)] rounded-full overflow-hidden mb-2">
                     <motion.div
                       initial={{ width: 0 }}
                       animate={{ width: `${barPct}%` }}
@@ -492,6 +494,30 @@ function BalancesOverview({ data }: { data: DashboardOverviewData }) {
                       style={{ backgroundColor: barColor }}
                     />
                   </div>
+                  {/* Pending items with specs */}
+                  {cl.items && cl.items.length > 0 && (
+                    <div className="ml-9 space-y-1">
+                      {cl.items.map((item, j) => (
+                        <div key={`${item.item_name}-${item.specification}`} className="flex items-center gap-2 text-[12px]">
+                          <span className="font-medium">{item.item_name}</span>
+                          {item.specification && (
+                            <span
+                              className="inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-semibold text-white"
+                              style={{ backgroundColor: specColors[j % specColors.length] }}
+                            >
+                              {item.specification}
+                            </span>
+                          )}
+                          <span className="text-[11px]" style={{ color: 'var(--text-tertiary)' }}>
+                            {item.delivered}/{item.received}
+                          </span>
+                          <span className="text-[11px] font-semibold" style={{ color: barColor }}>
+                            {item.pending} pending
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </motion.div>
               )
             })}

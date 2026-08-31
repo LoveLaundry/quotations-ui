@@ -50,7 +50,7 @@ export const dashboardApi = {
 
   getClientWise: () =>
     billsApi
-      .get<{ client_name: string; total_received: number; total_delivered: number; total_pending: number; total_mismatches: number; total_billed: number; paid_amount: number; outstanding: number; gate_pass_count: number }[]>('/reports/client-wise')
+      .get<{ client_name: string; total_received: number; total_delivered: number; total_pending: number; total_mismatches: number; total_billed: number; paid_amount: number; outstanding: number; gate_pass_count: number; items: { item_name: string; specification: string; category: string; received: number; delivered: number; pending: number }[] }[]>('/reports/client-wise')
       .then((r) => r.data),
 
   getItemWise: () =>
