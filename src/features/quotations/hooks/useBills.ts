@@ -36,6 +36,19 @@ export function useCreateBill() {
   })
 }
 
+export function useEditBill() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, payload }: { id: string; payload: Partial<BillPayload> }) =>
+      billService.editBill(id, payload),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: billKeys.all })
+      toast.success('Bill updated')
+    },
+    onError: () => toast.error('Failed to update bill'),
+  })
+}
+
 export function useDeleteBill() {
   const qc = useQueryClient()
   return useMutation({

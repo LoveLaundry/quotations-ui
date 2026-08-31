@@ -10,7 +10,7 @@ import { Breadcrumb } from '../../../components/ui/breadcrumb'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogBody, DialogFooter } from '../../../components/ui/dialog'
 import { ConfirmDialog } from '../../../components/ui/confirm-dialog'
 import { formatDate } from '../../../lib/utils'
-import { useBill, useDeleteBill } from '../hooks/useBills'
+import { useBill, useDeleteBill, useEditBill } from '../hooks/useBills'
 import { usePayments, useCreatePayment } from '../hooks/usePayments'
 import { useReactToPrint } from 'react-to-print'
 import { BillPrintTemplate } from '../components/bill-print-template'
@@ -151,8 +151,11 @@ export default function BillDetailPage() {
   const { data: payments = [], isLoading: paymentsLoading } = usePayments(id)
 
   const deleteBill = useDeleteBill()
+  const editBill = useEditBill()
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [isEditing, setIsEditing] = useState(false)
+  const [editForm, setEditForm] = useState<{client_name: string; notes: string; discounts: number; transport_fee: number; taxes: number; additional_charges: number}>({client_name: '', notes: '', discounts: 0, transport_fee: 0, taxes: 0, additional_charges: 0})
   
   const printRef = useRef<HTMLDivElement>(null)
   const handlePrint = useReactToPrint({
@@ -169,6 +172,27 @@ export default function BillDetailPage() {
     if (!bill) return
     setShowDeleteConfirm(false)
     deleteBill.mutate(bill.id, { onSuccess: () => navigate('/bills') })
+  }
+
+  const startEdit = () => {
+    if (!bill) return
+    setEditForm({
+      client_name: bill.client_name || '',
+      notes: bill.notes || '',
+      discounts: bill.discounts || 0,
+      transport_fee: bill.transport_fee || 0,
+      taxes: bill.taxes || 0,
+      additional_charges: bill.additional_charges || 0,
+    })
+    setIsEditing(true)
+  }
+
+  const saveEdit = () => {
+    if (!bill) return
+    editBill.mutate(
+      { id: bill.id, payload: editForm },
+      { onSuccess: () => setIsEditing(false) }
+    )
   }
 
   const outstanding = bill?.outstanding_amount ?? (bill ? (bill.grand_total ?? bill.total_amount) : 0)
@@ -199,6 +223,24 @@ export default function BillDetailPage() {
             <Button variant="secondary" size="sm" onClick={() => handlePrint()}>
               <Printer className="h-3.5 w-3.5" /> Print
             </Button>
+            {bill.payment_status !== 'PAID' && bill.payment_status !== 'CANCELLED' && (
+              <>
+                {isEditing ? (
+                  <>
+                    <Button size="sm" onClick={saveEdit} disabled={editBill.isPending}>
+                      Save
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={() => setIsEditing(false)}>
+                      Cancel
+                    </Button>
+                  </>
+                ) : (
+                  <Button variant="outline" size="sm" onClick={startEdit}>
+                    Edit
+                  </Button>
+                )}
+              </>
+            )}
             <Button
               variant="ghost"
               size="sm"
@@ -296,29 +338,61 @@ export default function BillDetailPage() {
                   <span className="text-[13px] text-[#6B7280]">Gross Amount</span>
                   <span className="text-[14px] font-semibold text-[#101828]">LKR {bill.total_amount.toFixed(2)}</span>
                 </div>
-                {(bill.discounts ?? 0) > 0 && (
-                  <div className="flex items-center justify-between">
-                    <span className="text-[13px] text-[#6B7280]">Discount</span>
-                    <span className="text-[14px] font-semibold text-[#D97706]">- LKR {(bill.discounts ?? 0).toFixed(2)}</span>
+                {isEditing ? (
+                  <div className="space-y-3">
+                    <div>
+                      <label className="text-[11px] font-medium text-[#6B7280]">Discount (LKR)</label>
+                      <input type="number" value={editForm.discounts} onChange={e => setEditForm(f => ({...f, discounts: Number(e.target.value)}))}
+                        className="w-full mt-1 rounded-lg border px-2.5 py-1.5 text-[13px]" style={{borderColor: 'var(--border)'}} />
+                    </div>
+                    <div>
+                      <label className="text-[11px] font-medium text-[#6B7280]">Transport Fee (LKR)</label>
+                      <input type="number" value={editForm.transport_fee} onChange={e => setEditForm(f => ({...f, transport_fee: Number(e.target.value)}))}
+                        className="w-full mt-1 rounded-lg border px-2.5 py-1.5 text-[13px]" style={{borderColor: 'var(--border)'}} />
+                    </div>
+                    <div>
+                      <label className="text-[11px] font-medium text-[#6B7280]">Taxes (LKR)</label>
+                      <input type="number" value={editForm.taxes} onChange={e => setEditForm(f => ({...f, taxes: Number(e.target.value)}))}
+                        className="w-full mt-1 rounded-lg border px-2.5 py-1.5 text-[13px]" style={{borderColor: 'var(--border)'}} />
+                    </div>
+                    <div>
+                      <label className="text-[11px] font-medium text-[#6B7280]">Other Charges (LKR)</label>
+                      <input type="number" value={editForm.additional_charges} onChange={e => setEditForm(f => ({...f, additional_charges: Number(e.target.value)}))}
+                        className="w-full mt-1 rounded-lg border px-2.5 py-1.5 text-[13px]" style={{borderColor: 'var(--border)'}} />
+                    </div>
+                    <div>
+                      <label className="text-[11px] font-medium text-[#6B7280]">Notes</label>
+                      <textarea value={editForm.notes} onChange={e => setEditForm(f => ({...f, notes: e.target.value}))} rows={2}
+                        className="w-full mt-1 rounded-lg border px-2.5 py-1.5 text-[13px] resize-none" style={{borderColor: 'var(--border)'}} />
+                    </div>
                   </div>
-                )}
-                {(bill.transport_fee ?? 0) > 0 && (
-                  <div className="flex items-center justify-between">
-                    <span className="text-[13px] text-[#6B7280]">Transport</span>
-                    <span className="text-[14px] font-semibold text-[#101828]">+ LKR {(bill.transport_fee ?? 0).toFixed(2)}</span>
-                  </div>
-                )}
-                {(bill.taxes ?? 0) > 0 && (
-                  <div className="flex items-center justify-between">
-                    <span className="text-[13px] text-[#6B7280]">Taxes</span>
-                    <span className="text-[14px] font-semibold text-[#101828]">+ LKR {(bill.taxes ?? 0).toFixed(2)}</span>
-                  </div>
-                )}
-                {(bill.additional_charges ?? 0) > 0 && (
-                  <div className="flex items-center justify-between">
-                    <span className="text-[13px] text-[#6B7280]">Other Charges</span>
-                    <span className="text-[14px] font-semibold text-[#101828]">+ LKR {(bill.additional_charges ?? 0).toFixed(2)}</span>
-                  </div>
+                ) : (
+                  <>
+                    {(bill.discounts ?? 0) > 0 && (
+                      <div className="flex items-center justify-between">
+                        <span className="text-[13px] text-[#6B7280]">Discount</span>
+                        <span className="text-[14px] font-semibold text-[#D97706]">- LKR {(bill.discounts ?? 0).toFixed(2)}</span>
+                      </div>
+                    )}
+                    {(bill.transport_fee ?? 0) > 0 && (
+                      <div className="flex items-center justify-between">
+                        <span className="text-[13px] text-[#6B7280]">Transport</span>
+                        <span className="text-[14px] font-semibold text-[#101828]">+ LKR {(bill.transport_fee ?? 0).toFixed(2)}</span>
+                      </div>
+                    )}
+                    {(bill.taxes ?? 0) > 0 && (
+                      <div className="flex items-center justify-between">
+                        <span className="text-[13px] text-[#6B7280]">Taxes</span>
+                        <span className="text-[14px] font-semibold text-[#101828]">+ LKR {(bill.taxes ?? 0).toFixed(2)}</span>
+                      </div>
+                    )}
+                    {(bill.additional_charges ?? 0) > 0 && (
+                      <div className="flex items-center justify-between">
+                        <span className="text-[13px] text-[#6B7280]">Other Charges</span>
+                        <span className="text-[14px] font-semibold text-[#101828]">+ LKR {(bill.additional_charges ?? 0).toFixed(2)}</span>
+                      </div>
+                    )}
+                  </>
                 )}
                 <div className="flex items-center justify-between pt-2 border-t border-[#F2F4F7]">
                   <span className="text-[13px] font-semibold text-[#101828]">Grand Total</span>

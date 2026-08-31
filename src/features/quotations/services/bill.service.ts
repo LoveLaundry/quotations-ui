@@ -21,4 +21,9 @@ async function deleteBill(id: string): Promise<{ message: string }> {
   return response.data
 }
 
-export const billService = { createBill, getBills, getBill, deleteBill }
+async function editBill(id: string, payload: Partial<BillPayload>): Promise<Bill> {
+  const response = await billsApi.patch<Bill>(`/bills/${id}`, payload)
+  return response.data
+}
+
+export const billService = { createBill, getBills, getBill, deleteBill, editBill }
