@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import {
   Plus, DollarSign, Wallet, AlertTriangle, TrendingUp,
@@ -94,7 +94,7 @@ function KpiCards({ data }: { data: DashboardOverviewData }) {
               </div>
             </div>
             <p className="text-[22px] font-bold leading-tight" style={{ color: 'var(--text-primary)' }}>{k.value}</p>
-            <span className="inline-flex items-center rounded-md bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700 mt-2">
+            <span className={`inline-flex items-center rounded-md px-1.5 py-0.5 text-[10px] font-semibold mt-2 ${k.trend.startsWith('+') || (!k.trend.startsWith('-') && k.trend !== '0%') ? 'bg-emerald-50 border border-emerald-200 text-emerald-700' : k.trend.startsWith('-') ? 'bg-red-50 border border-red-200 text-red-700' : 'bg-gray-50 border border-gray-200 text-gray-700'}`}>
               {k.trend}
             </span>
           </Card>
@@ -793,6 +793,18 @@ export default function DashboardPage() {
   const [period, setPeriod] = useState<DashboardPeriod>('month')
   const { data, isLoading } = useDashboardOverview(period)
   const [showExport, setShowExport] = useState(false)
+  const exportRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!showExport) return
+    const handler = (e: MouseEvent) => {
+      if (exportRef.current && !exportRef.current.contains(e.target as Node)) {
+        setShowExport(false)
+      }
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [showExport])
 
   const handleExport = async (type: 'gatepasses' | 'bills' | 'deliveries', format: 'csv' | 'xlsx' = 'csv') => {
     try {
@@ -825,7 +837,7 @@ export default function DashboardPage() {
           </p>
         </div>
         <div className="flex items-center gap-2 shrink-0">
-          <div className="relative">
+          <div className="relative" ref={exportRef}>
             <Button variant="outline" size="sm" onClick={() => setShowExport(!showExport)}>
               <Download className="h-3.5 w-3.5 mr-1.5" /> Export
             </Button>

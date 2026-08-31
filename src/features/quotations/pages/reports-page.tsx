@@ -181,7 +181,7 @@ function ClientSearch() {
           )}
 
           {/* Recent Gate Passes */}
-          {data.recent_gate_passes?.length > 0 && (
+          {data.gatepasses?.length > 0 && (
             <Card>
               <CardHeader className="border-b border-[#F2F4F7] pb-3">
                 <div className="flex items-center gap-2">
@@ -199,7 +199,7 @@ function ClientSearch() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-[#F9FAFB]">
-                    {data.recent_gate_passes.map((gp: any, i: number) => (
+                    {data.gatepasses.map((gp: any, i: number) => (
                       <tr key={i} className="hover:bg-[#F9FAFB] transition-colors">
                         <td className="px-4 py-3 font-mono text-[12px] font-semibold text-[#101828]">{gp.gate_pass_number}</td>
                         <td className="px-4 py-3" style={{ color: 'var(--text-secondary)' }}>{gp.receiving_date ? new Date(gp.receiving_date).toLocaleDateString() : '—'}</td>
@@ -215,7 +215,7 @@ function ClientSearch() {
           )}
 
           {/* Recent Bills */}
-          {data.recent_bills?.length > 0 && (
+          {data.bills?.length > 0 && (
             <Card>
               <CardHeader className="border-b border-[#F2F4F7] pb-3">
                 <div className="flex items-center gap-2">
@@ -233,7 +233,7 @@ function ClientSearch() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-[#F9FAFB]">
-                    {data.recent_bills.map((b: any, i: number) => (
+                    {data.bills.map((b: any, i: number) => (
                       <tr key={i} className="hover:bg-[#F9FAFB] transition-colors">
                         <td className="px-4 py-3 font-mono text-[12px] font-semibold text-[#101828]">{b.bill_number || b.id}</td>
                         <td className="px-4 py-3" style={{ color: 'var(--text-secondary)' }}>{b.created_at ? new Date(b.created_at).toLocaleDateString() : '—'}</td>
