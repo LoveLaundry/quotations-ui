@@ -258,7 +258,13 @@ export default function BusinessDashboardPage() {
       {/* Header */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-dashboard-title">Business Dashboard</h1>
+          <div className="inline-flex items-center gap-2 mb-1.5">
+            <div className="h-2 w-2 rounded-full bg-blue-500" />
+            <p className="text-[11px] sm:text-[12px] font-semibold uppercase tracking-wide text-[#6B7280]">
+              Deep Analytics & Insights
+            </p>
+          </div>
+          <h1 className="text-dashboard-title">Business Intelligence</h1>
           <p className="text-[13px] text-[#98A2B3] mt-0.5">
             Financial, operational and client performance for the selected period
           </p>

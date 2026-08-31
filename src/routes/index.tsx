@@ -27,6 +27,7 @@ import CreateDeliveryPage from '../features/quotations/pages/create-delivery-pag
 import DispatchPage from '../features/quotations/pages/dispatch-page'
 import DeliveryDetailPage from '../features/quotations/pages/delivery-detail-page'
 import ReportsPage from '../features/quotations/pages/reports-page'
+import BusinessDashboardPage from '../features/quotations/pages/business-dashboard-page'
 import LiveChatPage from '../features/quotations/pages/live-chat-page'
 import ErrorPage from '../features/quotations/pages/error-page'
 import UsersPage from '../features/quotations/pages/users-page'
@@ -70,7 +71,7 @@ export const router = createBrowserRouter([
         element: <AppShell />,
         children: [
           { index: true, element: <DashboardPage /> },
-          { path: 'business-dashboard', element: <Navigate to="/" replace /> },
+          { path: 'business-dashboard', element: <BusinessDashboardPage /> },
           { path: 'notifications', element: <NotificationsPage /> },
 
           // Contracts

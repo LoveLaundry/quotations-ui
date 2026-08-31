@@ -4,18 +4,22 @@ import {
   Plus, DollarSign, Wallet, AlertTriangle, TrendingUp,
   ClipboardList, Users, Package, Clock,
   Download, Activity, ArrowUpRight, ArrowDownRight,
-  BarChart3, Target, Layers, Timer,
+  BarChart3, Target, Layers, Timer, Eye,
 } from 'lucide-react'
 import { motion } from 'framer-motion'
 import {
-  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip,
-  ResponsiveContainer, PieChart, Pie, Cell, Legend, ComposedChart, Bar,
+  ResponsiveContainer, AreaChart, Area, Bar,
+  PieChart, Pie, Cell, Legend, ComposedChart,
+  XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip,
 } from 'recharts'
+import {
+  Card, CardContent, CardHeader, CardTitle,
+} from '../../../components/ui/card'
 import { Button } from '../../../components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card'
 import { Skeleton } from '../../../components/ui/skeleton'
-import { useDashboardOverview, type DashboardPeriod, type DashboardOverviewData } from '../hooks/useBusinessDashboard'
+import { useDashboardOverview, type DashboardOverviewData, type DashboardPeriod } from '../hooks/useBusinessDashboard'
 import { reports } from '../services/reports.service'
+import { BalancesPopup } from '../components/balances-popup'
 import { toast } from 'sonner'
 
 const PERIODS: { value: DashboardPeriod; label: string }[] = [
@@ -376,7 +380,7 @@ function ActivityTimeline({ data }: { data: DashboardOverviewData }) {
 
 // ── Balances Overview ────────────────────────────────────────────────────────
 
-function BalancesOverview({ data }: { data: DashboardOverviewData }) {
+function BalancesOverview({ data, onShowDetails }: { data: DashboardOverviewData; onShowDetails: () => void }) {
   const { current: c } = data
   const totalRevenue = c.revenue
   const totalCollected = c.collected
@@ -440,6 +444,17 @@ function BalancesOverview({ data }: { data: DashboardOverviewData }) {
           <span className="text-[#16A34A]">Collected {collectedPct.toFixed(0)}%</span>
           <span className="text-[#D97706]">Outstanding {outstandingPct.toFixed(0)}%</span>
         </div>
+        {totalOutstanding > 0 && (
+          <div className="mt-3 flex justify-end">
+            <button
+              onClick={onShowDetails}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[12px] font-semibold text-amber-700 bg-white/70 hover:bg-white rounded-lg border border-amber-200 transition cursor-pointer"
+            >
+              <Eye className="h-3.5 w-3.5" />
+              View Full Details
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Per-client breakdown */}
@@ -793,6 +808,7 @@ export default function DashboardPage() {
   const [period, setPeriod] = useState<DashboardPeriod>('month')
   const { data, isLoading } = useDashboardOverview(period)
   const [showExport, setShowExport] = useState(false)
+  const [showBalances, setShowBalances] = useState(false)
   const exportRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -906,7 +922,7 @@ export default function DashboardPage() {
         >
           <AlertBanners data={data} />
           <KpiCards data={data} />
-          <BalancesOverview data={data} />
+          <BalancesOverview data={data} onShowDetails={() => setShowBalances(true)} />
           <PeriodComparison data={data} />
           <ChartsRow data={data} />
           <TablesRow data={data} />
@@ -924,6 +940,19 @@ export default function DashboardPage() {
         <div className="text-center py-20 text-[13px]" style={{ color: 'var(--text-tertiary)' }}>
           No data available. Start by creating a gate pass or bill.
         </div>
+      )}
+
+      {/* Balances Detail Popup */}
+      {data && (
+        <BalancesPopup
+          open={showBalances}
+          onClose={() => setShowBalances(false)}
+          clients={data.clientWise || []}
+          aging={data.aging}
+          totalOutstanding={data.current.outstanding}
+          totalRevenue={data.current.revenue}
+          totalCollected={data.current.collected}
+        />
       )}
     </div>
   )
