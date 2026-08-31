@@ -1,12 +1,13 @@
 ﻿import { useState, type ElementType, type SyntheticEvent } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { Search, BarChart3, Users, Package, ClipboardList, DollarSign, History, TrendingUp, AlertTriangle, CheckCircle, Clock } from 'lucide-react'
+import { Search, BarChart3, Users, Package, ClipboardList, DollarSign, History, TrendingUp, AlertTriangle, CheckCircle, Clock, Download } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card'
 import { Skeleton } from '../../../components/ui/skeleton'
 import { ErrorState } from '../../../components/ui/error-state'
 import { Breadcrumb } from '../../../components/ui/breadcrumb'
 import { reports } from '../services/reports.service'
+import { toast } from 'sonner'
 
 type ReportTab = 'client' | 'item' | 'gatepass' | 'billing' | 'audit'
 
@@ -506,6 +507,15 @@ function AuditLog() {
 export default function ReportsPage() {
   const [activeTab, setActiveTab] = useState<ReportTab>('client')
 
+  const handleExport = async (type: 'gatepasses' | 'bills' | 'deliveries') => {
+    try {
+      await reports.exportCSV(type)
+      toast.success(`Exported ${type} as CSV`)
+    } catch {
+      toast.error('Export failed')
+    }
+  }
+
   return (
     <div className="space-y-5 pb-10">
       <div>
@@ -522,23 +532,43 @@ export default function ReportsPage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 overflow-x-auto pb-0.5 scrollbar-hidden">
-        {TABS.map(({ id, label, icon: Icon }) => (
-          <button
-            key={id}
-            onClick={() => setActiveTab(id)}
-            className={[
-              'flex items-center gap-2 rounded-xl px-4 py-2.5 text-[13px] font-medium whitespace-nowrap transition cursor-pointer',
-              activeTab === id
-                ? 'bg-[#DC2626] text-white shadow-sm'
-                : 'hover:bg-[#F3F4F6]',
-            ].join(' ')}
-            style={activeTab !== id ? { color: 'var(--text-secondary)' } : {}}
-          >
-            <Icon className="h-3.5 w-3.5" />
-            {label}
-          </button>
-        ))}
+      <div className="flex items-center gap-3 overflow-x-auto pb-0.5 scrollbar-hidden">
+        <div className="flex gap-1 flex-1">
+          {TABS.map(({ id, label, icon: Icon }) => (
+            <button
+              key={id}
+              onClick={() => setActiveTab(id)}
+              className={[
+                'flex items-center gap-2 rounded-xl px-4 py-2.5 text-[13px] font-medium whitespace-nowrap transition cursor-pointer',
+                activeTab === id
+                  ? 'bg-[#DC2626] text-white shadow-sm'
+                  : 'hover:bg-[#F3F4F6]',
+              ].join(' ')}
+              style={activeTab !== id ? { color: 'var(--text-secondary)' } : {}}
+            >
+              <Icon className="h-3.5 w-3.5" />
+              {label}
+            </button>
+          ))}
+        </div>
+        {/* Export buttons */}
+        <div className="flex gap-1.5 shrink-0">
+          {([
+            { type: 'gatepasses' as const, label: 'Gate Passes' },
+            { type: 'bills' as const, label: 'Bills' },
+            { type: 'deliveries' as const, label: 'Deliveries' },
+          ]).map(exp => (
+            <button
+              key={exp.type}
+              onClick={() => handleExport(exp.type)}
+              className="flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-[11px] font-medium whitespace-nowrap transition cursor-pointer hover:bg-[var(--surface-hover)]"
+              style={{ borderColor: 'var(--border)', color: 'var(--text-secondary)' }}
+            >
+              <Download className="h-3 w-3" />
+              {exp.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Content */}

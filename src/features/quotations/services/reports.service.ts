@@ -20,6 +20,22 @@ export const reports = {
 
     auditLogs: (limit = 50) =>
         billsApi.get<object[]>('/audit-logs', { params: { limit } }).then((r: any) => r.data),
+
+    exportCSV: async (type: 'gatepasses' | 'bills' | 'deliveries', params?: Record<string, string>) => {
+        const response = await billsApi.get(`/export/${type}`, {
+            params,
+            responseType: 'blob',
+        })
+        const blob = new Blob([response.data], { type: 'text/csv' })
+        const url = window.URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = `${type}-${new Date().toISOString().slice(0, 10)}.csv`
+        document.body.appendChild(a)
+        a.click()
+        window.URL.revokeObjectURL(url)
+        a.remove()
+    },
 }
 
 export const payments = {
