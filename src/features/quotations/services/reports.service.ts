@@ -36,6 +36,22 @@ export const reports = {
         window.URL.revokeObjectURL(url)
         a.remove()
     },
+
+    exportExcel: async (type: 'gatepasses' | 'bills' | 'deliveries', params?: Record<string, string>) => {
+        const response = await billsApi.get(`/export/${type}/xlsx`, {
+            params,
+            responseType: 'blob',
+        })
+        const blob = new Blob([response.data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
+        const url = window.URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = `${type}-${new Date().toISOString().slice(0, 10)}.xlsx`
+        document.body.appendChild(a)
+        a.click()
+        window.URL.revokeObjectURL(url)
+        a.remove()
+    },
 }
 
 export const payments = {

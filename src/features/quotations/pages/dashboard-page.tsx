@@ -794,10 +794,14 @@ export default function DashboardPage() {
   const { data, isLoading } = useDashboardOverview(period)
   const [showExport, setShowExport] = useState(false)
 
-  const handleExport = async (type: 'gatepasses' | 'bills' | 'deliveries') => {
+  const handleExport = async (type: 'gatepasses' | 'bills' | 'deliveries', format: 'csv' | 'xlsx' = 'csv') => {
     try {
-      await reports.exportCSV(type)
-      toast.success(`Exported ${type} as CSV`)
+      if (format === 'xlsx') {
+        await reports.exportExcel(type)
+      } else {
+        await reports.exportCSV(type)
+      }
+      toast.success(`Exported ${type} as ${format.toUpperCase()}`)
     } catch {
       toast.error('Export failed')
     }
@@ -826,11 +830,16 @@ export default function DashboardPage() {
               <Download className="h-3.5 w-3.5 mr-1.5" /> Export
             </Button>
             {showExport && (
-              <div className="absolute right-0 top-full mt-1 z-50 bg-[var(--surface)] border border-[var(--border)] rounded-xl shadow-lg py-1 min-w-[150px]">
+              <div className="absolute right-0 top-full mt-1 z-50 bg-[var(--surface)] border border-[var(--border)] rounded-xl shadow-lg py-1 min-w-[200px]">
                 {([['gatepasses', 'Gate Passes'], ['bills', 'Bills'], ['deliveries', 'Deliveries']] as const).map(([type, label]) => (
-                  <button key={type} onClick={() => handleExport(type)} className="w-full text-left px-4 py-2 text-[13px] hover:bg-[var(--surface-hover)] transition">
-                    {label}
-                  </button>
+                  <div key={type} className="flex border-b border-[var(--border)] last:border-0">
+                    <button onClick={() => handleExport(type, 'csv')} className="flex-1 text-left px-4 py-2 text-[13px] hover:bg-[var(--surface-hover)] transition font-medium">
+                      {label} <span className="text-[10px] text-[var(--text-tertiary)]">CSV</span>
+                    </button>
+                    <button onClick={() => handleExport(type, 'xlsx')} className="flex-1 text-left px-4 py-2 text-[13px] hover:bg-[var(--surface-hover)] transition font-medium">
+                      {label} <span className="text-[10px] text-[var(--text-tertiary)]">Excel</span>
+                    </button>
+                  </div>
                 ))}
               </div>
             )}

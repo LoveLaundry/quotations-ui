@@ -507,10 +507,14 @@ function AuditLog() {
 export default function ReportsPage() {
   const [activeTab, setActiveTab] = useState<ReportTab>('client')
 
-  const handleExport = async (type: 'gatepasses' | 'bills' | 'deliveries') => {
+  const handleExport = async (type: 'gatepasses' | 'bills' | 'deliveries', format: 'csv' | 'xlsx' = 'csv') => {
     try {
-      await reports.exportCSV(type)
-      toast.success(`Exported ${type} as CSV`)
+      if (format === 'xlsx') {
+        await reports.exportExcel(type)
+      } else {
+        await reports.exportCSV(type)
+      }
+      toast.success(`Exported ${type} as ${format.toUpperCase()}`)
     } catch {
       toast.error('Export failed')
     }
@@ -558,15 +562,24 @@ export default function ReportsPage() {
             { type: 'bills' as const, label: 'Bills' },
             { type: 'deliveries' as const, label: 'Deliveries' },
           ]).map(exp => (
-            <button
-              key={exp.type}
-              onClick={() => handleExport(exp.type)}
-              className="flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-[11px] font-medium whitespace-nowrap transition cursor-pointer hover:bg-[var(--surface-hover)]"
-              style={{ borderColor: 'var(--border)', color: 'var(--text-secondary)' }}
-            >
-              <Download className="h-3 w-3" />
-              {exp.label}
-            </button>
+            <div key={exp.type} className="flex gap-1">
+              <button
+                onClick={() => handleExport(exp.type, 'csv')}
+                className="flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-[11px] font-medium whitespace-nowrap transition cursor-pointer hover:bg-[var(--surface-hover)]"
+                style={{ borderColor: 'var(--border)', color: 'var(--text-secondary)' }}
+              >
+                <Download className="h-3 w-3" />
+                {exp.label} CSV
+              </button>
+              <button
+                onClick={() => handleExport(exp.type, 'xlsx')}
+                className="flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-[11px] font-medium whitespace-nowrap transition cursor-pointer hover:bg-[var(--surface-hover)]"
+                style={{ borderColor: 'var(--border)', color: 'var(--text-secondary)' }}
+              >
+                <Download className="h-3 w-3" />
+                {exp.label} Excel
+              </button>
+            </div>
           ))}
         </div>
       </div>
