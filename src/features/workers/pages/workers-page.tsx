@@ -15,6 +15,7 @@ import { useWorkers, useCreateWorker, useUpdateWorker, useDeleteWorker } from '.
 import { DEPARTMENTS } from '../types'
 import type { Worker } from '../types'
 import { ErrorState } from '../../../components/ui/error-state'
+import { Skeleton } from '../../../components/ui/skeleton'
 
 const statusColors = {
   active: 'bg-emerald-50 text-emerald-700 border border-emerald-200',
@@ -156,9 +157,17 @@ export function WorkersPage() {
       ) : (
       <div className="rounded-xl border border-[#E5E7EB] bg-white shadow-sm overflow-hidden">
         {isLoading ? (
-          <div className="px-6 py-16 text-center">
-            <div className="animate-spin inline-block w-6 h-6 border-2 border-[#DC2626] border-t-transparent rounded-full mb-3" />
-            <p className="text-[13px] text-[#6B7280]">Loading staff...</p>
+          <div className="divide-y divide-[#F2F4F7]">
+            {[1, 2, 3, 4, 5].map(i => (
+              <div key={i} className="flex items-center gap-4 px-6 py-4">
+                <Skeleton className="h-10 w-10 rounded-full shrink-0" />
+                <div className="flex-1 space-y-2">
+                  <Skeleton className="h-4 w-32" />
+                  <Skeleton className="h-3 w-24" />
+                </div>
+                <Skeleton className="h-6 w-16 rounded-full" />
+              </div>
+            ))}
           </div>
         ) : filtered.length === 0 ? (
           <div className="px-6 py-16 text-center">
