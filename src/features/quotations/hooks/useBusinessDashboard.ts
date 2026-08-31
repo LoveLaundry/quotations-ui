@@ -26,10 +26,20 @@ export interface StatusSlice {
   color: string
 }
 
+export interface PendingGatePassItem {
+  item_name: string
+  specification: string
+  category: string
+  received: number
+  delivered: number
+  pending: number
+}
+
 export interface PendingGatePass {
   gate_pass_number: string
   client_name: string
   pending: number
+  items: PendingGatePassItem[]
 }
 
 export interface PeriodMetrics {

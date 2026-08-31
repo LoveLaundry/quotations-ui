@@ -255,28 +255,44 @@ function TablesRow({ data }: { data: DashboardOverviewData }) {
           {pendingGPs.length === 0 ? (
             <div className="py-8 text-center text-[13px]" style={{ color: 'var(--text-tertiary)' }}>All deliveries are up to date</div>
           ) : (
-            <table className="w-full text-[13px]">
-              <thead className="border-b border-[var(--border)]">
-                <tr>
-                  {['Gate Pass', 'Client', 'Pending'].map(h => (
-                    <th key={h} className="px-3 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wide" style={{ color: 'var(--text-tertiary)' }}>{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-[var(--border)]">
-                {pendingGPs.map((gp, i) => (
-                  <motion.tr key={gp.gate_pass_number} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.04 }} className="hover:bg-[var(--surface-hover)]">
-                    <td className="px-3 py-2.5 font-mono text-[12px] font-semibold">{gp.gate_pass_number}</td>
-                    <td className="px-3 py-2.5 truncate max-w-[140px]">{gp.client_name}</td>
-                    <td className="px-3 py-2.5">
-                      <span className="inline-flex items-center rounded-full bg-[#FFF7ED] border border-[#FED7AA] px-2 py-0.5 text-[11px] font-semibold text-[#C2410C]">
-                        {gp.pending} items
-                      </span>
-                    </td>
-                  </motion.tr>
-                ))}
-              </tbody>
-            </table>
+            <div className="divide-y divide-[var(--border)]">
+              {pendingGPs.map((gp, i) => (
+                <motion.div
+                  key={gp.gate_pass_number}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: i * 0.04 }}
+                  className="py-3 first:pt-0 last:pb-0"
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono text-[12px] font-semibold">{gp.gate_pass_number}</span>
+                      <span className="text-[12px]" style={{ color: 'var(--text-tertiary)' }}>{gp.client_name}</span>
+                    </div>
+                    <span className="inline-flex items-center rounded-full bg-[#FFF7ED] border border-[#FED7AA] px-2 py-0.5 text-[11px] font-semibold text-[#C2410C]">
+                      {gp.pending} pending
+                    </span>
+                  </div>
+                  {gp.items && gp.items.length > 0 && (
+                    <div className="ml-2 space-y-1">
+                      {gp.items.map((item) => (
+                        <div key={`${item.item_name}-${item.specification}`} className="flex items-center gap-2 text-[12px]">
+                          <span className="font-medium">{item.item_name}</span>
+                          {item.specification && (
+                            <span className="inline-flex items-center rounded bg-[#EFF6FF] border border-[#BFDBFE] px-1.5 py-0.5 text-[10px] font-medium text-[#2563EB]">
+                              {item.specification}
+                            </span>
+                          )}
+                          <span style={{ color: 'var(--text-tertiary)' }}>
+                            {item.delivered}/{item.received} delivered
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </motion.div>
+              ))}
+            </div>
           )}
         </CardContent>
       </Card>
