@@ -374,6 +374,134 @@ function ActivityTimeline({ data }: { data: DashboardOverviewData }) {
   )
 }
 
+// ── Balances Overview ────────────────────────────────────────────────────────
+
+function BalancesOverview({ data }: { data: DashboardOverviewData }) {
+  const { current: c } = data
+  const totalRevenue = c.revenue
+  const totalCollected = c.collected
+  const totalOutstanding = c.outstanding
+  const collectedPct = totalRevenue > 0 ? (totalCollected / totalRevenue) * 100 : 0
+  const outstandingPct = totalRevenue > 0 ? (totalOutstanding / totalRevenue) * 100 : 0
+
+  const clients = (data.clientWise || [])
+    .filter(cl => cl.outstanding > 0)
+    .sort((a, b) => b.outstanding - a.outstanding)
+    .slice(0, 8)
+  const maxClientOutstanding = Math.max(...clients.map(c => c.outstanding), 1)
+
+  return (
+    <Card className="overflow-hidden border-2" style={{ borderColor: totalOutstanding > 0 ? '#FEF3C7' : '#BBF7D0' }}>
+      {/* Hero banner */}
+      <div className={`px-6 py-5 ${totalOutstanding > 0 ? 'bg-gradient-to-r from-[#FFFBEB] via-[#FEF3C7] to-[#FDE68A]' : 'bg-gradient-to-r from-[#F0FDF4] via-[#BBF7D0] to-[#86EFAC]'}`}>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <p className="text-[12px] font-semibold uppercase tracking-wide" style={{ color: totalOutstanding > 0 ? '#92400E' : '#166534' }}>Total Outstanding</p>
+            <p className={`text-[36px] font-extrabold leading-tight tracking-tight ${totalOutstanding > 0 ? 'text-[#92400E]' : 'text-[#166534]'}`}>
+              LKR {totalOutstanding.toLocaleString('en', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+            </p>
+          </div>
+          <div className="flex gap-4 sm:gap-6">
+            <div className="text-center">
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-[#166534]">Collected</p>
+              <p className="text-[20px] font-bold text-[#166534]">LKR {fmt(totalCollected)}</p>
+              <p className="text-[11px] text-[#16A34A] font-semibold">{collectedPct.toFixed(0)}%</p>
+            </div>
+            <div className="text-center">
+              <p className="text-[11px] font-semibold uppercase tracking-wide" style={{ color: totalOutstanding > 0 ? '#92400E' : '#6B7280' }}>Pending</p>
+              <p className={`text-[20px] font-bold ${totalOutstanding > 0 ? 'text-[#92400E]' : 'text-[#6B7280]'}`}>LKR {fmt(totalOutstanding)}</p>
+              <p className="text-[11px] font-semibold" style={{ color: totalOutstanding > 0 ? '#D97706' : '#6B7280' }}>{outstandingPct.toFixed(0)}%</p>
+            </div>
+            <div className="text-center">
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-[#6B7280]">Bills</p>
+              <p className="text-[20px] font-bold text-[var(--text-primary)]">{c.billCount}</p>
+              <p className="text-[11px] text-[#6B7280]">{c.paidBills} paid</p>
+            </div>
+          </div>
+        </div>
+        {/* Visual bar */}
+        <div className="mt-4 h-4 rounded-full overflow-hidden flex bg-white/50 shadow-inner">
+          <motion.div
+            initial={{ width: 0 }}
+            animate={{ width: `${collectedPct}%` }}
+            transition={{ duration: 0.8, ease: 'easeOut' }}
+            className="h-full bg-[#16A34A] rounded-l-full"
+            title="Collected"
+          />
+          <motion.div
+            initial={{ width: 0 }}
+            animate={{ width: `${outstandingPct}%` }}
+            transition={{ duration: 0.8, ease: 'easeOut', delay: 0.3 }}
+            className="h-full bg-[#D97706]"
+            title="Outstanding"
+          />
+        </div>
+        <div className="flex justify-between mt-1.5 text-[10px] font-semibold">
+          <span className="text-[#16A34A]">Collected {collectedPct.toFixed(0)}%</span>
+          <span className="text-[#D97706]">Outstanding {outstandingPct.toFixed(0)}%</span>
+        </div>
+      </div>
+
+      {/* Per-client breakdown */}
+      {clients.length > 0 && (
+        <CardContent className="pt-4">
+          <p className="text-[13px] font-semibold mb-3" style={{ color: 'var(--text-secondary)' }}>Outstanding by Client</p>
+          <div className="space-y-3">
+            {clients.map((cl, i) => {
+              const barPct = (cl.outstanding / maxClientOutstanding) * 100
+              const severity = cl.outstanding > maxClientOutstanding * 0.7 ? 'high' : cl.outstanding > maxClientOutstanding * 0.3 ? 'medium' : 'low'
+              const barColor = severity === 'high' ? '#DC2626' : severity === 'medium' ? '#D97706' : '#2563EB'
+              const bgColor = severity === 'high' ? '#FEE2E2' : severity === 'medium' ? '#FEF3C7' : '#DBEAFE'
+              return (
+                <motion.div
+                  key={cl.client_name}
+                  initial={{ opacity: 0, x: -8 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: i * 0.04 }}
+                >
+                  <div className="flex items-center justify-between mb-1">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <div
+                        className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[11px] font-bold text-white"
+                        style={{ backgroundColor: barColor }}
+                      >
+                        {cl.client_name.charAt(0).toUpperCase()}
+                      </div>
+                      <span className="text-[13px] font-semibold truncate">{cl.client_name}</span>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span className="text-[13px] font-bold" style={{ color: barColor }}>
+                        LKR {cl.outstanding.toLocaleString()}
+                      </span>
+                      {cl.total_billed > 0 && (
+                        <span
+                          className="rounded-full px-2 py-0.5 text-[10px] font-semibold"
+                          style={{ backgroundColor: bgColor, color: barColor }}
+                        >
+                          {((cl.outstanding / Math.max(1, cl.total_billed)) * 100).toFixed(0)}% of bill
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <div className="h-2 bg-[var(--border)] rounded-full overflow-hidden">
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: `${barPct}%` }}
+                      transition={{ duration: 0.5, delay: i * 0.05 }}
+                      className="h-full rounded-full"
+                      style={{ backgroundColor: barColor }}
+                    />
+                  </div>
+                </motion.div>
+              )
+            })}
+          </div>
+        </CardContent>
+      )}
+    </Card>
+  )
+}
+
 // ── Period Comparison ────────────────────────────────────────────────────────
 
 function PeriodComparison({ data }: { data: DashboardOverviewData }) {
@@ -731,6 +859,7 @@ export default function DashboardPage() {
         >
           <AlertBanners data={data} />
           <KpiCards data={data} />
+          <BalancesOverview data={data} />
           <PeriodComparison data={data} />
           <ChartsRow data={data} />
           <TablesRow data={data} />
