@@ -555,13 +555,28 @@ function TodayDeliveries({ data }: { data: DashboardOverviewData }) {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       <div className="flex items-center justify-between">
         <h3 className="text-[15px] font-semibold text-gray-900">Today's Deliveries</h3>
         <span className="text-[12px] font-semibold text-gray-900">{totalDelivered.toLocaleString()} pcs delivered</span>
       </div>
       {clients.map((client, i) => {
         const totalPending = client.pending_items?.reduce((s, p) => s + p.pending, 0) || 0
+        const allItems = new Map<string, { item_name: string; specification: string; sentToday: number; pending: number }>()
+        for (const item of client.delivered_items) {
+          const dk = `${item.item_name}||${item.specification}`
+          const existing = allItems.get(dk)
+          if (existing) existing.sentToday += item.quantity
+          else allItems.set(dk, { item_name: item.item_name, specification: item.specification, sentToday: item.quantity, pending: 0 })
+        }
+        for (const p of client.pending_items || []) {
+          const dk = `${p.item_name}||${p.specification}`
+          const existing = allItems.get(dk)
+          if (existing) existing.pending = p.pending
+          else allItems.set(dk, { item_name: p.item_name, specification: p.specification, sentToday: 0, pending: p.pending })
+        }
+        const rows = Array.from(allItems.values())
+
         return (
           <motion.div
             key={client.client_name}
@@ -569,53 +584,37 @@ function TodayDeliveries({ data }: { data: DashboardOverviewData }) {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.04 }}
           >
-            <Card>
-              <CardHeader className="border-b border-gray-100 pb-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[11px] font-bold text-white bg-gray-600">
-                      {client.client_name.charAt(0).toUpperCase()}
-                    </div>
-                    <CardTitle className="text-[14px] font-semibold text-gray-900">{client.client_name}</CardTitle>
+            <Card className="overflow-hidden">
+              {/* Client header */}
+              <div className="flex items-center justify-between px-5 py-3 bg-gray-50/80 border-b border-gray-200">
+                <div className="flex items-center gap-2.5">
+                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[11px] font-bold text-white bg-gray-700">
+                    {client.client_name.charAt(0).toUpperCase()}
                   </div>
-                  <div className="flex items-center gap-3 text-[12px]">
-                    <span className="text-gray-500">{client.total_qty} pcs delivered</span>
-                    {totalPending > 0 && (
-                      <span className="font-semibold text-gray-900">{totalPending} pending</span>
-                    )}
-                  </div>
+                  <span className="text-[14px] font-semibold text-gray-900">{client.client_name}</span>
                 </div>
-              </CardHeader>
-              <CardContent className="pt-0 px-0">
-                {/* Table header */}
-                <div className="grid grid-cols-[1.5fr_1fr_1fr_1fr] gap-2 px-4 py-2 text-[10px] font-semibold text-gray-400 uppercase tracking-wide border-b border-gray-100">
-                  <span>Item</span>
-                  <span>Specification</span>
-                  <span className="text-right">Sent Today</span>
-                  <span className="text-right">Pending</span>
+                <div className="flex items-center gap-4 text-[12px]">
+                  <span className="text-gray-500">Sent today: <span className="font-semibold text-gray-900">{client.total_qty}</span></span>
+                  {totalPending > 0 && (
+                    <span className="text-gray-500">Pending: <span className="font-semibold text-gray-900">{totalPending}</span></span>
+                  )}
                 </div>
-                {/* Merge delivered_today + pending_items into one list */}
-                {(() => {
-                  const allItems = new Map<string, { item_name: string; specification: string; sentToday: number; pending: number }>()
-                  // Today's delivered
-                  for (const item of client.delivered_items) {
-                    const dk = `${item.item_name}||${item.specification}`
-                    const existing = allItems.get(dk)
-                    if (existing) existing.sentToday += item.quantity
-                    else allItems.set(dk, { item_name: item.item_name, specification: item.specification, sentToday: item.quantity, pending: 0 })
-                  }
-                  // Pending (overall balance)
-                  for (const p of client.pending_items || []) {
-                    const dk = `${p.item_name}||${p.specification}`
-                    const existing = allItems.get(dk)
-                    if (existing) existing.pending = p.pending
-                    else allItems.set(dk, { item_name: p.item_name, specification: p.specification, sentToday: 0, pending: p.pending })
-                  }
-                  const rows = Array.from(allItems.values())
-                  return rows.map((row, j) => (
-                    <div key={`${row.item_name}-${row.specification}`} className="grid grid-cols-[1.5fr_1fr_1fr_1fr] gap-2 px-4 py-2 border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition items-center">
-                      <span className="text-[13px] font-medium text-gray-900 truncate">{row.item_name}</span>
-                      <span className="min-w-0">
+              </div>
+              {/* Table */}
+              <table className="w-full text-left">
+                <thead>
+                  <tr className="border-b border-gray-100">
+                    <th className="px-5 py-2.5 text-[11px] font-semibold text-gray-400 uppercase tracking-wide w-[40%]">Item</th>
+                    <th className="px-5 py-2.5 text-[11px] font-semibold text-gray-400 uppercase tracking-wide w-[25%]">Specification</th>
+                    <th className="px-5 py-2.5 text-[11px] font-semibold text-gray-400 uppercase tracking-wide w-[17%] text-right">Sent Today</th>
+                    <th className="px-5 py-2.5 text-[11px] font-semibold text-gray-400 uppercase tracking-wide w-[18%] text-right">Pending</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {rows.map((row, j) => (
+                    <tr key={`${row.item_name}-${row.specification}`} className="border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition">
+                      <td className="px-5 py-2.5 text-[13px] font-medium text-gray-900">{row.item_name}</td>
+                      <td className="px-5 py-2.5">
                         {row.specification ? (
                           <span
                             className="inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-bold text-white"
@@ -626,15 +625,15 @@ function TodayDeliveries({ data }: { data: DashboardOverviewData }) {
                         ) : (
                           <span className="text-[12px] text-gray-400">—</span>
                         )}
-                      </span>
-                      <span className="text-[13px] font-semibold text-gray-900 text-right">{row.sentToday > 0 ? row.sentToday : '—'}</span>
-                      <span className={`text-[13px] font-semibold text-right ${row.pending > 0 ? 'text-gray-900' : 'text-gray-400'}`}>
+                      </td>
+                      <td className="px-5 py-2.5 text-[13px] font-semibold text-gray-900 text-right">{row.sentToday > 0 ? row.sentToday : '—'}</td>
+                      <td className={`px-5 py-2.5 text-[13px] font-semibold text-right ${row.pending > 0 ? 'text-gray-900' : 'text-gray-400'}`}>
                         {row.pending > 0 ? row.pending : '—'}
-                      </span>
-                    </div>
-                  ))
-                })()}
-              </CardContent>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </Card>
           </motion.div>
         )
