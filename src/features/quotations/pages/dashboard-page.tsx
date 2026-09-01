@@ -533,6 +533,122 @@ function BalancesOverview({ data, onShowDetails }: { data: DashboardOverviewData
   )
 }
 
+// ── Today's Deliveries ────────────────────────────────────────────────────────
+
+const SPEC_COLORS = ['#7C3AED', '#0891B2', '#059669', '#D946EF', '#EA580C', '#4F46E5', '#DC2626', '#0D9488']
+
+function TodayDeliveries({ data }: { data: DashboardOverviewData }) {
+  const clients = data.todayDeliveries || []
+  const totalDelivered = clients.reduce((s, c) => s + c.total_qty, 0)
+  const totalOutstanding = clients.reduce((s, c) => s + c.outstanding, 0)
+
+  if (clients.length === 0) {
+    return (
+      <Card>
+        <CardHeader className="border-b border-gray-100 pb-3">
+          <CardTitle className="text-[15px] font-semibold text-gray-900">Today's Deliveries</CardTitle>
+        </CardHeader>
+        <CardContent className="pt-6 pb-6 text-center">
+          <p className="text-[13px] text-gray-400">No deliveries today yet.</p>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  return (
+    <Card>
+      <CardHeader className="border-b border-gray-100 pb-3">
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-[15px] font-semibold text-gray-900">Today's Deliveries</CardTitle>
+          <div className="flex items-center gap-4 text-[12px] text-gray-500">
+            <span>{clients.length} client{clients.length !== 1 ? 's' : ''}</span>
+            <span className="font-semibold text-gray-900">{totalDelivered.toLocaleString()} pcs delivered</span>
+            {totalOutstanding > 0 && (
+              <span className="font-semibold text-gray-900">LKR {totalOutstanding.toLocaleString()} outstanding</span>
+            )}
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent className="pt-4 space-y-3">
+        {clients.map((client, i) => (
+          <motion.div
+            key={client.client_name}
+            initial={{ opacity: 0, y: 4 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: i * 0.04 }}
+            className="border border-gray-200 rounded-xl p-4"
+          >
+            {/* Client header */}
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-3">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[13px] font-bold text-white bg-gray-700">
+                  {client.client_name.charAt(0).toUpperCase()}
+                </div>
+                <div>
+                  <p className="text-[14px] font-semibold text-gray-900">{client.client_name}</p>
+                  <p className="text-[11px] text-gray-500">
+                    {client.gate_pass_count} gate pass{client.gate_pass_count !== 1 ? 'es' : ''}
+                  </p>
+                </div>
+              </div>
+              <div className="text-right">
+                <p className="text-[14px] font-bold text-gray-900">{client.total_qty.toLocaleString()} pcs</p>
+                {client.outstanding > 0 && (
+                  <p className="text-[11px] text-gray-500">Balance: LKR {client.outstanding.toLocaleString()}</p>
+                )}
+              </div>
+            </div>
+
+            {/* Delivered items */}
+            {client.delivered_items.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 mb-2">
+                {client.delivered_items.map((item, j) => (
+                  <span key={`${item.item_name}-${item.specification}`} className="inline-flex items-center gap-1 bg-gray-50 border border-gray-200 rounded-lg px-2.5 py-1 text-[12px]">
+                    <span className="font-medium text-gray-700">{item.item_name}</span>
+                    {item.specification && (
+                      <span
+                        className="inline-flex items-center rounded px-1 py-0.5 text-[9px] font-bold text-white"
+                        style={{ backgroundColor: SPEC_COLORS[j % SPEC_COLORS.length] }}
+                      >
+                        {item.specification}
+                      </span>
+                    )}
+                    <span className="text-gray-400 font-semibold">×{item.quantity}</span>
+                  </span>
+                ))}
+              </div>
+            )}
+
+            {/* Pending items to send */}
+            {client.pending_items && client.pending_items.length > 0 && (
+              <div className="mt-2 pt-2 border-t border-gray-100">
+                <p className="text-[11px] font-semibold text-gray-500 mb-1.5">Still to send:</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {client.pending_items.map((item, j) => (
+                    <span key={`${item.item_name}-${item.specification}`} className="inline-flex items-center gap-1 bg-white border border-gray-200 rounded-lg px-2.5 py-1 text-[12px]">
+                      <span className="font-medium text-gray-700">{item.item_name}</span>
+                      {item.specification && (
+                        <span
+                          className="inline-flex items-center rounded px-1 py-0.5 text-[9px] font-bold text-white"
+                          style={{ backgroundColor: SPEC_COLORS[j % SPEC_COLORS.length] }}
+                        >
+                          {item.specification}
+                        </span>
+                      )}
+                      <span className="text-gray-400">{item.delivered}/{item.received}</span>
+                      <span className="font-semibold text-gray-900">{item.pending}</span>
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+          </motion.div>
+        ))}
+      </CardContent>
+    </Card>
+  )
+}
+
 // ── Period Comparison ────────────────────────────────────────────────────────
 
 function PeriodComparison({ data }: { data: DashboardOverviewData }) {
@@ -913,6 +1029,7 @@ export default function DashboardPage() {
           <AlertBanners data={data} />
           <KpiCards data={data} />
           <BalancesOverview data={data} onShowDetails={() => setShowBalances(true)} />
+          <TodayDeliveries data={data} />
           <PeriodComparison data={data} />
           <ChartsRow data={data} />
           <TablesRow data={data} />

@@ -57,4 +57,9 @@ export const dashboardApi = {
     billsApi
       .get<{ item_name: string; total_received: number; total_delivered: number; pending: number; mismatch_count: number; client_count: number }[]>('/reports/item-wise')
       .then((r) => r.data),
+
+  getTodayDeliveries: () =>
+    billsApi
+      .get<{ client_name: string; delivered_items: { item_name: string; specification: string; quantity: number }[]; total_qty: number; gate_pass_count: number; outstanding: number; pending_items: { item_name: string; specification: string; received: number; delivered: number; pending: number }[] }[]>('/dashboard/today-deliveries')
+      .then((r) => r.data),
 }

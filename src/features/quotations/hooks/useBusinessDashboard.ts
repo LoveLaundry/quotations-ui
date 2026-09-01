@@ -117,6 +117,21 @@ export interface ItemWiseEntry {
   client_count: number
 }
 
+export interface TodayDeliveryItem {
+  item_name: string
+  specification: string
+  quantity: number
+}
+
+export interface TodayDeliveryClient {
+  client_name: string
+  delivered_items: TodayDeliveryItem[]
+  total_qty: number
+  gate_pass_count: number
+  outstanding: number
+  pending_items: { item_name: string; specification: string; received: number; delivered: number; pending: number }[]
+}
+
 export interface DashboardOverviewData {
   current: PeriodMetrics
   previous: PeriodMetrics
@@ -126,6 +141,7 @@ export interface DashboardOverviewData {
   itemWise: ItemWiseEntry[]
   aging: OutstandingAging
   yearlyTrend: YearlyTrendPoint[]
+  todayDeliveries: TodayDeliveryClient[]
 }
 
 function buildAlerts(m: PeriodMetrics): DashboardAlert[] {
@@ -191,6 +207,10 @@ export function useDashboardOverview(period: DashboardPeriod) {
     queryKey: ['dashboard', 'yearly-trend'],
     queryFn: dashboardApi.getYearlyTrend,
   })
+  const todayDeliveriesQ = useQuery({
+    queryKey: ['dashboard', 'today-deliveries'],
+    queryFn: dashboardApi.getTodayDeliveries,
+  })
 
   const isLoading = quotesQ.isLoading || summaryQ.isLoading
   const error = (summaryQ.error || quotesQ.error) as Error | null
@@ -221,8 +241,9 @@ export function useDashboardOverview(period: DashboardPeriod) {
       itemWise: itemWiseQ.data ?? [],
       aging: agingQ.data ?? { current: 0, '30_day': 0, '60_day': 0, '90_day': 0, over_90: 0 },
       yearlyTrend: yearlyQ.data ?? [],
+      todayDeliveries: todayDeliveriesQ.data ?? [],
     }
-  }, [summaryQ.data, quotesQ.data, activityQ.data, clientWiseQ.data, itemWiseQ.data, agingQ.data, yearlyQ.data])
+  }, [summaryQ.data, quotesQ.data, activityQ.data, clientWiseQ.data, itemWiseQ.data, agingQ.data, yearlyQ.data, todayDeliveriesQ.data])
 
   return {
     data,
@@ -236,6 +257,7 @@ export function useDashboardOverview(period: DashboardPeriod) {
       itemWiseQ.refetch()
       agingQ.refetch()
       yearlyQ.refetch()
+      todayDeliveriesQ.refetch()
     },
   }
 }
