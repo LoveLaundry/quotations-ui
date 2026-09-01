@@ -35,6 +35,8 @@ import GuestQuotationsPage from '../features/quotations/pages/guest-quotations-p
 import NotificationsPage from '../features/quotations/pages/notifications-page'
 import DatabaseSyncPage from '../features/quotations/pages/database-sync-page'
 import CustomersPage from '../features/quotations/pages/customers-page'
+import ReturnsPage from '../features/quotations/pages/returns-page'
+import CreateReturnPage from '../features/quotations/pages/create-return-page'
 
 // Workers pages
 import { WorkersPage } from '../features/workers/pages/workers-page'
@@ -99,6 +101,10 @@ export const router = createBrowserRouter([
 
           // Dispatch (pickup / delivery scheduling)
           { path: 'dispatch', element: <DispatchPage /> },
+
+          // Returns
+          { path: 'returns', element: <ReturnsPage /> },
+          { path: 'returns/new', element: <CreateReturnPage /> },
 
           // Workers
           { path: 'workers', element: <WorkersPage /> },

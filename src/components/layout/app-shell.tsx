@@ -22,6 +22,8 @@ const pageTitles: Record<string, string> = {
   '/gate-passes/new': 'New Gate Pass',
   '/deliveries': 'Deliveries',
   '/dispatch': 'Dispatch',
+  '/returns': 'Returns',
+  '/returns/new': 'Record Return',
   '/customers': 'Customers',
   '/deliveries/new': 'New Delivery',
   '/reports': 'Reports',
@@ -40,6 +42,7 @@ function getPageTitle(pathname: string): string {
   if (pathname.match(/^\/bills\/[^/]+$/)) return 'Bill Details'
   if (pathname.match(/^\/gate-passes\/[^/]+$/)) return 'Gate Pass Details'
   if (pathname.match(/^\/deliveries\/[^/]+$/)) return 'Delivery Details'
+  if (pathname.match(/^\/returns\/[^/]+$/)) return 'Return Details'
   if (pathname.match(/^\/linen\/[^/]+$/)) return 'Linen Profile'
   return pageTitles[pathname] ?? 'Love Laundry'
 }

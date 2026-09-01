@@ -190,3 +190,44 @@ export interface ClientSummary {
     bills: object[]
     payments: Payment[]
 }
+
+// ── Returns ─────────────────────────────────────────────────────────────────
+export interface ReturnItem {
+    item_name: string
+    specification?: string
+    returned_qty: number
+    reason: 'WRONG_ITEM' | 'DAMAGED' | 'MISSING' | 'OTHER'
+    condition: 'GOOD' | 'DAMAGED' | 'STAINED' | 'LOST'
+    action: 'RECEIVE_BACK' | 'RE_WASH' | 'DISCARD' | 'COMPENSATE'
+    notes?: string
+}
+
+export interface BillAdjustment {
+    adjustment_type: 'NONE' | 'QUANTITY_REDUCE' | 'AMOUNT_REDUCE' | 'COMPENSATE'
+    amount: number
+    notes?: string
+}
+
+export interface Return {
+    _id?: string
+    return_id: string
+    gate_pass_id: string
+    delivery_id?: string
+    client_name: string
+    items: ReturnItem[]
+    bill_adjustment?: BillAdjustment
+    status: 'PENDING' | 'RECEIVED' | 'PROCESSED'
+    recorded_by?: string
+    notes?: string
+    created_at: string
+    updated_at: string
+}
+
+export interface ReturnCreate {
+    gate_pass_id: string
+    delivery_id?: string
+    client_name: string
+    items: ReturnItem[]
+    bill_adjustment?: BillAdjustment
+    notes?: string
+}
