@@ -3,7 +3,7 @@ import { attachResponseInterceptor } from './interceptors'
 
 const billsApi = axios.create({
   baseURL: import.meta.env.VITE_BILLS_API_URL ?? 'http://localhost:8001',
-  timeout: 10000,
+  timeout: 30000,
   headers: { 'Content-Type': 'application/json' },
 })
 
