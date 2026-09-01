@@ -212,104 +212,295 @@ export default function CreateReturnPage() {
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-[14px] font-semibold text-[#101828]">Returned Items</h3>
           <Button variant="outline" size="sm" onClick={addItem}>
-            <Plus className="h-3.5 w-3.5" /> Add Item
+            <Plus className="h-3.5 w-3.5" /> Custom Item
           </Button>
         </div>
 
-        <div className="space-y-4">
-          {items.map((item, idx) => (
-            <div key={idx} className="rounded-lg border border-[#E4E7EC] p-4 space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-[12px] font-semibold text-[#6B7280]">Item #{idx + 1}</span>
-                {items.length > 1 && (
-                  <button onClick={() => removeItem(idx)} className="text-[#98A2B3] hover:text-[#DC2626] cursor-pointer">
-                    <Trash2 className="h-4 w-4" />
-                  </button>
-                )}
-              </div>
+        {/* Gate Pass Items (selectable) */}
+        {selectedGP && selectedGP.items.length > 0 && (
+          <div className="mb-4">
+            <p className="text-[12px] font-semibold text-[#6B7280] mb-2">From Gate Pass — tick items being returned:</p>
+            <div className="space-y-2">
+              {selectedGP.items.map((gpItem, gi) => {
+                const existing = items.find(
+                  (i) => i.item_name === gpItem.item_name && (i.specification || '') === (gpItem.specification || '')
+                )
+                const selected = !!existing
 
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-[11px] text-[#98A2B3] mb-1 block">Item Name</label>
-                  <input
-                    type="text"
-                    value={item.item_name}
-                    onChange={(e) => updateItem(idx, 'item_name', e.target.value)}
-                    placeholder="e.g. Towel, Bed Sheet"
-                    className="h-9 w-full rounded-lg border border-[#E4E7EC] bg-white px-3 text-[13px] outline-none focus:border-[#D97706]"
-                  />
-                </div>
-                <div>
-                  <label className="text-[11px] text-[#98A2B3] mb-1 block">Specification</label>
-                  <input
-                    type="text"
-                    value={item.specification || ''}
-                    onChange={(e) => updateItem(idx, 'specification', e.target.value || undefined)}
-                    placeholder="e.g. White, King"
-                    className="h-9 w-full rounded-lg border border-[#E4E7EC] bg-white px-3 text-[13px] outline-none focus:border-[#D97706]"
-                  />
-                </div>
-                <div>
-                  <label className="text-[11px] text-[#98A2B3] mb-1 block">Qty Returned</label>
-                  <input
-                    type="number"
-                    min={1}
-                    value={item.returned_qty}
-                    onChange={(e) => updateItem(idx, 'returned_qty', parseInt(e.target.value) || 1)}
-                    className="h-9 w-full rounded-lg border border-[#E4E7EC] bg-white px-3 text-[13px] outline-none focus:border-[#D97706]"
-                  />
-                </div>
-                <div>
-                  <label className="text-[11px] text-[#98A2B3] mb-1 block">Reason</label>
-                  <select
-                    value={item.reason}
-                    onChange={(e) => updateItem(idx, 'reason', e.target.value)}
-                    className="h-9 w-full rounded-lg border border-[#E4E7EC] bg-white px-3 text-[13px] outline-none focus:border-[#D97706]"
+                return (
+                  <div
+                    key={gi}
+                    className={`rounded-lg border p-3 transition ${
+                      selected ? 'border-amber-300 bg-amber-50' : 'border-[#E4E7EC] bg-white hover:bg-gray-50'
+                    }`}
                   >
-                    {REASONS.map((r) => (
-                      <option key={r.value} value={r.value}>{r.label}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="text-[11px] text-[#98A2B3] mb-1 block">Condition</label>
-                  <select
-                    value={item.condition}
-                    onChange={(e) => updateItem(idx, 'condition', e.target.value)}
-                    className="h-9 w-full rounded-lg border border-[#E4E7EC] bg-white px-3 text-[13px] outline-none focus:border-[#D97706]"
-                  >
-                    {CONDITIONS.map((c) => (
-                      <option key={c.value} value={c.value}>{c.label}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="text-[11px] text-[#98A2B3] mb-1 block">Action</label>
-                  <select
-                    value={item.action}
-                    onChange={(e) => updateItem(idx, 'action', e.target.value)}
-                    className="h-9 w-full rounded-lg border border-[#E4E7EC] bg-white px-3 text-[13px] outline-none focus:border-[#D97706]"
-                  >
-                    {ACTIONS.map((a) => (
-                      <option key={a.value} value={a.value}>{a.label}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
+                    <label className="flex items-center gap-3 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={selected}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setItems([
+                              ...items,
+                              {
+                                item_name: gpItem.item_name,
+                                specification: gpItem.specification || '',
+                                returned_qty: 1,
+                                reason: 'WRONG_ITEM',
+                                condition: 'GOOD',
+                                action: 'RECEIVE_BACK',
+                                notes: '',
+                              },
+                            ])
+                          } else {
+                            setItems(
+                              items.filter(
+                                (i) =>
+                                  !(
+                                    i.item_name === gpItem.item_name &&
+                                    (i.specification || '') === (gpItem.specification || '')
+                                  )
+                              )
+                            )
+                          }
+                        }}
+                        className="h-4 w-4 rounded border-gray-300 text-amber-600 focus:ring-amber-500"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="text-[13px] font-medium text-[#101828]">{gpItem.item_name}</span>
+                          {gpItem.specification && (
+                            <span className="rounded px-1.5 py-0.5 text-[9px] font-bold text-white bg-gray-500">
+                              {gpItem.specification}
+                            </span>
+                          )}
+                        </div>
+                        <span className="text-[11px] text-[#98A2B3]">
+                          Received: {gpItem.received_qty} · Client: {gpItem.client_qty}
+                        </span>
+                      </div>
+                    </label>
 
-              <div>
-                <label className="text-[11px] text-[#98A2B3] mb-1 block">Notes</label>
-                <input
-                  type="text"
-                  value={item.notes || ''}
-                  onChange={(e) => updateItem(idx, 'notes', e.target.value || undefined)}
-                  placeholder="Optional notes"
-                  className="h-9 w-full rounded-lg border border-[#E4E7EC] bg-white px-3 text-[13px] outline-none focus:border-[#D97706]"
-                />
-              </div>
+                    {/* Inline editing when selected */}
+                    {selected && existing && (
+                      <div className="mt-3 pt-3 border-t border-amber-200 grid grid-cols-4 gap-2">
+                        <div>
+                          <label className="text-[10px] text-[#98A2B3] mb-0.5 block">Qty</label>
+                          <input
+                            type="number"
+                            min={1}
+                            max={gpItem.received_qty}
+                            value={existing.returned_qty}
+                            onChange={(e) => {
+                              const copy = [...items]
+                              const idx = copy.findIndex(
+                                (i) =>
+                                  i.item_name === gpItem.item_name &&
+                                  (i.specification || '') === (gpItem.specification || '')
+                              )
+                              if (idx !== -1) {
+                                copy[idx].returned_qty = parseInt(e.target.value) || 1
+                                setItems(copy)
+                              }
+                            }}
+                            className="h-8 w-full rounded border border-[#E4E7EC] bg-white px-2 text-[12px] outline-none focus:border-[#D97706]"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-[10px] text-[#98A2B3] mb-0.5 block">Reason</label>
+                          <select
+                            value={existing.reason}
+                            onChange={(e) => {
+                              const copy = [...items]
+                              const idx = copy.findIndex(
+                                (i) =>
+                                  i.item_name === gpItem.item_name &&
+                                  (i.specification || '') === (gpItem.specification || '')
+                              )
+                              if (idx !== -1) {
+                                copy[idx].reason = e.target.value as any
+                                setItems(copy)
+                              }
+                            }}
+                            className="h-8 w-full rounded border border-[#E4E7EC] bg-white px-2 text-[12px] outline-none focus:border-[#D97706]"
+                          >
+                            {REASONS.map((r) => (
+                              <option key={r.value} value={r.value}>{r.label}</option>
+                            ))}
+                          </select>
+                        </div>
+                        <div>
+                          <label className="text-[10px] text-[#98A2B3] mb-0.5 block">Condition</label>
+                          <select
+                            value={existing.condition}
+                            onChange={(e) => {
+                              const copy = [...items]
+                              const idx = copy.findIndex(
+                                (i) =>
+                                  i.item_name === gpItem.item_name &&
+                                  (i.specification || '') === (gpItem.specification || '')
+                              )
+                              if (idx !== -1) {
+                                copy[idx].condition = e.target.value as any
+                                setItems(copy)
+                              }
+                            }}
+                            className="h-8 w-full rounded border border-[#E4E7EC] bg-white px-2 text-[12px] outline-none focus:border-[#D97706]"
+                          >
+                            {CONDITIONS.map((c) => (
+                              <option key={c.value} value={c.value}>{c.label}</option>
+                            ))}
+                          </select>
+                        </div>
+                        <div>
+                          <label className="text-[10px] text-[#98A2B3] mb-0.5 block">Action</label>
+                          <select
+                            value={existing.action}
+                            onChange={(e) => {
+                              const copy = [...items]
+                              const idx = copy.findIndex(
+                                (i) =>
+                                  i.item_name === gpItem.item_name &&
+                                  (i.specification || '') === (gpItem.specification || '')
+                              )
+                              if (idx !== -1) {
+                                copy[idx].action = e.target.value as any
+                                setItems(copy)
+                              }
+                            }}
+                            className="h-8 w-full rounded border border-[#E4E7EC] bg-white px-2 text-[12px] outline-none focus:border-[#D97706]"
+                          >
+                            {ACTIONS.map((a) => (
+                              <option key={a.value} value={a.value}>{a.label}</option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
             </div>
-          ))}
-        </div>
+          </div>
+        )}
+
+        {/* Custom / manually added items */}
+        {items.filter(
+          (i) =>
+            !selectedGP?.items.some(
+              (g) => g.item_name === i.item_name && (g.specification || '') === (i.specification || '')
+            )
+        ).length > 0 && (
+          <div>
+            <p className="text-[12px] font-semibold text-[#6B7280] mb-2">Custom items:</p>
+            <div className="space-y-3">
+              {items
+                .filter(
+                  (i) =>
+                    !selectedGP?.items.some(
+                      (g) => g.item_name === i.item_name && (g.specification || '') === (i.specification || '')
+                    )
+                )
+                .map((item) => {
+                  const idx = items.indexOf(item)
+                  return (
+                    <div key={idx} className="rounded-lg border border-[#E4E7EC] p-4 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[12px] font-semibold text-[#6B7280]">Custom Item</span>
+                        <button onClick={() => removeItem(idx)} className="text-[#98A2B3] hover:text-[#DC2626] cursor-pointer">
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="text-[11px] text-[#98A2B3] mb-1 block">Item Name</label>
+                          <input
+                            type="text"
+                            value={item.item_name}
+                            onChange={(e) => updateItem(idx, 'item_name', e.target.value)}
+                            placeholder="e.g. Towel, Bed Sheet"
+                            className="h-9 w-full rounded-lg border border-[#E4E7EC] bg-white px-3 text-[13px] outline-none focus:border-[#D97706]"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-[11px] text-[#98A2B3] mb-1 block">Specification</label>
+                          <input
+                            type="text"
+                            value={item.specification || ''}
+                            onChange={(e) => updateItem(idx, 'specification', e.target.value || undefined)}
+                            placeholder="e.g. White, King"
+                            className="h-9 w-full rounded-lg border border-[#E4E7EC] bg-white px-3 text-[13px] outline-none focus:border-[#D97706]"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-[11px] text-[#98A2B3] mb-1 block">Qty</label>
+                          <input
+                            type="number"
+                            min={1}
+                            value={item.returned_qty}
+                            onChange={(e) => updateItem(idx, 'returned_qty', parseInt(e.target.value) || 1)}
+                            className="h-9 w-full rounded-lg border border-[#E4E7EC] bg-white px-3 text-[13px] outline-none focus:border-[#D97706]"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-[11px] text-[#98A2B3] mb-1 block">Reason</label>
+                          <select
+                            value={item.reason}
+                            onChange={(e) => updateItem(idx, 'reason', e.target.value)}
+                            className="h-9 w-full rounded-lg border border-[#E4E7EC] bg-white px-3 text-[13px] outline-none focus:border-[#D97706]"
+                          >
+                            {REASONS.map((r) => (
+                              <option key={r.value} value={r.value}>{r.label}</option>
+                            ))}
+                          </select>
+                        </div>
+                        <div>
+                          <label className="text-[11px] text-[#98A2B3] mb-1 block">Condition</label>
+                          <select
+                            value={item.condition}
+                            onChange={(e) => updateItem(idx, 'condition', e.target.value)}
+                            className="h-9 w-full rounded-lg border border-[#E4E7EC] bg-white px-3 text-[13px] outline-none focus:border-[#D97706]"
+                          >
+                            {CONDITIONS.map((c) => (
+                              <option key={c.value} value={c.value}>{c.label}</option>
+                            ))}
+                          </select>
+                        </div>
+                        <div>
+                          <label className="text-[11px] text-[#98A2B3] mb-1 block">Action</label>
+                          <select
+                            value={item.action}
+                            onChange={(e) => updateItem(idx, 'action', e.target.value)}
+                            className="h-9 w-full rounded-lg border border-[#E4E7EC] bg-white px-3 text-[13px] outline-none focus:border-[#D97706]"
+                          >
+                            {ACTIONS.map((a) => (
+                              <option key={a.value} value={a.value}>{a.label}</option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
+                      <div>
+                        <label className="text-[11px] text-[#98A2B3] mb-1 block">Notes</label>
+                        <input
+                          type="text"
+                          value={item.notes || ''}
+                          onChange={(e) => updateItem(idx, 'notes', e.target.value || undefined)}
+                          placeholder="Optional notes"
+                          className="h-9 w-full rounded-lg border border-[#E4E7EC] bg-white px-3 text-[13px] outline-none focus:border-[#D97706]"
+                        />
+                      </div>
+                    </div>
+                  )
+                })}
+            </div>
+          </div>
+        )}
+
+        {items.length === 0 && (
+          <p className="text-[13px] text-[#98A2B3] text-center py-4">
+            {selectedGP ? 'Tick items above or add a custom item' : 'Select a gate pass first, or add custom items'}
+          </p>
+        )}
       </Card>
 
       {/* Bill Adjustment */}
