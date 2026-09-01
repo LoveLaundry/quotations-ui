@@ -591,37 +591,49 @@ function TodayDeliveries({ data }: { data: DashboardOverviewData }) {
                 <div className="grid grid-cols-[1.5fr_1fr_1fr_1fr] gap-2 px-4 py-2 text-[10px] font-semibold text-gray-400 uppercase tracking-wide border-b border-gray-100">
                   <span>Item</span>
                   <span>Specification</span>
-                  <span className="text-right">Delivered</span>
+                  <span className="text-right">Sent Today</span>
                   <span className="text-right">Pending</span>
                 </div>
-                {/* Delivered items */}
-                {client.delivered_items.map((item, j) => {
-                  const pending = client.pending_items?.find(
-                    p => p.item_name === item.item_name && p.specification === item.specification
-                  )
-                  const pendingQty = pending?.pending || 0
-                  return (
-                    <div key={`${item.item_name}-${item.specification}`} className="grid grid-cols-[1.5fr_1fr_1fr_1fr] gap-2 px-4 py-2 border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition items-center">
-                      <span className="text-[13px] font-medium text-gray-900 truncate">{item.item_name}</span>
+                {/* Merge delivered_today + pending_items into one list */}
+                {(() => {
+                  const allItems = new Map<string, { item_name: string; specification: string; sentToday: number; pending: number }>()
+                  // Today's delivered
+                  for (const item of client.delivered_items) {
+                    const dk = `${item.item_name}||${item.specification}`
+                    const existing = allItems.get(dk)
+                    if (existing) existing.sentToday += item.quantity
+                    else allItems.set(dk, { item_name: item.item_name, specification: item.specification, sentToday: item.quantity, pending: 0 })
+                  }
+                  // Pending (overall balance)
+                  for (const p of client.pending_items || []) {
+                    const dk = `${p.item_name}||${p.specification}`
+                    const existing = allItems.get(dk)
+                    if (existing) existing.pending = p.pending
+                    else allItems.set(dk, { item_name: p.item_name, specification: p.specification, sentToday: 0, pending: p.pending })
+                  }
+                  const rows = Array.from(allItems.values())
+                  return rows.map((row, j) => (
+                    <div key={`${row.item_name}-${row.specification}`} className="grid grid-cols-[1.5fr_1fr_1fr_1fr] gap-2 px-4 py-2 border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition items-center">
+                      <span className="text-[13px] font-medium text-gray-900 truncate">{row.item_name}</span>
                       <span className="min-w-0">
-                        {item.specification ? (
+                        {row.specification ? (
                           <span
                             className="inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-bold text-white"
                             style={{ backgroundColor: SPEC_COLORS[j % SPEC_COLORS.length] }}
                           >
-                            {item.specification}
+                            {row.specification}
                           </span>
                         ) : (
                           <span className="text-[12px] text-gray-400">—</span>
                         )}
                       </span>
-                      <span className="text-[13px] font-semibold text-gray-900 text-right">{item.quantity}</span>
-                      <span className={`text-[13px] font-semibold text-right ${pendingQty > 0 ? 'text-gray-900' : 'text-gray-400'}`}>
-                        {pendingQty > 0 ? pendingQty : '—'}
+                      <span className="text-[13px] font-semibold text-gray-900 text-right">{row.sentToday > 0 ? row.sentToday : '—'}</span>
+                      <span className={`text-[13px] font-semibold text-right ${row.pending > 0 ? 'text-gray-900' : 'text-gray-400'}`}>
+                        {row.pending > 0 ? row.pending : '—'}
                       </span>
                     </div>
-                  )
-                })}
+                  ))
+                })()}
               </CardContent>
             </Card>
           </motion.div>
