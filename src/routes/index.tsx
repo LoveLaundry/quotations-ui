@@ -37,6 +37,7 @@ import DatabaseSyncPage from '../features/quotations/pages/database-sync-page'
 import CustomersPage from '../features/quotations/pages/customers-page'
 import ReturnsPage from '../features/quotations/pages/returns-page'
 import CreateReturnPage from '../features/quotations/pages/create-return-page'
+import ReturnDetailPage from '../features/quotations/pages/return-detail-page'
 
 // Workers pages
 import { WorkersPage } from '../features/workers/pages/workers-page'
@@ -105,6 +106,7 @@ export const router = createBrowserRouter([
           // Returns
           { path: 'returns', element: <ReturnsPage /> },
           { path: 'returns/new', element: <CreateReturnPage /> },
+          { path: 'returns/:id', element: <ReturnDetailPage /> },
 
           // Workers
           { path: 'workers', element: <WorkersPage /> },

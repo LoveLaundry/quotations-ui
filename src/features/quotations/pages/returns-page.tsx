@@ -26,7 +26,8 @@ function ReturnCard({ r, onResent }: { r: Return; onResent: (returnId: string, i
   )
 
   return (
-    <Card className="p-4 h-full">
+    <Link to={`/returns/${r.return_id}`}>
+      <Card className="p-4 h-full cursor-pointer hover:shadow-md transition-shadow">
         <div className="flex items-start gap-3 mb-3">
           <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#FEF3C7] text-[#D97706] border border-[#FDE68A]">
             <RotateCcw className="h-4 w-4" />
@@ -86,6 +87,7 @@ function ReturnCard({ r, onResent }: { r: Return; onResent: (returnId: string, i
           </div>
         )}
       </Card>
+    </Link>
   )
 }
 

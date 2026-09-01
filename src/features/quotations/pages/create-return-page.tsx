@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { Plus, Trash2, ArrowLeft } from 'lucide-react'
+import { Plus, Trash2, ArrowLeft, Truck } from 'lucide-react'
 import { Card } from '../../../components/ui/card'
 import { Button } from '../../../components/ui/button'
 import { Breadcrumb } from '../../../components/ui/breadcrumb'
 import { returns as returnsApi } from '../services/returns.service'
 import { gatepasses as gatepassApi } from '../services/gatepass.service'
-import type { GatePass, ReturnItem, BillAdjustment } from '../../../types/operations'
+import { deliveries as deliveriesApi } from '../services/delivery.service'
+import type { GatePass, Delivery, ReturnItem, BillAdjustment } from '../../../types/operations'
 
 const REASONS = [
   { value: 'WRONG_ITEM', label: 'Wrong Item Sent' },
@@ -73,6 +74,8 @@ export default function CreateReturnPage() {
   const [gpLoading, setGpLoading] = useState(true)
   const [gpError, setGpError] = useState<string | null>(null)
   const [clientName, setClientName] = useState('')
+  const [deliveries, setDeliveries] = useState<Delivery[]>([])
+  const [selectedDeliveryId, setSelectedDeliveryId] = useState<string>('')
 
   // GP items: key = index in selectedGP.items, value = return details
   const [gpSelections, setGpSelections] = useState<Record<number, GPItemReturn>>({})
@@ -178,6 +181,7 @@ export default function CreateReturnPage() {
 
       await returnsApi.create({
         gate_pass_id: selectedGP.id!,
+        delivery_id: selectedDeliveryId || undefined,
         client_name: clientName,
         items,
         bill_adjustment: adjustment.adjustment_type !== 'NONE' ? adjustment : undefined,
@@ -242,6 +246,14 @@ export default function CreateReturnPage() {
                       setClientName(gp.client_name)
                       setGpSearch('')
                       setGpSelections({})
+                      setSelectedDeliveryId('')
+                      // Fetch deliveries for this gate pass
+                      deliveriesApi.list({ gate_pass_id: gp.id })
+                        .then((data: any) => {
+                          const list = Array.isArray(data) ? data : data?.items || data?.deliveries || []
+                          setDeliveries(list)
+                        })
+                        .catch(() => setDeliveries([]))
                     }}
                     className={`w-full text-left px-3 py-2.5 text-[13px] border-b border-gray-50 last:border-0 hover:bg-gray-50 transition cursor-pointer ${
                       selectedGP?.id === gp.id ? 'bg-amber-50 font-semibold' : ''
@@ -275,11 +287,48 @@ export default function CreateReturnPage() {
                 <span className="text-[13px] font-semibold text-[#101828]">{selectedGP.gate_pass_number}</span>
                 <span className="text-[12px] text-[#98A2B3]"> — {selectedGP.client_name}</span>
               </div>
-              <button onClick={() => { setSelectedGP(null); setClientName(''); setGpSelections({}) }} className="text-[12px] text-[#DC2626] hover:underline cursor-pointer">Clear</button>
+              <button onClick={() => { setSelectedGP(null); setClientName(''); setGpSelections({}); setDeliveries([]); setSelectedDeliveryId('') }} className="text-[12px] text-[#DC2626] hover:underline cursor-pointer">Clear</button>
             </div>
           </div>
         )}
       </Card>
+
+      {/* Delivery Selection (optional) */}
+      {selectedGP && deliveries.length > 0 && (
+        <Card className="p-5">
+          <div className="flex items-center gap-2 mb-3">
+            <Truck className="h-4 w-4 text-[#6B7280]" />
+            <h3 className="text-[14px] font-semibold text-[#101828]">Link Delivery (Optional)</h3>
+          </div>
+          <p className="text-[12px] text-[#98A2B3] mb-2">Link this return to a specific delivery if applicable.</p>
+          <div className="space-y-1.5 max-h-40 overflow-y-auto">
+            <button
+              type="button"
+              onClick={() => setSelectedDeliveryId('')}
+              className={`w-full text-left px-3 py-2 rounded-lg text-[13px] border transition cursor-pointer ${
+                !selectedDeliveryId ? 'border-amber-300 bg-amber-50 font-semibold' : 'border-[#E4E7EC] hover:bg-gray-50'
+              }`}
+            >
+              No delivery linked
+            </button>
+            {deliveries.map((dl) => (
+              <button
+                key={dl.id}
+                type="button"
+                onClick={() => setSelectedDeliveryId(dl.id)}
+                className={`w-full text-left px-3 py-2 rounded-lg text-[13px] border transition cursor-pointer ${
+                  selectedDeliveryId === dl.id ? 'border-amber-300 bg-amber-50 font-semibold' : 'border-[#E4E7EC] hover:bg-gray-50'
+                }`}
+              >
+                <div className="flex justify-between items-center">
+                  <span className="text-[#6B7280] font-mono text-[11px]">{dl.id.slice(-8).toUpperCase()}</span>
+                  <span className="text-[#101828]">{dl.delivered_by} · {dl.items.length} items</span>
+                </div>
+              </button>
+            ))}
+          </div>
+        </Card>
+      )}
 
       {/* Return Items */}
       <Card className="p-5">
