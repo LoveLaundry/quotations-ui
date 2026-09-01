@@ -562,18 +562,22 @@ function TodayDeliveries({ data }: { data: DashboardOverviewData }) {
       </div>
       {clients.map((client, i) => {
         const totalPending = client.pending_items?.reduce((s, p) => s + p.pending, 0) || 0
-        const allItems = new Map<string, { item_name: string; specification: string; sentToday: number; pending: number }>()
+        const allItems = new Map<string, { item_name: string; specification: string; sentToday: number; pending: number; returned: number }>()
         for (const item of client.delivered_items) {
           const dk = `${item.item_name}||${item.specification}`
           const existing = allItems.get(dk)
           if (existing) existing.sentToday += item.quantity
-          else allItems.set(dk, { item_name: item.item_name, specification: item.specification, sentToday: item.quantity, pending: 0 })
+          else allItems.set(dk, { item_name: item.item_name, specification: item.specification, sentToday: item.quantity, pending: 0, returned: 0 })
         }
         for (const p of client.pending_items || []) {
           const dk = `${p.item_name}||${p.specification}`
           const existing = allItems.get(dk)
-          if (existing) existing.pending = p.pending
-          else allItems.set(dk, { item_name: p.item_name, specification: p.specification, sentToday: 0, pending: p.pending })
+          if (existing) {
+            existing.pending = p.pending
+            existing.returned = p.returned || 0
+          } else {
+            allItems.set(dk, { item_name: p.item_name, specification: p.specification, sentToday: 0, pending: p.pending, returned: p.returned || 0 })
+          }
         }
         const rows = Array.from(allItems.values())
 
@@ -605,9 +609,10 @@ function TodayDeliveries({ data }: { data: DashboardOverviewData }) {
                 <thead>
                   <tr className="border-b border-gray-100">
                     <th className="px-5 py-2.5 text-[11px] font-semibold text-gray-400 uppercase tracking-wide w-[40%]">Item</th>
-                    <th className="px-5 py-2.5 text-[11px] font-semibold text-gray-400 uppercase tracking-wide w-[25%]">Specification</th>
-                    <th className="px-5 py-2.5 text-[11px] font-semibold text-gray-400 uppercase tracking-wide w-[17%] text-center">Sent Today</th>
-                    <th className="px-5 py-2.5 text-[11px] font-semibold text-gray-400 uppercase tracking-wide w-[18%] text-center">Pending</th>
+                    <th className="px-5 py-2.5 text-[11px] font-semibold text-gray-400 uppercase tracking-wide w-[18%]">Specification</th>
+                    <th className="px-5 py-2.5 text-[11px] font-semibold text-gray-400 uppercase tracking-wide w-[14%] text-center">Sent Today</th>
+                    <th className="px-5 py-2.5 text-[11px] font-semibold text-gray-400 uppercase tracking-wide w-[14%] text-center">Returned</th>
+                    <th className="px-5 py-2.5 text-[11px] font-semibold text-gray-400 uppercase tracking-wide w-[14%] text-center">Pending</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -627,6 +632,9 @@ function TodayDeliveries({ data }: { data: DashboardOverviewData }) {
                         )}
                       </td>
                       <td className="px-5 py-2.5 text-[13px] font-semibold text-gray-900 text-center">{row.sentToday > 0 ? row.sentToday : '—'}</td>
+                      <td className={`px-5 py-2.5 text-[13px] font-semibold text-center ${row.returned > 0 ? 'text-orange-600' : 'text-gray-400'}`}>
+                        {row.returned > 0 ? row.returned : '—'}
+                      </td>
                       <td className={`px-5 py-2.5 text-[13px] font-semibold text-center ${row.pending > 0 ? 'text-gray-900' : 'text-gray-400'}`}>
                         {row.pending > 0 ? row.pending : '—'}
                       </td>

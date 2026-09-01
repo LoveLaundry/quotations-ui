@@ -64,25 +64,25 @@ function ReturnCard({ r, onResent }: { r: Return; onResent: (returnId: string, i
         </div>
 
         {pendingResend.length > 0 && (
-          <div className="mt-2 pt-2 border-t border-amber-100">
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] font-semibold text-amber-700">
-                {pendingResend.length} item{pendingResend.length !== 1 ? 's' : ''} to be sent
-              </span>
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.preventDefault()
-                  e.stopPropagation()
-                  pendingResend.forEach((item) => {
+          <div className="mt-2 pt-2 border-t border-amber-100 space-y-1.5">
+            {pendingResend.map((item, idx) => (
+              <div key={idx} className="flex items-center justify-between">
+                <span className="text-[11px] text-amber-700">
+                  {item.item_name}{item.specification ? ` (${item.specification})` : ''} ×{item.returned_qty}
+                </span>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
                     onResent(r.return_id, item.item_name, item.specification || '')
-                  })
-                }}
-                className="inline-flex items-center gap-1 rounded-md bg-amber-100 px-2 py-1 text-[10px] font-semibold text-amber-800 hover:bg-amber-200 transition cursor-pointer"
-              >
-                <Send className="h-3 w-3" /> Mark Sent
-              </button>
-            </div>
+                  }}
+                  className="inline-flex items-center gap-1 rounded-md bg-amber-100 px-2 py-1 text-[10px] font-semibold text-amber-800 hover:bg-amber-200 transition cursor-pointer"
+                >
+                  <Send className="h-3 w-3" /> Sent
+                </button>
+              </div>
+            ))}
           </div>
         )}
       </Card>

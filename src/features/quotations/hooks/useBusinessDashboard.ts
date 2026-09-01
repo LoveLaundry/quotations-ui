@@ -127,7 +127,7 @@ export interface TodayDeliveryClient {
   client_name: string
   delivered_items: TodayDeliveryItem[]
   total_qty: number
-  pending_items: { item_name: string; specification: string; received: number; delivered: number; pending: number }[]
+  pending_items: { item_name: string; specification: string; received: number; delivered: number; returned?: number; pending: number }[]
 }
 
 export interface DashboardOverviewData {
