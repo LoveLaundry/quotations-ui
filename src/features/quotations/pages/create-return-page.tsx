@@ -36,9 +36,27 @@ const ADJ_TYPES = [
   { value: 'COMPENSATE', label: 'Compensation' },
 ]
 
-function emptyItem(): ReturnItem {
+interface GPItemReturn {
+  returned_qty: number
+  reason: string
+  condition: string
+  action: string
+  notes: string
+}
+
+function emptyCustomItem(): ReturnItem {
   return {
     item_name: '',
+    returned_qty: 1,
+    reason: 'WRONG_ITEM',
+    condition: 'GOOD',
+    action: 'RECEIVE_BACK',
+    notes: '',
+  }
+}
+
+function defaultGPItemReturn(): GPItemReturn {
+  return {
     returned_qty: 1,
     reason: 'WRONG_ITEM',
     condition: 'GOOD',
@@ -55,7 +73,13 @@ export default function CreateReturnPage() {
   const [gpLoading, setGpLoading] = useState(true)
   const [gpError, setGpError] = useState<string | null>(null)
   const [clientName, setClientName] = useState('')
-  const [items, setItems] = useState<ReturnItem[]>([emptyItem()])
+
+  // GP items: key = index in selectedGP.items, value = return details
+  const [gpSelections, setGpSelections] = useState<Record<number, GPItemReturn>>({})
+
+  // Custom items (not from gate pass)
+  const [customItems, setCustomItems] = useState<ReturnItem[]>([])
+
   const [adjustment, setAdjustment] = useState<BillAdjustment>({ adjustment_type: 'NONE', amount: 0, notes: '' })
   const [notes, setNotes] = useState('')
   const [saving, setSaving] = useState(false)
@@ -76,22 +100,47 @@ export default function CreateReturnPage() {
       })
   }, [])
 
-  const addItem = () => setItems([...items, emptyItem()])
-  const removeItem = (idx: number) => setItems(items.filter((_, i) => i !== idx))
-
-  const updateItem = (idx: number, field: keyof ReturnItem, value: any) => {
-    const copy = [...items]
-    ;(copy[idx] as any)[field] = value
-    setItems(copy)
+  const toggleGPItem = (idx: number) => {
+    setGpSelections((prev) => {
+      const next = { ...prev }
+      if (idx in next) {
+        delete next[idx]
+      } else {
+        next[idx] = defaultGPItemReturn()
+      }
+      return next
+    })
   }
+
+  const updateGPItem = (idx: number, field: keyof GPItemReturn, value: any) => {
+    setGpSelections((prev) => ({
+      ...prev,
+      [idx]: { ...prev[idx], [field]: value },
+    }))
+  }
+
+  const addCustomItem = () => setCustomItems([...customItems, emptyCustomItem()])
+
+  const updateCustomItem = (idx: number, field: keyof ReturnItem, value: any) => {
+    const copy = [...customItems]
+    ;(copy[idx] as any)[field] = value
+    setCustomItems(copy)
+  }
+
+  const removeCustomItem = (idx: number) => {
+    setCustomItems(customItems.filter((_, i) => i !== idx))
+  }
+
+  const selectedGPIndices = Object.keys(gpSelections).map(Number)
+  const hasAnyItems = selectedGPIndices.length > 0 || customItems.some((i) => i.item_name.trim())
 
   const handleSubmit = async () => {
     if (!selectedGP) {
       setError('Select a gate pass')
       return
     }
-    if (items.length === 0 || items.every((i) => !i.item_name.trim())) {
-      setError('Add at least one return item')
+    if (!hasAnyItems) {
+      setError('Select at least one item to return')
       return
     }
 
@@ -99,14 +148,38 @@ export default function CreateReturnPage() {
     setError(null)
 
     try {
-      const validItems = items.filter((i) => i.item_name.trim()).map((item) => ({
-        ...item,
-        resend_status: item.action === 'RECEIVE_BACK' || item.action === 'RE_WASH' ? 'PENDING' as const : undefined,
-      }))
+      const items: ReturnItem[] = []
+
+      // Build items from GP selections
+      for (const idx of selectedGPIndices) {
+        const gpItem = selectedGP.items[idx]
+        const sel = gpSelections[idx]
+        if (!gpItem || !sel) continue
+        items.push({
+          item_name: gpItem.item_name,
+          specification: gpItem.specification || '',
+          returned_qty: sel.returned_qty,
+          reason: sel.reason as any,
+          condition: sel.condition as any,
+          action: sel.action as any,
+          notes: sel.notes || undefined,
+          resend_status: sel.action === 'RECEIVE_BACK' || sel.action === 'RE_WASH' ? 'PENDING' as const : undefined,
+        })
+      }
+
+      // Add custom items
+      for (const ci of customItems) {
+        if (!ci.item_name.trim()) continue
+        items.push({
+          ...ci,
+          resend_status: ci.action === 'RECEIVE_BACK' || ci.action === 'RE_WASH' ? 'PENDING' as const : undefined,
+        })
+      }
+
       await returnsApi.create({
         gate_pass_id: selectedGP.id!,
         client_name: clientName,
-        items: validItems,
+        items,
         bill_adjustment: adjustment.adjustment_type !== 'NONE' ? adjustment : undefined,
         notes: notes || undefined,
       })
@@ -168,6 +241,7 @@ export default function CreateReturnPage() {
                       setSelectedGP(gp)
                       setClientName(gp.client_name)
                       setGpSearch('')
+                      setGpSelections({})
                     }}
                     className={`w-full text-left px-3 py-2.5 text-[13px] border-b border-gray-50 last:border-0 hover:bg-gray-50 transition cursor-pointer ${
                       selectedGP?.id === gp.id ? 'bg-amber-50 font-semibold' : ''
@@ -201,7 +275,7 @@ export default function CreateReturnPage() {
                 <span className="text-[13px] font-semibold text-[#101828]">{selectedGP.gate_pass_number}</span>
                 <span className="text-[12px] text-[#98A2B3]"> — {selectedGP.client_name}</span>
               </div>
-              <button onClick={() => { setSelectedGP(null); setClientName('') }} className="text-[12px] text-[#DC2626] hover:underline cursor-pointer">Clear</button>
+              <button onClick={() => { setSelectedGP(null); setClientName(''); setGpSelections({}) }} className="text-[12px] text-[#DC2626] hover:underline cursor-pointer">Clear</button>
             </div>
           </div>
         )}
@@ -211,7 +285,7 @@ export default function CreateReturnPage() {
       <Card className="p-5">
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-[14px] font-semibold text-[#101828]">Returned Items</h3>
-          <Button variant="outline" size="sm" onClick={addItem}>
+          <Button variant="outline" size="sm" onClick={addCustomItem}>
             <Plus className="h-3.5 w-3.5" /> Custom Item
           </Button>
         </div>
@@ -222,48 +296,21 @@ export default function CreateReturnPage() {
             <p className="text-[12px] font-semibold text-[#6B7280] mb-2">From Gate Pass — tick items being returned:</p>
             <div className="space-y-2">
               {selectedGP.items.map((gpItem, gi) => {
-                const existing = items.find(
-                  (i) => i.item_name === gpItem.item_name && (i.specification || '') === (gpItem.specification || '')
-                )
-                const selected = !!existing
+                const isSelected = gi in gpSelections
+                const sel = gpSelections[gi]
 
                 return (
                   <div
                     key={gi}
                     className={`rounded-lg border p-3 transition ${
-                      selected ? 'border-amber-300 bg-amber-50' : 'border-[#E4E7EC] bg-white hover:bg-gray-50'
+                      isSelected ? 'border-amber-300 bg-amber-50' : 'border-[#E4E7EC] bg-white hover:bg-gray-50'
                     }`}
                   >
                     <label className="flex items-center gap-3 cursor-pointer">
                       <input
                         type="checkbox"
-                        checked={selected}
-                        onChange={(e) => {
-                          if (e.target.checked) {
-                            setItems([
-                              ...items,
-                              {
-                                item_name: gpItem.item_name,
-                                specification: gpItem.specification || '',
-                                returned_qty: 1,
-                                reason: 'WRONG_ITEM',
-                                condition: 'GOOD',
-                                action: 'RECEIVE_BACK',
-                                notes: '',
-                              },
-                            ])
-                          } else {
-                            setItems(
-                              items.filter(
-                                (i) =>
-                                  !(
-                                    i.item_name === gpItem.item_name &&
-                                    (i.specification || '') === (gpItem.specification || '')
-                                  )
-                              )
-                            )
-                          }
-                        }}
+                        checked={isSelected}
+                        onChange={() => toggleGPItem(gi)}
                         className="h-4 w-4 rounded border-gray-300 text-amber-600 focus:ring-amber-500"
                       />
                       <div className="flex-1 min-w-0">
@@ -281,8 +328,7 @@ export default function CreateReturnPage() {
                       </div>
                     </label>
 
-                    {/* Inline editing when selected */}
-                    {selected && existing && (
+                    {isSelected && sel && (
                       <div className="mt-3 pt-3 border-t border-amber-200 grid grid-cols-4 gap-2">
                         <div>
                           <label className="text-[10px] text-[#98A2B3] mb-0.5 block">Qty</label>
@@ -290,38 +336,16 @@ export default function CreateReturnPage() {
                             type="number"
                             min={1}
                             max={gpItem.received_qty}
-                            value={existing.returned_qty}
-                            onChange={(e) => {
-                              const copy = [...items]
-                              const idx = copy.findIndex(
-                                (i) =>
-                                  i.item_name === gpItem.item_name &&
-                                  (i.specification || '') === (gpItem.specification || '')
-                              )
-                              if (idx !== -1) {
-                                copy[idx].returned_qty = parseInt(e.target.value) || 1
-                                setItems(copy)
-                              }
-                            }}
+                            value={sel.returned_qty}
+                            onChange={(e) => updateGPItem(gi, 'returned_qty', parseInt(e.target.value) || 1)}
                             className="h-8 w-full rounded border border-[#E4E7EC] bg-white px-2 text-[12px] outline-none focus:border-[#D97706]"
                           />
                         </div>
                         <div>
                           <label className="text-[10px] text-[#98A2B3] mb-0.5 block">Reason</label>
                           <select
-                            value={existing.reason}
-                            onChange={(e) => {
-                              const copy = [...items]
-                              const idx = copy.findIndex(
-                                (i) =>
-                                  i.item_name === gpItem.item_name &&
-                                  (i.specification || '') === (gpItem.specification || '')
-                              )
-                              if (idx !== -1) {
-                                copy[idx].reason = e.target.value as any
-                                setItems(copy)
-                              }
-                            }}
+                            value={sel.reason}
+                            onChange={(e) => updateGPItem(gi, 'reason', e.target.value)}
                             className="h-8 w-full rounded border border-[#E4E7EC] bg-white px-2 text-[12px] outline-none focus:border-[#D97706]"
                           >
                             {REASONS.map((r) => (
@@ -332,19 +356,8 @@ export default function CreateReturnPage() {
                         <div>
                           <label className="text-[10px] text-[#98A2B3] mb-0.5 block">Condition</label>
                           <select
-                            value={existing.condition}
-                            onChange={(e) => {
-                              const copy = [...items]
-                              const idx = copy.findIndex(
-                                (i) =>
-                                  i.item_name === gpItem.item_name &&
-                                  (i.specification || '') === (gpItem.specification || '')
-                              )
-                              if (idx !== -1) {
-                                copy[idx].condition = e.target.value as any
-                                setItems(copy)
-                              }
-                            }}
+                            value={sel.condition}
+                            onChange={(e) => updateGPItem(gi, 'condition', e.target.value)}
                             className="h-8 w-full rounded border border-[#E4E7EC] bg-white px-2 text-[12px] outline-none focus:border-[#D97706]"
                           >
                             {CONDITIONS.map((c) => (
@@ -355,19 +368,8 @@ export default function CreateReturnPage() {
                         <div>
                           <label className="text-[10px] text-[#98A2B3] mb-0.5 block">Action</label>
                           <select
-                            value={existing.action}
-                            onChange={(e) => {
-                              const copy = [...items]
-                              const idx = copy.findIndex(
-                                (i) =>
-                                  i.item_name === gpItem.item_name &&
-                                  (i.specification || '') === (gpItem.specification || '')
-                              )
-                              if (idx !== -1) {
-                                copy[idx].action = e.target.value as any
-                                setItems(copy)
-                              }
-                            }}
+                            value={sel.action}
+                            onChange={(e) => updateGPItem(gi, 'action', e.target.value)}
                             className="h-8 w-full rounded border border-[#E4E7EC] bg-white px-2 text-[12px] outline-none focus:border-[#D97706]"
                           >
                             {ACTIONS.map((a) => (
@@ -384,121 +386,111 @@ export default function CreateReturnPage() {
           </div>
         )}
 
-        {/* Custom / manually added items */}
-        {items.filter(
-          (i) =>
-            !selectedGP?.items.some(
-              (g) => g.item_name === i.item_name && (g.specification || '') === (i.specification || '')
-            )
-        ).length > 0 && (
+        {/* Custom items */}
+        {customItems.length > 0 && (
           <div>
             <p className="text-[12px] font-semibold text-[#6B7280] mb-2">Custom items:</p>
             <div className="space-y-3">
-              {items
-                .filter(
-                  (i) =>
-                    !selectedGP?.items.some(
-                      (g) => g.item_name === i.item_name && (g.specification || '') === (i.specification || '')
-                    )
-                )
-                .map((item) => {
-                  const idx = items.indexOf(item)
-                  return (
-                    <div key={idx} className="rounded-lg border border-[#E4E7EC] p-4 space-y-3">
-                      <div className="flex items-center justify-between">
-                        <span className="text-[12px] font-semibold text-[#6B7280]">Custom Item</span>
-                        <button onClick={() => removeItem(idx)} className="text-[#98A2B3] hover:text-[#DC2626] cursor-pointer">
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      </div>
-                      <div className="grid grid-cols-2 gap-3">
-                        <div>
-                          <label className="text-[11px] text-[#98A2B3] mb-1 block">Item Name</label>
-                          <input
-                            type="text"
-                            value={item.item_name}
-                            onChange={(e) => updateItem(idx, 'item_name', e.target.value)}
-                            placeholder="e.g. Towel, Bed Sheet"
-                            className="h-9 w-full rounded-lg border border-[#E4E7EC] bg-white px-3 text-[13px] outline-none focus:border-[#D97706]"
-                          />
-                        </div>
-                        <div>
-                          <label className="text-[11px] text-[#98A2B3] mb-1 block">Specification</label>
-                          <input
-                            type="text"
-                            value={item.specification || ''}
-                            onChange={(e) => updateItem(idx, 'specification', e.target.value || undefined)}
-                            placeholder="e.g. White, King"
-                            className="h-9 w-full rounded-lg border border-[#E4E7EC] bg-white px-3 text-[13px] outline-none focus:border-[#D97706]"
-                          />
-                        </div>
-                        <div>
-                          <label className="text-[11px] text-[#98A2B3] mb-1 block">Qty</label>
-                          <input
-                            type="number"
-                            min={1}
-                            value={item.returned_qty}
-                            onChange={(e) => updateItem(idx, 'returned_qty', parseInt(e.target.value) || 1)}
-                            className="h-9 w-full rounded-lg border border-[#E4E7EC] bg-white px-3 text-[13px] outline-none focus:border-[#D97706]"
-                          />
-                        </div>
-                        <div>
-                          <label className="text-[11px] text-[#98A2B3] mb-1 block">Reason</label>
-                          <select
-                            value={item.reason}
-                            onChange={(e) => updateItem(idx, 'reason', e.target.value)}
-                            className="h-9 w-full rounded-lg border border-[#E4E7EC] bg-white px-3 text-[13px] outline-none focus:border-[#D97706]"
-                          >
-                            {REASONS.map((r) => (
-                              <option key={r.value} value={r.value}>{r.label}</option>
-                            ))}
-                          </select>
-                        </div>
-                        <div>
-                          <label className="text-[11px] text-[#98A2B3] mb-1 block">Condition</label>
-                          <select
-                            value={item.condition}
-                            onChange={(e) => updateItem(idx, 'condition', e.target.value)}
-                            className="h-9 w-full rounded-lg border border-[#E4E7EC] bg-white px-3 text-[13px] outline-none focus:border-[#D97706]"
-                          >
-                            {CONDITIONS.map((c) => (
-                              <option key={c.value} value={c.value}>{c.label}</option>
-                            ))}
-                          </select>
-                        </div>
-                        <div>
-                          <label className="text-[11px] text-[#98A2B3] mb-1 block">Action</label>
-                          <select
-                            value={item.action}
-                            onChange={(e) => updateItem(idx, 'action', e.target.value)}
-                            className="h-9 w-full rounded-lg border border-[#E4E7EC] bg-white px-3 text-[13px] outline-none focus:border-[#D97706]"
-                          >
-                            {ACTIONS.map((a) => (
-                              <option key={a.value} value={a.value}>{a.label}</option>
-                            ))}
-                          </select>
-                        </div>
-                      </div>
-                      <div>
-                        <label className="text-[11px] text-[#98A2B3] mb-1 block">Notes</label>
-                        <input
-                          type="text"
-                          value={item.notes || ''}
-                          onChange={(e) => updateItem(idx, 'notes', e.target.value || undefined)}
-                          placeholder="Optional notes"
-                          className="h-9 w-full rounded-lg border border-[#E4E7EC] bg-white px-3 text-[13px] outline-none focus:border-[#D97706]"
-                        />
-                      </div>
+              {customItems.map((item, idx) => (
+                <div key={idx} className="rounded-lg border border-[#E4E7EC] p-4 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[12px] font-semibold text-[#6B7280]">Custom Item</span>
+                    <button onClick={() => removeCustomItem(idx)} className="text-[#98A2B3] hover:text-[#DC2626] cursor-pointer">
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-[11px] text-[#98A2B3] mb-1 block">Item Name</label>
+                      <input
+                        type="text"
+                        value={item.item_name}
+                        onChange={(e) => updateCustomItem(idx, 'item_name', e.target.value)}
+                        placeholder="e.g. Towel, Bed Sheet"
+                        className="h-9 w-full rounded-lg border border-[#E4E7EC] bg-white px-3 text-[13px] outline-none focus:border-[#D97706]"
+                      />
                     </div>
-                  )
-                })}
+                    <div>
+                      <label className="text-[11px] text-[#98A2B3] mb-1 block">Specification</label>
+                      <input
+                        type="text"
+                        value={item.specification || ''}
+                        onChange={(e) => updateCustomItem(idx, 'specification', e.target.value || undefined)}
+                        placeholder="e.g. White, King"
+                        className="h-9 w-full rounded-lg border border-[#E4E7EC] bg-white px-3 text-[13px] outline-none focus:border-[#D97706]"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[11px] text-[#98A2B3] mb-1 block">Qty</label>
+                      <input
+                        type="number"
+                        min={1}
+                        value={item.returned_qty}
+                        onChange={(e) => updateCustomItem(idx, 'returned_qty', parseInt(e.target.value) || 1)}
+                        className="h-9 w-full rounded-lg border border-[#E4E7EC] bg-white px-3 text-[13px] outline-none focus:border-[#D97706]"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[11px] text-[#98A2B3] mb-1 block">Reason</label>
+                      <select
+                        value={item.reason}
+                        onChange={(e) => updateCustomItem(idx, 'reason', e.target.value)}
+                        className="h-9 w-full rounded-lg border border-[#E4E7EC] bg-white px-3 text-[13px] outline-none focus:border-[#D97706]"
+                      >
+                        {REASONS.map((r) => (
+                          <option key={r.value} value={r.value}>{r.label}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="text-[11px] text-[#98A2B3] mb-1 block">Condition</label>
+                      <select
+                        value={item.condition}
+                        onChange={(e) => updateCustomItem(idx, 'condition', e.target.value)}
+                        className="h-9 w-full rounded-lg border border-[#E4E7EC] bg-white px-3 text-[13px] outline-none focus:border-[#D97706]"
+                      >
+                        {CONDITIONS.map((c) => (
+                          <option key={c.value} value={c.value}>{c.label}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="text-[11px] text-[#98A2B3] mb-1 block">Action</label>
+                      <select
+                        value={item.action}
+                        onChange={(e) => updateCustomItem(idx, 'action', e.target.value)}
+                        className="h-9 w-full rounded-lg border border-[#E4E7EC] bg-white px-3 text-[13px] outline-none focus:border-[#D97706]"
+                      >
+                        {ACTIONS.map((a) => (
+                          <option key={a.value} value={a.value}>{a.label}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-[11px] text-[#98A2B3] mb-1 block">Notes</label>
+                    <input
+                      type="text"
+                      value={item.notes || ''}
+                      onChange={(e) => updateCustomItem(idx, 'notes', e.target.value || undefined)}
+                      placeholder="Optional notes"
+                      className="h-9 w-full rounded-lg border border-[#E4E7EC] bg-white px-3 text-[13px] outline-none focus:border-[#D97706]"
+                    />
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         )}
 
-        {items.length === 0 && (
+        {selectedGP && customItems.length === 0 && selectedGPIndices.length === 0 && (
           <p className="text-[13px] text-[#98A2B3] text-center py-4">
-            {selectedGP ? 'Tick items above or add a custom item' : 'Select a gate pass first, or add custom items'}
+            Tick items above or add a custom item
+          </p>
+        )}
+        {!selectedGP && customItems.length === 0 && (
+          <p className="text-[13px] text-[#98A2B3] text-center py-4">
+            Select a gate pass first, or add custom items
           </p>
         )}
       </Card>
