@@ -606,8 +606,8 @@ function TodayDeliveries({ data }: { data: DashboardOverviewData }) {
                   <tr className="border-b border-gray-100">
                     <th className="px-5 py-2.5 text-[11px] font-semibold text-gray-400 uppercase tracking-wide w-[40%]">Item</th>
                     <th className="px-5 py-2.5 text-[11px] font-semibold text-gray-400 uppercase tracking-wide w-[25%]">Specification</th>
-                    <th className="px-5 py-2.5 text-[11px] font-semibold text-gray-400 uppercase tracking-wide w-[17%] text-right">Sent Today</th>
-                    <th className="px-5 py-2.5 text-[11px] font-semibold text-gray-400 uppercase tracking-wide w-[18%] text-right">Pending</th>
+                    <th className="px-5 py-2.5 text-[11px] font-semibold text-gray-400 uppercase tracking-wide w-[17%] text-center">Sent Today</th>
+                    <th className="px-5 py-2.5 text-[11px] font-semibold text-gray-400 uppercase tracking-wide w-[18%] text-center">Pending</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -626,8 +626,8 @@ function TodayDeliveries({ data }: { data: DashboardOverviewData }) {
                           <span className="text-[12px] text-gray-400">—</span>
                         )}
                       </td>
-                      <td className="px-5 py-2.5 text-[13px] font-semibold text-gray-900 text-right">{row.sentToday > 0 ? row.sentToday : '—'}</td>
-                      <td className={`px-5 py-2.5 text-[13px] font-semibold text-right ${row.pending > 0 ? 'text-gray-900' : 'text-gray-400'}`}>
+                      <td className="px-5 py-2.5 text-[13px] font-semibold text-gray-900 text-center">{row.sentToday > 0 ? row.sentToday : '—'}</td>
+                      <td className={`px-5 py-2.5 text-[13px] font-semibold text-center ${row.pending > 0 ? 'text-gray-900' : 'text-gray-400'}`}>
                         {row.pending > 0 ? row.pending : '—'}
                       </td>
                     </tr>
