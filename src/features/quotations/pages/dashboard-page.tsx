@@ -540,7 +540,6 @@ const SPEC_COLORS = ['#7C3AED', '#0891B2', '#059669', '#D946EF', '#EA580C', '#4F
 function TodayDeliveries({ data }: { data: DashboardOverviewData }) {
   const clients = data.todayDeliveries || []
   const totalDelivered = clients.reduce((s, c) => s + c.total_qty, 0)
-  const totalOutstanding = clients.reduce((s, c) => s + c.outstanding, 0)
 
   if (clients.length === 0) {
     return (
@@ -556,70 +555,79 @@ function TodayDeliveries({ data }: { data: DashboardOverviewData }) {
   }
 
   return (
-    <Card>
-      <CardHeader className="border-b border-gray-100 pb-3">
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-[15px] font-semibold text-gray-900">Today's Deliveries</CardTitle>
-          <div className="flex items-center gap-4 text-[12px]">
-            <span className="text-gray-500">{clients.length} client{clients.length !== 1 ? 's' : ''}</span>
-            <span className="font-semibold text-gray-900">{totalDelivered.toLocaleString()} pcs</span>
-            {totalOutstanding > 0 && (
-              <span className="font-semibold text-gray-900">LKR {totalOutstanding.toLocaleString()}</span>
-            )}
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent className="pt-0">
-        {/* Table header */}
-        <div className="grid grid-cols-[1fr_2fr_1fr_1fr] gap-2 px-3 py-2 text-[11px] font-semibold text-gray-400 uppercase tracking-wide border-b border-gray-100">
-          <span>Client</span>
-          <span>Items Delivered</span>
-          <span className="text-right">Qty</span>
-          <span className="text-right">Balance</span>
-        </div>
-        {/* Rows */}
-        {clients.map((client, i) => (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h3 className="text-[15px] font-semibold text-gray-900">Today's Deliveries</h3>
+        <span className="text-[12px] font-semibold text-gray-900">{totalDelivered.toLocaleString()} pcs delivered</span>
+      </div>
+      {clients.map((client, i) => {
+        const totalPending = client.pending_items?.reduce((s, p) => s + p.pending, 0) || 0
+        return (
           <motion.div
             key={client.client_name}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: i * 0.03 }}
-            className="grid grid-cols-[1fr_2fr_1fr_1fr] gap-2 items-center px-3 py-2.5 border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition"
+            initial={{ opacity: 0, y: 4 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: i * 0.04 }}
           >
-            {/* Client */}
-            <div className="flex items-center gap-2 min-w-0">
-              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[11px] font-bold text-white bg-gray-600">
-                {client.client_name.charAt(0).toUpperCase()}
-              </div>
-              <span className="text-[13px] font-semibold text-gray-900 truncate">{client.client_name}</span>
-            </div>
-            {/* Items */}
-            <div className="flex flex-wrap gap-1 min-w-0">
-              {client.delivered_items.map((item, j) => (
-                <span key={`${item.item_name}-${item.specification}`} className="inline-flex items-center gap-0.5 text-[11px]">
-                  <span className="text-gray-700">{item.item_name}</span>
-                  {item.specification && (
-                    <span
-                      className="rounded px-1 text-[8px] font-bold text-white leading-[14px]"
-                      style={{ backgroundColor: SPEC_COLORS[j % SPEC_COLORS.length] }}
-                    >
-                      {item.specification}
-                    </span>
-                  )}
-                  <span className="text-gray-400 font-medium">×{item.quantity}</span>
-                </span>
-              ))}
-            </div>
-            {/* Qty */}
-            <span className="text-[13px] font-bold text-gray-900 text-right">{client.total_qty}</span>
-            {/* Balance */}
-            <span className="text-[13px] font-semibold text-gray-900 text-right">
-              {client.outstanding > 0 ? `LKR ${client.outstanding.toLocaleString()}` : '—'}
-            </span>
+            <Card>
+              <CardHeader className="border-b border-gray-100 pb-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[11px] font-bold text-white bg-gray-600">
+                      {client.client_name.charAt(0).toUpperCase()}
+                    </div>
+                    <CardTitle className="text-[14px] font-semibold text-gray-900">{client.client_name}</CardTitle>
+                  </div>
+                  <div className="flex items-center gap-3 text-[12px]">
+                    <span className="text-gray-500">{client.total_qty} pcs delivered</span>
+                    {totalPending > 0 && (
+                      <span className="font-semibold text-gray-900">{totalPending} pending</span>
+                    )}
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="pt-0 px-0">
+                {/* Table header */}
+                <div className="grid grid-cols-[1.5fr_1fr_1fr_1fr] gap-2 px-4 py-2 text-[10px] font-semibold text-gray-400 uppercase tracking-wide border-b border-gray-100">
+                  <span>Item</span>
+                  <span>Specification</span>
+                  <span className="text-right">Delivered</span>
+                  <span className="text-right">Pending</span>
+                </div>
+                {/* Delivered items */}
+                {client.delivered_items.map((item, j) => {
+                  const pending = client.pending_items?.find(
+                    p => p.item_name === item.item_name && p.specification === item.specification
+                  )
+                  const pendingQty = pending?.pending || 0
+                  return (
+                    <div key={`${item.item_name}-${item.specification}`} className="grid grid-cols-[1.5fr_1fr_1fr_1fr] gap-2 px-4 py-2 border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition items-center">
+                      <span className="text-[13px] font-medium text-gray-900 truncate">{item.item_name}</span>
+                      <span className="min-w-0">
+                        {item.specification ? (
+                          <span
+                            className="inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-bold text-white"
+                            style={{ backgroundColor: SPEC_COLORS[j % SPEC_COLORS.length] }}
+                          >
+                            {item.specification}
+                          </span>
+                        ) : (
+                          <span className="text-[12px] text-gray-400">—</span>
+                        )}
+                      </span>
+                      <span className="text-[13px] font-semibold text-gray-900 text-right">{item.quantity}</span>
+                      <span className={`text-[13px] font-semibold text-right ${pendingQty > 0 ? 'text-gray-900' : 'text-gray-400'}`}>
+                        {pendingQty > 0 ? pendingQty : '—'}
+                      </span>
+                    </div>
+                  )
+                })}
+              </CardContent>
+            </Card>
           </motion.div>
-        ))}
-      </CardContent>
-    </Card>
+        )
+      })}
+    </div>
   )
 }
 
