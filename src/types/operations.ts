@@ -200,6 +200,8 @@ export interface ReturnItem {
     condition: 'GOOD' | 'DAMAGED' | 'STAINED' | 'LOST'
     action: 'RECEIVE_BACK' | 'RE_WASH' | 'DISCARD' | 'COMPENSATE'
     notes?: string
+    resend_status?: 'PENDING' | 'SENT'
+    resent_at?: string
 }
 
 export interface BillAdjustment {

@@ -51,6 +51,9 @@ export default function CreateReturnPage() {
   const navigate = useNavigate()
   const [gatePasses, setGatePasses] = useState<GatePass[]>([])
   const [selectedGP, setSelectedGP] = useState<GatePass | null>(null)
+  const [gpSearch, setGpSearch] = useState('')
+  const [gpLoading, setGpLoading] = useState(true)
+  const [gpError, setGpError] = useState<string | null>(null)
   const [clientName, setClientName] = useState('')
   const [items, setItems] = useState<ReturnItem[]>([emptyItem()])
   const [adjustment, setAdjustment] = useState<BillAdjustment>({ adjustment_type: 'NONE', amount: 0, notes: '' })
@@ -58,20 +61,20 @@ export default function CreateReturnPage() {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  // Load gate passes for selection
   useEffect(() => {
-    gatepassApi.list({}).then((data: any) => {
-      setGatePasses(data.items || data)
-    }).catch(() => {})
+    setGpLoading(true)
+    setGpError(null)
+    gatepassApi.list()
+      .then((data: any) => {
+        const list = Array.isArray(data) ? data : data?.items || data?.gatepasses || []
+        setGatePasses(list)
+        setGpLoading(false)
+      })
+      .catch((err: any) => {
+        setGpError(err?.response?.data?.detail || err?.message || 'Failed to load gate passes')
+        setGpLoading(false)
+      })
   }, [])
-
-  const handleGPSelect = (gpId: string) => {
-    const gp = gatePasses.find((g) => g.id === gpId)
-    if (gp) {
-      setSelectedGP(gp)
-      setClientName(gp.client_name)
-    }
-  }
 
   const addItem = () => setItems([...items, emptyItem()])
   const removeItem = (idx: number) => setItems(items.filter((_, i) => i !== idx))
@@ -96,7 +99,10 @@ export default function CreateReturnPage() {
     setError(null)
 
     try {
-      const validItems = items.filter((i) => i.item_name.trim())
+      const validItems = items.filter((i) => i.item_name.trim()).map((item) => ({
+        ...item,
+        resend_status: item.action === 'RECEIVE_BACK' || item.action === 'RE_WASH' ? 'PENDING' as const : undefined,
+      }))
       await returnsApi.create({
         gate_pass_id: selectedGP.id!,
         client_name: clientName,
@@ -131,28 +137,71 @@ export default function CreateReturnPage() {
       {/* Gate Pass Selection */}
       <Card className="p-5">
         <h3 className="text-[14px] font-semibold text-[#101828] mb-3">Gate Pass</h3>
-        <select
-          value={selectedGP?.id || ''}
-          onChange={(e) => handleGPSelect(e.target.value)}
-          className="h-10 w-full rounded-lg border border-[#E4E7EC] bg-white px-3 text-[13px] outline-none focus:border-[#D97706] focus:ring-2 focus:ring-[#D97706]/10"
-        >
-          <option value="">Select gate pass…</option>
-          {gatePasses.map((gp) => (
-            <option key={gp.id} value={gp.id}>
-              {gp.gate_pass_number} — {gp.client_name}
-            </option>
-          ))}
-        </select>
+        {gpLoading ? (
+          <div className="h-10 rounded-lg bg-gray-100 animate-pulse" />
+        ) : gpError ? (
+          <div className="text-[13px] text-red-600">{gpError}</div>
+        ) : (
+          <>
+            <input
+              type="text"
+              value={gpSearch}
+              onChange={(e) => setGpSearch(e.target.value)}
+              placeholder="Search gate pass number or client…"
+              className="h-9 w-full rounded-lg border border-[#E4E7EC] bg-white px-3 text-[13px] outline-none focus:border-[#D97706] mb-2"
+            />
+            <div className="max-h-48 overflow-y-auto border border-[#E4E7EC] rounded-lg">
+              {gatePasses
+                .filter((gp) => {
+                  if (!gpSearch.trim()) return true
+                  const q = gpSearch.toLowerCase()
+                  return (
+                    gp.gate_pass_number.toLowerCase().includes(q) ||
+                    gp.client_name.toLowerCase().includes(q)
+                  )
+                })
+                .map((gp) => (
+                  <button
+                    key={gp.id}
+                    type="button"
+                    onClick={() => {
+                      setSelectedGP(gp)
+                      setClientName(gp.client_name)
+                      setGpSearch('')
+                    }}
+                    className={`w-full text-left px-3 py-2.5 text-[13px] border-b border-gray-50 last:border-0 hover:bg-gray-50 transition cursor-pointer ${
+                      selectedGP?.id === gp.id ? 'bg-amber-50 font-semibold' : ''
+                    }`}
+                  >
+                    <div className="flex justify-between items-center">
+                      <span className="font-mono text-[#6B7280]">{gp.gate_pass_number}</span>
+                      <span className="text-[#101828]">{gp.client_name}</span>
+                    </div>
+                    <div className="text-[11px] text-[#98A2B3] mt-0.5">
+                      {gp.items.length} item types · {gp.items.reduce((s, i) => s + i.received_qty, 0)} pcs
+                    </div>
+                  </button>
+                ))}
+              {gatePasses.filter((gp) => {
+                if (!gpSearch.trim()) return true
+                const q = gpSearch.toLowerCase()
+                return gp.gate_pass_number.toLowerCase().includes(q) || gp.client_name.toLowerCase().includes(q)
+              }).length === 0 && (
+                <div className="px-3 py-4 text-center text-[13px] text-[#98A2B3]">No gate passes found</div>
+              )}
+            </div>
+          </>
+        )}
 
         {selectedGP && (
-          <div className="mt-3 grid grid-cols-2 gap-3 text-[12px]">
-            <div>
-              <span className="text-[#98A2B3]">Client: </span>
-              <span className="font-medium text-[#101828]">{selectedGP.client_name}</span>
-            </div>
-            <div>
-              <span className="text-[#98A2B3]">Items: </span>
-              <span className="font-medium text-[#101828]">{selectedGP.items.length} types</span>
+          <div className="mt-3 p-3 rounded-lg bg-amber-50 border border-amber-200">
+            <div className="flex items-center justify-between">
+              <div>
+                <span className="text-[12px] text-[#98A2B3]">Selected: </span>
+                <span className="text-[13px] font-semibold text-[#101828]">{selectedGP.gate_pass_number}</span>
+                <span className="text-[12px] text-[#98A2B3]"> — {selectedGP.client_name}</span>
+              </div>
+              <button onClick={() => { setSelectedGP(null); setClientName('') }} className="text-[12px] text-[#DC2626] hover:underline cursor-pointer">Clear</button>
             </div>
           </div>
         )}

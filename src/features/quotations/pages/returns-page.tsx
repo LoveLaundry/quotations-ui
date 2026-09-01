@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Plus, Search, RotateCcw, X } from 'lucide-react'
+import { Plus, Search, RotateCcw, X, Send } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { Card } from '../../../components/ui/card'
 import { Button } from '../../../components/ui/button'
@@ -17,10 +17,13 @@ const STATUS_COLORS: Record<string, { bg: string; border: string; text: string }
   PROCESSED: { bg: '#D1FAE5', border: '#6EE7B7', text: '#059669' },
 }
 
-function ReturnCard({ r }: { r: Return }) {
+function ReturnCard({ r, onResent }: { r: Return; onResent: (returnId: string, itemName: string, spec: string) => void }) {
   const totalReturned = r.items.reduce((s, i) => s + i.returned_qty, 0)
   const sc = STATUS_COLORS[r.status] || STATUS_COLORS.PENDING
   const reasons = [...new Set(r.items.map((i) => i.reason))]
+  const pendingResend = r.items.filter(
+    (i) => (i.action === 'RECEIVE_BACK' || i.action === 'RE_WASH') && i.resend_status !== 'SENT'
+  )
 
   return (
     <Link to={`/returns/${r.return_id}`}>
@@ -31,9 +34,7 @@ function ReturnCard({ r }: { r: Return }) {
           </div>
           <div className="min-w-0 flex-1">
             <p className="text-[13px] font-semibold text-[#101828] truncate">{r.client_name}</p>
-            <p className="text-[11px] text-[#98A2B3] mt-0.5">
-              {r.return_id}
-            </p>
+            <p className="text-[11px] text-[#98A2B3] mt-0.5">{r.return_id}</p>
           </div>
           <span
             className="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold whitespace-nowrap"
@@ -51,6 +52,9 @@ function ReturnCard({ r }: { r: Return }) {
                 <span className="rounded px-1 text-[9px] font-bold text-white bg-gray-500">{item.specification}</span>
               )}
               <span className="text-gray-400">×{item.returned_qty}</span>
+              {item.resend_status === 'SENT' && (
+                <span className="text-[9px] font-bold text-green-600">✓Sent</span>
+              )}
             </span>
           ))}
         </div>
@@ -59,6 +63,29 @@ function ReturnCard({ r }: { r: Return }) {
           <span>{totalReturned} items returned</span>
           <span>{reasons.join(', ')}</span>
         </div>
+
+        {pendingResend.length > 0 && (
+          <div className="mt-2 pt-2 border-t border-amber-100">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-semibold text-amber-700">
+                {pendingResend.length} item{pendingResend.length !== 1 ? 's' : ''} to be sent
+              </span>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  pendingResend.forEach((item) => {
+                    onResent(r.return_id, item.item_name, item.specification || '')
+                  })
+                }}
+                className="inline-flex items-center gap-1 rounded-md bg-amber-100 px-2 py-1 text-[10px] font-semibold text-amber-800 hover:bg-amber-200 transition cursor-pointer"
+              >
+                <Send className="h-3 w-3" /> Mark Sent
+              </button>
+            </div>
+          </div>
+        )}
       </Card>
     </Link>
   )
@@ -76,28 +103,33 @@ export default function ReturnsPage() {
     return () => clearTimeout(t)
   }, [searchInput])
 
-  useEffect(() => {
-    let cancelled = false
+  const fetchReturns = () => {
     setLoading(true)
     setError(null)
-
     returnsApi
       .list({ client_name: clientName || undefined })
       .then((data) => {
-        if (!cancelled) {
-          setReturns(data.items)
-          setLoading(false)
-        }
+        setReturns(data.items)
+        setLoading(false)
       })
       .catch((err) => {
-        if (!cancelled) {
-          setError(err?.message || 'Failed to load returns')
-          setLoading(false)
-        }
+        setError(err?.message || 'Failed to load returns')
+        setLoading(false)
       })
+  }
 
-    return () => { cancelled = true }
+  useEffect(() => {
+    fetchReturns()
   }, [clientName])
+
+  const handleResent = async (returnId: string, itemName: string, spec: string) => {
+    try {
+      await returnsApi.markResent(returnId, itemName, spec)
+      fetchReturns()
+    } catch (err: any) {
+      alert(err?.response?.data?.detail || 'Failed to mark as sent')
+    }
+  }
 
   return (
     <div className="space-y-5 pb-10">
@@ -177,7 +209,7 @@ export default function ReturnsPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.03 }}
             >
-              <ReturnCard r={r} />
+              <ReturnCard r={r} onResent={handleResent} />
             </motion.div>
           ))}
         </div>
