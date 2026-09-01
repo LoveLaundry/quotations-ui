@@ -560,88 +560,62 @@ function TodayDeliveries({ data }: { data: DashboardOverviewData }) {
       <CardHeader className="border-b border-gray-100 pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="text-[15px] font-semibold text-gray-900">Today's Deliveries</CardTitle>
-          <div className="flex items-center gap-4 text-[12px] text-gray-500">
-            <span>{clients.length} client{clients.length !== 1 ? 's' : ''}</span>
-            <span className="font-semibold text-gray-900">{totalDelivered.toLocaleString()} pcs delivered</span>
+          <div className="flex items-center gap-4 text-[12px]">
+            <span className="text-gray-500">{clients.length} client{clients.length !== 1 ? 's' : ''}</span>
+            <span className="font-semibold text-gray-900">{totalDelivered.toLocaleString()} pcs</span>
             {totalOutstanding > 0 && (
-              <span className="font-semibold text-gray-900">LKR {totalOutstanding.toLocaleString()} outstanding</span>
+              <span className="font-semibold text-gray-900">LKR {totalOutstanding.toLocaleString()}</span>
             )}
           </div>
         </div>
       </CardHeader>
-      <CardContent className="pt-4 space-y-3">
+      <CardContent className="pt-0">
+        {/* Table header */}
+        <div className="grid grid-cols-[1fr_2fr_1fr_1fr] gap-2 px-3 py-2 text-[11px] font-semibold text-gray-400 uppercase tracking-wide border-b border-gray-100">
+          <span>Client</span>
+          <span>Items Delivered</span>
+          <span className="text-right">Qty</span>
+          <span className="text-right">Balance</span>
+        </div>
+        {/* Rows */}
         {clients.map((client, i) => (
           <motion.div
             key={client.client_name}
-            initial={{ opacity: 0, y: 4 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.04 }}
-            className="border border-gray-200 rounded-xl p-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: i * 0.03 }}
+            className="grid grid-cols-[1fr_2fr_1fr_1fr] gap-2 items-center px-3 py-2.5 border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition"
           >
-            {/* Client header */}
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-3">
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[13px] font-bold text-white bg-gray-700">
-                  {client.client_name.charAt(0).toUpperCase()}
-                </div>
-                <div>
-                  <p className="text-[14px] font-semibold text-gray-900">{client.client_name}</p>
-                  <p className="text-[11px] text-gray-500">
-                    {client.gate_pass_count} gate pass{client.gate_pass_count !== 1 ? 'es' : ''}
-                  </p>
-                </div>
+            {/* Client */}
+            <div className="flex items-center gap-2 min-w-0">
+              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[11px] font-bold text-white bg-gray-600">
+                {client.client_name.charAt(0).toUpperCase()}
               </div>
-              <div className="text-right">
-                <p className="text-[14px] font-bold text-gray-900">{client.total_qty.toLocaleString()} pcs</p>
-                {client.outstanding > 0 && (
-                  <p className="text-[11px] text-gray-500">Balance: LKR {client.outstanding.toLocaleString()}</p>
-                )}
-              </div>
+              <span className="text-[13px] font-semibold text-gray-900 truncate">{client.client_name}</span>
             </div>
-
-            {/* Delivered items */}
-            {client.delivered_items.length > 0 && (
-              <div className="flex flex-wrap gap-1.5 mb-2">
-                {client.delivered_items.map((item, j) => (
-                  <span key={`${item.item_name}-${item.specification}`} className="inline-flex items-center gap-1 bg-gray-50 border border-gray-200 rounded-lg px-2.5 py-1 text-[12px]">
-                    <span className="font-medium text-gray-700">{item.item_name}</span>
-                    {item.specification && (
-                      <span
-                        className="inline-flex items-center rounded px-1 py-0.5 text-[9px] font-bold text-white"
-                        style={{ backgroundColor: SPEC_COLORS[j % SPEC_COLORS.length] }}
-                      >
-                        {item.specification}
-                      </span>
-                    )}
-                    <span className="text-gray-400 font-semibold">×{item.quantity}</span>
-                  </span>
-                ))}
-              </div>
-            )}
-
-            {/* Pending items to send */}
-            {client.pending_items && client.pending_items.length > 0 && (
-              <div className="mt-2 pt-2 border-t border-gray-100">
-                <p className="text-[11px] font-semibold text-gray-500 mb-1.5">Still to send:</p>
-                <div className="flex flex-wrap gap-1.5">
-                  {client.pending_items.map((item, j) => (
-                    <span key={`${item.item_name}-${item.specification}`} className="inline-flex items-center gap-1 bg-white border border-gray-200 rounded-lg px-2.5 py-1 text-[12px]">
-                      <span className="font-medium text-gray-700">{item.item_name}</span>
-                      {item.specification && (
-                        <span
-                          className="inline-flex items-center rounded px-1 py-0.5 text-[9px] font-bold text-white"
-                          style={{ backgroundColor: SPEC_COLORS[j % SPEC_COLORS.length] }}
-                        >
-                          {item.specification}
-                        </span>
-                      )}
-                      <span className="text-gray-400">{item.delivered}/{item.received}</span>
-                      <span className="font-semibold text-gray-900">{item.pending}</span>
+            {/* Items */}
+            <div className="flex flex-wrap gap-1 min-w-0">
+              {client.delivered_items.map((item, j) => (
+                <span key={`${item.item_name}-${item.specification}`} className="inline-flex items-center gap-0.5 text-[11px]">
+                  <span className="text-gray-700">{item.item_name}</span>
+                  {item.specification && (
+                    <span
+                      className="rounded px-1 text-[8px] font-bold text-white leading-[14px]"
+                      style={{ backgroundColor: SPEC_COLORS[j % SPEC_COLORS.length] }}
+                    >
+                      {item.specification}
                     </span>
-                  ))}
-                </div>
-              </div>
-            )}
+                  )}
+                  <span className="text-gray-400 font-medium">×{item.quantity}</span>
+                </span>
+              ))}
+            </div>
+            {/* Qty */}
+            <span className="text-[13px] font-bold text-gray-900 text-right">{client.total_qty}</span>
+            {/* Balance */}
+            <span className="text-[13px] font-semibold text-gray-900 text-right">
+              {client.outstanding > 0 ? `LKR ${client.outstanding.toLocaleString()}` : '—'}
+            </span>
           </motion.div>
         ))}
       </CardContent>
