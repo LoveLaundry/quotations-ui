@@ -491,8 +491,8 @@ function AuditLog() {
               <td className="px-4 py-3"><ActionBadge action={row.action} /></td>
               <td className="px-4 py-3 font-medium" style={{ color: 'var(--text-secondary)' }}>{row.entity || '—'}</td>
               <td className="px-4 py-3 font-mono text-[11px]" style={{ color: 'var(--text-tertiary)' }}>{row.entity_id ? String(row.entity_id).slice(-8) : '—'}</td>
-              <td className="px-4 py-3 max-w-[200px] truncate text-[12px]" style={{ color: 'var(--text-tertiary)' }} title={row.details || ''}>
-                {row.details || '—'}
+              <td className="px-4 py-3 max-w-[200px] truncate text-[12px]" style={{ color: 'var(--text-tertiary)' }} title={row.details ? JSON.stringify(row.details) : ''}>
+                {row.details ? (typeof row.details === 'object' ? Object.entries(row.details).map(([k, v]) => `${k}: ${v}`).join(', ') : String(row.details)) : '—'}
               </td>
             </motion.tr>
           ))}
