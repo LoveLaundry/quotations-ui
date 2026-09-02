@@ -39,6 +39,11 @@ import ReturnsPage from '../features/quotations/pages/returns-page'
 import CreateReturnPage from '../features/quotations/pages/create-return-page'
 import ReturnDetailPage from '../features/quotations/pages/return-detail-page'
 
+// Shop Bills pages
+import ShopBillsListPage from '../features/shop-bills/pages/shop-bills-list-page'
+import CreateShopBillPage from '../features/shop-bills/pages/create-shop-bill-page'
+import ShopBillDetailPage from '../features/shop-bills/pages/shop-bill-detail-page'
+
 // Workers pages
 import { WorkersPage } from '../features/workers/pages/workers-page'
 import { DailyTasksPage } from '../features/workers/pages/daily-tasks-page'
@@ -107,6 +112,11 @@ export const router = createBrowserRouter([
           { path: 'returns', element: <ReturnsPage /> },
           { path: 'returns/new', element: <CreateReturnPage /> },
           { path: 'returns/:id', element: <ReturnDetailPage /> },
+
+          // Shop Bills
+          { path: 'shop-bills', element: <ShopBillsListPage /> },
+          { path: 'shop-bills/new', element: <CreateShopBillPage /> },
+          { path: 'shop-bills/:id', element: <ShopBillDetailPage /> },
 
           // Workers
           { path: 'workers', element: <WorkersPage /> },

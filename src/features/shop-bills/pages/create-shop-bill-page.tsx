@@ -1,0 +1,444 @@
+import { useState, useMemo, type FormEvent } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { ArrowLeft, Plus, Trash2, FileText, X } from 'lucide-react'
+import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card'
+import { Button } from '../../../components/ui/button'
+import { EmptyState } from '../../../components/ui/empty-state'
+import { Breadcrumb } from '../../../components/ui/breadcrumb'
+import { useCreateShopBill } from '../hooks/useShopBills'
+import { useQuotations } from '../../quotations/hooks/useQuotations'
+import type { ShopBillItem } from '../../../types/shop-bill'
+import type { Quotation } from '../../../types/quotation'
+
+interface LineItem {
+  key: number
+  item_name: string
+  specification: string
+  category: string
+  unit_price: number
+  quantity: number
+}
+
+let nextKey = 1
+
+const inputClass = 'h-10 w-full rounded-lg border border-[#E4E7EC] bg-white px-3 text-[13px] text-[#101828] outline-none focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/10 transition'
+const selectClass = inputClass
+
+export default function CreateShopBillPage() {
+  const navigate = useNavigate()
+  const createBill = useCreateShopBill()
+  const { data: quotations = [] } = useQuotations()
+
+  const [billNumber, setBillNumber] = useState('')
+  const [clientName, setClientName] = useState('')
+  const [selectedQuotation, setSelectedQuotation] = useState<Quotation | null>(null)
+  const [notes, setNotes] = useState('')
+  const [deliveryDate, setDeliveryDate] = useState('')
+  const [discounts, setDiscounts] = useState<number>(0)
+  const [transportFee, setTransportFee] = useState<number>(0)
+  const [taxes, setTaxes] = useState<number>(0)
+  const [items, setItems] = useState<LineItem[]>([
+    { key: nextKey++, item_name: '', specification: '', category: '', unit_price: 0, quantity: 1 },
+  ])
+  const [quotationSearch, setQuotationSearch] = useState('')
+  const [showQuotationPicker, setShowQuotationPicker] = useState(false)
+
+  const filteredQuotations = useMemo(() => {
+    const q = quotationSearch.trim().toLowerCase()
+    if (!q) return quotations
+    return quotations.filter(quo =>
+      [quo.client_name, quo.quotation_title ?? ''].join(' ').toLowerCase().includes(q),
+    )
+  }, [quotations, quotationSearch])
+
+  const updateItem = (key: number, field: keyof LineItem, value: string | number) => {
+    setItems(prev => prev.map(item => item.key === key ? { ...item, [field]: value } : item))
+  }
+
+  const addItem = () => {
+    setItems(prev => [...prev, { key: nextKey++, item_name: '', specification: '', category: '', unit_price: 0, quantity: 1 }])
+  }
+
+  const removeItem = (key: number) => {
+    if (items.length <= 1) return
+    setItems(prev => prev.filter(item => item.key !== key))
+  }
+
+  const loadFromQuotation = (quo: Quotation) => {
+    setSelectedQuotation(quo)
+    setClientName(quo.client_name)
+    setShowQuotationPicker(false)
+    if (quo.items && quo.items.length > 0) {
+      setItems(quo.items.map((qi: any) => ({
+        key: nextKey++,
+        item_name: qi.item_name ?? qi.name ?? '',
+        specification: qi.specification ?? '',
+        category: qi.category ?? '',
+        unit_price: qi.unit_price ?? 0,
+        quantity: qi.quantity ?? 1,
+      })))
+    }
+  }
+
+  const totals = useMemo(() => {
+    const totalAmount = items.reduce((sum, item) => sum + item.unit_price * item.quantity, 0)
+    const totalQuantity = items.reduce((sum, item) => sum + item.quantity, 0)
+    const grandTotal = totalAmount - discounts + transportFee + taxes
+    return { totalAmount, totalQuantity, grandTotal: Math.max(0, grandTotal) }
+  }, [items, discounts, transportFee, taxes])
+
+  const isValid = clientName.trim() && items.some(i => i.item_name.trim() && i.unit_price > 0 && i.quantity > 0)
+
+  const handleSubmit = (e: FormEvent) => {
+    e.preventDefault()
+    if (!isValid) return
+
+    createBill.mutate(
+      {
+        bill_number: billNumber.trim() || undefined,
+        client_name: clientName.trim(),
+        quotation_id: selectedQuotation?.id,
+        items: items
+          .filter(i => i.item_name.trim() && i.unit_price > 0 && i.quantity > 0)
+          .map(i => ({
+            item_name: i.item_name.trim(),
+            specification: i.specification.trim() || undefined,
+            category: i.category.trim() || undefined,
+            unit_price: i.unit_price,
+            quantity: i.quantity,
+          })),
+        notes: notes.trim() || undefined,
+        delivery_date: deliveryDate || undefined,
+        discounts: discounts || undefined,
+        transport_fee: transportFee || undefined,
+        taxes: taxes || undefined,
+      },
+      { onSuccess: (bill) => navigate(`/shop-bills/${bill.id}`) },
+    )
+  }
+
+  const fmt = (v: number) => `Rs. ${v.toLocaleString('en-LK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+
+  return (
+    <div className="space-y-5 pb-10">
+      <div>
+        <Breadcrumb
+          items={[
+            { label: 'Dashboard', href: '/' },
+            { label: 'Shop Bills', href: '/shop-bills' },
+            { label: 'New Bill' },
+          ]}
+        />
+        <div className="flex items-center gap-3 mt-1">
+          <button onClick={() => navigate('/shop-bills')} className="p-1 rounded hover:bg-gray-100 transition cursor-pointer">
+            <ArrowLeft className="h-5 w-5 text-[#6B7280]" />
+          </button>
+          <div>
+            <h1 className="text-dashboard-title">New Shop Bill</h1>
+            <p className="text-[13px] text-[#98A2B3] mt-0.5">
+              {selectedQuotation
+                ? `Creating bill from "${selectedQuotation.quotation_title ?? selectedQuotation.client_name}"`
+                : 'Enter bill details manually or link a quotation'}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <form onSubmit={handleSubmit} className="space-y-5">
+        {/* Bill Info */}
+        <Card>
+          <CardHeader><CardTitle className="text-[15px]">Bill Information</CardTitle></CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-[11px] font-semibold uppercase tracking-wide text-[#6B7280] mb-1.5">Bill Number (auto-generated if empty)</label>
+                <input
+                  type="text"
+                  value={billNumber}
+                  onChange={e => setBillNumber(e.target.value)}
+                  placeholder="e.g. SB-12345678"
+                  className={inputClass}
+                />
+              </div>
+              <div>
+                <label className="block text-[11px] font-semibold uppercase tracking-wide text-[#6B7280] mb-1.5">Client Name *</label>
+                <input
+                  type="text"
+                  required
+                  value={clientName}
+                  onChange={e => setClientName(e.target.value)}
+                  placeholder="Shop / client name"
+                  className={inputClass}
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-[11px] font-semibold uppercase tracking-wide text-[#6B7280] mb-1.5">Delivery Date</label>
+                <input
+                  type="date"
+                  value={deliveryDate}
+                  onChange={e => setDeliveryDate(e.target.value)}
+                  className={inputClass}
+                />
+              </div>
+              <div>
+                <label className="block text-[11px] font-semibold uppercase tracking-wide text-[#6B7280] mb-1.5">Quotation (optional)</label>
+                {selectedQuotation ? (
+                  <div className="flex items-center gap-2">
+                    <span className="flex-1 text-[13px] text-[#101828] bg-[#F9FAFB] rounded-lg px-3 py-2 border border-[#E4E7EC]">
+                      {selectedQuotation.quotation_title ?? selectedQuotation.client_name}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => { setSelectedQuotation(null); setQuotationSearch('') }}
+                      className="p-1 rounded hover:bg-gray-100 cursor-pointer"
+                    >
+                      <X className="h-4 w-4 text-[#6B7280]" />
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => setShowQuotationPicker(!showQuotationPicker)}
+                      className={`${inputClass} text-left flex items-center gap-2 cursor-pointer`}
+                    >
+                      <FileText className="h-4 w-4 text-[#98A2B3]" />
+                      <span className="text-[#98A2B3]">Link a quotation…</span>
+                    </button>
+                    {showQuotationPicker && (
+                      <div className="mt-1 border border-[#E4E7EC] rounded-lg bg-white shadow-lg max-h-48 overflow-y-auto">
+                        <div className="p-2 border-b border-[#E4E7EC]">
+                          <input
+                            type="text"
+                            value={quotationSearch}
+                            onChange={e => setQuotationSearch(e.target.value)}
+                            placeholder="Search…"
+                            className="h-8 w-full rounded border border-[#E4E7EC] px-2 text-[12px] outline-none"
+                          />
+                        </div>
+                        {filteredQuotations.length === 0 ? (
+                          <div className="p-3 text-[12px] text-[#98A2B3] text-center">No quotations found</div>
+                        ) : (
+                          filteredQuotations.map(quo => (
+                            <button
+                              key={quo.id}
+                              type="button"
+                              onClick={() => loadFromQuotation(quo)}
+                              className="w-full text-left px-3 py-2 hover:bg-[#FFF1F1] transition text-[12px] cursor-pointer"
+                            >
+                              <p className="font-medium text-[#101828]">{quo.client_name}</p>
+                              <p className="text-[#6B7280]">{quo.quotation_title ?? 'Untitled'}</p>
+                            </button>
+                          ))
+                        )}
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-[11px] font-semibold uppercase tracking-wide text-[#6B7280] mb-1.5">Notes</label>
+              <textarea
+                value={notes}
+                onChange={e => setNotes(e.target.value)}
+                rows={2}
+                placeholder="Optional notes…"
+                className={`${inputClass} h-auto py-2 resize-none`}
+              />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Line Items */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-[15px]">Items</CardTitle>
+              <button
+                type="button"
+                onClick={addItem}
+                className="flex items-center gap-1.5 text-[12px] font-medium text-[#DC2626] hover:text-[#B91C1C] cursor-pointer"
+              >
+                <Plus size={14} /> Add Item
+              </button>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {items.map((item, idx) => (
+              <div key={item.key} className="grid grid-cols-12 gap-2 items-end">
+                <div className="col-span-12 md:col-span-3">
+                  {idx === 0 && <label className="block text-[10px] font-semibold uppercase text-[#98A2B3] mb-1">Item Name *</label>}
+                  <input
+                    type="text"
+                    value={item.item_name}
+                    onChange={e => updateItem(item.key, 'item_name', e.target.value)}
+                    placeholder="Item name"
+                    className={inputClass}
+                  />
+                </div>
+                <div className="col-span-6 md:col-span-2">
+                  {idx === 0 && <label className="block text-[10px] font-semibold uppercase text-[#98A2B3] mb-1">Spec</label>}
+                  <input
+                    type="text"
+                    value={item.specification}
+                    onChange={e => updateItem(item.key, 'specification', e.target.value)}
+                    placeholder="Size / color"
+                    className={inputClass}
+                  />
+                </div>
+                <div className="col-span-6 md:col-span-2">
+                  {idx === 0 && <label className="block text-[10px] font-semibold uppercase text-[#98A2B3] mb-1">Category</label>}
+                  <input
+                    type="text"
+                    value={item.category}
+                    onChange={e => updateItem(item.key, 'category', e.target.value)}
+                    placeholder="Category"
+                    className={inputClass}
+                  />
+                </div>
+                <div className="col-span-4 md:col-span-2">
+                  {idx === 0 && <label className="block text-[10px] font-semibold uppercase text-[#98A2B3] mb-1">Unit Price *</label>}
+                  <input
+                    type="number"
+                    min={0}
+                    step="0.01"
+                    value={item.unit_price || ''}
+                    onChange={e => updateItem(item.key, 'unit_price', e.target.value ? Number(e.target.value) : 0)}
+                    placeholder="0.00"
+                    className={inputClass}
+                  />
+                </div>
+                <div className="col-span-4 md:col-span-1">
+                  {idx === 0 && <label className="block text-[10px] font-semibold uppercase text-[#98A2B3] mb-1">Qty *</label>}
+                  <input
+                    type="number"
+                    min={1}
+                    value={item.quantity}
+                    onChange={e => updateItem(item.key, 'quantity', e.target.value ? Number(e.target.value) : 1)}
+                    className={inputClass}
+                  />
+                </div>
+                <div className="col-span-3 md:col-span-1 text-right">
+                  {idx === 0 && <label className="block text-[10px] font-transparent mb-1">&nbsp;</label>}
+                  <span className="text-[12px] text-[#6B7280]">
+                    {fmt(item.unit_price * item.quantity)}
+                  </span>
+                </div>
+                <div className="col-span-1">
+                  {idx === 0 && <label className="block text-[10px] font-transparent mb-1">&nbsp;</label>}
+                  <button
+                    type="button"
+                    onClick={() => removeItem(item.key)}
+                    disabled={items.length <= 1}
+                    className="p-1 rounded text-[#98A2B3] hover:text-[#DC2626] hover:bg-red-50 disabled:opacity-30 cursor-pointer"
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+
+        {/* Totals */}
+        <Card>
+          <CardContent className="py-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-[11px] font-semibold uppercase tracking-wide text-[#6B7280] mb-1.5">Discounts (LKR)</label>
+                  <input
+                    type="number"
+                    min={0}
+                    step="0.01"
+                    value={discounts || ''}
+                    onChange={e => setDiscounts(e.target.value ? Number(e.target.value) : 0)}
+                    placeholder="0.00"
+                    className={inputClass}
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-semibold uppercase tracking-wide text-[#6B7280] mb-1.5">Transport Fee (LKR)</label>
+                  <input
+                    type="number"
+                    min={0}
+                    step="0.01"
+                    value={transportFee || ''}
+                    onChange={e => setTransportFee(e.target.value ? Number(e.target.value) : 0)}
+                    placeholder="0.00"
+                    className={inputClass}
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-semibold uppercase tracking-wide text-[#6B7280] mb-1.5">Taxes (LKR)</label>
+                  <input
+                    type="number"
+                    min={0}
+                    step="0.01"
+                    value={taxes || ''}
+                    onChange={e => setTaxes(e.target.value ? Number(e.target.value) : 0)}
+                    placeholder="0.00"
+                    className={inputClass}
+                  />
+                </div>
+              </div>
+              <div className="flex flex-col justify-center space-y-2 text-right md:text-right">
+                <div className="flex justify-between md:justify-end md:gap-8">
+                  <span className="text-[13px] text-[#6B7280]">Subtotal</span>
+                  <span className="text-[13px] font-medium text-[#101828]">{fmt(totals.totalAmount)}</span>
+                </div>
+                {discounts > 0 && (
+                  <div className="flex justify-between md:justify-end md:gap-8">
+                    <span className="text-[13px] text-[#6B7280]">Discounts</span>
+                    <span className="text-[13px] font-medium text-[#DC2626]">-{fmt(discounts)}</span>
+                  </div>
+                )}
+                {transportFee > 0 && (
+                  <div className="flex justify-between md:justify-end md:gap-8">
+                    <span className="text-[13px] text-[#6B7280]">Transport</span>
+                    <span className="text-[13px] font-medium text-[#101828]">+{fmt(transportFee)}</span>
+                  </div>
+                )}
+                {taxes > 0 && (
+                  <div className="flex justify-between md:justify-end md:gap-8">
+                    <span className="text-[13px] text-[#6B7280]">Taxes</span>
+                    <span className="text-[13px] font-medium text-[#101828]">+{fmt(taxes)}</span>
+                  </div>
+                )}
+                <div className="border-t border-[#E4E7EC] pt-2 flex justify-between md:justify-end md:gap-8">
+                  <span className="text-[14px] font-semibold text-[#101828]">Grand Total</span>
+                  <span className="text-[18px] font-bold text-[#DC2626]">{fmt(totals.grandTotal)}</span>
+                </div>
+                <p className="text-[11px] text-[#98A2B3]">{totals.totalQuantity} item{totals.totalQuantity === 1 ? '' : 's'}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Actions */}
+        <div className="flex justify-end gap-3">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => navigate('/shop-bills')}
+            className="cursor-pointer"
+          >
+            Cancel
+          </Button>
+          <Button
+            type="submit"
+            disabled={!isValid || createBill.isPending}
+            className="bg-[#DC2626] hover:bg-[#B91C1C] text-white cursor-pointer"
+          >
+            {createBill.isPending ? 'Creating…' : 'Create Shop Bill'}
+          </Button>
+        </div>
+      </form>
+    </div>
+  )
+}

@@ -42,6 +42,7 @@ const navGroups = [
       { to: '/workers', label: 'Staff Management', icon: Users, end: true },
       { to: '/workers/daily-tasks', label: 'Staff Daily Tasks', icon: UsersThree, end: false, indent: true },
       { to: '/bills', label: 'Bills', icon: CurrencyCircleDollar, end: false, permission: 'view_bills' },
+      { to: '/shop-bills', label: 'Shop Bills', icon: CurrencyCircleDollar, end: false, permission: 'view_bills' },
       { to: '/invoices/new', label: 'Invoices', icon: FileText, end: false, permission: 'view_bills' },
     ],
   },
