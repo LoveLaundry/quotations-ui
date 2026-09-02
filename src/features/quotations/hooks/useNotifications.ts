@@ -1,11 +1,12 @@
 import { useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { gatepasses } from '../services/gatepass.service'
+import { returns as returnsApi } from '../services/returns.service'
 import { useDeliveries } from './useDeliveries'
 import { useQuotations } from './useQuotations'
 import type { NotificationItem, GatePassPendingEntry } from '../../../types/notification'
 import type { Quotation } from '../../../types/quotation'
-import type { GatePass } from '../../../types/operations'
+import type { GatePass, Return, ReturnItem } from '../../../types/operations'
 
 export function useNotifications() {
   const { data: gatePasses = [], isLoading: gpLoading } = useQuery<GatePass[]>({
@@ -18,6 +19,12 @@ export function useNotifications() {
 
   const { data: quotations = [], isLoading: qLoading } = useQuotations()
 
+  const { data: returnsList = [], isLoading: rLoading } = useQuery<Return[]>({
+    queryKey: ['notifications', 'returns'],
+    queryFn: () => returnsApi.list(),
+    staleTime: 60_000,
+  })
+
   const gatePassPending: GatePassPendingEntry[] = useMemo(() => {
     const deliveredByPass = new Map<string, Map<string, number>>()
     for (const d of deliveryList) {
@@ -29,6 +36,23 @@ export function useNotifications() {
       }
       for (const it of d.items ?? []) {
         m.set(it.item_name, (m.get(it.item_name) ?? 0) + (Number(it.quantity) || 0))
+      }
+    }
+
+    // Build returned items map: client_name → { item_name → qty }
+    const returnedByClient = new Map<string, Map<string, number>>()
+    for (const ret of returnsList) {
+      for (const item of (ret.items ?? []) as ReturnItem[]) {
+        if ((item.action === 'RECEIVE_BACK' || item.action === 'RE_WASH') && item.resend_status !== 'SENT') {
+          const client = (ret.client_name ?? '').trim()
+          if (!client) continue
+          let m = returnedByClient.get(client)
+          if (!m) {
+            m = new Map()
+            returnedByClient.set(client, m)
+          }
+          m.set(item.item_name, (m.get(item.item_name) ?? 0) + (Number(item.returned_qty) || 0))
+        }
       }
     }
 
@@ -46,10 +70,13 @@ export function useNotifications() {
         }
       }
 
+      const clientReturned = returnedByClient.get((gp.client_name ?? '').trim()) ?? new Map()
+
       for (const item of gp.items ?? []) {
         const received = Number(item.received_qty) || 0
         const delivered = Number(delMap?.get(item.item_name) ?? 0)
-        const pending = Math.max(0, received - delivered)
+        const retQty = Number(clientReturned.get(item.item_name) ?? 0)
+        const pending = Math.max(0, received - delivered + retQty)
         if (pending > 0) {
           result.push({
             gate_pass_id: gp.id ?? (gp as { _id?: string })._id ?? '',
@@ -64,7 +91,7 @@ export function useNotifications() {
       }
     }
     return result
-  }, [gatePasses, deliveryList])
+  }, [gatePasses, deliveryList, returnsList])
 
   const deliveredQuotations: Quotation[] = useMemo(
     () => quotations.filter((q) => q.status === 'delivered'),
@@ -113,6 +140,6 @@ export function useNotifications() {
     acceptedCount,
     gatePassPending,
     deliveredQuotations,
-    isLoading: gpLoading || dLoading || qLoading,
+    isLoading: gpLoading || dLoading || qLoading || rLoading,
   }
 }

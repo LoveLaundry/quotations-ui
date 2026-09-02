@@ -1,5 +1,6 @@
 import { useState, useMemo, Fragment } from 'react'
 import { useParams, Link } from 'react-router-dom'
+import { useQuery } from '@tanstack/react-query'
 import {
     ArrowLeft, ClipboardList, Calendar, User, AlertCircle,
     ChevronDown, Truck, CheckCircle2, Pencil, X, Check, Receipt,
@@ -16,7 +17,9 @@ import { formatDate } from '../../../lib/utils'
 import { useGatePass, useUpdateGatePassStatus, useAdjustGatePass, useUpdateGatePassDate, useCreateBillFromGatePass, useUpdateGatePass } from '../hooks/useGatePasses'
 import { useDeliveries } from '../hooks/useDeliveries'
 import { useQuotation } from '../hooks/useQuotations'
+import { returns as returnsApi } from '../services/returns.service'
 import { ItemNameInput } from './create-gatepass-page'
+import type { ReturnItem } from '../../../types/operations'
 
 const STATUS_CONFIG: Record<string, { label: string; bg: string; text: string; border: string; dot: string }> = {
     RECEIVED: { label: 'Received', bg: '#EFF6FF', text: '#2563EB', border: '#BFDBFE', dot: '#3B82F6' },
@@ -102,6 +105,26 @@ export default function GatePassDetailPage() {
         return map
     }, [deliveries])
 
+    const { data: returnsList = [] } = useQuery({
+        queryKey: ['returns'],
+        queryFn: () => returnsApi.list(),
+        staleTime: 60_000,
+    })
+
+    const returnedMap = useMemo(() => {
+        const map: Record<string, number> = {}
+        for (const ret of returnsList) {
+            if (ret.client_name !== gp?.client_name) continue
+            for (const item of (ret.items ?? []) as ReturnItem[]) {
+                if ((item.action === 'RECEIVE_BACK' || item.action === 'RE_WASH') && item.resend_status !== 'SENT') {
+                    const key = `${item.item_name}||${item.specification || ''}`
+                    map[key] = (map[key] || 0) + (Number(item.returned_qty) || 0)
+                }
+            }
+        }
+        return map
+    }, [returnsList, gp?.client_name])
+
     if (isLoading) {
         return (
             <div className="space-y-3">
@@ -124,7 +147,8 @@ export default function GatePassDetailPage() {
     const mismatches = gp.items.filter((i: any) => i.difference !== 0)
 
     const totalDelivered = gp.items.reduce((s: number, i: any) => s + (deliveredMap[`${i.item_name}||${i.specification || ''}`] || 0), 0)
-    const totalPending = totalReceived - totalDelivered
+    const totalReturned = gp.items.reduce((s: number, i: any) => s + (returnedMap[`${i.item_name}||${i.specification || ''}`] || 0), 0)
+    const totalPending = totalReceived - totalDelivered + totalReturned
 
     const handleAdjust = (itemName: string) => {
         const item = gp.items.find((i: any) => i.item_name === itemName)
@@ -604,7 +628,7 @@ export default function GatePassDetailPage() {
                         <table className="w-full text-[13px]">
                             <thead>
                                 <tr className="border-b border-[#F2F4F7]">
-                                    {['Item', 'Spec', 'Category', 'Client Qty', 'Received', 'Delivered', 'Pending', 'Diff', 'Reason', ''].map(h => (
+                                    {['Item', 'Spec', 'Category', 'Client Qty', 'Received', 'Delivered', 'Returned', 'Pending', 'Diff', 'Reason', ''].map(h => (
                                         <th key={h} className="py-3 pr-3 text-left text-[11px] font-semibold uppercase tracking-wide text-[#98A2B3] first:pl-0">
                                             {h}
                                         </th>
@@ -629,9 +653,13 @@ export default function GatePassDetailPage() {
                                             <td className="py-3 pr-3 text-[#6B7280]">{item.client_qty}</td>
                                             <td className="py-3 pr-3 font-semibold text-[#101828]">{item.received_qty}</td>
                                             <td className="py-3 pr-3 text-[#6B7280]">{deliveredMap[`${item.item_name}||${item.specification || ''}`] || 0}</td>
+                                            <td className="py-3 pr-3 text-[#6B7280]">{returnedMap[`${item.item_name}||${item.specification || ''}`] || 0}</td>
                                             <td className="py-3 pr-3">
                                                 {(() => {
-                                                    const pending = item.received_qty - (deliveredMap[`${item.item_name}||${item.specification || ''}`] || 0)
+                                                    const dKey = `${item.item_name}||${item.specification || ''}`
+                                                    const delivered = deliveredMap[dKey] || 0
+                                                    const retQty = returnedMap[dKey] || 0
+                                                    const pending = item.received_qty - delivered + retQty
                                                     return pending > 0 ? (
                                                         <span className="font-semibold text-[#EA580C]">{pending}</span>
                                                     ) : (
