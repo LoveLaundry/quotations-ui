@@ -21,7 +21,7 @@ export function useNotifications() {
 
   const { data: returnsList = [], isLoading: rLoading } = useQuery<Return[]>({
     queryKey: ['notifications', 'returns'],
-    queryFn: () => returnsApi.list(),
+    queryFn: () => returnsApi.list().then((r: any) => Array.isArray(r) ? r : r?.items ?? []),
     staleTime: 60_000,
   })
 

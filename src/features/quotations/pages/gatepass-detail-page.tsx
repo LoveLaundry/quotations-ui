@@ -107,7 +107,7 @@ export default function GatePassDetailPage() {
 
     const { data: returnsList = [] } = useQuery({
         queryKey: ['returns'],
-        queryFn: () => returnsApi.list(),
+        queryFn: () => returnsApi.list().then((r: any) => Array.isArray(r) ? r : r?.items ?? []),
         staleTime: 60_000,
     })
 
