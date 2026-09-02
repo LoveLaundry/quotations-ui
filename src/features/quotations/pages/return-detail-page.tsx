@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import {
   ArrowLeft, Calendar, User, Package, FileText,
@@ -55,7 +55,7 @@ export default function ReturnDetailPage() {
   const [updating, setUpdating] = useState(false)
 
   // Fetch return data
-  useState(() => {
+  useEffect(() => {
     if (!id) return
     setLoading(true)
     returnsApi.get(id)
@@ -67,7 +67,7 @@ export default function ReturnDetailPage() {
         setError(err?.response?.data?.detail || err?.message || 'Failed to load return')
         setLoading(false)
       })
-  })
+  }, [id])
 
   const handleStatusChange = async (newStatus: string) => {
     if (!returnData) return
