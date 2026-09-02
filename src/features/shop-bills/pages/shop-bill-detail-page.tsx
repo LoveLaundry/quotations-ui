@@ -1,9 +1,8 @@
 import { useState, type FormEvent } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
-import { ArrowLeft, Calendar, Trash2, Banknote, Wallet, FileText, CheckCircle, Clock, Truck } from 'lucide-react'
+import { ArrowLeft, Calendar, Trash2, Banknote, Wallet, CheckCircle } from 'lucide-react'
 import { Button } from '../../../components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card'
-import { Badge } from '../../../components/ui/badge'
 import { EmptyState } from '../../../components/ui/empty-state'
 import { ErrorState } from '../../../components/ui/error-state'
 import { Skeleton } from '../../../components/ui/skeleton'
@@ -155,7 +154,7 @@ export default function ShopBillDetailPage() {
     if (!bill) return
     const flow: Record<string, string> = { PENDING: 'PROCESSING', PROCESSING: 'DELIVERED', DELIVERED: 'COMPLETED' }
     const next = flow[bill.status]
-    if (next) updateBill.mutate({ id: bill.id, payload: { status: next } })
+    if (next) updateBill.mutate({ id: bill.id, payload: { status: next } as any })
   }
 
   const fmt = (v: number) => `Rs. ${v.toLocaleString('en-LK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
@@ -215,7 +214,7 @@ export default function ShopBillDetailPage() {
       ) : isError ? (
         <ErrorState description={error instanceof Error ? error.message : 'Unable to load shop bill'} />
       ) : !bill ? (
-        <EmptyState title="Shop bill not found" />
+        <EmptyState title="Shop bill not found" description="This shop bill may have been deleted." />
       ) : (
         <>
           {/* Summary Cards */}
@@ -362,13 +361,13 @@ export default function ShopBillDetailPage() {
 
           {/* Delete Confirm */}
           <ConfirmDialog
-            isOpen={showDeleteConfirm}
-            onClose={() => setShowDeleteConfirm(false)}
+            open={showDeleteConfirm}
+            onCancel={() => setShowDeleteConfirm(false)}
             onConfirm={confirmDelete}
             title="Delete Shop Bill"
             description={`Are you sure you want to delete bill ${bill.bill_number}? This action cannot be undone.`}
             confirmLabel="Delete"
-            variant="destructive"
+            variant="danger"
           />
         </>
       )}

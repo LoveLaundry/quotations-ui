@@ -3,11 +3,9 @@ import { useNavigate } from 'react-router-dom'
 import { ArrowLeft, Plus, Trash2, FileText, X } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card'
 import { Button } from '../../../components/ui/button'
-import { EmptyState } from '../../../components/ui/empty-state'
 import { Breadcrumb } from '../../../components/ui/breadcrumb'
 import { useCreateShopBill } from '../hooks/useShopBills'
 import { useQuotations } from '../../quotations/hooks/useQuotations'
-import type { ShopBillItem } from '../../../types/shop-bill'
 import type { Quotation } from '../../../types/quotation'
 
 interface LineItem {
@@ -22,7 +20,6 @@ interface LineItem {
 let nextKey = 1
 
 const inputClass = 'h-10 w-full rounded-lg border border-[#E4E7EC] bg-white px-3 text-[13px] text-[#101828] outline-none focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/10 transition'
-const selectClass = inputClass
 
 export default function CreateShopBillPage() {
   const navigate = useNavigate()
@@ -68,14 +65,14 @@ export default function CreateShopBillPage() {
     setSelectedQuotation(quo)
     setClientName(quo.client_name)
     setShowQuotationPicker(false)
-    if (quo.items && quo.items.length > 0) {
-      setItems(quo.items.map((qi: any) => ({
+    if (quo.line_items && quo.line_items.length > 0) {
+      setItems(quo.line_items.map((qi) => ({
         key: nextKey++,
-        item_name: qi.item_name ?? qi.name ?? '',
-        specification: qi.specification ?? '',
+        item_name: qi.item_name ?? '',
+        specification: '',
         category: qi.category ?? '',
         unit_price: qi.unit_price ?? 0,
-        quantity: qi.quantity ?? 1,
+        quantity: 1,
       })))
     }
   }
@@ -97,7 +94,7 @@ export default function CreateShopBillPage() {
       {
         bill_number: billNumber.trim() || undefined,
         client_name: clientName.trim(),
-        quotation_id: selectedQuotation?.id,
+        quotation_id: selectedQuotation ? String(selectedQuotation.id) : undefined,
         items: items
           .filter(i => i.item_name.trim() && i.unit_price > 0 && i.quantity > 0)
           .map(i => ({

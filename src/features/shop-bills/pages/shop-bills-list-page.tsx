@@ -1,15 +1,14 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Plus, Search, Receipt, X, Calendar } from 'lucide-react'
+import { Plus, Search, Receipt, X } from 'lucide-react'
 import { Card } from '../../../components/ui/card'
 import { Button } from '../../../components/ui/button'
-import { Badge } from '../../../components/ui/badge'
 import { EmptyState } from '../../../components/ui/empty-state'
 import { ErrorState } from '../../../components/ui/error-state'
 import { Skeleton } from '../../../components/ui/skeleton'
 import { Breadcrumb } from '../../../components/ui/breadcrumb'
-import { formatDate } from '../../../lib/utils'
 import { useShopBills } from '../hooks/useShopBills'
+import type { ShopBill } from '../../../types/shop-bill'
 
 const STATUS_COLORS: Record<string, string> = {
   PENDING: 'bg-amber-50 text-amber-700 border border-amber-200',
@@ -156,7 +155,7 @@ export default function ShopBillsListPage() {
         />
       ) : (
         <div className="space-y-2">
-          {bills.map(bill => (
+          {bills.map((bill: ShopBill) => (
             <Link key={bill.id} to={`/shop-bills/${bill.id}`}>
               <Card className="flex items-center gap-4 p-4 hover:border-[#DC2626]/40 transition cursor-pointer">
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#FFF1F1] text-[#DC2626] border border-[#FECACA]">

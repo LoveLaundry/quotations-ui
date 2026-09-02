@@ -39,7 +39,7 @@ export function useCreateShopBill() {
 export function useUpdateShopBill() {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: ({ id, payload }: { id: string; payload: Partial<ShopBillCreate> }) =>
+    mutationFn: ({ id, payload }: { id: string; payload: Record<string, any> }) =>
       shopBillService.update(id, payload),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: shopBillKeys.all })
