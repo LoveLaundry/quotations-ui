@@ -43,6 +43,7 @@ import ReturnDetailPage from '../features/quotations/pages/return-detail-page'
 import ShopBillsListPage from '../features/shop-bills/pages/shop-bills-list-page'
 import CreateShopBillPage from '../features/shop-bills/pages/create-shop-bill-page'
 import ShopBillDetailPage from '../features/shop-bills/pages/shop-bill-detail-page'
+import LegacyInvoicePage from '../features/shop-bills/pages/legacy-invoice-page'
 
 // Workers pages
 import { WorkersPage } from '../features/workers/pages/workers-page'
@@ -117,6 +118,7 @@ export const router = createBrowserRouter([
           { path: 'shop-bills', element: <ShopBillsListPage /> },
           { path: 'shop-bills/new', element: <CreateShopBillPage /> },
           { path: 'shop-bills/:id', element: <ShopBillDetailPage /> },
+          { path: 'legacy-invoice', element: <LegacyInvoicePage /> },
 
           // Workers
           { path: 'workers', element: <WorkersPage /> },
