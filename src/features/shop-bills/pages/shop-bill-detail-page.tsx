@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
-import { ArrowLeft, Calendar, Trash2, Banknote, Wallet, CheckCircle } from 'lucide-react'
+import { ArrowLeft, Calendar, Trash2, Banknote, Wallet, CheckCircle, Copy, Scissors, Lock, Unlock, Repeat, MessageSquare } from 'lucide-react'
 import { Button } from '../../../components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card'
 import { EmptyState } from '../../../components/ui/empty-state'
@@ -10,7 +10,8 @@ import { Breadcrumb } from '../../../components/ui/breadcrumb'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogBody, DialogFooter } from '../../../components/ui/dialog'
 import { ConfirmDialog } from '../../../components/ui/confirm-dialog'
 import { formatDate } from '../../../lib/utils'
-import { useShopBill, useUpdateShopBill, useDeleteShopBill, useRecordShopBillPayment } from '../hooks/useShopBills'
+import { useShopBill, useUpdateShopBill, useDeleteShopBill, useRecordShopBillPayment, useDuplicateShopBill, useSplitShopBill, useMakeRecurring } from '../hooks/useShopBills'
+import { shopBillService } from '../services/shop-bill.service'
 
 const STATUS_COLORS: Record<string, string> = {
   PENDING: 'bg-amber-50 text-amber-700 border border-amber-200',
@@ -28,24 +29,13 @@ const PAYMENT_COLORS: Record<string, string> = {
   CANCELLED: 'bg-gray-100 text-gray-500 border border-gray-200',
 }
 
-function RecordPaymentModal({
-  isOpen,
-  onClose,
-  billId,
-  outstanding,
-}: {
-  isOpen: boolean
-  onClose: () => void
-  billId: string
-  outstanding: number
-}) {
+function RecordPaymentModal({ isOpen, onClose, billId, outstanding }: { isOpen: boolean; onClose: () => void; billId: string; outstanding: number }) {
   const recordPayment = useRecordShopBillPayment()
   const [amount, setAmount] = useState<number | ''>(outstanding)
   const [method, setMethod] = useState('Cash')
   const [date, setDate] = useState(() => new Date().toISOString().split('T')[0])
   const [reference, setReference] = useState('')
   const [notes, setNotes] = useState('')
-
   const isValid = amount !== '' && amount > 0 && method && date
 
   const handleSubmit = (e: FormEvent) => {
@@ -70,22 +60,12 @@ function RecordPaymentModal({
             <DialogTitle>Record Payment</DialogTitle>
             <DialogDescription>Submit a new payment record for this shop bill.</DialogDescription>
           </DialogHeader>
-
           <DialogBody>
             <div className="space-y-4 text-left">
               <div>
                 <label className="block text-[11px] font-semibold uppercase tracking-wide text-[#6B7280] mb-1.5">Amount (LKR)</label>
-                <input
-                  type="number"
-                  min={0.01}
-                  step="0.01"
-                  required
-                  value={amount}
-                  onChange={e => setAmount(e.target.value ? Number(e.target.value) : '')}
-                  className={inputClass}
-                />
+                <input type="number" min={0.01} step="0.01" required value={amount} onChange={e => setAmount(e.target.value ? Number(e.target.value) : '')} className={inputClass} />
               </div>
-
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-[11px] font-semibold uppercase tracking-wide text-[#6B7280] mb-1.5">Method</label>
@@ -101,28 +81,137 @@ function RecordPaymentModal({
                   <input type="date" required value={date} onChange={e => setDate(e.target.value)} className={inputClass} />
                 </div>
               </div>
-
               <div>
                 <label className="block text-[11px] font-semibold uppercase tracking-wide text-[#6B7280] mb-1.5">Reference (Optional)</label>
                 <input type="text" placeholder="Cheque # or TXN ID" value={reference} onChange={e => setReference(e.target.value)} className={inputClass} />
               </div>
-
               <div>
                 <label className="block text-[11px] font-semibold uppercase tracking-wide text-[#6B7280] mb-1.5">Notes (Optional)</label>
                 <input type="text" placeholder="Additional details..." value={notes} onChange={e => setNotes(e.target.value)} className={inputClass} />
               </div>
             </div>
           </DialogBody>
-
           <DialogFooter>
             <Button type="submit" className="w-full bg-[#16A34A] hover:bg-[#15803D] text-white disabled:opacity-50" disabled={!isValid || recordPayment.isPending}>
               {recordPayment.isPending ? 'Recording...' : 'Record Payment'}
             </Button>
-            <Button type="button" variant="secondary" onClick={onClose} className="w-full">
-              Cancel
-            </Button>
+            <Button type="button" variant="secondary" onClick={onClose} className="w-full">Cancel</Button>
           </DialogFooter>
         </form>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+function SplitBillModal({ isOpen, onClose, bill, onSplit }: { isOpen: boolean; onClose: () => void; bill: any; onSplit: (indices: number[]) => void }) {
+  const [selected, setSelected] = useState<Set<number>>(new Set())
+
+  const toggle = (idx: number) => {
+    setSelected(prev => {
+      const next = new Set(prev)
+      if (next.has(idx)) next.delete(idx)
+      else next.add(idx)
+      return next
+    })
+  }
+
+  return (
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent>
+        <DialogHeader>
+          <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-[#FEF3C7] border border-[#FDE68A]">
+            <Scissors className="h-5 w-5 text-[#D97706]" />
+          </div>
+          <DialogTitle>Split Bill</DialogTitle>
+          <DialogDescription>Select items to move to a new bill.</DialogDescription>
+        </DialogHeader>
+        <DialogBody>
+          <div className="space-y-2 max-h-60 overflow-y-auto">
+            {bill.items.map((item: any, idx: number) => (
+              <label key={idx} className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 cursor-pointer">
+                <input type="checkbox" checked={selected.has(idx)} onChange={() => toggle(idx)} className="h-4 w-4 accent-[#D97706]" />
+                <span className="flex-1 text-[13px] text-[#101828]">{item.item_name} {item.specification ? `(${item.specification})` : ''}</span>
+                <span className="text-[12px] text-[#6B7280]">x{item.quantity}</span>
+              </label>
+            ))}
+          </div>
+        </DialogBody>
+        <DialogFooter>
+          <Button onClick={() => { onSplit(Array.from(selected)); onClose() }} disabled={selected.size === 0} className="w-full bg-[#D97706] hover:bg-[#B45309] text-white cursor-pointer">
+            Split {selected.size} item(s) to New Bill
+          </Button>
+          <Button variant="secondary" onClick={onClose} className="w-full cursor-pointer">Cancel</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+function NotesHistoryModal({ isOpen, onClose, notesHistory }: { isOpen: boolean; onClose: () => void; notesHistory: any[] }) {
+  return (
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Notes History</DialogTitle>
+        </DialogHeader>
+        <DialogBody>
+          {notesHistory.length === 0 ? (
+            <p className="text-[13px] text-[#98A2B3] text-center py-4">No notes changes recorded.</p>
+          ) : (
+            <div className="space-y-3 max-h-60 overflow-y-auto">
+              {notesHistory.slice().reverse().map((entry, idx) => (
+                <div key={idx} className="p-3 rounded-lg border border-[#E4E7EC]">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-[11px] font-medium text-[#101828]">{entry.changed_by}</span>
+                    <span className="text-[10px] text-[#98A2B3]">{formatDate(entry.changed_at)}</span>
+                  </div>
+                  {entry.old_notes && <p className="text-[12px] text-[#DC2626] line-through">{entry.old_notes}</p>}
+                  <p className="text-[12px] text-[#101828]">{entry.new_notes || '(empty)'}</p>
+                </div>
+              ))}
+            </div>
+          )}
+        </DialogBody>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+function MakeRecurringModal({ isOpen, onClose, billId: _billId, onMake }: { isOpen: boolean; onClose: () => void; billId: string; onMake: (interval: string, endDate?: string) => void }) {
+  const [interval, setInterval] = useState('MONTHLY')
+  const [endDate, setEndDate] = useState('')
+
+  return (
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent>
+        <DialogHeader>
+          <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-[#EFF4FF] border border-[#C7D7FE]">
+            <Repeat className="h-5 w-5 text-[#3538CD]" />
+          </div>
+          <DialogTitle>Make Recurring</DialogTitle>
+          <DialogDescription>Set this bill to auto-generate copies on a schedule.</DialogDescription>
+        </DialogHeader>
+        <DialogBody>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-[11px] font-semibold uppercase text-[#6B7280] mb-1.5">Interval</label>
+              <select value={interval} onChange={e => setInterval(e.target.value)} className="h-10 w-full rounded-lg border border-[#E4E7EC] bg-white px-3 text-[13px] outline-none">
+                <option value="DAILY">Daily</option>
+                <option value="WEEKLY">Weekly</option>
+                <option value="BIWEEKLY">Bi-weekly</option>
+                <option value="MONTHLY">Monthly</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-[11px] font-semibold uppercase text-[#6B7280] mb-1.5">End Date (optional)</label>
+              <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} className="h-10 w-full rounded-lg border border-[#E4E7EC] bg-white px-3 text-[13px] outline-none" />
+            </div>
+          </div>
+        </DialogBody>
+        <DialogFooter>
+          <Button onClick={() => { onMake(interval, endDate || undefined); onClose() }} className="w-full bg-[#3538CD] hover:bg-[#2D32B0] text-white cursor-pointer">Set Recurring</Button>
+          <Button variant="secondary" onClick={onClose} className="w-full cursor-pointer">Cancel</Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   )
@@ -135,15 +224,18 @@ export default function ShopBillDetailPage() {
   const { data: bill, isLoading, isError, error } = useShopBill(id)
   const updateBill = useUpdateShopBill()
   const deleteBill = useDeleteShopBill()
+  const duplicateBill = useDuplicateShopBill()
+  const splitBill = useSplitShopBill()
+  const makeRecurring = useMakeRecurring()
 
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [showSplitModal, setShowSplitModal] = useState(false)
+  const [showNotesHistory, setShowNotesHistory] = useState(false)
+  const [showRecurringModal, setShowRecurringModal] = useState(false)
+  const [notesHistory, setNotesHistory] = useState<any[]>([])
 
-  const handleDelete = () => {
-    if (!bill) return
-    setShowDeleteConfirm(true)
-  }
-
+  const handleDelete = () => { if (bill) setShowDeleteConfirm(true) }
   const confirmDelete = () => {
     if (!bill) return
     setShowDeleteConfirm(false)
@@ -157,6 +249,35 @@ export default function ShopBillDetailPage() {
     if (next) updateBill.mutate({ id: bill.id, payload: { status: next } as any })
   }
 
+  const handleDuplicate = () => {
+    if (!bill) return
+    duplicateBill.mutate(bill.id, { onSuccess: (newBill) => navigate(`/shop-bills/${newBill.id}`) })
+  }
+
+  const handleSplit = (indices: number[]) => {
+    if (!bill) return
+    splitBill.mutate({ billId: bill.id, itemIndices: indices }, { onSuccess: () => {} })
+  }
+
+  const handleToggleLock = () => {
+    if (!bill) return
+    updateBill.mutate({ id: bill.id, payload: { locked: !bill.locked } as any })
+  }
+
+  const handleMakeRecurring = (interval: string, endDate?: string) => {
+    if (!bill) return
+    makeRecurring.mutate({ billId: bill.id, interval, endDate })
+  }
+
+  const loadNotesHistory = async () => {
+    if (!bill) return
+    try {
+      const data = await shopBillService.getNotesHistory(bill.id)
+      setNotesHistory(data.notes_history || [])
+    } catch { setNotesHistory([]) }
+    setShowNotesHistory(true)
+  }
+
   const fmt = (v: number) => `Rs. ${v.toLocaleString('en-LK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
 
   return (
@@ -164,27 +285,17 @@ export default function ShopBillDetailPage() {
       {/* Header */}
       <div className="flex items-center justify-between gap-3">
         <div>
-          <Breadcrumb
-            items={[
-              { label: 'Dashboard', href: '/' },
-              { label: 'Shop Bills', href: '/shop-bills' },
-              { label: bill?.bill_number ?? '...' },
-            ]}
-          />
+          <Breadcrumb items={[{ label: 'Dashboard', href: '/' }, { label: 'Shop Bills', href: '/shop-bills' }, { label: bill?.bill_number ?? '...' }]} />
           <div className="flex items-center gap-3 mt-1">
-            <Link to="/shop-bills" className="text-[#98A2B3] hover:text-[#374151]">
-              <ArrowLeft className="h-4 w-4" />
-            </Link>
+            <Link to="/shop-bills" className="text-[#98A2B3] hover:text-[#374151]"><ArrowLeft className="h-4 w-4" /></Link>
             <h1 className="text-dashboard-title">Shop Bill</h1>
-            {bill && (
-              <span className={`inline-flex items-center rounded-md px-2 py-0.5 text-[11px] font-medium ${STATUS_COLORS[bill.status] ?? 'bg-gray-100 text-gray-500'}`}>
-                {bill.status}
-              </span>
-            )}
+            {bill && <span className={`inline-flex items-center rounded-md px-2 py-0.5 text-[11px] font-medium ${STATUS_COLORS[bill.status] ?? 'bg-gray-100 text-gray-500'}`}>{bill.status}</span>}
+            {bill?.locked && <span className="inline-flex items-center gap-1 text-[11px] text-[#6B7280]"><Lock size={12} /> Locked</span>}
+            {bill?.is_recurring && <span className="inline-flex items-center gap-1 text-[11px] text-[#3538CD]"><Repeat size={12} /> {bill.recurring_interval}</span>}
           </div>
         </div>
         {bill && (
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 flex-wrap justify-end">
             {bill.status !== 'COMPLETED' && bill.status !== 'CANCELLED' && (
               <Button size="sm" onClick={advanceStatus} disabled={updateBill.isPending} className="bg-[#DC2626] hover:bg-[#B91C1C] text-white gap-1.5 cursor-pointer">
                 <CheckCircle className="h-3.5 w-3.5" />
@@ -195,7 +306,26 @@ export default function ShopBillDetailPage() {
             )}
             {bill.outstanding_amount > 0 && bill.status !== 'CANCELLED' && (
               <Button size="sm" onClick={() => setIsPaymentModalOpen(true)} className="bg-[#16A34A] hover:bg-[#15803D] text-white gap-1.5 cursor-pointer">
-                <Wallet className="h-3.5 w-3.5" /> Record Payment
+                <Wallet className="h-3.5 w-3.5" /> Pay
+              </Button>
+            )}
+            <Button size="sm" variant="outline" onClick={handleDuplicate} disabled={duplicateBill.isPending} className="gap-1 cursor-pointer">
+              <Copy size={13} /> Clone
+            </Button>
+            {bill.items.length > 1 && bill.payment_status !== 'PAID' && (
+              <Button size="sm" variant="outline" onClick={() => setShowSplitModal(true)} className="gap-1 cursor-pointer">
+                <Scissors size={13} /> Split
+              </Button>
+            )}
+            <Button size="sm" variant="outline" onClick={loadNotesHistory} className="gap-1 cursor-pointer">
+              <MessageSquare size={13} />
+            </Button>
+            <Button size="sm" variant="outline" onClick={handleToggleLock} className="gap-1 cursor-pointer">
+              {bill.locked ? <Unlock size={13} /> : <Lock size={13} />}
+            </Button>
+            {!bill.is_recurring && (
+              <Button size="sm" variant="outline" onClick={() => setShowRecurringModal(true)} className="gap-1 cursor-pointer">
+                <Repeat size={13} />
               </Button>
             )}
             <Button variant="ghost" size="sm" onClick={handleDelete} disabled={deleteBill.isPending} className="text-[#DC2626] hover:bg-[#FEF2F2] cursor-pointer">
@@ -207,10 +337,7 @@ export default function ShopBillDetailPage() {
 
       {/* Content */}
       {isLoading ? (
-        <div className="space-y-3">
-          <Skeleton className="h-40" />
-          <Skeleton className="h-64" />
-        </div>
+        <div className="space-y-3"><Skeleton className="h-40" /><Skeleton className="h-64" /></div>
       ) : isError ? (
         <ErrorState description={error instanceof Error ? error.message : 'Unable to load shop bill'} />
       ) : !bill ? (
@@ -257,26 +384,32 @@ export default function ShopBillDetailPage() {
                 <div>
                   <p className="text-[11px] font-semibold uppercase text-[#6B7280]">Delivery Date</p>
                   <p className="font-medium text-[#101828] mt-0.5 flex items-center gap-1.5">
-                    <Calendar className="h-3.5 w-3.5 text-[#6B7280]" />
-                    {formatDate(bill.delivery_date)}
+                    <Calendar className="h-3.5 w-3.5 text-[#6B7280]" />{formatDate(bill.delivery_date)}
                   </p>
                 </div>
               )}
               {bill.quotation_id && (
                 <div>
                   <p className="text-[11px] font-semibold uppercase text-[#6B7280]">Quotation</p>
-                  <Link to={`/quotations/${bill.quotation_id}`} className="font-medium text-[#DC2626] hover:underline mt-0.5 inline-block">
-                    View linked quotation →
-                  </Link>
+                  <Link to={`/quotations/${bill.quotation_id}`} className="font-medium text-[#DC2626] hover:underline mt-0.5 inline-block">View linked quotation →</Link>
                 </div>
               )}
               <div>
                 <p className="text-[11px] font-semibold uppercase text-[#6B7280]">Created</p>
                 <p className="font-medium text-[#101828] mt-0.5">{formatDate(bill.created_at)}</p>
               </div>
+              {bill.parent_bill_id && (
+                <div>
+                  <p className="text-[11px] font-semibold uppercase text-[#6B7280]">Parent Bill</p>
+                  <Link to={`/shop-bills/${bill.parent_bill_id}`} className="font-medium text-[#DC2626] hover:underline mt-0.5 inline-block">View parent →</Link>
+                </div>
+              )}
               {bill.notes && (
                 <div className="md:col-span-2">
-                  <p className="text-[11px] font-semibold uppercase text-[#6B7280]">Notes</p>
+                  <div className="flex items-center gap-2">
+                    <p className="text-[11px] font-semibold uppercase text-[#6B7280]">Notes</p>
+                    <button onClick={loadNotesHistory} className="text-[10px] text-[#DC2626] hover:underline cursor-pointer">history</button>
+                  </div>
                   <p className="text-[#374151] mt-0.5 whitespace-pre-wrap">{bill.notes}</p>
                 </div>
               )}
@@ -297,6 +430,7 @@ export default function ShopBillDetailPage() {
                       <th className="text-left py-2 font-semibold text-[#6B7280]">Category</th>
                       <th className="text-right py-2 font-semibold text-[#6B7280]">Price</th>
                       <th className="text-right py-2 font-semibold text-[#6B7280]">Qty</th>
+                      <th className="text-right py-2 font-semibold text-[#6B7280]">Disc</th>
                       <th className="text-right py-2 font-semibold text-[#6B7280]">Total</th>
                     </tr>
                   </thead>
@@ -309,39 +443,28 @@ export default function ShopBillDetailPage() {
                         <td className="py-2 text-[#6B7280]">{item.category || '-'}</td>
                         <td className="py-2 text-right">{fmt(item.unit_price)}</td>
                         <td className="py-2 text-right">{item.quantity}</td>
+                        <td className="py-2 text-right text-[#DC2626]">{item.discount > 0 ? `${item.discount_type === 'PERCENT' ? item.discount + '%' : fmt(item.discount)}` : '-'}</td>
                         <td className="py-2 text-right font-medium">{fmt(item.line_total)}</td>
                       </tr>
                     ))}
                   </tbody>
                   <tfoot>
                     <tr className="border-t-2 border-[#E4E7EC]">
-                      <td colSpan={4} />
+                      <td colSpan={5} />
                       <td className="py-2 text-right font-semibold text-[#101828]" colSpan={2}>Subtotal</td>
                       <td className="py-2 text-right font-semibold text-[#101828]">{fmt(bill.total_amount)}</td>
                     </tr>
                     {bill.discounts > 0 && (
-                      <tr>
-                        <td colSpan={4} />
-                        <td className="py-1 text-right text-[#DC2626]" colSpan={2}>Discounts</td>
-                        <td className="py-1 text-right text-[#DC2626]">-{fmt(bill.discounts)}</td>
-                      </tr>
+                      <tr><td colSpan={5} /><td className="py-1 text-right text-[#DC2626]" colSpan={2}>Discounts</td><td className="py-1 text-right text-[#DC2626]">-{fmt(bill.discounts)}</td></tr>
                     )}
                     {bill.transport_fee > 0 && (
-                      <tr>
-                        <td colSpan={4} />
-                        <td className="py-1 text-right" colSpan={2}>Transport</td>
-                        <td className="py-1 text-right">+{fmt(bill.transport_fee)}</td>
-                      </tr>
+                      <tr><td colSpan={5} /><td className="py-1 text-right" colSpan={2}>Transport</td><td className="py-1 text-right">+{fmt(bill.transport_fee)}</td></tr>
                     )}
                     {bill.taxes > 0 && (
-                      <tr>
-                        <td colSpan={4} />
-                        <td className="py-1 text-right" colSpan={2}>Taxes</td>
-                        <td className="py-1 text-right">+{fmt(bill.taxes)}</td>
-                      </tr>
+                      <tr><td colSpan={5} /><td className="py-1 text-right" colSpan={2}>Taxes</td><td className="py-1 text-right">+{fmt(bill.taxes)}</td></tr>
                     )}
                     <tr className="border-t-2 border-[#DC2626]">
-                      <td colSpan={4} />
+                      <td colSpan={5} />
                       <td className="py-2 text-right font-bold text-[#101828]" colSpan={2}>Grand Total</td>
                       <td className="py-2 text-right font-bold text-[#DC2626] text-[15px]">{fmt(bill.grand_total)}</td>
                     </tr>
@@ -352,23 +475,11 @@ export default function ShopBillDetailPage() {
           </Card>
 
           {/* Payment Modal */}
-          <RecordPaymentModal
-            isOpen={isPaymentModalOpen}
-            onClose={() => setIsPaymentModalOpen(false)}
-            billId={bill.id}
-            outstanding={bill.outstanding_amount}
-          />
-
-          {/* Delete Confirm */}
-          <ConfirmDialog
-            open={showDeleteConfirm}
-            onCancel={() => setShowDeleteConfirm(false)}
-            onConfirm={confirmDelete}
-            title="Delete Shop Bill"
-            description={`Are you sure you want to delete bill ${bill.bill_number}? This action cannot be undone.`}
-            confirmLabel="Delete"
-            variant="danger"
-          />
+          <RecordPaymentModal isOpen={isPaymentModalOpen} onClose={() => setIsPaymentModalOpen(false)} billId={bill.id} outstanding={bill.outstanding_amount} />
+          <SplitBillModal isOpen={showSplitModal} onClose={() => setShowSplitModal(false)} bill={bill} onSplit={handleSplit} />
+          <NotesHistoryModal isOpen={showNotesHistory} onClose={() => setShowNotesHistory(false)} notesHistory={notesHistory} />
+          <MakeRecurringModal isOpen={showRecurringModal} onClose={() => setShowRecurringModal(false)} billId={bill.id} onMake={handleMakeRecurring} />
+          <ConfirmDialog open={showDeleteConfirm} onCancel={() => setShowDeleteConfirm(false)} onConfirm={confirmDelete} title="Delete Shop Bill" description={`Are you sure you want to delete bill ${bill.bill_number}? This action cannot be undone.`} confirmLabel="Delete" variant="danger" />
         </>
       )}
     </div>

@@ -4,6 +4,8 @@ export interface ShopBillItem {
   category?: string
   unit_price: number
   quantity: number
+  discount: number
+  discount_type: 'FIXED' | 'PERCENT'
   line_total: number
 }
 
@@ -24,8 +26,14 @@ export interface ShopBill {
   paid_amount: number
   outstanding_amount: number
   notes?: string
+  notes_history?: { old_notes: string; new_notes: string; changed_by: string; changed_at: string }[]
   delivery_date?: string
-  tags?: { tag_id: string; qr_data: string; status: string }[]
+  tags?: string[]
+  locked: boolean
+  is_recurring: boolean
+  recurring_interval?: string
+  recurring_end_date?: string
+  parent_bill_id?: string
   created_at: string
   updated_at: string
 }
@@ -40,6 +48,11 @@ export interface ShopBillCreate {
   discounts?: number
   transport_fee?: number
   taxes?: number
+  tags?: string[]
+  locked?: boolean
+  is_recurring?: boolean
+  recurring_interval?: string
+  recurring_end_date?: string
 }
 
 export interface ShopBillListParams {
@@ -47,6 +60,8 @@ export interface ShopBillListParams {
   status?: string
   payment_status?: string
   search?: string
+  sort_by?: string
+  sort_order?: 'asc' | 'desc'
   skip?: number
   limit?: number
 }
@@ -56,5 +71,29 @@ export interface ShopBillPayment {
   payment_method: string
   payment_date: string
   reference?: string
+  notes?: string
+}
+
+export interface BillTemplate {
+  id: string
+  name: string
+  client_name?: string
+  items: ShopBillItem[]
+  discounts: number
+  transport_fee: number
+  taxes: number
+  notes?: string
+  use_count: number
+  created_at: string
+  updated_at: string
+}
+
+export interface BillTemplateCreate {
+  name: string
+  client_name?: string
+  items: Omit<ShopBillItem, 'line_total'>[]
+  discounts?: number
+  transport_fee?: number
+  taxes?: number
   notes?: string
 }
