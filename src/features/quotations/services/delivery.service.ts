@@ -8,6 +8,26 @@ function toISODatetime(dateStr: string): string {
     return `${dateStr}T00:00:00`
 }
 
+export interface PendingGatePassItem {
+    item_name: string
+    specification: string
+    category: string
+    received_qty: number
+    delivered_qty: number
+    returned_qty: number
+    pending_qty: number
+}
+
+export interface PendingGatePass {
+    gate_pass_id: string
+    gate_pass_number: string
+    client_name: string
+    receiving_date: string
+    status: string
+    total_pending: number
+    items: PendingGatePassItem[]
+}
+
 export const deliveries = {
     list: (params?: { client_name?: string; gate_pass_id?: string }) =>
         billsApi.get<Delivery[]>('/deliveries', { params }).then((r: any) => r.data),
@@ -22,4 +42,9 @@ export const deliveries = {
         }
         return billsApi.post<Delivery>('/deliveries', payload).then((r: any) => r.data)
     },
+
+    pendingGatePasses: (clientName?: string) =>
+        billsApi.get<PendingGatePass[]>('/deliveries/pending-gatepasses', {
+            params: clientName ? { client_name: clientName } : {},
+        }).then((r: any) => r.data),
 }
