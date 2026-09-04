@@ -4,7 +4,7 @@ import {
   Plus, DollarSign, Wallet, AlertTriangle, TrendingUp,
   ClipboardList, Users, Package, Clock,
   Download, Activity, ArrowUpRight, ArrowDownRight,
-  BarChart3, Target, Layers, Timer, Eye,
+  BarChart3, Target, Layers, Timer, Eye, Truck,
 } from 'lucide-react'
 import { motion } from 'framer-motion'
 import {
@@ -189,6 +189,118 @@ function ChartsRow({ data }: { data: DashboardOverviewData }) {
         </CardContent>
       </Card>
     </div>
+  )
+}
+
+// ── Pending Balance Hero ─────────────────────────────────────────────────────
+
+function PendingBalanceHero({ data }: { data: DashboardOverviewData }) {
+  const { current: c } = data
+  const totalPending = c.itemsPending || 0
+  const pendingGPs = data.current.pendingGatePasses || []
+  const [expanded, setExpanded] = useState(false)
+
+  if (totalPending === 0) return null
+
+  const clientsMap = new Map<string, { client_name: string; items: { item_name: string; specification: string; pending: number }[]; totalPending: number }>()
+  for (const gp of pendingGPs) {
+    const client = gp.client_name
+    if (!clientsMap.has(client)) {
+      clientsMap.set(client, { client_name: client, items: [], totalPending: 0 })
+    }
+    const entry = clientsMap.get(client)!
+    for (const item of gp.items || []) {
+      entry.items.push({ item_name: item.item_name, specification: item.specification || '', pending: item.pending })
+      entry.totalPending += item.pending
+    }
+  }
+  const clients = Array.from(clientsMap.values()).sort((a, b) => b.totalPending - a.totalPending)
+
+  return (
+    <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.3 }}>
+      <Card className="overflow-hidden border-[#FED7AA] bg-gradient-to-br from-[#FFFBEB] via-[#FEF3C7] to-[#FDE68A]">
+        <CardContent className="p-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-[#D97706] text-white shadow-lg shadow-[#D97706]/30">
+                <Package className="h-8 w-8" />
+              </div>
+              <div>
+                <p className="text-[12px] font-semibold uppercase tracking-wide text-[#92400E]">Pending Balance</p>
+                <p className="text-[48px] font-extrabold leading-none text-[#92400E] tracking-tight">{totalPending}</p>
+                <p className="text-[13px] font-medium text-[#B45309] mt-1">
+                  pieces across {clients.length} client{clients.length !== 1 ? 's' : ''} &middot; {pendingGPs.length} gate pass{pendingGPs.length !== 1 ? 'es' : ''}
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <Link to="/deliveries/new">
+                <Button className="bg-[#D97706] hover:bg-[#B45309] text-white gap-2 shadow-md cursor-pointer">
+                  <Truck className="h-4 w-4" /> Record Delivery
+                </Button>
+              </Link>
+              {clients.length > 0 && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setExpanded(!expanded)}
+                  className="border-[#D97706]/30 text-[#92400E] hover:bg-[#FDE68A]/50 cursor-pointer"
+                >
+                  {expanded ? 'Hide' : 'Details'}
+                </Button>
+              )}
+            </div>
+          </div>
+
+          {/* Client breakdown - always show first 3, expandable */}
+          {clients.length > 0 && (
+            <div className="mt-5 space-y-2">
+              {(expanded ? clients : clients.slice(0, 3)).map((cl, i) => (
+                <motion.div
+                  key={cl.client_name}
+                  initial={{ opacity: 0, x: -8 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: i * 0.04 }}
+                  className="flex items-center justify-between rounded-xl bg-white/70 backdrop-blur-sm border border-[#FDE68A] px-4 py-2.5"
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#D97706] text-white text-[11px] font-bold">
+                      {cl.client_name.charAt(0).toUpperCase()}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-[13px] font-semibold text-[#92400E] truncate">{cl.client_name}</p>
+                      <div className="flex flex-wrap gap-1 mt-0.5">
+                        {cl.items.slice(0, expanded ? cl.items.length : 3).map((item, j) => (
+                          <span key={`${item.item_name}-${j}`} className="inline-flex items-center rounded bg-[#FEF3C7] border border-[#FDE68A] px-1.5 py-0.5 text-[10px] font-medium text-[#92400E]">
+                            {item.item_name}{item.specification ? ` (${item.specification})` : ''}: {item.pending}
+                          </span>
+                        ))}
+                        {!expanded && cl.items.length > 3 && (
+                          <span className="text-[10px] text-[#B45309]">+{cl.items.length - 3} more</span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="text-right shrink-0 ml-3">
+                    <span className="inline-flex items-center rounded-full bg-[#D97706] px-3 py-1 text-[14px] font-bold text-white shadow-sm">
+                      {cl.totalPending}
+                    </span>
+                  </div>
+                </motion.div>
+              ))}
+              {!expanded && clients.length > 3 && (
+                <button
+                  onClick={() => setExpanded(true)}
+                  className="w-full text-center text-[12px] font-medium text-[#92400E] hover:text-[#B45309] py-1 cursor-pointer"
+                >
+                  Show {clients.length - 3} more client{clients.length - 3 !== 1 ? 's' : ''} →
+                </button>
+              )}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </motion.div>
   )
 }
 
@@ -1029,6 +1141,7 @@ export default function DashboardPage() {
         >
           <AlertBanners data={data} />
           <KpiCards data={data} />
+          <PendingBalanceHero data={data} />
           <BalancesOverview data={data} onShowDetails={() => setShowBalances(true)} />
           <TodayDeliveries data={data} />
           <PeriodComparison data={data} />
