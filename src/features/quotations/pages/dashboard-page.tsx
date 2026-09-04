@@ -192,124 +192,27 @@ function ChartsRow({ data }: { data: DashboardOverviewData }) {
   )
 }
 
-// ── Pending Balance Hero ─────────────────────────────────────────────────────
-
-function PendingBalanceHero({ data }: { data: DashboardOverviewData }) {
-  const { current: c } = data
-  const totalPending = c.itemsPending || 0
-  const pendingGPs = data.current.pendingGatePasses || []
-  const [expanded, setExpanded] = useState(false)
-
-  if (totalPending === 0) return null
-
-  const clientsMap = new Map<string, { client_name: string; items: { item_name: string; specification: string; pending: number }[]; totalPending: number }>()
-  for (const gp of pendingGPs) {
-    const client = gp.client_name
-    if (!clientsMap.has(client)) {
-      clientsMap.set(client, { client_name: client, items: [], totalPending: 0 })
-    }
-    const entry = clientsMap.get(client)!
-    for (const item of gp.items || []) {
-      entry.items.push({ item_name: item.item_name, specification: item.specification || '', pending: item.pending })
-      entry.totalPending += item.pending
-    }
-  }
-  const clients = Array.from(clientsMap.values()).sort((a, b) => b.totalPending - a.totalPending)
-
-  return (
-    <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.3 }}>
-      <Card className="overflow-hidden border-[#FED7AA] bg-gradient-to-br from-[#FFFBEB] via-[#FEF3C7] to-[#FDE68A]">
-        <CardContent className="p-6">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div className="flex items-center gap-4">
-              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-[#D97706] text-white shadow-lg shadow-[#D97706]/30">
-                <Package className="h-8 w-8" />
-              </div>
-              <div>
-                <p className="text-[12px] font-semibold uppercase tracking-wide text-[#92400E]">Pending Balance</p>
-                <p className="text-[48px] font-extrabold leading-none text-[#92400E] tracking-tight">{totalPending}</p>
-                <p className="text-[13px] font-medium text-[#B45309] mt-1">
-                  pieces across {clients.length} client{clients.length !== 1 ? 's' : ''} &middot; {pendingGPs.length} gate pass{pendingGPs.length !== 1 ? 'es' : ''}
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <Link to="/deliveries/new">
-                <Button className="bg-[#D97706] hover:bg-[#B45309] text-white gap-2 shadow-md cursor-pointer">
-                  <Truck className="h-4 w-4" /> Record Delivery
-                </Button>
-              </Link>
-              {clients.length > 0 && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setExpanded(!expanded)}
-                  className="border-[#D97706]/30 text-[#92400E] hover:bg-[#FDE68A]/50 cursor-pointer"
-                >
-                  {expanded ? 'Hide' : 'Details'}
-                </Button>
-              )}
-            </div>
-          </div>
-
-          {/* Client breakdown - always show first 3, expandable */}
-          {clients.length > 0 && (
-            <div className="mt-5 space-y-2">
-              {(expanded ? clients : clients.slice(0, 3)).map((cl, i) => (
-                <motion.div
-                  key={cl.client_name}
-                  initial={{ opacity: 0, x: -8 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: i * 0.04 }}
-                  className="flex items-center justify-between rounded-xl bg-white/70 backdrop-blur-sm border border-[#FDE68A] px-4 py-2.5"
-                >
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#D97706] text-white text-[11px] font-bold">
-                      {cl.client_name.charAt(0).toUpperCase()}
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-[13px] font-semibold text-[#92400E] truncate">{cl.client_name}</p>
-                      <div className="flex flex-wrap gap-1 mt-0.5">
-                        {cl.items.slice(0, expanded ? cl.items.length : 3).map((item, j) => (
-                          <span key={`${item.item_name}-${j}`} className="inline-flex items-center rounded bg-[#FEF3C7] border border-[#FDE68A] px-1.5 py-0.5 text-[10px] font-medium text-[#92400E]">
-                            {item.item_name}{item.specification ? ` (${item.specification})` : ''}: {item.pending}
-                          </span>
-                        ))}
-                        {!expanded && cl.items.length > 3 && (
-                          <span className="text-[10px] text-[#B45309]">+{cl.items.length - 3} more</span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="text-right shrink-0 ml-3">
-                    <span className="inline-flex items-center rounded-full bg-[#D97706] px-3 py-1 text-[14px] font-bold text-white shadow-sm">
-                      {cl.totalPending}
-                    </span>
-                  </div>
-                </motion.div>
-              ))}
-              {!expanded && clients.length > 3 && (
-                <button
-                  onClick={() => setExpanded(true)}
-                  className="w-full text-center text-[12px] font-medium text-[#92400E] hover:text-[#B45309] py-1 cursor-pointer"
-                >
-                  Show {clients.length - 3} more client{clients.length - 3 !== 1 ? 's' : ''} →
-                </button>
-              )}
-            </div>
-          )}
-        </CardContent>
-      </Card>
-    </motion.div>
-  )
-}
-
 // ── Tables Row ───────────────────────────────────────────────────────────────
 
 function TablesRow({ data }: { data: DashboardOverviewData }) {
   const topClients = (data.current.topClients || []).slice(0, 5)
-  const pendingGPs = (data.current.pendingGatePasses || []).slice(0, 5)
+  const allPendingGPs = data.current.pendingGatePasses || []
   const maxRevenue = Math.max(...topClients.map(c => c.revenue), 1)
+  const totalPending = data.current.itemsPending || 0
+
+  // Group pending by client
+  const clientsMap = new Map<string, { items: { item_name: string; specification: string; pending: number }[]; total: number }>()
+  for (const gp of allPendingGPs) {
+    const client = gp.client_name
+    if (!clientsMap.has(client)) clientsMap.set(client, { items: [], total: 0 })
+    const entry = clientsMap.get(client)!
+    for (const item of gp.items || []) {
+      entry.items.push({ item_name: item.item_name, specification: item.specification || '', pending: item.pending })
+      entry.total += item.pending
+    }
+  }
+  const pendingClients = Array.from(clientsMap.entries())
+    .sort((a, b) => b[1].total - a[1].total)
 
   return (
     <div className="grid gap-4 lg:grid-cols-2">
@@ -361,52 +264,64 @@ function TablesRow({ data }: { data: DashboardOverviewData }) {
         </CardContent>
       </Card>
 
-      {/* Pending Deliveries */}
-      <Card>
+      {/* Pending Balance */}
+      <Card className={totalPending > 0 ? 'border-[#FED7AA]' : ''}>
         <CardHeader className="border-b border-[var(--border)] pb-3">
-          <CardTitle className="flex items-center gap-2 text-[14px]">
-            <Package className="h-4 w-4" style={{ color: 'var(--text-tertiary)' }} /> Pending Delivery
-          </CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2 text-[14px]">
+              <Package className="h-4 w-4" style={{ color: 'var(--text-tertiary)' }} /> Pending Balance
+            </CardTitle>
+            {totalPending > 0 && (
+              <div className="flex items-center gap-2">
+                <span className="inline-flex items-center rounded-full bg-[#D97706] px-3 py-1 text-[16px] font-bold text-white shadow-sm">
+                  {totalPending}
+                </span>
+                <Link to="/deliveries/new">
+                  <Button size="sm" className="bg-[#16A34A] hover:bg-[#15803D] text-white text-[11px] gap-1 cursor-pointer">
+                    <Truck className="h-3 w-3" /> Deliver
+                  </Button>
+                </Link>
+              </div>
+            )}
+          </div>
         </CardHeader>
         <CardContent className="pt-0 overflow-x-auto">
-          {pendingGPs.length === 0 ? (
+          {pendingClients.length === 0 ? (
             <div className="py-8 text-center text-[13px]" style={{ color: 'var(--text-tertiary)' }}>All deliveries are up to date</div>
           ) : (
             <div className="divide-y divide-[var(--border)]">
-              {pendingGPs.map((gp, i) => (
+              {pendingClients.map(([client, data], i) => (
                 <motion.div
-                  key={gp.gate_pass_number}
+                  key={client}
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: i * 0.04 }}
                   className="py-3 first:pt-0 last:pb-0"
                 >
-                  <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center justify-between mb-1.5">
                     <div className="flex items-center gap-2">
-                      <span className="font-mono text-[12px] font-semibold">{gp.gate_pass_number}</span>
-                      <span className="text-[12px]" style={{ color: 'var(--text-tertiary)' }}>{gp.client_name}</span>
+                      <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#D97706] text-white text-[10px] font-bold">
+                        {client.charAt(0).toUpperCase()}
+                      </div>
+                      <span className="text-[13px] font-semibold" style={{ color: 'var(--text-primary)' }}>{client}</span>
                     </div>
-                    <span className="inline-flex items-center rounded-full bg-[#FFF7ED] border border-[#FED7AA] px-2 py-0.5 text-[11px] font-semibold text-[#C2410C]">
-                      {gp.pending} pending
+                    <span className="inline-flex items-center rounded-full bg-[#FFF7ED] border border-[#FED7AA] px-2.5 py-0.5 text-[13px] font-bold text-[#C2410C]">
+                      {data.total}
                     </span>
                   </div>
-                  {gp.items && gp.items.length > 0 && (
-                    <div className="ml-2 space-y-1">
-                      {gp.items.map((item) => (
-                        <div key={`${item.item_name}-${item.specification}`} className="flex items-center gap-2 text-[12px]">
-                          <span className="font-medium">{item.item_name}</span>
-                          {item.specification && (
-                            <span className="inline-flex items-center rounded bg-[#EFF6FF] border border-[#BFDBFE] px-1.5 py-0.5 text-[10px] font-medium text-[#2563EB]">
-                              {item.specification}
-                            </span>
-                          )}
-                          <span style={{ color: 'var(--text-tertiary)' }}>
-                            {item.delivered}/{item.received} delivered
+                  <div className="ml-8 space-y-1">
+                    {data.items.map((item, j) => (
+                      <div key={`${item.item_name}-${j}`} className="flex items-center gap-2 text-[12px]">
+                        <span className="font-medium" style={{ color: 'var(--text-secondary)' }}>{item.item_name}</span>
+                        {item.specification && (
+                          <span className="inline-flex items-center rounded bg-[#FFF7ED] border border-[#FED7AA] px-1.5 py-0.5 text-[10px] font-semibold text-[#EA580C]">
+                            {item.specification}
                           </span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
+                        )}
+                        <span className="font-semibold text-[#D97706]">{item.pending} pending</span>
+                      </div>
+                    ))}
+                  </div>
                 </motion.div>
               ))}
             </div>
@@ -1141,7 +1056,6 @@ export default function DashboardPage() {
         >
           <AlertBanners data={data} />
           <KpiCards data={data} />
-          <PendingBalanceHero data={data} />
           <BalancesOverview data={data} onShowDetails={() => setShowBalances(true)} />
           <TodayDeliveries data={data} />
           <PeriodComparison data={data} />
