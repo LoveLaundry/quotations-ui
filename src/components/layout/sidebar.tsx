@@ -16,6 +16,12 @@ import {
   CaretRight,
   ChatCircleDots,
   Scan,
+  Upload,
+  ListChecks,
+  Receipt,
+  UserCircle,
+  Package,
+  Wallet,
 } from '@phosphor-icons/react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Logo } from '../brand/logo'
@@ -63,6 +69,21 @@ const navGroups = [
       { to: '/quotations', label: 'Quotations', icon: FileText, end: false, permission: 'view_quotations' },
       { to: '/categories', label: 'By Client', icon: FolderOpen, end: false, permission: 'view_clients' },
       { to: '/customers', label: 'Customers 360', icon: Users, end: false },
+    ],
+  },
+  {
+    label: 'Management',
+    items: [
+      { to: '/management', label: 'Dashboard', icon: House, end: false },
+      { to: '/management/transactions', label: 'Transactions', icon: ListChecks, end: false },
+      { to: '/management/historical-entry', label: 'Data Entry', icon: ClipboardText, end: false },
+      { to: '/management/import', label: 'Import Data', icon: Upload, end: false },
+      { to: '/management/customers', label: 'Customers', icon: Users, end: false },
+      { to: '/management/items', label: 'Items & Categories', icon: Package, end: false },
+      { to: '/management/expenses', label: 'Expenses', icon: Receipt, end: false },
+      { to: '/management/employees', label: 'Employees', icon: UserCircle, end: false },
+      { to: '/management/payments', label: 'Payments', icon: Wallet, end: false },
+      { to: '/management/reports', label: 'Reports', icon: ChartBar, end: false },
     ],
   },
   {

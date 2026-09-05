@@ -58,6 +58,18 @@ import LinenScanner from '../features/linen/pages/linen-scanner'
 import LinenBulkScan from '../features/linen/pages/linen-bulk-scan'
 import LinenTagGenerator from '../features/linen/pages/linen-tag-generator'
 
+// Management module pages
+import ManagementDashboard from '../features/management/pages/management-dashboard'
+import HistoricalEntry from '../features/management/pages/historical-entry'
+import ImportWizard from '../features/management/pages/import-wizard'
+import ManagementCustomers from '../features/management/pages/management-customers'
+import ManagementItems from '../features/management/pages/management-items'
+import ManagementExpenses from '../features/management/pages/management-expenses'
+import ManagementEmployees from '../features/management/pages/management-employees'
+import ManagementTransactions from '../features/management/pages/management-transactions'
+import ManagementPayments from '../features/management/pages/management-payments'
+import ManagementReports from '../features/management/pages/management-reports'
+
 export const router = createBrowserRouter([
   // ── Public routes ─────────────────────────────────────────────────────────────
   {
@@ -136,6 +148,18 @@ export const router = createBrowserRouter([
 
           // Public chatbot (ADMIN / MANAGER)
           { path: 'live-chat', element: <LiveChatPage /> },
+
+          // Management Module
+          { path: 'management', element: <ManagementDashboard /> },
+          { path: 'management/transactions', element: <ManagementTransactions /> },
+          { path: 'management/historical-entry', element: <HistoricalEntry /> },
+          { path: 'management/import', element: <ImportWizard /> },
+          { path: 'management/customers', element: <ManagementCustomers /> },
+          { path: 'management/items', element: <ManagementItems /> },
+          { path: 'management/expenses', element: <ManagementExpenses /> },
+          { path: 'management/employees', element: <ManagementEmployees /> },
+          { path: 'management/payments', element: <ManagementPayments /> },
+          { path: 'management/reports', element: <ManagementReports /> },
 
           // Analytics
           { path: 'reports', element: <ReportsPage /> },

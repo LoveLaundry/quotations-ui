@@ -34,6 +34,16 @@ const pageTitles: Record<string, string> = {
   '/linen/scanner': 'Scan Linen',
   '/linen/bulk-scan': 'Bulk Scan',
   '/linen/tags': 'Tag Generator',
+  '/management': 'Management Dashboard',
+  '/management/transactions': 'All Transactions',
+  '/management/historical-entry': 'Historical Data Entry',
+  '/management/import': 'Import Historical Data',
+  '/management/customers': 'Manage Customers',
+  '/management/items': 'Items & Categories',
+  '/management/expenses': 'Expense Management',
+  '/management/employees': 'Employees & Salaries',
+  '/management/payments': 'Payments',
+  '/management/reports': 'Management Reports',
 }
 
 function getPageTitle(pathname: string): string {
