@@ -179,6 +179,11 @@ export interface ClientSummaryStats {
     total_billed: number
     total_paid: number
     outstanding_amount: number
+    total_shop_bills: number
+    total_shop_billed: number
+    total_shop_paid: number
+    shop_outstanding: number
+    pending_shop_bills: number
 }
 
 export interface ClientSummary {
@@ -189,6 +194,7 @@ export interface ClientSummary {
     pending_balances: { item_name: string; received: number; delivered: number; pending: number }[]
     bills: object[]
     payments: Payment[]
+    shop_bills: object[]
 }
 
 // ── Returns ─────────────────────────────────────────────────────────────────

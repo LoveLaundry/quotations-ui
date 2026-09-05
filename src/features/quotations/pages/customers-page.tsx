@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
-import { Users, FileText, ClipboardCheck, Truck, CircleDollarSign, Search } from 'lucide-react'
+import { Users, FileText, ClipboardCheck, Truck, CircleDollarSign, Search, ShoppingBag } from 'lucide-react'
+import { useQuery } from '@tanstack/react-query'
 import { Button } from '../../../components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card'
 import { formatDate } from '../../../lib/utils'
@@ -8,6 +9,8 @@ import { useGatePasses } from '../hooks/useGatePasses'
 import { useDeliveries } from '../hooks/useDeliveries'
 import { useBills } from '../hooks/useBills'
 import { useLoyaltyAccount, useAdjustLoyalty } from '../hooks/useLoyalty'
+import { reports } from '../services/reports.service'
+import type { ClientSummary } from '../../../types/operations'
 
 export default function CustomersPage() {
   const [client, setClient] = useState('')
@@ -26,6 +29,12 @@ export default function CustomersPage() {
 
   const { data: loyalty } = useLoyaltyAccount(active || undefined)
   const adjustLoyalty = useAdjustLoyalty()
+
+  const { data: clientSummary } = useQuery<ClientSummary>({
+    queryKey: ['client-summary', active],
+    queryFn: () => reports.clientSummary(active),
+    enabled: Boolean(active),
+  })
 
   const quotations = useMemo(() => {
     if (!active) return []
@@ -105,7 +114,7 @@ export default function CustomersPage() {
             </button>
           </div>
 
-          <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+          <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
             <Stat
               icon={<FileText className="h-4 w-4" />}
               label="Quotations"
@@ -122,9 +131,14 @@ export default function CustomersPage() {
               value={deliveries.length}
             />
             <Stat
+              icon={<ShoppingBag className="h-4 w-4" />}
+              label="Shop Bills"
+              value={clientSummary?.stats?.total_shop_bills ?? 0}
+            />
+            <Stat
               icon={<CircleDollarSign className="h-4 w-4" />}
               label="Outstanding"
-              value={`LKR ${outstanding.toLocaleString()}`}
+              value={`LKR ${(clientSummary?.stats?.outstanding_amount ?? 0 + (clientSummary?.stats?.shop_outstanding ?? 0)).toLocaleString()}`}
             />
           </div>
 
@@ -226,6 +240,33 @@ export default function CustomersPage() {
                     tag={d.status}
                   />
                 ))}
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-[14px] flex items-center gap-2">
+                  <ShoppingBag className="h-4 w-4" />
+                  Shop Bills
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                {!clientSummary?.shop_bills?.length && <Empty text="No shop bills" />}
+                {(clientSummary?.shop_bills ?? []).slice(0, 5).map((sb: any) => (
+                  <Row
+                    key={String(sb.id)}
+                    title={sb.bill_number || 'Shop Bill'}
+                    sub={`LKR ${(sb.grand_total ?? 0).toLocaleString()} · ${sb.payment_status}`}
+                    tag={sb.payment_status}
+                  />
+                ))}
+                {clientSummary?.stats && (
+                  <div className="mt-2 rounded-lg bg-[#F9FAFB] px-3 py-2 text-[12px] text-[#667085]">
+                    Total: LKR {(clientSummary.stats.total_shop_billed ?? 0).toLocaleString()} ·
+                    Paid: LKR {(clientSummary.stats.total_shop_paid ?? 0).toLocaleString()} ·
+                    Outstanding: LKR {(clientSummary.stats.shop_outstanding ?? 0).toLocaleString()}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>

@@ -29,6 +29,8 @@ const PAYMENT_COLORS: Record<string, string> = {
   CANCELLED: 'bg-gray-100 text-gray-500 border border-gray-200',
 }
 
+const fmt = (v: number) => `Rs. ${v.toLocaleString('en-LK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+
 function RecordPaymentModal({ isOpen, onClose, billId, outstanding }: { isOpen: boolean; onClose: () => void; billId: string; outstanding: number }) {
   const recordPayment = useRecordShopBillPayment()
   const [amount, setAmount] = useState<number | ''>(outstanding)
@@ -43,7 +45,7 @@ function RecordPaymentModal({ isOpen, onClose, billId, outstanding }: { isOpen: 
     if (!isValid) return
     recordPayment.mutate(
       { id: billId, payload: { amount: Number(amount), payment_method: method, payment_date: date, reference, notes } },
-      { onSuccess: () => { onClose(); setAmount(0); setReference(''); setNotes('') } }
+      { onSuccess: () => { onClose(); setAmount(''); setReference(''); setNotes(''); setDate(new Date().toISOString().split('T')[0]); setMethod('Cash'); } }
     )
   }
 
@@ -64,12 +66,12 @@ function RecordPaymentModal({ isOpen, onClose, billId, outstanding }: { isOpen: 
             <div className="space-y-4 text-left">
               <div>
                 <label className="block text-[11px] font-semibold uppercase tracking-wide text-[#6B7280] mb-1.5">Amount (LKR)</label>
-                <input type="number" min={0.01} step="0.01" required value={amount} onChange={e => setAmount(e.target.value ? Number(e.target.value) : '')} className={inputClass} />
+                <input type="number" min={0.01} step="0.01" required value={amount} onChange={e => setAmount(e.target.value ? Number(e.target.value) : '')} className={inputClass} aria-label="Payment amount" />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-[11px] font-semibold uppercase tracking-wide text-[#6B7280] mb-1.5">Method</label>
-                  <select value={method} onChange={e => setMethod(e.target.value)} className={inputClass}>
+                  <select value={method} onChange={e => setMethod(e.target.value)} className={inputClass} aria-label="Payment method">
                     <option value="Cash">Cash</option>
                     <option value="Bank Transfer">Bank Transfer</option>
                     <option value="Cheque">Cheque</option>
@@ -78,7 +80,7 @@ function RecordPaymentModal({ isOpen, onClose, billId, outstanding }: { isOpen: 
                 </div>
                 <div>
                   <label className="block text-[11px] font-semibold uppercase tracking-wide text-[#6B7280] mb-1.5">Date</label>
-                  <input type="date" required value={date} onChange={e => setDate(e.target.value)} className={inputClass} />
+                  <input type="date" required value={date} onChange={e => setDate(e.target.value)} className={inputClass} aria-label="Payment date" />
                 </div>
               </div>
               <div>
@@ -92,10 +94,10 @@ function RecordPaymentModal({ isOpen, onClose, billId, outstanding }: { isOpen: 
             </div>
           </DialogBody>
           <DialogFooter>
-            <Button type="submit" className="w-full bg-[#16A34A] hover:bg-[#15803D] text-white disabled:opacity-50" disabled={!isValid || recordPayment.isPending}>
+            <Button type="submit" className="w-full bg-[#16A34A] hover:bg-[#15803D] text-white disabled:opacity-50 cursor-pointer" disabled={!isValid || recordPayment.isPending}>
               {recordPayment.isPending ? 'Recording...' : 'Record Payment'}
             </Button>
-            <Button type="button" variant="secondary" onClick={onClose} className="w-full">Cancel</Button>
+            <Button type="button" variant="secondary" onClick={onClose} className="w-full cursor-pointer">Cancel</Button>
           </DialogFooter>
         </form>
       </DialogContent>
@@ -129,7 +131,7 @@ function SplitBillModal({ isOpen, onClose, bill, onSplit }: { isOpen: boolean; o
           <div className="space-y-2 max-h-60 overflow-y-auto">
             {bill.items.map((item: any, idx: number) => (
               <label key={idx} className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 cursor-pointer">
-                <input type="checkbox" checked={selected.has(idx)} onChange={() => toggle(idx)} className="h-4 w-4 accent-[#D97706]" />
+                <input type="checkbox" checked={selected.has(idx)} onChange={() => toggle(idx)} className="h-4 w-4 accent-[#D97706]" aria-label={`Select ${item.item_name}`} />
                 <span className="flex-1 text-[13px] text-[#101828]">{item.item_name} {item.specification ? `(${item.specification})` : ''}</span>
                 <span className="text-[12px] text-[#6B7280]">x{item.quantity}</span>
               </label>
@@ -195,7 +197,7 @@ function MakeRecurringModal({ isOpen, onClose, billId: _billId, onMake }: { isOp
           <div className="space-y-4">
             <div>
               <label className="block text-[11px] font-semibold uppercase text-[#6B7280] mb-1.5">Interval</label>
-              <select value={interval} onChange={e => setInterval(e.target.value)} className="h-10 w-full rounded-lg border border-[#E4E7EC] bg-white px-3 text-[13px] outline-none">
+              <select value={interval} onChange={e => setInterval(e.target.value)} className="h-10 w-full rounded-lg border border-[#E4E7EC] bg-white px-3 text-[13px] outline-none" aria-label="Recurring interval">
                 <option value="DAILY">Daily</option>
                 <option value="WEEKLY">Weekly</option>
                 <option value="BIWEEKLY">Bi-weekly</option>
@@ -204,7 +206,7 @@ function MakeRecurringModal({ isOpen, onClose, billId: _billId, onMake }: { isOp
             </div>
             <div>
               <label className="block text-[11px] font-semibold uppercase text-[#6B7280] mb-1.5">End Date (optional)</label>
-              <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} className="h-10 w-full rounded-lg border border-[#E4E7EC] bg-white px-3 text-[13px] outline-none" />
+              <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} className="h-10 w-full rounded-lg border border-[#E4E7EC] bg-white px-3 text-[13px] outline-none" aria-label="Recurring end date" />
             </div>
           </div>
         </DialogBody>
@@ -251,7 +253,7 @@ export default function ShopBillDetailPage() {
 
   const handleDuplicate = () => {
     if (!bill) return
-    duplicateBill.mutate(bill.id, { onSuccess: (newBill) => navigate(`/shop-bills/${newBill.id}`) })
+    duplicateBill.mutate(bill.id, { onSuccess: (newBill: any) => navigate(`/shop-bills/${newBill.id}`) })
   }
 
   const handleSplit = (indices: number[]) => {
@@ -274,11 +276,15 @@ export default function ShopBillDetailPage() {
     try {
       const data = await shopBillService.getNotesHistory(bill.id)
       setNotesHistory(data.notes_history || [])
-    } catch { setNotesHistory([]) }
+    } catch {
+      console.warn('Failed to load notes history')
+      setNotesHistory([])
+    }
     setShowNotesHistory(true)
   }
 
-  const fmt = (v: number) => `Rs. ${v.toLocaleString('en-LK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+  const isCancelled = bill?.status === 'CANCELLED'
+  const isPaid = bill?.payment_status === 'PAID'
 
   return (
     <div className="space-y-5 pb-10">
@@ -291,12 +297,12 @@ export default function ShopBillDetailPage() {
             <h1 className="text-dashboard-title">Shop Bill</h1>
             {bill && <span className={`inline-flex items-center rounded-md px-2 py-0.5 text-[11px] font-medium ${STATUS_COLORS[bill.status] ?? 'bg-gray-100 text-gray-500'}`}>{bill.status}</span>}
             {bill?.locked && <span className="inline-flex items-center gap-1 text-[11px] text-[#6B7280]"><Lock size={12} /> Locked</span>}
-            {bill?.is_recurring && <span className="inline-flex items-center gap-1 text-[11px] text-[#3538CD]"><Repeat size={12} /> {bill.recurring_interval}</span>}
+            {bill?.is_recurring && <span className="inline-flex items-center gap-1 text-[11px] text-[#3538CD]"><Repeat size={12} /> {bill.recurring_interval ?? 'RECURRING'}</span>}
           </div>
         </div>
         {bill && (
           <div className="flex items-center gap-1.5 flex-wrap justify-end">
-            {bill.status !== 'COMPLETED' && bill.status !== 'CANCELLED' && (
+            {!isCancelled && bill.status !== 'COMPLETED' && (
               <Button size="sm" onClick={advanceStatus} disabled={updateBill.isPending} className="bg-[#DC2626] hover:bg-[#B91C1C] text-white gap-1.5 cursor-pointer">
                 <CheckCircle className="h-3.5 w-3.5" />
                 {bill.status === 'PENDING' && 'Start Processing'}
@@ -304,31 +310,33 @@ export default function ShopBillDetailPage() {
                 {bill.status === 'DELIVERED' && 'Mark Completed'}
               </Button>
             )}
-            {bill.outstanding_amount > 0 && bill.status !== 'CANCELLED' && (
+            {!isCancelled && !isPaid && bill.outstanding_amount > 0 && (
               <Button size="sm" onClick={() => setIsPaymentModalOpen(true)} className="bg-[#16A34A] hover:bg-[#15803D] text-white gap-1.5 cursor-pointer">
                 <Wallet className="h-3.5 w-3.5" /> Pay
               </Button>
             )}
-            <Button size="sm" variant="outline" onClick={handleDuplicate} disabled={duplicateBill.isPending} className="gap-1 cursor-pointer">
-              <Copy size={13} /> Clone
-            </Button>
-            {bill.items.length > 1 && bill.payment_status !== 'PAID' && (
+            {!isCancelled && (
+              <Button size="sm" variant="outline" onClick={handleDuplicate} disabled={duplicateBill.isPending} className="gap-1 cursor-pointer">
+                <Copy size={13} /> Clone
+              </Button>
+            )}
+            {!isCancelled && bill.items.length > 1 && !isPaid && (
               <Button size="sm" variant="outline" onClick={() => setShowSplitModal(true)} className="gap-1 cursor-pointer">
                 <Scissors size={13} /> Split
               </Button>
             )}
-            <Button size="sm" variant="outline" onClick={loadNotesHistory} className="gap-1 cursor-pointer">
+            <Button size="sm" variant="outline" onClick={loadNotesHistory} className="gap-1 cursor-pointer" aria-label="Notes history">
               <MessageSquare size={13} />
             </Button>
-            <Button size="sm" variant="outline" onClick={handleToggleLock} className="gap-1 cursor-pointer">
+            <Button size="sm" variant="outline" onClick={handleToggleLock} className="gap-1 cursor-pointer" aria-label={bill.locked ? 'Unlock bill' : 'Lock bill'}>
               {bill.locked ? <Unlock size={13} /> : <Lock size={13} />}
             </Button>
-            {!bill.is_recurring && (
-              <Button size="sm" variant="outline" onClick={() => setShowRecurringModal(true)} className="gap-1 cursor-pointer">
+            {!bill.is_recurring && !isCancelled && (
+              <Button size="sm" variant="outline" onClick={() => setShowRecurringModal(true)} className="gap-1 cursor-pointer" aria-label="Make recurring">
                 <Repeat size={13} />
               </Button>
             )}
-            <Button variant="ghost" size="sm" onClick={handleDelete} disabled={deleteBill.isPending} className="text-[#DC2626] hover:bg-[#FEF2F2] cursor-pointer">
+            <Button variant="ghost" size="sm" onClick={handleDelete} disabled={deleteBill.isPending} className="text-[#DC2626] hover:bg-[#FEF2F2] cursor-pointer" aria-label="Delete bill">
               <Trash2 className="h-3.5 w-3.5" />
             </Button>
           </div>
@@ -362,7 +370,7 @@ export default function ShopBillDetailPage() {
               <p className="text-[11px] font-semibold uppercase text-[#6B7280]">Payment Status</p>
               <div className="mt-1.5">
                 <span className={`inline-flex items-center rounded-md px-2 py-0.5 text-[11px] font-medium ${PAYMENT_COLORS[bill.payment_status] ?? 'bg-gray-100 text-gray-500'}`}>
-                  {bill.payment_status.replace('_', ' ')}
+                  {(bill.payment_status ?? 'DRAFT').replace('_', ' ')}
                 </span>
               </div>
             </Card>
@@ -378,7 +386,7 @@ export default function ShopBillDetailPage() {
               </div>
               <div>
                 <p className="text-[11px] font-semibold uppercase text-[#6B7280]">Client Name</p>
-                <p className="font-medium text-[#101828] mt-0.5">{bill.client_name}</p>
+                <p className="font-medium text-[#101828] mt-0.5">{bill.client_name || '—'}</p>
               </div>
               {bill.delivery_date && (
                 <div>
@@ -404,13 +412,21 @@ export default function ShopBillDetailPage() {
                   <Link to={`/shop-bills/${bill.parent_bill_id}`} className="font-medium text-[#DC2626] hover:underline mt-0.5 inline-block">View parent →</Link>
                 </div>
               )}
-              {bill.notes && (
+              <div className="md:col-span-2">
+                <div className="flex items-center gap-2">
+                  <p className="text-[11px] font-semibold uppercase text-[#6B7280]">Notes</p>
+                  <button onClick={loadNotesHistory} className="text-[10px] text-[#DC2626] hover:underline cursor-pointer">history</button>
+                </div>
+                <p className="text-[#374151] mt-0.5 whitespace-pre-wrap">{bill.notes || '—'}</p>
+              </div>
+              {bill.tags && bill.tags.length > 0 && (
                 <div className="md:col-span-2">
-                  <div className="flex items-center gap-2">
-                    <p className="text-[11px] font-semibold uppercase text-[#6B7280]">Notes</p>
-                    <button onClick={loadNotesHistory} className="text-[10px] text-[#DC2626] hover:underline cursor-pointer">history</button>
+                  <p className="text-[11px] font-semibold uppercase text-[#6B7280]">Tags</p>
+                  <div className="flex gap-1.5 mt-1 flex-wrap">
+                    {bill.tags.map((tag: string, i: number) => (
+                      <span key={i} className="text-[11px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded">{tag}</span>
+                    ))}
                   </div>
-                  <p className="text-[#374151] mt-0.5 whitespace-pre-wrap">{bill.notes}</p>
                 </div>
               )}
             </CardContent>
@@ -424,14 +440,14 @@ export default function ShopBillDetailPage() {
                 <table className="w-full text-[13px]">
                   <thead>
                     <tr className="border-b border-[#E4E7EC]">
-                      <th className="text-left py-2 font-semibold text-[#6B7280]">#</th>
-                      <th className="text-left py-2 font-semibold text-[#6B7280]">Item</th>
-                      <th className="text-left py-2 font-semibold text-[#6B7280]">Spec</th>
-                      <th className="text-left py-2 font-semibold text-[#6B7280]">Category</th>
-                      <th className="text-right py-2 font-semibold text-[#6B7280]">Price</th>
-                      <th className="text-right py-2 font-semibold text-[#6B7280]">Qty</th>
-                      <th className="text-right py-2 font-semibold text-[#6B7280]">Disc</th>
-                      <th className="text-right py-2 font-semibold text-[#6B7280]">Total</th>
+                      <th className="text-left py-2 font-semibold text-[#6B7280]" scope="col">#</th>
+                      <th className="text-left py-2 font-semibold text-[#6B7280]" scope="col">Item</th>
+                      <th className="text-left py-2 font-semibold text-[#6B7280]" scope="col">Spec</th>
+                      <th className="text-left py-2 font-semibold text-[#6B7280]" scope="col">Category</th>
+                      <th className="text-right py-2 font-semibold text-[#6B7280]" scope="col">Price</th>
+                      <th className="text-right py-2 font-semibold text-[#6B7280]" scope="col">Qty</th>
+                      <th className="text-right py-2 font-semibold text-[#6B7280]" scope="col">Disc</th>
+                      <th className="text-right py-2 font-semibold text-[#6B7280]" scope="col">Total</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -474,7 +490,7 @@ export default function ShopBillDetailPage() {
             </CardContent>
           </Card>
 
-          {/* Payment Modal */}
+          {/* Modals */}
           <RecordPaymentModal isOpen={isPaymentModalOpen} onClose={() => setIsPaymentModalOpen(false)} billId={bill.id} outstanding={bill.outstanding_amount} />
           <SplitBillModal isOpen={showSplitModal} onClose={() => setShowSplitModal(false)} bill={bill} onSplit={handleSplit} />
           <NotesHistoryModal isOpen={showNotesHistory} onClose={() => setShowNotesHistory(false)} notesHistory={notesHistory} />
