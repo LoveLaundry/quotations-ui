@@ -42,11 +42,6 @@ export default function CustomersPage() {
     return allQuotations.filter((x) => (x.client_name ?? '').toLowerCase().includes(q))
   }, [allQuotations, active])
 
-  const outstanding = useMemo(
-    () => bills.reduce((s, b) => s + (b.outstanding_amount ?? 0), 0),
-    [bills],
-  )
-
   const matchNames = useMemo(() => {
     if (!client) return []
     const q = client.toLowerCase()

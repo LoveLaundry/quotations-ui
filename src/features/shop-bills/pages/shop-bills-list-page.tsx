@@ -10,7 +10,7 @@ import { Breadcrumb } from '../../../components/ui/breadcrumb'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogBody, DialogFooter } from '../../../components/ui/dialog'
 import { ConfirmDialog } from '../../../components/ui/confirm-dialog'
 import { useShopBills, useBulkUpdateShopBillStatus, useShopBillTemplates, useCreateBillTemplate, useDeleteBillTemplate, useQuickBill } from '../hooks/useShopBills'
-import { fmtCurrency } from '../../../lib/utils'
+import { formatCurrency } from '../../../lib/utils'
 
 const STATUS_COLORS: Record<string, string> = {
   PENDING: 'bg-amber-50 text-amber-700 border border-amber-200',
@@ -88,11 +88,6 @@ export default function ShopBillsListPage() {
       else next.add(id)
       return next
     })
-  }
-
-  const selectAll = () => {
-    if (selectedIds.size === bills.length) setSelectedIds(new Set())
-    else setSelectedIds(new Set(bills.map((b: any) => b.id)))
   }
 
   const handleBulkStatus = (status: string) => {
@@ -204,8 +199,8 @@ export default function ShopBillsListPage() {
                     <p className="text-[12px] text-[#6B7280] mt-0.5 truncate">{bill.client_name} &middot; {bill.items.length} item{bill.items.length === 1 ? '' : 's'}</p>
                   </div>
                   <div className="text-right shrink-0">
-                    <p className="text-[14px] font-semibold text-[#101828]">{fmtCurrency(bill.grand_total)}</p>
-                    {bill.outstanding_amount > 0 && <p className="text-[11px] text-[#DC2626]">{fmtCurrency(bill.outstanding_amount)} due</p>}
+                    <p className="text-[14px] font-semibold text-[#101828]">{formatCurrency(bill.grand_total)}</p>
+                    {bill.outstanding_amount > 0 && <p className="text-[11px] text-[#DC2626]">{formatCurrency(bill.outstanding_amount)} due</p>}
                   </div>
                 </Card>
               </Link>
@@ -228,7 +223,7 @@ export default function ShopBillsListPage() {
                 <p className="text-[13px] text-[#98A2B3] text-center py-4">No templates yet. Create one from an existing bill.</p>
               ) : (
                 <div className="space-y-2 max-h-60 overflow-y-auto">
-                  {templates.map(t => (
+                  {templates.map((t: any) => (
                     <div key={t.id} className="flex items-center gap-3 p-3 rounded-lg border border-[#E4E7EC] hover:bg-gray-50">
                       <LayoutTemplate size={16} className="text-[#6B7280] shrink-0" />
                       <div className="flex-1 min-w-0">
