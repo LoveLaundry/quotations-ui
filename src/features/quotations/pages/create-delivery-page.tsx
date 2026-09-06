@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect, useCallback, type FormEvent } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { Truck, ArrowLeft, Search, X, AlertCircle, Check, Package } from 'lucide-react'
+import { Truck, ArrowLeft, Search, X, AlertCircle, Check, Package, Wand2, Hand } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
 import { Button } from '../../../components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card'
@@ -15,6 +15,7 @@ interface SelectedItem {
     gate_pass_id: string
     gate_pass_number: string
     client_name: string
+    receiving_date: string
     item_name: string
     specification: string
     category: string
@@ -22,9 +23,22 @@ interface SelectedItem {
     quantity: number
 }
 
+interface AutoItemTotal {
+    item_key: string
+    item_name: string
+    specification: string
+    category: string
+    total_pending: number
+    total_qty: number
+}
+
 const inputClass =
     'h-10 w-full rounded-lg border border-[#E4E7EC] bg-white px-3 text-[13px] text-[#101828] outline-none focus:border-[#16A34A] focus:ring-2 focus:ring-[#16A34A]/10 shadow-sm transition'
 const labelClass = 'block text-[11px] font-semibold uppercase tracking-wide text-[#6B7280] mb-1.5'
+
+function itemKey(name: string, spec: string) {
+    return spec ? `${name}||${spec}` : name
+}
 
 export default function CreateDeliveryPage() {
     const navigate = useNavigate()
@@ -38,6 +52,7 @@ export default function CreateDeliveryPage() {
     const [receivedBy, setReceivedBy] = useState('')
     const [notes, setNotes] = useState('')
     const [step, setStep] = useState<'select' | 'fill'>('select')
+    const [fillMode, setFillMode] = useState<'manual' | 'auto'>('manual')
 
     useEffect(() => {
         const t = setTimeout(() => setDebouncedSearch(search.trim()), 300)
@@ -55,7 +70,7 @@ export default function CreateDeliveryPage() {
         [pendingGPs, selectedIds],
     )
 
-    // Build items from selected gate passes, sorted by pending_qty ascending (low → high)
+    // ── All items from selected GPs (sorted oldest first) ────────────────────
     const allItems: SelectedItem[] = useMemo(() => {
         const items: SelectedItem[] = []
         for (const gp of selectedGPs) {
@@ -64,6 +79,7 @@ export default function CreateDeliveryPage() {
                     gate_pass_id: gp.gate_pass_id,
                     gate_pass_number: gp.gate_pass_number,
                     client_name: gp.client_name,
+                    receiving_date: gp.receiving_date,
                     item_name: item.item_name,
                     specification: item.specification,
                     category: item.category,
@@ -72,28 +88,81 @@ export default function CreateDeliveryPage() {
                 })
             }
         }
-        items.sort((a, b) => a.pending_qty - b.pending_qty)
+        items.sort((a, b) => a.receiving_date.localeCompare(b.receiving_date) || a.pending_qty - b.pending_qty)
         return items
     }, [selectedGPs])
 
+    // ── Auto-fill: unique item types across all selected GPs ──────────────────
+    const autoItemTotals: AutoItemTotal[] = useMemo(() => {
+        const map = new Map<string, AutoItemTotal>()
+        for (const item of allItems) {
+            const key = itemKey(item.item_name, item.specification)
+            const existing = map.get(key)
+            if (existing) {
+                existing.total_pending += item.pending_qty
+            } else {
+                map.set(key, {
+                    item_key: key,
+                    item_name: item.item_name,
+                    specification: item.specification,
+                    category: item.category,
+                    total_pending: item.pending_qty,
+                    total_qty: 0,
+                })
+            }
+        }
+        return Array.from(map.values()).sort((a, b) => a.item_name.localeCompare(b.item_name))
+    }, [allItems])
+
+    const [autoTotals, setAutoTotals] = useState<Map<string, number>>(new Map())
+
+    // Reset auto totals when selection changes
+    useEffect(() => {
+        setAutoTotals(new Map())
+    }, [selectedIds])
+
+    // ── Manual mode state ─────────────────────────────────────────────────────
     const [items, setItems] = useState<SelectedItem[]>([])
 
-    // Sync items when selection changes
     useEffect(() => {
         setItems(prev => {
-            // Preserve existing quantities for items that are still selected
             const prevMap = new Map<string, number>()
             for (const p of prev) {
-                const key = `${p.gate_pass_id}||${p.item_name}||${p.specification}`
-                prevMap.set(key, p.quantity)
+                prevMap.set(itemKey(p.item_name, p.specification), p.quantity)
             }
-            return allItems.map(item => {
-                const key = `${item.gate_pass_id}||${item.item_name}||${item.specification}`
-                return { ...item, quantity: prevMap.get(key) ?? 0 }
-            })
+            return allItems.map(item => ({
+                ...item,
+                quantity: prevMap.get(itemKey(item.item_name, item.specification)) ?? 0,
+            }))
         })
     }, [allItems])
 
+    // ── Auto-fill distribution (FIFO: oldest GP first) ───────────────────────
+    const autoDistributed = useMemo(() => {
+        if (fillMode !== 'auto') return []
+        // Start with all items at 0
+        const distributed = allItems.map(i => ({ ...i, quantity: 0 }))
+        // For each item type, distribute from oldest GP to newest
+        for (const total of autoItemTotals) {
+            let remaining = autoTotals.get(total.item_key) ?? 0
+            for (const item of distributed) {
+                if (itemKey(item.item_name, item.specification) !== total.item_key) continue
+                if (remaining <= 0) break
+                const give = Math.min(remaining, item.pending_qty)
+                item.quantity = give
+                remaining -= give
+            }
+        }
+        return distributed
+    }, [fillMode, allItems, autoItemTotals, autoTotals])
+
+    // Effective items based on mode
+    const effectiveItems = fillMode === 'auto' ? autoDistributed : items
+    const activeItems = effectiveItems.filter(i => i.quantity > 0)
+    const totalPieces = activeItems.reduce((s, i) => s + i.quantity, 0)
+    const itemCount = activeItems.length
+
+    // ── Handlers ──────────────────────────────────────────────────────────────
     const toggleGP = useCallback((gpId: string) => {
         setSelectedIds(prev => {
             const next = new Set(prev)
@@ -133,10 +202,28 @@ export default function CreateDeliveryPage() {
         ))
     }
 
-    const activeItems = items.filter(i => i.quantity > 0)
-    const totalPieces = activeItems.reduce((s, i) => s + i.quantity, 0)
-    const itemCount = activeItems.length
+    const updateAutoTotal = (itemKey: string, qty: number) => {
+        setAutoTotals(prev => {
+            const next = new Map(prev)
+            if (qty <= 0) next.delete(itemKey)
+            else next.set(itemKey, qty)
+            return next
+        })
+    }
 
+    const setAutoMax = (itemKey: string, totalPending: number) => {
+        setAutoTotals(prev => {
+            const next = new Map(prev)
+            next.set(itemKey, totalPending)
+            return next
+        })
+    }
+
+    const setAutoMaxAll = () => {
+        setAutoTotals(new Map(autoItemTotals.map(t => [t.item_key, t.total_pending])))
+    }
+
+    // ── Validation ────────────────────────────────────────────────────────────
     const isValid =
         selectedIds.size > 0 &&
         deliveryDate &&
@@ -145,12 +232,11 @@ export default function CreateDeliveryPage() {
         activeItems.length > 0 &&
         activeItems.every(i => i.quantity <= i.pending_qty)
 
-    // Group active items by gate_pass_id for submission
+    // ── Submission ────────────────────────────────────────────────────────────
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault()
         if (!isValid) return
 
-        // Group items by gate_pass_id
         const byGP = new Map<string, { client_name: string; items: SelectedItem[] }>()
         for (const item of activeItems) {
             const existing = byGP.get(item.gate_pass_id)
@@ -161,7 +247,6 @@ export default function CreateDeliveryPage() {
             }
         }
 
-        // Create one delivery per gate pass
         const promises: Promise<any>[] = []
         for (const [gpId, data] of byGP) {
             promises.push(
@@ -185,10 +270,12 @@ export default function CreateDeliveryPage() {
         navigate('/deliveries')
     }
 
-    // Items grouped by gate pass for display
+    // ── Items grouped by gate pass for manual display ─────────────────────────
     const itemsByGP = useMemo(() => {
+        const source = fillMode === 'auto' ? autoDistributed : items
         const map = new Map<string, { client_name: string; gate_pass_number: string; items: SelectedItem[] }>()
-        for (const item of items) {
+        for (const item of source) {
+            if (item.quantity <= 0) continue
             const existing = map.get(item.gate_pass_id)
             if (existing) {
                 existing.items.push(item)
@@ -201,7 +288,7 @@ export default function CreateDeliveryPage() {
             }
         }
         return Array.from(map.entries())
-    }, [items])
+    }, [fillMode, autoDistributed, items])
 
     return (
         <div className="space-y-5 pb-10">
@@ -222,7 +309,7 @@ export default function CreateDeliveryPage() {
                     <p className="text-[13px] text-[#98A2B3] mt-0.5">
                         {step === 'select'
                             ? 'Select gate passes with pending items to deliver'
-                            : `Delivering ${totalPieces} pieces across ${itemCount} item${itemCount !== 1 ? 's' : ''} from ${selectedIds.size} gate pass${selectedIds.size !== 1 ? 'es' : ''}`
+                            : `Delivering ${totalPieces} pieces across ${itemCount} item${itemCount !== 1 ? 's' : ''} from ${selectedIds.size} gate pass${selectedIds.size !== 1 ? 'es' : ''} · ${fillMode === 'auto' ? 'Auto-fill (FIFO)' : 'Manual'}`
                         }
                     </p>
                 </div>
@@ -372,81 +459,232 @@ export default function CreateDeliveryPage() {
                         </CardContent>
                     </Card>
 
-                    {/* Items grouped by Gate Pass */}
+                    {/* Fill Mode Toggle */}
                     <Card>
-                        <CardHeader className="border-b border-[#F2F4F7] pb-3">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <CardTitle>Items to Deliver</CardTitle>
-                                    <p className="text-[12px] text-[#98A2B3] mt-0.5">Sorted by pending quantity (low to high) — fill starting from the smallest</p>
+                        <CardContent className="pt-4">
+                            <div className="flex items-center gap-3">
+                                <span className="text-[12px] font-semibold text-[#6B7280] uppercase tracking-wide">Fill Mode</span>
+                                <div className="flex rounded-lg border border-[#E4E7EC] overflow-hidden">
+                                    <button
+                                        type="button"
+                                        onClick={() => setFillMode('manual')}
+                                        className={`flex items-center gap-1.5 px-4 py-2 text-[13px] font-medium transition cursor-pointer ${
+                                            fillMode === 'manual'
+                                                ? 'bg-[#16A34A] text-white'
+                                                : 'bg-white text-[#6B7280] hover:bg-[#F9FAFB]'
+                                        }`}
+                                    >
+                                        <Hand size={14} /> Manual
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setFillMode('auto')}
+                                        className={`flex items-center gap-1.5 px-4 py-2 text-[13px] font-medium transition cursor-pointer ${
+                                            fillMode === 'auto'
+                                                ? 'bg-[#16A34A] text-white'
+                                                : 'bg-white text-[#6B7280] hover:bg-[#F9FAFB]'
+                                        }`}
+                                    >
+                                        <Wand2 size={14} /> Auto-fill (FIFO)
+                                    </button>
                                 </div>
-                                <div className="text-[12px] text-[#6B7280]">
-                                    <span className="font-semibold text-[#16A34A]">{totalPieces}</span> pieces selected
-                                </div>
+                                <p className="text-[11px] text-[#98A2B3]">
+                                    {fillMode === 'auto'
+                                        ? 'Enter totals per item — system fills from oldest gate pass first'
+                                        : 'Fill quantities manually for each gate pass item'
+                                    }
+                                </p>
                             </div>
-                        </CardHeader>
-                        <CardContent className="pt-4 space-y-4">
-                            {itemsByGP.map(([gpId, group]) => {
-                                return (
-                                    <div key={gpId} className="rounded-xl border border-[#E4E7EC] overflow-hidden">
-                                        <div className="flex items-center justify-between bg-[#F9FAFB] px-4 py-2.5 border-b border-[#E4E7EC]">
-                                            <div className="flex items-center gap-2">
-                                                <span className="text-[13px] font-semibold text-[#101828]">{group.client_name}</span>
-                                                <span className="font-mono text-[11px] text-[#98A2B3]">{group.gate_pass_number}</span>
-                                            </div>
-                                            <button
-                                                type="button"
-                                                onClick={() => setMaxAll(gpId)}
-                                                className="text-[11px] font-medium text-[#16A34A] hover:text-[#15803D] cursor-pointer"
-                                            >
-                                                Fill All Max
-                                            </button>
-                                        </div>
-                                        <div className="divide-y divide-[#F2F4F7]">
-                                            {group.items.map((item, _) => {
-                                                const globalIdx = items.findIndex(i => i.gate_pass_id === item.gate_pass_id && i.item_name === item.item_name && i.specification === item.specification)
-                                                return (
-                                                    <div key={`${item.gate_pass_id}||${item.item_name}||${item.specification}`} className="flex items-center gap-3 px-4 py-3">
-                                                        <div className="flex-1 min-w-0">
-                                                            <p className="text-[13px] font-medium text-[#101828] truncate">
-                                                                {item.item_name}
-                                                                {item.specification && (
-                                                                    <span className="ml-2 inline-flex items-center rounded bg-[#FFF7ED] border border-[#FED7AA] px-1.5 py-0.5 text-[10px] font-semibold text-[#EA580C]">
-                                                                        {item.specification}
-                                                                    </span>
-                                                                )}
-                                                            </p>
-                                                            <p className="text-[11px] text-[#98A2B3]">Pending: {item.pending_qty}</p>
-                                                        </div>
-                                                        <div className="flex items-center gap-2 shrink-0">
-                                                            <input
-                                                                type="number"
-                                                                min={0}
-                                                                max={item.pending_qty}
-                                                                value={item.quantity}
-                                                                onChange={e => globalIdx >= 0 && updateItem(globalIdx, Number(e.target.value))}
-                                                                className="h-9 w-20 rounded-lg border border-[#E4E7EC] bg-white px-3 text-[13px] text-center text-[#101828] outline-none focus:border-[#16A34A] focus:ring-2 focus:ring-[#16A34A]/10"
-                                                            />
-                                                            <button
-                                                                type="button"
-                                                                onClick={() => globalIdx >= 0 && setMax(globalIdx)}
-                                                                className="text-[11px] font-medium text-[#16A34A] hover:text-[#15803D] cursor-pointer transition"
-                                                            >
-                                                                Max
-                                                            </button>
-                                                        </div>
-                                                        {item.quantity > item.pending_qty && (
-                                                            <AlertCircle className="h-4 w-4 text-[#EF4444] shrink-0" />
-                                                        )}
-                                                    </div>
-                                                )
-                                            })}
-                                        </div>
-                                    </div>
-                                )
-                            })}
                         </CardContent>
                     </Card>
+
+                    {/* ── AUTO MODE: Item totals ──────────────────────────────── */}
+                    {fillMode === 'auto' && (
+                        <Card>
+                            <CardHeader className="border-b border-[#F2F4F7] pb-3">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <CardTitle>Item Totals</CardTitle>
+                                        <p className="text-[12px] text-[#98A2B3] mt-0.5">
+                                            Enter how many of each item to deliver — auto-distributed from oldest GP
+                                        </p>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={setAutoMaxAll}
+                                        className="text-[11px] font-medium text-[#16A34A] hover:text-[#15803D] cursor-pointer"
+                                    >
+                                        Fill All Max
+                                    </button>
+                                </div>
+                            </CardHeader>
+                            <CardContent className="pt-4 space-y-2">
+                                {autoItemTotals.map(total => {
+                                    const entered = autoTotals.get(total.item_key) ?? 0
+                                    const over = entered > total.total_pending
+                                    return (
+                                        <div key={total.item_key} className="flex items-center gap-3 rounded-lg border border-[#E4E7EC] px-4 py-3">
+                                            <div className="flex-1 min-w-0">
+                                                <p className="text-[13px] font-medium text-[#101828] truncate">
+                                                    {total.item_name}
+                                                    {total.specification && (
+                                                        <span className="ml-2 inline-flex items-center rounded bg-[#FFF7ED] border border-[#FED7AA] px-1.5 py-0.5 text-[10px] font-semibold text-[#EA580C]">
+                                                            {total.specification}
+                                                        </span>
+                                                    )}
+                                                </p>
+                                                <p className="text-[11px] text-[#98A2B3]">
+                                                    Available: {total.total_pending} across {allItems.filter(i => itemKey(i.item_name, i.specification) === total.item_key).length} GP{allItems.filter(i => itemKey(i.item_name, i.specification) === total.item_key).length !== 1 ? 's' : ''}
+                                                </p>
+                                            </div>
+                                            <div className="flex items-center gap-2 shrink-0">
+                                                <input
+                                                    type="number"
+                                                    min={0}
+                                                    max={total.total_pending}
+                                                    value={entered || ''}
+                                                    onChange={e => updateAutoTotal(total.item_key, Number(e.target.value))}
+                                                    placeholder="0"
+                                                    className="h-9 w-24 rounded-lg border border-[#E4E7EC] bg-white px-3 text-[13px] text-center text-[#101828] outline-none focus:border-[#16A34A] focus:ring-2 focus:ring-[#16A34A]/10"
+                                                />
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setAutoMax(total.item_key, total.total_pending)}
+                                                    className="text-[11px] font-medium text-[#16A34A] hover:text-[#15803D] cursor-pointer"
+                                                >
+                                                    Max
+                                                </button>
+                                            </div>
+                                            {over && <AlertCircle className="h-4 w-4 text-[#EF4444] shrink-0" />}
+                                        </div>
+                                    )
+                                })}
+                            </CardContent>
+                        </Card>
+                    )}
+
+                    {/* ── AUTO MODE: Live distribution preview ────────────────── */}
+                    {fillMode === 'auto' && activeItems.length > 0 && (
+                        <Card className="border-[#BFDBFE] bg-[#EFF6FF]">
+                            <CardHeader className="border-b border-[#BFDBFE] pb-3">
+                                <CardTitle className="text-[14px] text-[#1E40AF]">Live Distribution Preview</CardTitle>
+                                <p className="text-[12px] text-[#6B7280] mt-0.5">Auto-filled from oldest gate pass to newest</p>
+                            </CardHeader>
+                            <CardContent className="pt-4 space-y-3">
+                                {itemsByGP.map(([gpId, group]) => (
+                                    <div key={gpId} className="rounded-lg border border-[#BFDBFE] bg-white overflow-hidden">
+                                        <div className="flex items-center justify-between bg-[#EFF6FF] px-4 py-2 border-b border-[#BFDBFE]">
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-[13px] font-semibold text-[#101828]">{group.client_name}</span>
+                                                <span className="font-mono text-[11px] text-[#6B7280]">{group.gate_pass_number}</span>
+                                            </div>
+                                            <span className="text-[11px] font-medium text-[#2563EB]">
+                                                {group.items.reduce((s, i) => s + i.quantity, 0)} pcs
+                                            </span>
+                                        </div>
+                                        <div className="divide-y divide-[#F2F4F7]">
+                                            {group.items.map(item => (
+                                                <div key={`${item.gate_pass_id}||${item.item_name}||${item.specification}`} className="flex items-center gap-3 px-4 py-2.5">
+                                                    <div className="flex-1 min-w-0">
+                                                        <p className="text-[13px] font-medium text-[#101828] truncate">
+                                                            {item.item_name}
+                                                            {item.specification && (
+                                                                <span className="ml-2 inline-flex items-center rounded bg-[#FFF7ED] border border-[#FED7AA] px-1.5 py-0.5 text-[10px] font-semibold text-[#EA580C]">
+                                                                    {item.specification}
+                                                                </span>
+                                                            )}
+                                                        </p>
+                                                    </div>
+                                                    <div className="flex items-center gap-3 shrink-0 text-[12px]">
+                                                        <span className="text-[#98A2B3]">Pending: {item.pending_qty}</span>
+                                                        <span className="font-semibold text-[#16A34A]">→ Sending: {item.quantity}</span>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                ))}
+                            </CardContent>
+                        </Card>
+                    )}
+
+                    {/* ── MANUAL MODE: Items per GP ──────────────────────────── */}
+                    {fillMode === 'manual' && (
+                        <Card>
+                            <CardHeader className="border-b border-[#F2F4F7] pb-3">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <CardTitle>Items to Deliver</CardTitle>
+                                        <p className="text-[12px] text-[#98A2B3] mt-0.5">Fill quantities for each gate pass item</p>
+                                    </div>
+                                    <div className="text-[12px] text-[#6B7280]">
+                                        <span className="font-semibold text-[#16A34A]">{totalPieces}</span> pieces selected
+                                    </div>
+                                </div>
+                            </CardHeader>
+                            <CardContent className="pt-4 space-y-4">
+                                {itemsByGP.map(([gpId, group]) => {
+                                    return (
+                                        <div key={gpId} className="rounded-xl border border-[#E4E7EC] overflow-hidden">
+                                            <div className="flex items-center justify-between bg-[#F9FAFB] px-4 py-2.5 border-b border-[#E4E7EC]">
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-[13px] font-semibold text-[#101828]">{group.client_name}</span>
+                                                    <span className="font-mono text-[11px] text-[#98A2B3]">{group.gate_pass_number}</span>
+                                                </div>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setMaxAll(gpId)}
+                                                    className="text-[11px] font-medium text-[#16A34A] hover:text-[#15803D] cursor-pointer"
+                                                >
+                                                    Fill All Max
+                                                </button>
+                                            </div>
+                                            <div className="divide-y divide-[#F2F4F7]">
+                                                {group.items.map(item => {
+                                                    const globalIdx = items.findIndex(i => i.gate_pass_id === item.gate_pass_id && i.item_name === item.item_name && i.specification === item.specification)
+                                                    return (
+                                                        <div key={`${item.gate_pass_id}||${item.item_name}||${item.specification}`} className="flex items-center gap-3 px-4 py-3">
+                                                            <div className="flex-1 min-w-0">
+                                                                <p className="text-[13px] font-medium text-[#101828] truncate">
+                                                                    {item.item_name}
+                                                                    {item.specification && (
+                                                                        <span className="ml-2 inline-flex items-center rounded bg-[#FFF7ED] border border-[#FED7AA] px-1.5 py-0.5 text-[10px] font-semibold text-[#EA580C]">
+                                                                            {item.specification}
+                                                                        </span>
+                                                                    )}
+                                                                </p>
+                                                                <p className="text-[11px] text-[#98A2B3]">Pending: {item.pending_qty}</p>
+                                                            </div>
+                                                            <div className="flex items-center gap-2 shrink-0">
+                                                                <input
+                                                                    type="number"
+                                                                    min={0}
+                                                                    max={item.pending_qty}
+                                                                    value={item.quantity}
+                                                                    onChange={e => globalIdx >= 0 && updateItem(globalIdx, Number(e.target.value))}
+                                                                    className="h-9 w-20 rounded-lg border border-[#E4E7EC] bg-white px-3 text-[13px] text-center text-[#101828] outline-none focus:border-[#16A34A] focus:ring-2 focus:ring-[#16A34A]/10"
+                                                                />
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => globalIdx >= 0 && setMax(globalIdx)}
+                                                                    className="text-[11px] font-medium text-[#16A34A] hover:text-[#15803D] cursor-pointer transition"
+                                                                >
+                                                                    Max
+                                                                </button>
+                                                            </div>
+                                                            {item.quantity > item.pending_qty && (
+                                                                <AlertCircle className="h-4 w-4 text-[#EF4444] shrink-0" />
+                                                            )}
+                                                        </div>
+                                                    )
+                                                })}
+                                            </div>
+                                        </div>
+                                    )
+                                })}
+                            </CardContent>
+                        </Card>
+                    )}
 
                     {/* Submit */}
                     <Card>

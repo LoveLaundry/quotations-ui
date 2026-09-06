@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { paymentsApi, customersApi } from '../api/management-api'
 import { toast } from 'sonner'
-import { Plus, Trash2, X, CreditCard } from 'lucide-react'
+import { Plus, Trash2, X } from 'lucide-react'
 
 const METHODS = ['CASH', 'BANK_TRANSFER', 'CHEQUE', 'CARD', 'ONLINE']
 
@@ -16,7 +16,7 @@ export default function ManagementPayments() {
     queryFn: () => customersApi.list().then(r => r.data),
   })
 
-  const { data: payments = [], isLoading } = useQuery({
+  const { data: payments = [], isLoading: _isLoading } = useQuery({
     queryKey: ['mgmt-payments', customerId],
     queryFn: () => paymentsApi.list({ customer_id: customerId }).then(r => r.data),
   })
@@ -98,7 +98,7 @@ export default function ManagementPayments() {
               e.preventDefault()
               const fd = new FormData(e.currentTarget)
               const data = Object.fromEntries(fd)
-              data.amount = parseFloat(data.amount as string) || 0
+              data.amount = String(parseFloat(data.amount as string) || 0)
               createMut.mutate(data)
             }} className="space-y-3">
               <select name="customer_id" required className="w-full px-3 py-2 border rounded-lg text-sm">

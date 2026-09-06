@@ -17,7 +17,7 @@ export default function ManagementTransactions() {
     queryFn: () => customersApi.list().then(r => r.data),
   })
 
-  const { data: transactions = [], isLoading } = useQuery({
+  const { data: transactions = [], isLoading: _isLoading } = useQuery({
     queryKey: ['mgmt-transactions', startDate, endDate, customerId, search],
     queryFn: () => transactionsApi.list({ start_date: startDate, end_date: endDate, customer_id: customerId, search, limit: 200 }).then(r => r.data),
   })

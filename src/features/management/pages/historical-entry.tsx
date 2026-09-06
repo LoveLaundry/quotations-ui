@@ -1,8 +1,8 @@
-import { useState, useCallback, useRef, useEffect } from 'react'
+import { useState, useCallback, useRef } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { transactionsApi, customersApi, itemsApi } from '../api/management-api'
 import { toast } from 'sonner'
-import { Plus, Copy, Trash2, Save, ArrowDown, ArrowUp, CheckCircle2 } from 'lucide-react'
+import { Plus, Copy, Trash2, Save, ArrowDown } from 'lucide-react'
 
 interface Row {
   id: string
@@ -42,7 +42,7 @@ export default function HistoricalEntry() {
   const qc = useQueryClient()
   const [rows, setRows] = useState<Row[]>([newRow()])
   const [activeRow, setActiveRow] = useState(0)
-  const [activeCol, setActiveCol] = useState(0)
+  const [_activeCol, setActiveCol] = useState(0)
   const tableRef = useRef<HTMLDivElement>(null)
 
   const { data: customers = [] } = useQuery({

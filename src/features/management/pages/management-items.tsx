@@ -17,7 +17,7 @@ export default function ManagementItems() {
     queryFn: () => itemsApi.categories().then(r => r.data),
   })
 
-  const { data: items = [], isLoading } = useQuery({
+  const { data: items = [], isLoading: _isLoading } = useQuery({
     queryKey: ['mgmt-items', catFilter, search],
     queryFn: () => itemsApi.list({ category_id: catFilter, search }).then(r => r.data),
   })
@@ -143,8 +143,8 @@ export default function ManagementItems() {
                 e.preventDefault()
                 const fd = new FormData(e.currentTarget)
                 const data = Object.fromEntries(fd)
-                data.standard_cost = parseFloat(data.standard_cost as string) || 0
-                data.default_rate = parseFloat(data.default_rate as string) || 0
+                data.standard_cost = String(parseFloat(data.standard_cost as string) || 0)
+                data.default_rate = String(parseFloat(data.default_rate as string) || 0)
                 if (editing) updateItemMut.mutate({ id: editing.id, data })
                 else createItemMut.mutate(data)
               }} className="space-y-3">

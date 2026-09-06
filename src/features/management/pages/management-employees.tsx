@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { employeesApi } from '../api/management-api'
 import { toast } from 'sonner'
-import { Plus, Pencil, Trash2, X, Users, DollarSign } from 'lucide-react'
+import { Plus, Pencil, Trash2, X, DollarSign } from 'lucide-react'
 
 const DEPARTMENTS = ['WASHING', 'PRESSING', 'FINISHING', 'PACKING', 'DRY_CLEANING', 'DELIVERY', 'GENERAL']
 
@@ -13,7 +13,7 @@ export default function ManagementEmployees() {
   const [editing, setEditing] = useState<any>(null)
   const [search, setSearch] = useState('')
 
-  const { data: employees = [], isLoading } = useQuery({
+  const { data: employees = [], isLoading: _isLoading } = useQuery({
     queryKey: ['mgmt-employees', search],
     queryFn: () => employeesApi.list(search).then(r => r.data),
   })
@@ -107,10 +107,10 @@ export default function ManagementEmployees() {
               e.preventDefault()
               const fd = new FormData(e.currentTarget)
               const data = Object.fromEntries(fd)
-              data.basic_salary = parseFloat(data.basic_salary as string) || 0
-              data.daily_rate = parseFloat(data.daily_rate as string) || 0
-              data.epf_rate = parseFloat(data.epf_rate as string) || 0
-              data.etf_rate = parseFloat(data.etf_rate as string) || 0
+              data.basic_salary = String(parseFloat(data.basic_salary as string) || 0)
+              data.daily_rate = String(parseFloat(data.daily_rate as string) || 0)
+              data.epf_rate = String(parseFloat(data.epf_rate as string) || 0)
+              data.etf_rate = String(parseFloat(data.etf_rate as string) || 0)
               if (editing) updateMut.mutate({ id: editing.id, data })
               else createMut.mutate(data)
             }} className="space-y-3">
@@ -168,15 +168,15 @@ export default function ManagementEmployees() {
               e.preventDefault()
               const fd = new FormData(e.currentTarget)
               const data = Object.fromEntries(fd)
-              data.basic_salary = parseFloat(data.basic_salary as string) || 0
-              data.overtime_hours = parseFloat(data.overtime_hours as string) || 0
-              data.overtime_rate = parseFloat(data.overtime_rate as string) || 0
-              data.allowances = parseFloat(data.allowances as string) || 0
-              data.epf_deduction = parseFloat(data.epf_deduction as string) || 0
-              data.etf_deduction = parseFloat(data.etf_deduction as string) || 0
-              data.loan_deduction = parseFloat(data.loan_deduction as string) || 0
-              data.advance_deduction = parseFloat(data.advance_deduction as string) || 0
-              data.amount_paid = parseFloat(data.amount_paid as string) || 0
+              data.basic_salary = String(parseFloat(data.basic_salary as string) || 0)
+              data.overtime_hours = String(parseFloat(data.overtime_hours as string) || 0)
+              data.overtime_rate = String(parseFloat(data.overtime_rate as string) || 0)
+              data.allowances = String(parseFloat(data.allowances as string) || 0)
+              data.epf_deduction = String(parseFloat(data.epf_deduction as string) || 0)
+              data.etf_deduction = String(parseFloat(data.etf_deduction as string) || 0)
+              data.loan_deduction = String(parseFloat(data.loan_deduction as string) || 0)
+              data.advance_deduction = String(parseFloat(data.advance_deduction as string) || 0)
+              data.amount_paid = String(parseFloat(data.amount_paid as string) || 0)
               createSalaryMut.mutate({ empId: showSalary.id, data })
             }} className="space-y-3">
               <div className="grid grid-cols-2 gap-3">

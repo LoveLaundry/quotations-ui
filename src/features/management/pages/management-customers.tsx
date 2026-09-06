@@ -13,7 +13,7 @@ export default function ManagementCustomers() {
   const [showForm, setShowForm] = useState(false)
   const [editing, setEditing] = useState<any>(null)
   const [search, setSearch] = useState('')
-  const [viewCustomer, setViewCustomer] = useState<any>(null)
+  const [_viewCustomer, setViewCustomer] = useState<any>(null)
 
   const { data: customers = [], isLoading } = useQuery({
     queryKey: ['mgmt-customers', search],

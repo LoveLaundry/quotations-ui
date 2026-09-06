@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { expensesApi } from '../api/management-api'
 import { toast } from 'sonner'
-import { Plus, Pencil, Trash2, X, DollarSign } from 'lucide-react'
+import { Plus, Pencil, Trash2, X } from 'lucide-react'
 
 const PAYMENT_METHODS = ['CASH', 'BANK_TRANSFER', 'CHEQUE', 'CARD', 'ONLINE']
 
@@ -19,7 +19,7 @@ export default function ManagementExpenses() {
     queryFn: () => expensesApi.categories().then(r => r.data),
   })
 
-  const { data: expenses = [], isLoading } = useQuery({
+  const { data: expenses = [], isLoading: _isLoading } = useQuery({
     queryKey: ['mgmt-expenses', startDate, endDate, catFilter],
     queryFn: () => expensesApi.list({ start_date: startDate, end_date: endDate, category_id: catFilter }).then(r => r.data),
   })
@@ -46,12 +46,6 @@ export default function ManagementExpenses() {
   const deleteMut = useMutation({
     mutationFn: (id: string) => expensesApi.remove(id),
     onSuccess: () => { toast.success('Expense deleted'); qc.invalidateQueries({ queryKey: ['mgmt-expenses'] }) },
-  })
-
-  const createCatMut = useMutation({
-    mutationFn: (data: any) => expensesApi.createCategory(data),
-    onSuccess: () => { toast.success('Category created'); qc.invalidateQueries({ queryKey: ['mgmt-expense-cats'] }) },
-    onError: (e: any) => toast.error(e.response?.data?.detail || 'Failed'),
   })
 
   return (
@@ -138,7 +132,7 @@ export default function ManagementExpenses() {
               e.preventDefault()
               const fd = new FormData(e.currentTarget)
               const data = Object.fromEntries(fd)
-              data.amount = parseFloat(data.amount as string) || 0
+              data.amount = String(parseFloat(data.amount as string) || 0)
               if (editing) updateMut.mutate({ id: editing.id, data })
               else createMut.mutate(data)
             }} className="space-y-3">
