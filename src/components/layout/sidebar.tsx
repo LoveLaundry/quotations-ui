@@ -29,7 +29,18 @@ import { cn } from '../../lib/utils'
 import { useAuth } from '../../context/AuthContext'
 import { usePermissions } from '../../hooks/usePermissions'
 
-const navGroups = [
+interface NavItem {
+  to: string
+  label: string
+  icon: any
+  end?: boolean
+  indent?: boolean
+  permission?: string
+  roles?: string[]
+  children?: NavItem[]
+}
+
+const navGroups: { label: string; items: NavItem[] }[] = [
   {
     label: 'Overview',
     items: [
@@ -42,11 +53,13 @@ const navGroups = [
     label: 'Operations',
     items: [
       { to: '/gate-passes', label: 'Gate Passes', icon: ClipboardText, end: false, permission: 'view_gate_passes' },
-      { to: '/deliveries', label: 'Deliveries', icon: Truck, end: false, permission: 'view_deliveries' },
+      { to: '/deliveries', label: 'Deliveries', icon: Truck, end: false, permission: 'view_deliveries', children: [
+        { to: '/dispatch', label: 'Dispatch', icon: Truck, end: false },
+      ]},
       { to: '/returns', label: 'Returns', icon: Truck, end: false, permission: 'view_gate_passes' },
-      { to: '/dispatch', label: 'Dispatch', icon: Truck, end: false, indent: true },
-      { to: '/workers', label: 'Staff Management', icon: Users, end: true },
-      { to: '/workers/daily-tasks', label: 'Staff Daily Tasks', icon: UsersThree, end: false, indent: true },
+      { to: '/workers', label: 'Staff Management', icon: Users, end: true, children: [
+        { to: '/workers/daily-tasks', label: 'Daily Tasks', icon: UsersThree, end: false },
+      ]},
       { to: '/bills', label: 'Bills', icon: CurrencyCircleDollar, end: false, permission: 'view_bills' },
       { to: '/shop-bills', label: 'Shop Bills', icon: CurrencyCircleDollar, end: false, permission: 'view_bills' },
       { to: '/legacy-invoice', label: 'Legacy Invoice', icon: FileText, end: false, permission: 'view_bills' },
@@ -200,10 +213,17 @@ function SidebarContent({
   ).map(g => ({
     ...g,
     items: g.items.filter(
-      (item: any) =>
+      (item: NavItem) =>
         (!item.permission || hasPermission(item.permission)) &&
         (!item.roles || (user?.role_id && item.roles.includes(String(user.role_id).toUpperCase()))),
-    )
+    ).map((item: NavItem) => ({
+      ...item,
+      children: item.children?.filter(
+        (child: NavItem) =>
+          (!child.permission || hasPermission(child.permission)) &&
+          (!child.roles || (user?.role_id && child.roles.includes(String(user.role_id).toUpperCase()))),
+      ),
+    }))
   })).filter(g => g.items.length > 0)
 
   return (
@@ -249,41 +269,14 @@ function SidebarContent({
               </p>
             )}
             <div className="space-y-px">
-              {items.map(({ to, label, icon: Icon, end, indent }: { to: string; label: string; icon: any; end?: boolean; indent?: boolean }) => (
-                <NavLink
-                  key={to}
-                  to={to}
-                  end={end}
-                  onClick={() => {
-                    if (isMobile) onMobileClose()
-                  }}
-                  className={({ isActive }) =>
-                    cn(
-                      'group flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-[13px] font-medium transition-all duration-150',
-                      collapsed && 'justify-center px-2',
-                      indent && !collapsed && 'pl-9',
-                      isActive
-                        ? 'bg-[#DC2626] text-white'
-                        : 'text-[var(--sidebar-text)] hover:bg-[var(--sidebar-hover-bg)] hover:text-[var(--sidebar-hover-text)]'
-                    )
-                  }
-                >
-                  {({ isActive }) => (
-                    <>
-                      <Icon
-                        size={18}
-                        weight={isActive ? 'fill' : 'regular'}
-                        className={cn(
-                          'shrink-0 transition-colors duration-150',
-                          isActive
-                            ? 'text-white'
-                            : 'text-[var(--sidebar-label)] group-hover:text-[var(--sidebar-hover-text)]'
-                        )}
-                      />
-                      {!collapsed && <span className="truncate">{label}</span>}
-                    </>
-                  )}
-                </NavLink>
+              {items.map((item) => (
+                <SidebarNavItem
+                  key={item.to}
+                  item={item}
+                  collapsed={collapsed}
+                  isMobile={isMobile}
+                  onMobileClose={onMobileClose}
+                />
               ))}
             </div>
           </div>
@@ -307,6 +300,98 @@ function SidebarContent({
               </>
             )}
           </button>
+        </div>
+      )}
+    </div>
+  )
+}
+
+function SidebarNavItem({
+  item,
+  collapsed,
+  isMobile,
+  onMobileClose,
+}: {
+  item: NavItem
+  collapsed: boolean
+  isMobile: boolean
+  onMobileClose: () => void
+}) {
+  const { to, label, icon: Icon, end, children } = item
+  const hasChildren = children && children.length > 0
+
+  return (
+    <div>
+      <NavLink
+        to={to}
+        end={end}
+        onClick={() => {
+          if (isMobile) onMobileClose()
+        }}
+        className={({ isActive }) =>
+          cn(
+            'group flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-[13px] font-medium transition-all duration-150',
+            collapsed && 'justify-center px-2',
+            isActive
+              ? 'bg-[#DC2626] text-white'
+              : 'text-[var(--sidebar-text)] hover:bg-[var(--sidebar-hover-bg)] hover:text-[var(--sidebar-hover-text)]'
+          )
+        }
+      >
+        {({ isActive }) => (
+          <>
+            <Icon
+              size={18}
+              weight={isActive ? 'fill' : 'regular'}
+              className={cn(
+                'shrink-0 transition-colors duration-150',
+                isActive
+                  ? 'text-white'
+                  : 'text-[var(--sidebar-label)] group-hover:text-[var(--sidebar-hover-text)]'
+              )}
+            />
+            {!collapsed && <span className="truncate">{label}</span>}
+          </>
+        )}
+      </NavLink>
+
+      {/* Sub-items with connector line */}
+      {hasChildren && !collapsed && (
+        <div className="relative ml-[18px] pl-4 py-0.5 border-l border-[var(--sidebar-hover-bg)]">
+          {children!.map((child) => (
+            <NavLink
+              key={child.to}
+              to={child.to}
+              end={child.end}
+              onClick={() => {
+                if (isMobile) onMobileClose()
+              }}
+              className={({ isActive }) =>
+                cn(
+                  'group flex items-center gap-2 rounded-md px-2.5 py-1.5 text-[12px] font-medium transition-all duration-150 -ml-4 border-l-2',
+                  isActive
+                    ? 'bg-[#DC2626]/10 text-[#DC2626] border-[#DC2626]'
+                    : 'border-transparent text-[var(--sidebar-text)] hover:bg-[var(--sidebar-hover-bg)] hover:text-[var(--sidebar-hover-text)]'
+                )
+              }
+            >
+              {({ isActive }) => (
+                <>
+                  <child.icon
+                    size={14}
+                    weight={isActive ? 'fill' : 'regular'}
+                    className={cn(
+                      'shrink-0 transition-colors duration-150',
+                      isActive
+                        ? 'text-[#DC2626]'
+                        : 'text-[var(--sidebar-label)] group-hover:text-[var(--sidebar-hover-text)]'
+                    )}
+                  />
+                  <span className="truncate">{child.label}</span>
+                </>
+              )}
+            </NavLink>
+          ))}
         </div>
       )}
     </div>
