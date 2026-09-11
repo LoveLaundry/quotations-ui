@@ -69,6 +69,11 @@ import ManagementEmployees from '../features/management/pages/management-employe
 import ManagementTransactions from '../features/management/pages/management-transactions'
 import ManagementPayments from '../features/management/pages/management-payments'
 import ManagementReports from '../features/management/pages/management-reports'
+import SalarySlipPage from '../features/management/pages/salary-slip-page'
+import SalaryHistoryPage from '../features/management/pages/salary-history-page'
+import AdvancesPage from '../features/management/pages/advances-page'
+import HolidaysPage from '../features/management/pages/holidays-page'
+import ExtraWorkPage from '../features/management/pages/extra-work-page'
 
 export const router = createBrowserRouter([
   // ── Public routes ─────────────────────────────────────────────────────────────
@@ -158,6 +163,11 @@ export const router = createBrowserRouter([
           { path: 'management/items', element: <ManagementItems /> },
           { path: 'management/expenses', element: <ManagementExpenses /> },
           { path: 'management/employees', element: <ManagementEmployees /> },
+          { path: 'management/salary-slip', element: <SalarySlipPage /> },
+          { path: 'management/salary-history', element: <SalaryHistoryPage /> },
+          { path: 'management/advances', element: <AdvancesPage /> },
+          { path: 'management/holidays', element: <HolidaysPage /> },
+          { path: 'management/extra-work', element: <ExtraWorkPage /> },
           { path: 'management/payments', element: <ManagementPayments /> },
           { path: 'management/reports', element: <ManagementReports /> },
 

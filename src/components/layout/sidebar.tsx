@@ -22,6 +22,9 @@ import {
   UserCircle,
   Package,
   Wallet,
+  Money,
+  CalendarBlank,
+  Lightning,
 } from '@phosphor-icons/react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Logo } from '../brand/logo'
@@ -94,7 +97,13 @@ const navGroups: { label: string; items: NavItem[] }[] = [
       { to: '/management/customers', label: 'Customers', icon: Users, end: false },
       { to: '/management/items', label: 'Items & Categories', icon: Package, end: false },
       { to: '/management/expenses', label: 'Expenses', icon: Receipt, end: false },
-      { to: '/management/employees', label: 'Employees', icon: UserCircle, end: false },
+      { to: '/management/employees', label: 'Employees', icon: UserCircle, end: false, children: [
+        { to: '/management/salary-slip', label: 'Generate Slip', icon: Money, end: false },
+        { to: '/management/salary-history', label: 'Salary History', icon: ListChecks, end: false },
+        { to: '/management/advances', label: 'Advances', icon: Wallet, end: false },
+        { to: '/management/holidays', label: 'Holidays', icon: CalendarBlank, end: false },
+        { to: '/management/extra-work', label: 'Extra Work', icon: Lightning, end: false },
+      ]},
       { to: '/management/payments', label: 'Payments', icon: Wallet, end: false },
       { to: '/management/reports', label: 'Reports', icon: ChartBar, end: false },
     ],

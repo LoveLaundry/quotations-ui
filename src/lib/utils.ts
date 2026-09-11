@@ -6,10 +6,10 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function formatCurrency(value: number) {
-  return new Intl.NumberFormat('en-US', {
+  return new Intl.NumberFormat('en-LK', {
     style: 'currency',
-    currency: 'USD',
-    maximumFractionDigits: 0,
+    currency: 'LKR',
+    maximumFractionDigits: 2,
   }).format(value)
 }
 

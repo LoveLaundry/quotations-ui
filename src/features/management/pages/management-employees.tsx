@@ -5,6 +5,7 @@ import { toast } from 'sonner'
 import { Plus, Pencil, Trash2, X, DollarSign } from 'lucide-react'
 
 const DEPARTMENTS = ['WASHING', 'PRESSING', 'FINISHING', 'PACKING', 'DRY_CLEANING', 'DELIVERY', 'GENERAL']
+const SALARY_TYPES = ['MONTHLY', 'WEEKLY', 'DAILY']
 
 export default function ManagementEmployees() {
   const qc = useQueryClient()
@@ -82,6 +83,10 @@ export default function ManagementEmployees() {
                 <p className="font-medium">{emp.department}</p>
               </div>
               <div>
+                <p className="text-gray-400">Salary Type</p>
+                <p className="font-medium">{emp.salary_type || 'MONTHLY'}</p>
+              </div>
+              <div>
                 <p className="text-gray-400">Phone</p>
                 <p className="font-medium">{emp.phone || '—'}</p>
               </div>
@@ -111,6 +116,7 @@ export default function ManagementEmployees() {
               data.daily_rate = String(parseFloat(data.daily_rate as string) || 0)
               data.epf_rate = String(parseFloat(data.epf_rate as string) || 0)
               data.etf_rate = String(parseFloat(data.etf_rate as string) || 0)
+              if (!data.salary_type) data.salary_type = 'MONTHLY'
               if (editing) updateMut.mutate({ id: editing.id, data })
               else createMut.mutate(data)
             }} className="space-y-3">
@@ -119,6 +125,12 @@ export default function ManagementEmployees() {
                 <input name="position" defaultValue={editing?.position} placeholder="Position" className="w-full px-3 py-2 border rounded-lg text-sm" />
                 <select name="department" defaultValue={editing?.department || 'GENERAL'} className="px-3 py-2 border rounded-lg text-sm">
                   {DEPARTMENTS.map(d => <option key={d} value={d}>{d}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="text-xs text-gray-500">Salary Type</label>
+                <select name="salary_type" defaultValue={editing?.salary_type || 'MONTHLY'} className="w-full px-3 py-2 border rounded-lg text-sm">
+                  {SALARY_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
                 </select>
               </div>
               <div className="grid grid-cols-2 gap-3">

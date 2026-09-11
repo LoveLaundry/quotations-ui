@@ -152,4 +152,96 @@ export const dashboardApi = {
   get: () => mgmtApi.get('/api/dashboard'),
 }
 
+// ── Salary Management ────────────────────────────────────────────────────
+export const salaryApi = {
+  calculate: (employeeId: string, year: number, month: number) =>
+    mgmtApi.get(`/api/salary/calculate?employee_id=${employeeId}&year=${year}&month=${month}`),
+  createSlip: (data: any) => mgmtApi.post('/api/salary/slip', data),
+  listSlips: (params?: any) => {
+    const q = new URLSearchParams()
+    if (params?.employee_id) q.set('employee_id', params.employee_id)
+    if (params?.status) q.set('status', params.status)
+    if (params?.year) q.set('year', String(params.year))
+    if (params?.month) q.set('month', String(params.month))
+    return mgmtApi.get(`/api/salary/slips?${q}`)
+  },
+  getSlip: (slipId: string) => mgmtApi.get(`/api/salary/slips/${slipId}`),
+  updateSlip: (slipId: string, data: any) => mgmtApi.put(`/api/salary/slips/${slipId}`, data),
+  finalizeSlip: (slipId: string) => mgmtApi.post(`/api/salary/slips/${slipId}/finalize`),
+  cancelSlip: (slipId: string) => mgmtApi.post(`/api/salary/slips/${slipId}/cancel`),
+  paySlip: (slipId: string, amount: number) =>
+    mgmtApi.post(`/api/salary/slips/${slipId}/pay?amount=${amount}`),
+  employeeHistory: (empId: string) => mgmtApi.get(`/api/employees/${empId}/salary-history`),
+}
+
+// ── Advances ─────────────────────────────────────────────────────────────
+export const advancesApi = {
+  list: (params?: any) => {
+    const q = new URLSearchParams()
+    if (params?.employee_id) q.set('employee_id', params.employee_id)
+    if (params?.status) q.set('status', params.status)
+    return mgmtApi.get(`/api/advances?${q}`)
+  },
+  get: (id: string) => mgmtApi.get(`/api/advances/${id}`),
+  create: (data: any) => mgmtApi.post('/api/advances', data),
+  update: (id: string, data: any) => mgmtApi.put(`/api/advances/${id}`, data),
+  cancel: (id: string) => mgmtApi.delete(`/api/advances/${id}`),
+  employeeAdvances: (empId: string, status?: string) =>
+    mgmtApi.get(`/api/employees/${empId}/advances${status ? `?status=${status}` : ''}`),
+  employeeSummary: (empId: string) => mgmtApi.get(`/api/employees/${empId}/advances/summary`),
+}
+
+// ── Holidays ─────────────────────────────────────────────────────────────
+export const holidaysApi = {
+  list: (year?: number) => mgmtApi.get(`/api/holidays${year ? `?year=${year}` : ''}`),
+  get: (id: string) => mgmtApi.get(`/api/holidays/${id}`),
+  create: (data: any) => mgmtApi.post('/api/holidays', data),
+  update: (id: string, data: any) => mgmtApi.put(`/api/holidays/${id}`, data),
+  remove: (id: string) => mgmtApi.delete(`/api/holidays/${id}`),
+  check: (date: string) => mgmtApi.get(`/api/holidays/check/${date}`),
+}
+
+// ── Extra Work ───────────────────────────────────────────────────────────
+export const extraWorkApi = {
+  categories: (params?: any) => {
+    const q = new URLSearchParams()
+    if (params?.is_active !== undefined) q.set('is_active', String(params.is_active))
+    return mgmtApi.get(`/api/extra-work/categories?${q}`)
+  },
+  getCategory: (id: string) => mgmtApi.get(`/api/extra-work/categories/${id}`),
+  createCategory: (data: any) => mgmtApi.post('/api/extra-work/categories', data),
+  updateCategory: (id: string, data: any) => mgmtApi.put(`/api/extra-work/categories/${id}`, data),
+  deleteCategory: (id: string) => mgmtApi.delete(`/api/extra-work/categories/${id}`),
+  records: (params?: any) => {
+    const q = new URLSearchParams()
+    if (params?.employee_id) q.set('employee_id', params.employee_id)
+    if (params?.category_id) q.set('category_id', params.category_id)
+    if (params?.start_date) q.set('start_date', params.start_date)
+    if (params?.end_date) q.set('end_date', params.end_date)
+    return mgmtApi.get(`/api/extra-work/records?${q}`)
+  },
+  createRecord: (data: any) => mgmtApi.post('/api/extra-work/records', data),
+  updateRecord: (id: string, data: any) => mgmtApi.put(`/api/extra-work/records/${id}`, data),
+  deleteRecord: (id: string) => mgmtApi.delete(`/api/extra-work/records/${id}`),
+}
+
+// ── Company Settings ─────────────────────────────────────────────────────
+export const companySettingsApi = {
+  get: () => mgmtApi.get('/api/company-settings'),
+  update: (data: any) => mgmtApi.put('/api/company-settings', data),
+}
+
+// ── Attendance (Enhanced) ────────────────────────────────────────────────
+export const attendanceApi = {
+  list: (empId: string, params?: any) => {
+    const q = new URLSearchParams()
+    if (params?.start_date) q.set('start_date', params.start_date)
+    if (params?.end_date) q.set('end_date', params.end_date)
+    return mgmtApi.get(`/api/employees/${empId}/attendance?${q}`)
+  },
+  create: (empId: string, data: any) => mgmtApi.post(`/api/employees/${empId}/attendance`, data),
+  bulkSet: (empId: string, dates: string[], status: string, overtimeHours?: number) =>
+    mgmtApi.post(`/api/attendance/bulk?employee_id=${empId}&status=${status}${overtimeHours ? `&overtime_hours=${overtimeHours}` : ''}&${dates.map(d => `dates=${d}`).join('&')}`),
+}
+
 export default mgmtApi

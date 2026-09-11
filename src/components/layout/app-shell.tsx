@@ -42,6 +42,11 @@ const pageTitles: Record<string, string> = {
   '/management/items': 'Items & Categories',
   '/management/expenses': 'Expense Management',
   '/management/employees': 'Employees & Salaries',
+  '/management/salary-slip': 'Generate Salary Slip',
+  '/management/salary-history': 'Salary History',
+  '/management/advances': 'Salary Advances',
+  '/management/holidays': 'Holiday Calendar',
+  '/management/extra-work': 'Extra Work Categories',
   '/management/payments': 'Payments',
   '/management/reports': 'Management Reports',
 }
