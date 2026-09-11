@@ -79,8 +79,8 @@ export default function ExtraWorkPage() {
           {categories.map((c: any) => (
             <span key={c.id} className="inline-flex items-center gap-2 px-3 py-1.5 bg-gray-100 dark:bg-gray-700 rounded-lg text-sm">
               {c.name}
-              <span className="text-xs text-gray-500">Rs. {Number(c.rate || 0).toLocaleString()}/unit</span>
-              {c.units_label && <span className="text-xs text-gray-400">({c.units_label})</span>}
+              <span className="text-xs text-gray-500">Rs. {Number(c.rate || 0).toLocaleString()}/{c.unit || 'unit'}</span>
+              {c.calculation_method && <span className="text-xs text-gray-400">({c.calculation_method})</span>}
               <button onClick={() => { if (confirm(`Delete category "${c.name}"?`)) deleteCat.mutate(c.id) }} className="text-red-500 hover:text-red-700">
                 <Trash2 size={13} />
               </button>
@@ -144,8 +144,9 @@ export default function ExtraWorkPage() {
               createCat.mutate({
                 name: fd.get('name'),
                 rate: Number(fd.get('rate')) || 0,
+                unit: fd.get('unit') || 'DAY',
+                calculation_method: fd.get('calculation_method') || 'FIXED',
                 description: fd.get('description'),
-                units_label: fd.get('units_label'),
               })
             }} className="space-y-3">
               <div>
@@ -157,8 +158,14 @@ export default function ExtraWorkPage() {
                 <input name="rate" type="number" step="0.01" min="0" required className="w-full px-3 py-2 border rounded-lg text-sm" />
               </div>
               <div>
-                <label className="text-xs text-gray-500">Unit label</label>
-                <input name="units_label" className="w-full px-3 py-2 border rounded-lg text-sm" placeholder="e.g. hours, pieces" />
+                <label className="text-xs text-gray-500">Unit</label>
+                <input name="unit" className="w-full px-3 py-2 border rounded-lg text-sm" placeholder="e.g. hours, pieces, DAY" />
+              </div>
+              <div>
+                <label className="text-xs text-gray-500">Calculation method</label>
+                <select name="calculation_method" className="w-full px-3 py-2 border rounded-lg text-sm">
+                  <option value="FIXED">FIXED (rate × units)</option>
+                </select>
               </div>
               <div>
                 <label className="text-xs text-gray-500">Description</label>
@@ -185,16 +192,13 @@ export default function ExtraWorkPage() {
             <form onSubmit={e => {
               e.preventDefault()
               const fd = new FormData(e.currentTarget)
-              const cat = categories.find((c: any) => c.id === fd.get('category_id'))
               const units = Number(fd.get('units')) || 0
               createRec.mutate({
                 employee_id: fd.get('employee_id'),
                 date: fd.get('date'),
                 category_id: fd.get('category_id'),
                 units,
-                rate: Number(fd.get('rate')) || Number(cat?.rate || 0),
-                amount: units * (Number(fd.get('rate')) || Number(cat?.rate || 0)),
-                description: fd.get('description'),
+                notes: fd.get('notes'),
               })
             }} className="space-y-3">
               <div>
@@ -225,13 +229,15 @@ export default function ExtraWorkPage() {
                   <input name="units" type="number" step="0.1" min="0" required className="w-full px-3 py-2 border rounded-lg text-sm" />
                 </div>
                 <div>
-                  <label className="text-xs text-gray-500">Rate (Rs.) *</label>
-                  <input name="rate" type="number" step="0.01" min="0" required className="w-full px-3 py-2 border rounded-lg text-sm" />
+                  <label className="text-xs text-gray-500">Amount</label>
+                  <div className="w-full px-3 py-2 border rounded-lg text-sm bg-gray-50 dark:bg-gray-700 text-gray-400">
+                    Auto (rate × units)
+                  </div>
                 </div>
               </div>
               <div>
-                <label className="text-xs text-gray-500">Description</label>
-                <input name="description" className="w-full px-3 py-2 border rounded-lg text-sm" />
+                <label className="text-xs text-gray-500">Notes</label>
+                <input name="notes" className="w-full px-3 py-2 border rounded-lg text-sm" />
               </div>
               <div className="flex justify-end gap-2 pt-2">
                 <button type="button" onClick={() => setShowRecordForm(false)} className="px-4 py-2 text-sm bg-gray-100 rounded-lg">Cancel</button>

@@ -75,11 +75,14 @@ export default function SalarySlipPage() {
       period_end: calculation.period_end,
       basic_salary: calculation.basic_salary,
       adjusted_base_salary: calculation.adjusted_base_salary,
+      base_salary_for_period: calculation.base_salary_for_period,
       calendar_days: calculation.calendar_days,
       working_days: calculation.total_working_days,
       worked_days: calculation.worked_days,
       absent_days: calculation.absent_days,
       leave_days: calculation.leave_days,
+      holiday_count: calculation.holiday_count || 0,
+      weekend_count: calculation.weekend_count || 0,
       overtime_hours: calculation.overtime_hours,
       overtime_rate: calculation.overtime_rate,
       overtime_pay: calculation.overtime_pay,
@@ -215,6 +218,8 @@ export default function SalarySlipPage() {
               <div className="flex justify-between"><span className="text-gray-500">Worked Days</span><span className="font-medium text-green-600">{calculation.worked_days}</span></div>
               <div className="flex justify-between"><span className="text-gray-500">Leave Days</span><span className="font-medium text-blue-600">{calculation.leave_days}</span></div>
               <div className="flex justify-between"><span className="text-gray-500">Absent Days</span><span className="font-medium text-red-600">{calculation.absent_days}</span></div>
+              <div className="flex justify-between"><span className="text-gray-500">Holidays</span><span className="font-medium text-purple-600">{calculation.holiday_count || 0}</span></div>
+              <div className="flex justify-between"><span className="text-gray-500">Weekends</span><span className="font-medium text-purple-600">{calculation.weekend_count || 0}</span></div>
               <div className="flex justify-between"><span className="text-gray-500">Basic Salary</span><span className="font-medium">Rs. {calculation.basic_salary.toLocaleString()}</span></div>
               <div className="flex justify-between"><span className="text-gray-500">Adjusted Base</span><span className="font-medium">Rs. {calculation.adjusted_base_salary.toLocaleString()}</span></div>
               <div className="col-span-2 flex justify-between border-t pt-2">

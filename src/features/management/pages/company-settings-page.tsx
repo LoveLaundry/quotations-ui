@@ -4,7 +4,12 @@ import { companySettingsApi } from '../api/management-api'
 import { toast } from 'sonner'
 import { Save, Settings } from 'lucide-react'
 
-const DOW_LABELS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+// Order follows JS Date.getDay(): 0=Sunday ... 6=Saturday.
+const DOW_LABELS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+
+// Backend uses Python weekday(): 0=Monday ... 6=Sunday.
+const pyToJs = (py: number) => (py + 1) % 7
+const jsToPy = (js: number) => (js + 6) % 7
 
 export default function CompanySettingsPage() {
   const qc = useQueryClient()
@@ -21,7 +26,7 @@ export default function CompanySettingsPage() {
         company_name: settings.company_name || 'Love Laundry',
         salary_basis_days: settings.salary_basis_days ?? 30,
         working_days_per_week: settings.working_days_per_week ?? 6,
-        working_days_pattern: settings.working_days_pattern || [0, 1, 2, 3, 4, 5],
+        working_days_pattern: (settings.working_days_pattern || [0, 1, 2, 3, 4, 5]).map(pyToJs),
         default_overtime_rate: settings.default_overtime_rate ?? 0,
       })
     }
@@ -40,8 +45,15 @@ export default function CompanySettingsPage() {
     if (!form) return
     const pattern = form.working_days_pattern.includes(i)
       ? form.working_days_pattern.filter((x: number) => x !== i)
-      : [...form.working_days_pattern, i].sort()
+      : [...form.working_days_pattern, i].sort((a: number, b: number) => a - b)
     setForm({ ...form, working_days_pattern: pattern, working_days_per_week: pattern.length })
+  }
+
+  const handleSave = () => {
+    saveMut.mutate({
+      ...form,
+      working_days_pattern: (form.working_days_pattern || []).map(jsToPy),
+    })
   }
 
   if (isLoading || !form) {
@@ -53,7 +65,7 @@ export default function CompanySettingsPage() {
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Company Settings</h1>
         <button
-          onClick={() => saveMut.mutate(form)}
+          onClick={handleSave}
           disabled={saveMut.isPending}
           className="flex items-center gap-1.5 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm disabled:opacity-50"
         >
@@ -121,7 +133,7 @@ export default function CompanySettingsPage() {
               )
             })}
           </div>
-          <p className="text-xs text-gray-400 mt-1">Non-working days are skipped in salary calculation.</p>
+          <p className="text-xs text-gray-400 mt-1">Non-working days are skipped in salary calculation. Sundays and Saturdays follow your selection.</p>
         </div>
       </div>
     </div>

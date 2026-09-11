@@ -86,6 +86,8 @@ export function SalarySlipPrint({ slip }: SalarySlipProps) {
                   <tr><td>Working Days</td><td>{slip.working_days}</td></tr>
                   <tr><td>Worked Days</td><td style={{ color: '#16a34a' }}>{slip.worked_days}</td></tr>
                   {slip.leave_days > 0 && <tr><td>Leave Days</td><td style={{ color: '#2563eb' }}>{slip.leave_days}</td></tr>}
+                  {slip.holiday_count > 0 && <tr><td>Holidays</td><td style={{ color: '#9333ea' }}>{slip.holiday_count}</td></tr>}
+                  {slip.weekend_count > 0 && <tr><td>Weekends</td><td style={{ color: '#9333ea' }}>{slip.weekend_count}</td></tr>}
                   <tr><td>Absent Days</td><td style={{ color: '#dc2626' }}>{slip.absent_days}</td></tr>
                 </tbody>
               </table>
@@ -109,7 +111,7 @@ export function SalarySlipPrint({ slip }: SalarySlipProps) {
                 <tbody>
                   <tr><td>Basic Salary</td><td>{formatRs(slip.basic_salary)}</td></tr>
                   <tr><td>Adjusted Base ({slip.calendar_days} days)</td><td>{formatRs(slip.adjusted_base_salary)}</td></tr>
-                  <tr><td>Base for Period ({slip.worked_days} days worked)</td><td style={{ fontWeight: 700 }}>{formatRs(slip.adjusted_base_salary * slip.worked_days / Math.max(slip.calendar_days, 1))}</td></tr>
+                  <tr><td>Base for Period ({slip.worked_days} days worked)</td><td style={{ fontWeight: 700 }}>{formatRs(slip.base_salary_for_period ?? (slip.adjusted_base_salary * slip.worked_days / Math.max(slip.calendar_days, 1)))}</td></tr>
                   {slip.overtime_pay > 0 && <tr><td>Overtime ({slip.overtime_hours} hrs × {formatRs(slip.overtime_rate)})</td><td>{formatRs(slip.overtime_pay)}</td></tr>}
                   {slip.extra_work_total > 0 && <tr><td>Extra Work</td><td>{formatRs(slip.extra_work_total)}</td></tr>}
                   {slip.allowances > 0 && <tr><td>Allowances</td><td>{formatRs(slip.allowances)}</td></tr>}

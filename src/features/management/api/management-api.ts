@@ -175,6 +175,10 @@ export const salaryApi = {
   paySlip: (slipId: string, amount: number) =>
     mgmtApi.post(`/api/salary/slips/${slipId}/pay?amount=${amount}`),
   employeeHistory: (empId: string) => mgmtApi.get(`/api/employees/${empId}/salary-history`),
+  payrollPreview: (year: number, month: number) =>
+    mgmtApi.get(`/api/salary/payroll-preview?year=${year}&month=${month}`),
+  payrollRun: (year: number, month: number) =>
+    mgmtApi.post(`/api/salary/payroll-run?year=${year}&month=${month}`),
 }
 
 // ── Advances ─────────────────────────────────────────────────────────────
@@ -242,6 +246,8 @@ export const attendanceApi = {
     if (params?.end_date) q.set('end_date', params.end_date)
     return mgmtApi.get(`/api/employees/${empId}/attendance?${q}`)
   },
+  summary: (empId: string, startDate: string, endDate: string) =>
+    mgmtApi.get(`/api/attendance/summary?employee_id=${empId}&start_date=${startDate}&end_date=${endDate}`),
   create: (empId: string, data: any) => mgmtApi.post(`/api/employees/${empId}/attendance`, data),
   update: (attendanceId: string, data: any) => mgmtApi.put(`/api/attendance/${attendanceId}`, data),
   remove: (attendanceId: string) => mgmtApi.delete(`/api/attendance/${attendanceId}`),
