@@ -4,10 +4,10 @@ import { employeesApi, attendanceApi, holidaysApi } from '../api/management-api'
 import { toast } from 'sonner'
 import { CalendarDays, Check, ChevronDown, Trash2, X, Pencil } from 'lucide-react'
 
-const STATUSES = ['PRESENT', 'HALF_DAY', 'PAID_LEAVE', 'ON_LEAVE', 'UNPAID_LEAVE', 'ABSENT'] as const
+const STATUSES = ['PRESENT', 'HALF_DAY', 'PAID_LEAVE', 'UNPAID_LEAVE', 'ABSENT'] as const
 const STATUS_LABEL: Record<string, string> = {
   PRESENT: 'Present', HALF_DAY: 'Half Day', PAID_LEAVE: 'Paid Leave',
-  ON_LEAVE: 'Leave', UNPAID_LEAVE: 'Unpaid', ABSENT: 'Absent',
+  ON_LEAVE: 'Paid Leave', UNPAID_LEAVE: 'Unpaid Leave', ABSENT: 'Absent',
 }
 const STATUS_STYLE: Record<string, string> = {
   PRESENT: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300',
@@ -300,8 +300,8 @@ export default function AttendancePage() {
         <div className="flex flex-wrap gap-x-5 gap-y-1 text-[11px] text-gray-400 pt-2 border-t">
           <span className="text-purple-600 font-medium">H</span> = Holiday
           <span className="text-slate-500">■</span> = Weekend
-          {Object.entries(STATUS_LABEL).map(([k, v]) => (
-            <span key={k} className={`px-1.5 py-0.5 rounded ${STATUS_STYLE[k]}`}>{v}</span>
+          {STATUSES.map((s, i) => (
+            <span key={i} className={`px-1.5 py-0.5 rounded ${STATUS_STYLE[s]}`}>{STATUS_LABEL[s]}</span>
           ))}
         </div>
       </div>
