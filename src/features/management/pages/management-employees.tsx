@@ -179,6 +179,9 @@ export default function ManagementEmployees() {
               data.allowance = String(parseFloat(data.allowance as string) || 0)
               data.epf_rate = String(parseFloat(data.epf_rate as string) || 0)
               data.etf_rate = String(parseFloat(data.etf_rate as string) || 0)
+              ;['position', 'phone', 'nic', 'joined_date', 'leaving_date', 'notes'].forEach(k => {
+                if (!data[k]) delete data[k]
+              })
               if (!data.salary_type) data.salary_type = 'MONTHLY'
               if (!data.allowance_type) data.allowance_type = 'FIXED'
               if (!data.epf_base) data.epf_base = 'ADJUSTED'
