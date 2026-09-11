@@ -156,6 +156,8 @@ export const dashboardApi = {
 export const salaryApi = {
   calculate: (employeeId: string, year: number, month: number) =>
     mgmtApi.get(`/api/salary/calculate?employee_id=${employeeId}&year=${year}&month=${month}`),
+  calculatePeriod: (employeeId: string, periodStart: string, periodEnd: string, periodType: string = 'MONTHLY') =>
+    mgmtApi.post(`/api/salary/calculate-period?employee_id=${employeeId}&period_start=${periodStart}&period_end=${periodEnd}&period_type=${periodType}`),
   createSlip: (data: any) => mgmtApi.post('/api/salary/slip', data),
   listSlips: (params?: any) => {
     const q = new URLSearchParams()
@@ -240,6 +242,8 @@ export const attendanceApi = {
     return mgmtApi.get(`/api/employees/${empId}/attendance?${q}`)
   },
   create: (empId: string, data: any) => mgmtApi.post(`/api/employees/${empId}/attendance`, data),
+  update: (attendanceId: string, data: any) => mgmtApi.put(`/api/attendance/${attendanceId}`, data),
+  remove: (attendanceId: string) => mgmtApi.delete(`/api/attendance/${attendanceId}`),
   bulkSet: (empId: string, dates: string[], status: string, overtimeHours?: number) =>
     mgmtApi.post(`/api/attendance/bulk?employee_id=${empId}&status=${status}${overtimeHours ? `&overtime_hours=${overtimeHours}` : ''}&${dates.map(d => `dates=${d}`).join('&')}`),
 }

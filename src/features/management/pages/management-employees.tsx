@@ -158,6 +158,10 @@ export default function ManagementEmployees() {
                 </div>
               </div>
               <input name="joined_date" type="date" defaultValue={editing?.joined_date} className="w-full px-3 py-2 border rounded-lg text-sm" />
+              <div>
+                <label className="text-xs text-gray-500">Leaving Date (set when employee leaves)</label>
+                <input name="leaving_date" type="date" defaultValue={editing?.leaving_date} className="w-full px-3 py-2 border rounded-lg text-sm" />
+              </div>
               <textarea name="notes" defaultValue={editing?.notes} placeholder="Notes" rows={2} className="w-full px-3 py-2 border rounded-lg text-sm" />
               <div className="flex justify-end gap-2 pt-2">
                 <button type="button" onClick={() => { setShowForm(false); setEditing(null) }} className="px-4 py-2 text-sm bg-gray-100 rounded-lg">Cancel</button>

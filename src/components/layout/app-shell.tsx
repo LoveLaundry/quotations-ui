@@ -46,7 +46,9 @@ const pageTitles: Record<string, string> = {
   '/management/salary-history': 'Salary History',
   '/management/advances': 'Salary Advances',
   '/management/holidays': 'Holiday Calendar',
-  '/management/extra-work': 'Extra Work Categories',
+  '/management/extra-work': 'Extra Work Records',
+  '/management/attendance': 'Attendance Entry',
+  '/management/company-settings': 'Company Settings',
   '/management/payments': 'Payments',
   '/management/reports': 'Management Reports',
 }

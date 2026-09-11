@@ -17,6 +17,9 @@ export default function SalarySlipPage() {
   const [selectedEmp, setSelectedEmp] = useState('')
   const [year, setYear] = useState(new Date().getFullYear())
   const [month, setMonth] = useState(new Date().getMonth() + 1)
+  const [periodType, setPeriodType] = useState<'MONTHLY' | 'WEEKLY'>('MONTHLY')
+  const [weekStart, setWeekStart] = useState('')
+  const [weekEnd, setWeekEnd] = useState('')
   const [calculation, setCalculation] = useState<any>(null)
   const [showSlip, setShowSlip] = useState(false)
   const [generatedSlip, setGeneratedSlip] = useState<any>(null)
@@ -31,9 +34,13 @@ export default function SalarySlipPage() {
   })
 
   const calcMut = useMutation({
-    mutationFn: () => salaryApi.calculate(selectedEmp, year, month),
+    mutationFn: () => {
+      if (periodType === 'WEEKLY' && weekStart && weekEnd)
+        return salaryApi.calculatePeriod(selectedEmp, weekStart, weekEnd, 'WEEKLY').then(r => r.data)
+      return salaryApi.calculate(selectedEmp, year, month).then(r => r.data)
+    },
     onSuccess: (res) => {
-      setCalculation(res.data)
+      setCalculation(res.data || res)
       setAllowances(0)
       setLoanDeduction(0)
       setOtherDeductions(0)
@@ -63,7 +70,7 @@ export default function SalarySlipPage() {
 
     generateMut.mutate({
       employee_id: selectedEmp,
-      period_type: 'MONTHLY',
+      period_type: calculation.period_type || periodType,
       period_start: calculation.period_start,
       period_end: calculation.period_end,
       basic_salary: calculation.basic_salary,
@@ -128,26 +135,62 @@ export default function SalarySlipPage() {
             </select>
           </div>
           <div>
-            <label className="text-sm font-medium text-gray-600 dark:text-gray-400">Year</label>
-            <input
-              type="number"
-              value={year}
-              onChange={e => { setYear(Number(e.target.value)); setCalculation(null) }}
-              className="w-full mt-1 px-3 py-2 border rounded-lg text-sm"
-            />
-          </div>
-          <div>
-            <label className="text-sm font-medium text-gray-600 dark:text-gray-400">Month</label>
+            <label className="text-sm font-medium text-gray-600 dark:text-gray-400">Period Type</label>
             <select
-              value={month}
-              onChange={e => { setMonth(Number(e.target.value)); setCalculation(null) }}
+              value={periodType}
+              onChange={e => { setPeriodType(e.target.value as any); setCalculation(null); setShowSlip(false) }}
               className="w-full mt-1 px-3 py-2 border rounded-lg text-sm"
             >
-              {MONTHS.map((m, i) => (
-                <option key={i + 1} value={i + 1}>{m}</option>
-              ))}
+              <option value="MONTHLY">Monthly</option>
+              <option value="WEEKLY">Weekly</option>
             </select>
           </div>
+          {periodType === 'MONTHLY' ? (
+            <>
+              <div>
+                <label className="text-sm font-medium text-gray-600 dark:text-gray-400">Year</label>
+                <input
+                  type="number"
+                  value={year}
+                  onChange={e => { setYear(Number(e.target.value)); setCalculation(null) }}
+                  className="w-full mt-1 px-3 py-2 border rounded-lg text-sm"
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-600 dark:text-gray-400">Month</label>
+                <select
+                  value={month}
+                  onChange={e => { setMonth(Number(e.target.value)); setCalculation(null) }}
+                  className="w-full mt-1 px-3 py-2 border rounded-lg text-sm"
+                >
+                  {MONTHS.map((m, i) => (
+                    <option key={i + 1} value={i + 1}>{m}</option>
+                  ))}
+                </select>
+              </div>
+            </>
+          ) : (
+            <>
+              <div>
+                <label className="text-sm font-medium text-gray-600 dark:text-gray-400">Week Start</label>
+                <input
+                  type="date"
+                  value={weekStart}
+                  onChange={e => { setWeekStart(e.target.value); setCalculation(null) }}
+                  className="w-full mt-1 px-3 py-2 border rounded-lg text-sm"
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-600 dark:text-gray-400">Week End</label>
+                <input
+                  type="date"
+                  value={weekEnd}
+                  onChange={e => { setWeekEnd(e.target.value); setCalculation(null) }}
+                  className="w-full mt-1 px-3 py-2 border rounded-lg text-sm"
+                />
+              </div>
+            </>
+          )}
           <div className="flex items-end">
             <button
               onClick={() => calcMut.mutate()}
