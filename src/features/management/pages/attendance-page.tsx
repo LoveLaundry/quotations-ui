@@ -21,13 +21,13 @@ const STATUS_STYLE: Record<string, string> = {
 const DAY_NAMES = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa']
 
 function monthRange(year: number, month: number) {
-  const first = new Date(year, month - 1, 1)
-  const last = new Date(year, month, 0)
+  const firstDow = new Date(year, month - 1, 1).getDay()
+  const numDays = new Date(year, month, 0).getDate()
   const days: string[] = []
-  for (let d = new Date(first); d <= last; d.setDate(d.getDate() + 1)) {
-    days.push(d.toISOString().slice(0, 10))
+  for (let day = 1; day <= numDays; day++) {
+    days.push(`${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`)
   }
-  return { days, firstDow: first.getDay(), numDays: last.getDate() }
+  return { days, firstDow, numDays }
 }
 
 export default function AttendancePage() {
