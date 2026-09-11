@@ -2,10 +2,15 @@ import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { employeesApi } from '../api/management-api'
 import { toast } from 'sonner'
-import { Plus, Pencil, Trash2, X, DollarSign } from 'lucide-react'
+import { Plus, Pencil, Trash2, X, DollarSign, UserCheck, Filter } from 'lucide-react'
 
 const DEPARTMENTS = ['WASHING', 'PRESSING', 'FINISHING', 'PACKING', 'DRY_CLEANING', 'DELIVERY', 'GENERAL']
 const SALARY_TYPES = ['MONTHLY', 'WEEKLY', 'DAILY']
+const STATUS_FILTERS = [
+  { key: 'ALL', label: 'All' },
+  { key: 'ACTIVE', label: 'Active' },
+  { key: 'INACTIVE', label: 'Inactive' },
+] as const
 
 export default function ManagementEmployees() {
   const qc = useQueryClient()
@@ -13,11 +18,16 @@ export default function ManagementEmployees() {
   const [showSalary, setShowSalary] = useState<any>(null)
   const [editing, setEditing] = useState<any>(null)
   const [search, setSearch] = useState('')
+  const [statusFilter, setStatusFilter] = useState<string>('ALL')
 
   const { data: employees = [], isLoading: _isLoading } = useQuery({
     queryKey: ['mgmt-employees', search],
     queryFn: () => employeesApi.list(search).then(r => r.data),
   })
+
+  const filtered = statusFilter === 'ALL'
+    ? employees
+    : employees.filter((e: any) => (statusFilter === 'ACTIVE' ? e.is_active !== false : e.is_active === false))
 
   const createMut = useMutation({
     mutationFn: (data: any) => employeesApi.create(data),
@@ -31,9 +41,16 @@ export default function ManagementEmployees() {
     onError: (e: any) => toast.error(e.response?.data?.detail || 'Failed'),
   })
 
-  const deleteMut = useMutation({
+  const deactivateMut = useMutation({
     mutationFn: (id: string) => employeesApi.remove(id),
     onSuccess: () => { toast.success('Employee deactivated'); qc.invalidateQueries({ queryKey: ['mgmt-employees'] }) },
+    onError: (e: any) => toast.error(e.response?.data?.detail || 'Failed'),
+  })
+
+  const activateMut = useMutation({
+    mutationFn: (id: string) => employeesApi.activate(id),
+    onSuccess: () => { toast.success('Employee activated'); qc.invalidateQueries({ queryKey: ['mgmt-employees'] }) },
+    onError: (e: any) => toast.error(e.response?.data?.detail || 'Failed'),
   })
 
   const createSalaryMut = useMutation({
@@ -52,53 +69,98 @@ export default function ManagementEmployees() {
         </button>
       </div>
 
-      <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search employees..."
-        className="w-full md:w-80 px-3 py-2 border rounded-lg text-sm" />
+      <div className="flex flex-wrap items-center gap-3">
+        <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search employees..."
+          className="flex-1 md:w-80 px-3 py-2 border rounded-lg text-sm" />
+        <div className="flex items-center gap-1 border rounded-lg p-1">
+          <Filter size={14} className="ml-1 text-gray-400" />
+          {STATUS_FILTERS.map(f => (
+            <button
+              key={f.key}
+              onClick={() => setStatusFilter(f.key)}
+              className={`px-3 py-1.5 rounded-md text-sm font-medium ${statusFilter === f.key ? 'bg-red-600 text-white' : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700'}`}
+            >
+              {f.label}
+            </button>
+          ))}
+        </div>
+      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {employees.map((emp: any) => (
-          <div key={emp.id} className={`bg-white dark:bg-gray-800 rounded-xl border p-5 space-y-3 ${!emp.is_active ? 'opacity-60' : ''}`}>
-            <div className="flex items-start justify-between">
-              <div>
-                <h3 className="font-semibold">{emp.name}</h3>
-                <p className="text-sm text-gray-500">{emp.position || emp.department}</p>
+        {filtered.map((emp: any) => {
+          const isActive = emp.is_active !== false
+          const hasLeft = !!emp.leaving_date
+          return (
+            <div key={emp.id} className={`bg-white dark:bg-gray-800 rounded-xl border p-5 space-y-3 ${!isActive ? 'opacity-70' : ''}`}>
+              <div className="flex items-start justify-between">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-semibold">{emp.name}</h3>
+                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${isActive ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300' : 'bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400'}`}>
+                      {isActive ? 'ACTIVE' : 'INACTIVE'}
+                    </span>
+                  </div>
+                  <p className="text-sm text-gray-500">{emp.employee_code ? `#${emp.employee_code}` : ''} {emp.position || emp.department}</p>
+                </div>
+                <div className="flex gap-1">
+                  <button onClick={() => setEditing(emp)} className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded" title="Edit"><Pencil size={14} /></button>
+                  {isActive ? (
+                    <button
+                      onClick={() => { if (confirm(`Deactivate ${emp.name}?`)) deactivateMut.mutate(emp.id) }}
+                      className="p-1.5 hover:bg-red-100 text-red-500 rounded" title="Deactivate"><Trash2 size={14} /></button>
+                  ) : (
+                    <button
+                      onClick={() => activateMut.mutate(emp.id)}
+                      className="p-1.5 hover:bg-green-100 text-green-600 rounded" title="Activate"><UserCheck size={14} /></button>
+                  )}
+                </div>
               </div>
-              <div className="flex gap-1">
-                <button onClick={() => setEditing(emp)} className="p-1.5 hover:bg-gray-100 rounded"><Pencil size={14} /></button>
-                <button onClick={() => deleteMut.mutate(emp.id)} className="p-1.5 hover:bg-red-100 text-red-500 rounded"><Trash2 size={14} /></button>
-              </div>
-            </div>
 
-            <div className="grid grid-cols-2 gap-2 text-sm">
-              <div>
-                <p className="text-gray-400">Basic Salary</p>
-                <p className="font-medium">Rs. {emp.basic_salary.toLocaleString()}</p>
+              <div className="grid grid-cols-2 gap-2 text-sm">
+                <div>
+                  <p className="text-gray-400">Basic Salary</p>
+                  <p className="font-medium">Rs. {emp.basic_salary.toLocaleString()}</p>
+                </div>
+                <div>
+                  <p className="text-gray-400">Daily Rate</p>
+                  <p className="font-medium">Rs. {emp.daily_rate.toLocaleString()}</p>
+                </div>
+                <div>
+                  <p className="text-gray-400">Department</p>
+                  <p className="font-medium">{emp.department}</p>
+                </div>
+                <div>
+                  <p className="text-gray-400">Salary Type</p>
+                  <p className="font-medium">{emp.salary_type || 'MONTHLY'}</p>
+                </div>
+                <div>
+                  <p className="text-gray-400">Phone</p>
+                  <p className="font-medium">{emp.phone || '—'}</p>
+                </div>
+                <div>
+                  <p className="text-gray-400">Joined</p>
+                  <p className="font-medium">{emp.joined_date || '—'}</p>
+                </div>
+                {hasLeft && (
+                  <div className="col-span-2">
+                    <p className="text-gray-400">Leaving Date</p>
+                    <p className="font-medium text-red-500">{emp.leaving_date}</p>
+                  </div>
+                )}
               </div>
-              <div>
-                <p className="text-gray-400">Daily Rate</p>
-                <p className="font-medium">Rs. {emp.daily_rate.toLocaleString()}</p>
-              </div>
-              <div>
-                <p className="text-gray-400">Department</p>
-                <p className="font-medium">{emp.department}</p>
-              </div>
-              <div>
-                <p className="text-gray-400">Salary Type</p>
-                <p className="font-medium">{emp.salary_type || 'MONTHLY'}</p>
-              </div>
-              <div>
-                <p className="text-gray-400">Phone</p>
-                <p className="font-medium">{emp.phone || '—'}</p>
-              </div>
-            </div>
 
-            <button onClick={() => setShowSalary(emp)}
-              className="w-full flex items-center justify-center gap-1.5 px-3 py-2 text-sm bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 rounded-lg hover:bg-green-100">
-              <DollarSign size={14} /> Record Salary
-            </button>
-          </div>
-        ))}
+              <button onClick={() => setShowSalary(emp)}
+                className="w-full flex items-center justify-center gap-1.5 px-3 py-2 text-sm bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 rounded-lg hover:bg-green-100">
+                <DollarSign size={14} /> Record Salary
+              </button>
+            </div>
+          )
+        })}
       </div>
+
+      {filtered.length === 0 && (
+        <div className="text-center py-10 text-gray-400 col-span-full">No employees found.</div>
+      )}
 
       {/* Add/Edit Employee */}
       {showForm && (
@@ -111,13 +173,17 @@ export default function ManagementEmployees() {
             <form onSubmit={e => {
               e.preventDefault()
               const fd = new FormData(e.currentTarget)
-              const data = Object.fromEntries(fd)
+              const data: any = Object.fromEntries(fd)
               data.basic_salary = String(parseFloat(data.basic_salary as string) || 0)
               data.daily_rate = String(parseFloat(data.daily_rate as string) || 0)
               data.epf_rate = String(parseFloat(data.epf_rate as string) || 0)
               data.etf_rate = String(parseFloat(data.etf_rate as string) || 0)
               if (!data.salary_type) data.salary_type = 'MONTHLY'
-              if (editing) updateMut.mutate({ id: editing.id, data })
+              if (editing) {
+                const fd2 = new FormData(e.currentTarget)
+                data.is_active = fd2.get('is_active') === 'on'
+                updateMut.mutate({ id: editing.id, data })
+              }
               else createMut.mutate(data)
             }} className="space-y-3">
               <input name="name" defaultValue={editing?.name} placeholder="Full Name *" required className="w-full px-3 py-2 border rounded-lg text-sm" />
@@ -157,11 +223,22 @@ export default function ManagementEmployees() {
                   <input name="etf_rate" type="number" step="0.01" defaultValue={editing?.etf_rate} className="w-full px-3 py-2 border rounded-lg text-sm" />
                 </div>
               </div>
-              <input name="joined_date" type="date" defaultValue={editing?.joined_date} className="w-full px-3 py-2 border rounded-lg text-sm" />
-              <div>
-                <label className="text-xs text-gray-500">Leaving Date (set when employee leaves)</label>
-                <input name="leaving_date" type="date" defaultValue={editing?.leaving_date} className="w-full px-3 py-2 border rounded-lg text-sm" />
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs text-gray-500">Joined Date</label>
+                  <input name="joined_date" type="date" defaultValue={editing?.joined_date} className="w-full px-3 py-2 border rounded-lg text-sm" />
+                </div>
+                <div>
+                  <label className="text-xs text-gray-500">Leaving Date (set when employee leaves)</label>
+                  <input name="leaving_date" type="date" defaultValue={editing?.leaving_date} className="w-full px-3 py-2 border rounded-lg text-sm" />
+                </div>
               </div>
+              {editing && (
+                <label className="flex items-center gap-2 text-sm">
+                  <input name="is_active" type="checkbox" defaultChecked={editing.is_active !== false} className="rounded" />
+                  Employee is active
+                </label>
+              )}
               <textarea name="notes" defaultValue={editing?.notes} placeholder="Notes" rows={2} className="w-full px-3 py-2 border rounded-lg text-sm" />
               <div className="flex justify-end gap-2 pt-2">
                 <button type="button" onClick={() => { setShowForm(false); setEditing(null) }} className="px-4 py-2 text-sm bg-gray-100 rounded-lg">Cancel</button>

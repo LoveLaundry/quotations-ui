@@ -93,6 +93,7 @@ export const employeesApi = {
   create: (data: any) => mgmtApi.post('/api/employees', data),
   update: (id: string, data: any) => mgmtApi.put(`/api/employees/${id}`, data),
   remove: (id: string) => mgmtApi.delete(`/api/employees/${id}`),
+  activate: (id: string) => mgmtApi.post(`/api/employees/${id}/activate`),
   salaries: (empId: string, year?: number) =>
     mgmtApi.get(`/api/employees/${empId}/salaries${year ? `?year=${year}` : ''}`),
   createSalary: (empId: string, data: any) => mgmtApi.post(`/api/employees/${empId}/salaries`, data),
