@@ -70,9 +70,10 @@ export default function AttendancePage() {
   const holidaySet = useMemo(() => {
     const set = new Set<string>()
     for (const h of holidaysData || []) {
-      if (h.start_date) set.add(h.start_date)
-      if (h.end_date && h.end_date !== h.start_date) {
-        const d = new Date(h.start_date)
+      if (h.date) set.add(h.date)
+      if (h.start_date && h.start_date !== h.date) set.add(h.start_date)
+      if (h.end_date && h.end_date !== h.start_date && h.end_date !== h.date) {
+        const d = new Date(h.start_date || h.date)
         const end = new Date(h.end_date)
         while (d <= end) { set.add(d.toISOString().slice(0, 10)); d.setDate(d.getDate() + 1) }
       }
