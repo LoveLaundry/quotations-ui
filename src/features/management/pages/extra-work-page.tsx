@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { extraWorkApi } from '../api/management-api'
 import { toast } from 'sonner'
-import { Plus, X, Pencil, Trash2, Power } from 'lucide-react'
+import { Plus, X, Pencil, Power } from 'lucide-react'
 
 export default function ExtraWorkPage() {
   const qc = useQueryClient()

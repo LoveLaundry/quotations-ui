@@ -2,7 +2,7 @@ import { useState, useRef } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { employeesApi, salaryApi } from '../api/management-api'
 import { toast } from 'sonner'
-import { Calculator, FileText, Printer, Download, ChevronDown, CheckCircle, XCircle, Eye } from 'lucide-react'
+import { Calculator, FileText, Printer, CheckCircle } from 'lucide-react'
 import { useReactToPrint } from 'react-to-print'
 import { SalarySlipPrint } from '../components/salary-slip-print'
 
@@ -60,9 +60,6 @@ export default function SalarySlipPage() {
 
   const handleGenerate = () => {
     if (!calculation) return
-    const totalEarnings = calculation.base_salary_for_period + calculation.overtime_pay + calculation.extra_work_total + allowances
-    const totalDeductions = calculation.epf_employee + calculation.advance_deductions + loanDeduction + otherDeductions
-    const netSalary = totalEarnings - totalDeductions
 
     generateMut.mutate({
       employee_id: selectedEmp,
@@ -88,8 +85,8 @@ export default function SalarySlipPage() {
       etf_employer: calculation.etf_employer,
       advance_deductions: calculation.advance_deductions,
       advance_details: calculation.advance_details || [],
-      loan_deduction,
-      other_deductions,
+      loan_deduction: loanDeduction,
+      other_deductions: otherDeductions,
       status: 'DRAFT',
       notes,
     })

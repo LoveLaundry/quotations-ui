@@ -2,7 +2,7 @@ import { useState, useRef } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { employeesApi, salaryApi } from '../api/management-api'
 import { toast } from 'sonner'
-import { Eye, Printer, XCircle, CheckCircle, Clock, Filter } from 'lucide-react'
+import { Eye, Printer, XCircle, CheckCircle } from 'lucide-react'
 import { useReactToPrint } from 'react-to-print'
 import { SalarySlipPrint } from '../components/salary-slip-print'
 
