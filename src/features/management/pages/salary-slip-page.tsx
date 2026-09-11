@@ -93,6 +93,7 @@ export default function SalarySlipPage() {
       epf_employee: calculation.epf_employee,
       epf_employer: calculation.epf_employer,
       etf_employer: calculation.etf_employer,
+      epf_base: calculation.epf_base || 'ADJUSTED',
       advance_deductions: calculation.advance_deductions,
       advance_details: calculation.advance_details || [],
       loan_deduction: loanDeduction,
@@ -268,7 +269,7 @@ export default function SalarySlipPage() {
               <div className="border-t pt-3 text-sm font-medium text-gray-600 dark:text-gray-400">Deductions</div>
               <div className="space-y-2 text-sm">
                 {calculation.epf_employee > 0 && (
-                  <div className="flex justify-between"><span>EPF (Employee)</span><span className="text-red-600">- Rs. {calculation.epf_employee.toLocaleString()}</span></div>
+                  <div className="flex justify-between"><span>EPF (Employee, {calculation.epf_base === 'FULL' ? 'full base' : 'adjusted base'})</span><span className="text-red-600">- Rs. {calculation.epf_employee.toLocaleString()}</span></div>
                 )}
                 {calculation.advance_deductions > 0 && (
                   <div className="flex justify-between"><span>Advances</span><span className="text-red-600">- Rs. {calculation.advance_deductions.toLocaleString()}</span></div>

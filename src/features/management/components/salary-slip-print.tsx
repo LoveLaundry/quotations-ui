@@ -93,7 +93,7 @@ export function SalarySlipPrint({ slip }: SalarySlipProps) {
               </table>
             </div>
             <div>
-              <div className="section-title">EPF / ETF</div>
+              <div className="section-title">EPF / ETF {slip.epf_base ? `· ${slip.epf_base === 'FULL' ? 'full base' : 'adjusted base'}` : ''}</div>
               <table className="calc-table">
                 <tbody>
                   <tr><td>EPF (Employee)</td><td>{formatRs(slip.epf_employee)}</td></tr>

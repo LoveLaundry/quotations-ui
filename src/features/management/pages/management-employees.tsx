@@ -181,6 +181,7 @@ export default function ManagementEmployees() {
               data.etf_rate = String(parseFloat(data.etf_rate as string) || 0)
               if (!data.salary_type) data.salary_type = 'MONTHLY'
               if (!data.allowance_type) data.allowance_type = 'FIXED'
+              if (!data.epf_base) data.epf_base = 'ADJUSTED'
               if (editing) {
                 const fd2 = new FormData(e.currentTarget)
                 data.is_active = fd2.get('is_active') === 'on'
@@ -237,6 +238,13 @@ export default function ManagementEmployees() {
                   <label className="text-xs text-gray-500">ETF Rate %</label>
                   <input name="etf_rate" type="number" step="0.01" defaultValue={editing?.etf_rate} className="w-full px-3 py-2 border rounded-lg text-sm" />
                 </div>
+              </div>
+              <div>
+                <label className="text-xs text-gray-500">EPF Base</label>
+                <select name="epf_base" defaultValue={editing?.epf_base || 'ADJUSTED'} className="w-full px-3 py-2 border rounded-lg text-sm">
+                  <option value="ADJUSTED">Adjusted base (period, after absences/leaves)</option>
+                  <option value="FULL">Full base (basic salary, always)</option>
+                </select>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
