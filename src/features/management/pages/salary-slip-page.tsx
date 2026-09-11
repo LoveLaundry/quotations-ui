@@ -41,7 +41,7 @@ export default function SalarySlipPage() {
     },
     onSuccess: (res) => {
       setCalculation(res.data || res)
-      setAllowances(0)
+      setAllowances((res.data || res).allowance_for_period > 0 ? (res.data || res).allowance_for_period : 0)
       setLoanDeduction(0)
       setOtherDeductions(0)
       setNotes('')
@@ -247,6 +247,12 @@ export default function SalarySlipPage() {
                 )}
                 {calculation.extra_work_total > 0 && (
                   <div className="flex justify-between"><span>Extra Work</span><span>Rs. {calculation.extra_work_total.toLocaleString()}</span></div>
+                )}
+                {calculation.allowance > 0 && (
+                  <div className="flex justify-between text-gray-500">
+                    <span>Allowance ({calculation.allowance_type === 'DAYS' ? 'days-worked adjusted' : 'fixed'} {calculation.allowance_for_period > 0 && <>{calculation.allowance_for_period !== calculation.allowance ? `— Rs. ${calculation.allowance} × ${((calculation.allowance_for_period / calculation.allowance) * 100).toFixed(1)}%` : ''}</>})</span>
+                    <span>Rs. {(calculation.allowance_for_period || 0).toLocaleString()}</span>
+                  </div>
                 )}
                 <div className="flex items-center gap-2">
                   <span className="text-gray-500">Allowances</span>

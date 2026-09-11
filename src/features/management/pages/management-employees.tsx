@@ -176,9 +176,11 @@ export default function ManagementEmployees() {
               const data: any = Object.fromEntries(fd)
               data.basic_salary = String(parseFloat(data.basic_salary as string) || 0)
               data.daily_rate = String(parseFloat(data.daily_rate as string) || 0)
+              data.allowance = String(parseFloat(data.allowance as string) || 0)
               data.epf_rate = String(parseFloat(data.epf_rate as string) || 0)
               data.etf_rate = String(parseFloat(data.etf_rate as string) || 0)
               if (!data.salary_type) data.salary_type = 'MONTHLY'
+              if (!data.allowance_type) data.allowance_type = 'FIXED'
               if (editing) {
                 const fd2 = new FormData(e.currentTarget)
                 data.is_active = fd2.get('is_active') === 'on'
@@ -211,6 +213,19 @@ export default function ManagementEmployees() {
                 <div>
                   <label className="text-xs text-gray-500">Daily Rate (Rs.)</label>
                   <input name="daily_rate" type="number" step="0.01" defaultValue={editing?.daily_rate} className="w-full px-3 py-2 border rounded-lg text-sm" />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs text-gray-500">Allowance (Rs.)</label>
+                  <input name="allowance" type="number" step="0.01" defaultValue={editing?.allowance} className="w-full px-3 py-2 border rounded-lg text-sm" />
+                </div>
+                <div>
+                  <label className="text-xs text-gray-500">Allowance Type</label>
+                  <select name="allowance_type" defaultValue={editing?.allowance_type || 'FIXED'} className="w-full px-3 py-2 border rounded-lg text-sm">
+                    <option value="FIXED">Fixed (full amount every period)</option>
+                    <option value="DAYS">Days worked (adjusted)</option>
+                  </select>
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-3">
