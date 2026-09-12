@@ -149,6 +149,10 @@ export default function ManagementEmployees() {
                   <p className="text-gray-400">EPF Base</p>
                   <p className="font-medium">{emp.epf_base === 'FULL' ? 'Full' : emp.epf_base === 'ATTENDANCE' ? 'Attendance' : 'Adjusted'}</p>
                 </div>
+                <div>
+                  <p className="text-gray-400">Allowance</p>
+                  <p className="font-medium">Rs. {(emp.allowance || 0).toLocaleString()}{emp.allowance_type === 'ATTENDANCE' ? ' · Attd.' : emp.allowance_type === 'ADJUSTED' || emp.allowance_type === 'DAYS' ? ' · Adj.' : ''}</p>
+                </div>
                 {hasLeft && (
                   <div className="col-span-2">
                     <p className="text-gray-400">Leaving Date</p>
@@ -234,9 +238,10 @@ export default function ManagementEmployees() {
                 </div>
                 <div>
                   <label className="text-xs text-gray-500">Allowance Type</label>
-                  <select name="allowance_type" defaultValue={editing?.allowance_type || 'FIXED'} className="w-full px-3 py-2 border rounded-lg text-sm">
+                  <select name="allowance_type" defaultValue={editing?.allowance_type === 'DAYS' ? 'ADJUSTED' : editing?.allowance_type || 'FIXED'} className="w-full px-3 py-2 border rounded-lg text-sm">
                     <option value="FIXED">Fixed (full amount every period)</option>
-                    <option value="DAYS">Days worked (adjusted)</option>
+                    <option value="ADJUSTED">Adjusted (absences reduce it, paid leave counts)</option>
+                    <option value="ATTENDANCE">Attendance (only days actually worked, paid leave excluded)</option>
                   </select>
                 </div>
               </div>

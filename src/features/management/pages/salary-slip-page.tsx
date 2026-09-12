@@ -251,7 +251,7 @@ export default function SalarySlipPage() {
                 )}
                 {calculation.allowance > 0 && (
                   <div className="flex justify-between text-gray-500">
-                    <span>Allowance ({calculation.allowance_type === 'DAYS' ? 'days-worked adjusted' : 'fixed'} {calculation.allowance_for_period > 0 && <>{calculation.allowance_for_period !== calculation.allowance ? `— Rs. ${calculation.allowance} × ${((calculation.allowance_for_period / calculation.allowance) * 100).toFixed(1)}%` : ''}</>})</span>
+                    <span>Allowance ({calculation.allowance_type === 'ADJUSTED' || calculation.allowance_type === 'DAYS' ? 'adjusted' : calculation.allowance_type === 'ATTENDANCE' ? 'attendance base' : 'fixed'} {calculation.allowance_for_period > 0 && <>{calculation.allowance_for_period !== calculation.allowance ? `— Rs. ${calculation.allowance} × ${((calculation.allowance_for_period / calculation.allowance) * 100).toFixed(1)}%` : ''}</>})</span>
                     <span>Rs. {(calculation.allowance_for_period || 0).toLocaleString()}</span>
                   </div>
                 )}
