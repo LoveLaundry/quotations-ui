@@ -103,7 +103,7 @@ export default function ManagementEmployees() {
                   <p className="text-sm text-gray-500">{emp.employee_code ? `#${emp.employee_code}` : ''} {emp.position || emp.department}</p>
                 </div>
                 <div className="flex gap-1">
-                  <button onClick={() => setEditing(emp)} className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded" title="Edit"><Pencil size={14} /></button>
+                  <button onClick={() => { setEditing(emp); setShowForm(true) }} className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded" title="Edit"><Pencil size={14} /></button>
                   {isActive ? (
                     <button
                       onClick={() => { if (confirm(`Deactivate ${emp.name}?`)) deactivateMut.mutate(emp.id) }}

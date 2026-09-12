@@ -253,6 +253,9 @@ export const attendanceApi = {
   remove: (attendanceId: string) => mgmtApi.delete(`/api/attendance/${attendanceId}`),
   bulkSet: (empId: string, dates: string[], status: string, overtimeHours?: number) =>
     mgmtApi.post(`/api/attendance/bulk?employee_id=${empId}&status=${status}${overtimeHours ? `&overtime_hours=${overtimeHours}` : ''}&${dates.map(d => `dates=${d}`).join('&')}`),
+  listForDate: (date: string) => mgmtApi.get(`/api/attendance?start_date=${date}&end_date=${date}`),
+  bulkDay: (data: { date: string; records: { employee_id: string; status: string; overtime_hours: number }[] }) =>
+    mgmtApi.post('/api/attendance/bulk-day', data),
 }
 
 export default mgmtApi

@@ -75,6 +75,7 @@ import AdvancesPage from '../features/management/pages/advances-page'
 import HolidaysPage from '../features/management/pages/holidays-page'
 import ExtraWorkPage from '../features/management/pages/extra-work-page'
 import AttendancePage from '../features/management/pages/attendance-page'
+import AttendanceLogPage from '../features/management/pages/attendance-log-page'
 import CompanySettingsPage from '../features/management/pages/company-settings-page'
 
 export const router = createBrowserRouter([
@@ -171,6 +172,7 @@ export const router = createBrowserRouter([
           { path: 'management/holidays', element: <HolidaysPage /> },
           { path: 'management/extra-work', element: <ExtraWorkPage /> },
           { path: 'management/attendance', element: <AttendancePage /> },
+          { path: 'management/attendance-log', element: <AttendanceLogPage /> },
           { path: 'management/company-settings', element: <CompanySettingsPage /> },
           { path: 'management/payments', element: <ManagementPayments /> },
           { path: 'management/reports', element: <ManagementReports /> },

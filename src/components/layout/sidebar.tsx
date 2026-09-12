@@ -24,6 +24,7 @@ import {
   Wallet,
   Money,
   CalendarBlank,
+  CalendarPlus,
   Lightning,
 } from '@phosphor-icons/react'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -104,6 +105,7 @@ const navGroups: { label: string; items: NavItem[] }[] = [
         { to: '/management/holidays', label: 'Holidays', icon: CalendarBlank, end: false },
         { to: '/management/extra-work', label: 'Extra Work', icon: Lightning, end: false },
         { to: '/management/attendance', label: 'Attendance', icon: CalendarBlank, end: false },
+        { to: '/management/attendance-log', label: 'Log Attendance', icon: CalendarPlus, end: false },
       ]},
       { to: '/management/company-settings', label: 'Company Settings', icon: GearSix, end: false },
       { to: '/management/payments', label: 'Payments', icon: Wallet, end: false },
