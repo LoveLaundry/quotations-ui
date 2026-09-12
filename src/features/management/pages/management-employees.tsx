@@ -245,8 +245,9 @@ export default function ManagementEmployees() {
               <div>
                 <label className="text-xs text-gray-500">EPF Base</label>
                 <select name="epf_base" defaultValue={editing?.epf_base || 'ADJUSTED'} className="w-full px-3 py-2 border rounded-lg text-sm">
-                  <option value="ADJUSTED">Adjusted base (period, after absences/leaves)</option>
-                  <option value="FULL">Full base (basic salary, always)</option>
+                  <option value="ADJUSTED">Adjusted base (period, after absences, paid leaves count)</option>
+                  <option value="ATTENDANCE">Attendance base (only days actually worked, leaves excluded)</option>
+                  <option value="FULL">Full base (basic salary, always / 30-day)</option>
                 </select>
               </div>
               <div className="grid grid-cols-2 gap-3">

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
     RiUserAddLine, RiUserLine, RiCloseLine, RiEyeLine, RiEyeOffLine,
-    RiRefreshLine, RiShieldCheckLine
+    RiRefreshLine, RiShieldCheckLine, RiEditLine
 } from 'react-icons/ri'
 import { toast } from 'sonner'
 import authApi from '../../../api/auth-api'
@@ -51,6 +51,7 @@ export default function UsersPage() {
     const [users, setUsers] = useState<UserRecord[]>([])
     const [loadingUsers, setLoadingUsers] = useState(true)
     const [showModal, setShowModal] = useState(false)
+    const [editId, setEditId] = useState<string | null>(null)
     const [form, setForm] = useState<UserForm>(emptyForm)
     const [submitting, setSubmitting] = useState(false)
     const [showPw, setShowPw] = useState(false)
@@ -73,23 +74,42 @@ export default function UsersPage() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
-        if (!form.user_name || !form.auth_id || !form.password) {
-            toast.error('Full name, Username and Password are required')
+        if (!form.user_name || !form.auth_id) {
+            toast.error('Full name and Username are required')
+            return
+        }
+        if (!editId && !form.password) {
+            toast.error('Password is required for new users')
             return
         }
         setSubmitting(true)
         try {
-            const payload: any = { ...form }
-            if (!payload.email) delete payload.email
-            if (!payload.mobile_number) delete payload.mobile_number
-            if (!payload.employee_id) delete payload.employee_id
-            await authApi.post('/users', payload)
-            toast.success(`User "${form.user_name}" created successfully`)
+            const payload: any = {
+                user_name: form.user_name,
+                auth_id: form.auth_id,
+                role_id: form.role_id,
+                status: form.status,
+            }
+            if (form.email) payload.email = form.email
+            if (form.mobile_number) payload.mobile_number = form.mobile_number
+            if (form.employee_id) payload.employee_id = form.employee_id
+
+            if (editId) {
+                await authApi.put(`/users/${editId}`, payload)
+                if (form.password) {
+                    await authApi.patch(`/users/${editId}/password`, { password: form.password })
+                }
+                toast.success(`User "${form.user_name}" updated successfully`)
+            } else {
+                await authApi.post('/users', { ...payload, password: form.password })
+                toast.success(`User "${form.user_name}" created successfully`)
+            }
             setShowModal(false)
             setForm(emptyForm)
+            setEditId(null)
             fetchUsers()
         } catch (err: any) {
-            toast.error(err.message || 'Failed to create user')
+            toast.error(err.message || `Failed to ${editId ? 'update' : 'create'} user`)
         } finally {
             setSubmitting(false)
         }
@@ -97,6 +117,23 @@ export default function UsersPage() {
 
     const openModal = () => {
         setForm(emptyForm)
+        setEditId(null)
+        setShowPw(false)
+        setShowModal(true)
+    }
+
+    const openEdit = (u: UserRecord) => {
+        setForm({
+            user_name: u.user_name,
+            auth_id: u.auth_id,
+            password: '',
+            email: u.email || '',
+            mobile_number: u.mobile_number || '',
+            employee_id: u.employee_id || '',
+            role_id: (u.role_id || 'STAFF').toUpperCase(),
+            status: (u.status || 'active').toLowerCase(),
+        })
+        setEditId(u.id)
         setShowPw(false)
         setShowModal(true)
     }
@@ -210,6 +247,14 @@ export default function UsersPage() {
                                                 )}
                                             </div>
                                         </div>
+                                        <button
+                                            type="button"
+                                            onClick={() => openEdit(u)}
+                                            title="Edit user"
+                                            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-[#6B7280] hover:bg-[#F3F4F6] hover:text-[#101828] transition-colors"
+                                        >
+                                            <RiEditLine size={15} />
+                                        </button>
                                     </div>
                                 </CardContent>
                             </Card>
@@ -243,11 +288,11 @@ export default function UsersPage() {
                                 <div className="flex items-center justify-between px-6 py-4 border-b border-[#F2F4F7]">
                                     <div className="flex items-center gap-3">
                                         <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#101828] text-white">
-                                            <RiUserAddLine size={16} />
+                                            <RiEditLine size={16} />
                                         </div>
                                         <div>
-                                            <p className="text-[14px] font-bold text-[#101828]">Create User</p>
-                                            <p className="text-[11px] text-[#6B7280]">Add a new system user</p>
+                                            <p className="text-[14px] font-bold text-[#101828]">{editId ? 'Edit User' : 'Create User'}</p>
+                                            <p className="text-[11px] text-[#6B7280]">{editId ? 'Update this system user' : 'Add a new system user'}</p>
                                         </div>
                                     </div>
                                     <button
@@ -292,7 +337,7 @@ export default function UsersPage() {
 
                                     <div>
                                         <label className="block text-[12px] font-medium text-[#374151] mb-1.5">
-                                            Password <span className="text-[#DC2626]">*</span>
+                                            {editId ? 'New Password' : 'Password'} {!editId && <span className="text-[#DC2626]">*</span>}
                                         </label>
                                         <div className="relative">
                                             <input
@@ -300,8 +345,8 @@ export default function UsersPage() {
                                                 value={form.password}
                                                 onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
                                                 className={`${inputClass} pr-10`}
-                                                placeholder="Secure password"
-                                                required
+                                                placeholder={editId ? 'Leave blank to keep current' : 'Secure password'}
+                                                required={!editId}
                                             />
                                             <button
                                                 type="button"
@@ -379,7 +424,9 @@ export default function UsersPage() {
                                     <div className="flex items-start gap-2 rounded-lg bg-[#F0FDF4] border border-[#BBF7D0] px-3 py-2.5">
                                         <RiShieldCheckLine size={14} className="text-[#16A34A] mt-0.5 shrink-0" />
                                         <p className="text-[11px] text-[#166534]">
-                                            User will be created with the selected role. They can log in immediately using their username and password.
+                                            {editId
+                                                ? 'Changes are saved immediately. Enter a new password only if you want to reset it.'
+                                                : 'User will be created with the selected role. They can log in immediately using their username and password.'}
                                         </p>
                                     </div>
 
@@ -399,12 +446,12 @@ export default function UsersPage() {
                                             {submitting ? (
                                                 <>
                                                     <RiRefreshLine size={14} className="animate-spin" />
-                                                    Creating…
+                                                    {editId ? 'Saving…' : 'Creating…'}
                                                 </>
                                             ) : (
                                                 <>
-                                                    <RiUserAddLine size={14} />
-                                                    Create User
+                                                    <RiEditLine size={14} />
+                                                    {editId ? 'Save Changes' : 'Create User'}
                                                 </>
                                             )}
                                         </button>
