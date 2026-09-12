@@ -37,7 +37,7 @@ export default function ManagementEmployees() {
 
   const updateMut = useMutation({
     mutationFn: ({ id, data }: any) => employeesApi.update(id, data),
-    onSuccess: () => { toast.success('Employee updated'); qc.invalidateQueries({ queryKey: ['mgmt-employees'] }); setEditing(null) },
+    onSuccess: () => { toast.success('Employee updated'); qc.invalidateQueries({ queryKey: ['mgmt-employees'] }); setEditing(null); setShowForm(false) },
     onError: (e: any) => toast.error(e.response?.data?.detail || 'Failed'),
   })
 
@@ -140,6 +140,14 @@ export default function ManagementEmployees() {
                 <div>
                   <p className="text-gray-400">Joined</p>
                   <p className="font-medium">{emp.joined_date || '—'}</p>
+                </div>
+                <div>
+                  <p className="text-gray-400">EPF Rate</p>
+                  <p className="font-medium">{emp.epf_rate || 0}%</p>
+                </div>
+                <div>
+                  <p className="text-gray-400">EPF Base</p>
+                  <p className="font-medium">{emp.epf_base === 'FULL' ? 'Full' : emp.epf_base === 'ATTENDANCE' ? 'Attendance' : 'Adjusted'}</p>
                 </div>
                 {hasLeft && (
                   <div className="col-span-2">
