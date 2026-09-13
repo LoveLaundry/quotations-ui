@@ -20,27 +20,27 @@ export function SalarySlipPrint({ slip }: SalarySlipProps) {
           .no-print { display: none !important; }
         }
         .slip-container { border: 2px solid #E01E31; padding: 0; }
-        .slip-header { background: linear-gradient(135deg, #E01E31 0%, #B71C1C 50%, #7F1620 100%); color: white; padding: 20px 24px; text-align: center; }
-        .brand-logo { width: 56px; height: 56px; object-fit: contain; background: #fff; border-radius: 50%; padding: 6px; margin: 0 auto 6px; box-sizing: border-box; }
+        .slip-header { background: #ffffff; color: #374151; padding: 20px 24px; text-align: center; border-bottom: 2px solid #E01E31; }
+        .brand-logo { width: 56px; height: 56px; object-fit: contain; background: #fff; border: 2px solid #E01E31; border-radius: 50%; padding: 6px; margin: 0 auto 6px; box-sizing: border-box; }
         .slip-body { padding: 16px 24px; }
         .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 24px; font-size: 13px; }
-        .info-row { display: flex; justify-content: space-between; padding: 3px 0; border-bottom: 1px dotted #F0C6CB; }
-        .info-label { color: #7F1620; font-weight: 500; }
+        .info-row { display: flex; justify-content: space-between; padding: 3px 0; border-bottom: 1px dotted #F3C9CE; }
+        .info-label { color: #B71C1C; font-weight: 500; }
         .info-value { font-weight: 600; text-align: right; }
-        .section-title { background: #E01E31; color: white; padding: 6px 12px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin: 12px 0 8px; }
+        .section-title { background: #ffffff; color: #E01E31; border-left: 4px solid #E01E31; padding: 5px 12px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin: 12px 0 8px; border-bottom: 1px solid #F3C9CE; }
         .calc-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-        .calc-table th { background: #FDE9EB; padding: 6px 10px; text-align: left; font-weight: 600; color: #7F1620; border-bottom: 1px solid #F0C6CB; }
+        .calc-table th { background: #ffffff; padding: 6px 10px; text-align: left; font-weight: 700; color: #B71C1C; border-bottom: 2px solid #E01E31; }
         .calc-table th:last-child { text-align: right; }
-        .calc-table td { padding: 5px 10px; border-bottom: 1px solid #F5E7E9; }
+        .calc-table td { padding: 5px 10px; border-bottom: 1px solid #F7E5E7; }
         .calc-table td:last-child { text-align: right; font-weight: 500; }
-        .calc-table tr.total-row td { border-top: 2px solid #E01E31; font-weight: 700; background: #FDE9EB; }
-        .calc-table tr.subtotal-row td { border-top: 1px solid #B71C1C; font-weight: 600; }
-        .net-salary-box { background: linear-gradient(135deg, #E01E31, #7F1620); color: white; padding: 12px 16px; text-align: center; margin: 12px 0; border-radius: 6px; }
-        .net-salary-box .amount { font-size: 24px; font-weight: 800; }
+        .calc-table tr.total-row td { border-top: 2px solid #E01E31; font-weight: 700; background: #ffffff; color: #B71C1C; }
+        .calc-table tr.subtotal-row td { border-top: 1px solid #F3C9CE; font-weight: 600; }
+        .net-salary-box { background: #ffffff; border: 2px solid #E01E31; color: #7F1620; padding: 12px 16px; text-align: center; margin: 12px 0; border-radius: 6px; }
+        .net-salary-box .amount { font-size: 24px; font-weight: 800; color: #E01E31; }
         .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 0 20px; }
         .advance-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 4px; }
-        .advance-table th { background: #FDE9EB; padding: 4px 8px; text-align: left; font-weight: 600; color: #7F1620; border-bottom: 1px solid #F0C6CB; }
-        .advance-table td { padding: 3px 8px; border-bottom: 1px solid #F5E7E9; }
+        .advance-table th { background: #ffffff; padding: 4px 8px; text-align: left; font-weight: 700; color: #B71C1C; border-bottom: 2px solid #E01E31; }
+        .advance-table td { padding: 3px 8px; border-bottom: 1px solid #F7E5E7; }
         .advance-table td:last-child { text-align: right; }
         .slip-footer { border-top: 2px solid #E01E31; padding: 12px 24px; display: flex; justify-content: space-between; align-items: flex-end; font-size: 12px; }
         .sig-line { border-top: 1px solid #1F2937; width: 160px; text-align: center; padding-top: 4px; margin-top: 40px; }
@@ -54,16 +54,16 @@ export function SalarySlipPrint({ slip }: SalarySlipProps) {
       <div className="slip-container">
         <div className="slip-header">
           <img className="brand-logo" src={iconPng} alt="Love Laundry" />
-          <div style={{ fontSize: 22, fontWeight: 800, letterSpacing: 1 }}>{COMPANY.name}</div>
-          <div style={{ fontSize: 12, opacity: 0.85, marginTop: 2 }}>{COMPANY.tagline}</div>
-          <div style={{ fontSize: 11, opacity: 0.7, marginTop: 4 }}>
+          <div style={{ fontSize: 22, fontWeight: 800, letterSpacing: 1, color: '#E01E31' }}>{COMPANY.name}</div>
+          <div style={{ fontSize: 12, color: '#B71C1C', marginTop: 2 }}>{COMPANY.tagline}</div>
+          <div style={{ fontSize: 11, color: '#6B7280', marginTop: 4 }}>
             {COMPANY.address.line1}, {COMPANY.address.line2} | Reg. {COMPANY.registrationNo}
           </div>
-          <div style={{ fontSize: 11, opacity: 0.7 }}>Tel: {COMPANY.phone.primary} | {COMPANY.phone.secondary}</div>
-          <div style={{ fontSize: 18, fontWeight: 700, marginTop: 12, letterSpacing: 2, textTransform: 'uppercase' }}>
+          <div style={{ fontSize: 11, color: '#6B7280' }}>Tel: {COMPANY.phone.primary} | {COMPANY.phone.secondary}</div>
+          <div style={{ fontSize: 18, fontWeight: 700, marginTop: 12, letterSpacing: 2, textTransform: 'uppercase', color: '#E01E31' }}>
             Salary Slip
           </div>
-          <div style={{ fontSize: 13, marginTop: 4 }}>{periodMonth}</div>
+          <div style={{ fontSize: 13, marginTop: 4, color: '#374151' }}>{periodMonth}</div>
         </div>
 
         <div className="slip-body">
@@ -164,7 +164,7 @@ export function SalarySlipPrint({ slip }: SalarySlipProps) {
           </div>
 
           {slip.notes && (
-            <div style={{ fontSize: 12, color: '#4B5563', marginTop: 8, padding: '6px 10px', background: '#FEF5F6', borderRadius: 4 }}>
+            <div style={{ fontSize: 12, color: '#4B5563', marginTop: 8, padding: '6px 10px', background: '#ffffff', border: '1px solid #F3C9CE', borderLeft: '3px solid #E01E31', borderRadius: 4 }}>
               <strong>Notes:</strong> {slip.notes}
             </div>
           )}
