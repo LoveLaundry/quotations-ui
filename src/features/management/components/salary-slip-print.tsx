@@ -20,8 +20,15 @@ export function SalarySlipPrint({ slip }: SalarySlipProps) {
           .no-print { display: none !important; }
         }
         .slip-container { border: 2px solid #E01E31; padding: 0; }
-        .slip-header { background: #ffffff; color: #374151; padding: 20px 24px; text-align: center; border-bottom: 2px solid #E01E31; }
-        .brand-logo { width: 56px; height: 56px; object-fit: contain; background: #fff; border: 2px solid #E01E31; border-radius: 50%; padding: 6px; margin: 0 auto 6px; box-sizing: border-box; }
+        .slip-header { background: #ffffff; border-bottom: 2px solid #E01E31; }
+        .header-brand { display: flex; align-items: center; gap: 14px; padding: 16px 24px 12px; text-align: left; }
+        .brand-logo { width: 56px; height: 56px; object-fit: contain; background: #fff; border: 2px solid #E01E31; border-radius: 50%; padding: 6px; box-sizing: border-box; flex-shrink: 0; }
+        .brand-name { font-family: "Spectral", Georgia, serif; font-weight: 700; letter-spacing: -0.25px; font-size: 24px; color: #E01E31; line-height: 1.1; }
+        .brand-tagline { font-family: "Spectral", Georgia, serif; font-size: 12px; color: #6B7280; margin-top: 2px; }
+        .brand-contact { font-family: "Spectral", Georgia, serif; font-size: 11px; color: #9CA3AF; margin-top: 5px; line-height: 1.4; }
+        .header-title { border-top: 2px solid #E01E31; background: #FDF3F4; padding: 10px 24px; text-align: center; }
+        .slip-title { font-family: "Spectral", Georgia, serif; font-size: 18px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; color: #E01E31; }
+        .slip-period { font-family: "Spectral", Georgia, serif; font-size: 13px; color: #374151; margin-top: 2px; }
         .slip-body { padding: 16px 24px; }
         .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 24px; font-size: 13px; }
         .info-row { display: flex; justify-content: space-between; padding: 3px 0; border-bottom: 1px dotted #F3C9CE; }
@@ -53,17 +60,21 @@ export function SalarySlipPrint({ slip }: SalarySlipProps) {
 
       <div className="slip-container">
         <div className="slip-header">
-          <img className="brand-logo" src={iconPng} alt="Love Laundry" />
-          <div style={{ fontSize: 22, fontWeight: 800, letterSpacing: 1, color: '#E01E31' }}>{COMPANY.name}</div>
-          <div style={{ fontSize: 12, color: '#B71C1C', marginTop: 2 }}>{COMPANY.tagline}</div>
-          <div style={{ fontSize: 11, color: '#6B7280', marginTop: 4 }}>
-            {COMPANY.address.line1}, {COMPANY.address.line2} | Reg. {COMPANY.registrationNo}
+          <div className="header-brand">
+            <img className="brand-logo" src={iconPng} alt="Love Laundry" />
+            <div>
+              <div className="brand-name">{COMPANY.name}</div>
+              <div className="brand-tagline">{COMPANY.tagline}</div>
+              <div className="brand-contact">
+                {COMPANY.address.line1}, {COMPANY.address.line2} | Reg. {COMPANY.registrationNo}<br />
+                Tel: {COMPANY.phone.primary} | {COMPANY.phone.secondary}
+              </div>
+            </div>
           </div>
-          <div style={{ fontSize: 11, color: '#6B7280' }}>Tel: {COMPANY.phone.primary} | {COMPANY.phone.secondary}</div>
-          <div style={{ fontSize: 18, fontWeight: 700, marginTop: 12, letterSpacing: 2, textTransform: 'uppercase', color: '#E01E31' }}>
-            Salary Slip
+          <div className="header-title">
+            <div className="slip-title">Salary Slip</div>
+            <div className="slip-period">{periodMonth}</div>
           </div>
-          <div style={{ fontSize: 13, marginTop: 4, color: '#374151' }}>{periodMonth}</div>
         </div>
 
         <div className="slip-body">
