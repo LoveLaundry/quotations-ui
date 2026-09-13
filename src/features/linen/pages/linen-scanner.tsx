@@ -16,6 +16,7 @@ export default function LinenScanner() {
   const [code, setCode] = useState('')
   const [lastScanned, setLastScanned] = useState<string | null>(null)
   const [cameraError, setCameraError] = useState<string | null>(null)
+  const [lastAction, setLastAction] = useState<{ label: string; color: string } | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const videoRef = useRef<HTMLVideoElement | null>(null)
   const streamRef = useRef<MediaStream | null>(null)
@@ -27,6 +28,7 @@ export default function LinenScanner() {
   const handleCodeScanned = useCallback((decodedText: string) => {
     const trimmed = decodedText.trim().toUpperCase()
     if (!trimmed || trimmed === lastScanned) return
+    setLastAction(null)
     setLastScanned(trimmed)
     setCode(trimmed)
     refetch()
@@ -147,6 +149,7 @@ export default function LinenScanner() {
   const handleLookup = useCallback(() => {
     const trimmed = code.trim().toUpperCase()
     if (!trimmed) return
+    setLastAction(null)
     setLastScanned(trimmed)
     refetch()
     setCode('')
@@ -154,11 +157,13 @@ export default function LinenScanner() {
 
   const handleQuickAction = (action: string) => {
     if (!linen?.id) return
-    const label = SCAN_ACTIONS.find(a => a.value === action)?.label ?? action
+    const sa = SCAN_ACTIONS.find(a => a.value === action)
+    const label = sa?.label ?? action
     scanMutation.mutate(
       { docId: linen.id, payload: { action } },
       {
         onSuccess: () => {
+          setLastAction({ label, color: sa?.color ?? '#DC2626' })
           toast.success(`${label} — ${linen.linen_id}`)
           setTimeout(() => refetch(), 300)
         },
@@ -275,9 +280,12 @@ export default function LinenScanner() {
         <Card className="border border-[var(--border)] shadow-sm">
           <CardContent className="p-8 text-center">
             <p className="text-sm text-[var(--text-muted)]">No linen found with ID: <span className="font-mono font-semibold">{lastScanned}</span></p>
-            <Button variant="outline" size="sm" className="mt-3" onClick={() => { setLastScanned(null); inputRef.current?.focus() }}>
-              Clear & Try Again
-            </Button>
+            <div className="mt-3 flex gap-2 justify-center">
+              <Button variant="outline" size="sm" onClick={() => { setLastScanned(null); inputRef.current?.focus() }}>
+                Clear & Try Again
+              </Button>
+              <Link to="/linen/tags"><Button variant="outline" size="sm">Generate Tags</Button></Link>
+            </div>
           </CardContent>
         </Card>
       )}
@@ -288,16 +296,30 @@ export default function LinenScanner() {
           <div className="flex items-center gap-3 p-4 rounded-xl border border-[var(--border)]" style={{ backgroundColor: stCfg?.bg }}>
             <div className="w-3.5 h-3.5 rounded-full flex-shrink-0" style={{ backgroundColor: stCfg?.color }} />
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-bold" style={{ color: stCfg?.color }}>{stCfg?.label}</p>
+              <div className="flex items-center gap-2 flex-wrap">
+                <p className="text-sm font-bold" style={{ color: stCfg?.color }}>{stCfg?.label}</p>
+                {lastAction && (
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-white/70 border" style={{ color: lastAction.color, borderColor: lastAction.color + '40' }}>
+                    <CheckCircle size={10} /> {lastAction.label} applied
+                  </span>
+                )}
+              </div>
               <p className="text-xs text-[var(--text-muted)] truncate">{linen.linen_id} · {linen.item_type} · {linen.client_name}</p>
             </div>
-            {scanMutation.isSuccess && <CheckCircle size={18} className="text-green-600 flex-shrink-0" />}
+            {scanMutation.isPending ? (
+              <Loader2 size={18} className="animate-spin text-[var(--text-muted)] flex-shrink-0" />
+            ) : lastAction ? (
+              <CheckCircle size={18} className="text-green-600 flex-shrink-0" />
+            ) : null}
           </div>
 
           <div className="flex flex-col lg:flex-row gap-4">
             <Card className="flex-1 border border-[var(--border)] shadow-sm">
               <CardContent className="p-5">
-                <h2 className="text-[11px] font-semibold text-[var(--text-muted)] uppercase tracking-wide mb-3">Item Info</h2>
+                <div className="flex items-center justify-between mb-3">
+                  <h2 className="text-[11px] font-semibold text-[var(--text-muted)] uppercase tracking-wide">Item Info</h2>
+                  {isFetching && <Loader2 size={14} className="animate-spin text-[var(--text-muted)]" />}
+                </div>
                 <div className="grid grid-cols-2 gap-3 text-sm">
                   {[
                     ['Category', linen.category],

@@ -1,7 +1,8 @@
 import { useParams } from 'react-router-dom'
 import { QRCodeSVG } from 'qrcode.react'
 import JsBarcode from 'jsbarcode'
-import { useRef, useEffect } from 'react'
+import { useRef, useEffect, useState } from 'react'
+import { Loader2 } from 'lucide-react'
 import { useLinen, useLinenEvents, useScanLinen } from '../hooks/useLinen'
 import { LINEN_STATUS_CONFIG, SCAN_ACTIONS, type LinenStatus } from '../../../types/linen'
 import { Card, CardContent } from '../../../components/ui/card'
@@ -17,6 +18,7 @@ export default function LinenProfile() {
   const { data: linen, isLoading, isError } = useLinen(id)
   const { data: events } = useLinenEvents(id)
   const scanMutation = useScanLinen()
+  const [pendingAction, setPendingAction] = useState<string | null>(null)
   const barcodeRef = useRef<SVGSVGElement>(null)
 
   useEffect(() => {
@@ -46,6 +48,7 @@ export default function LinenProfile() {
 
   const handleQuickAction = (action: string) => {
     if (!id) return
+    setPendingAction(action)
     scanMutation.mutate(
       { docId: id, payload: { action } },
       {
@@ -53,6 +56,7 @@ export default function LinenProfile() {
           const label = SCAN_ACTIONS.find(a => a.value === action)?.label ?? action
           toast.success(`${label} — ${linen.linen_id}`)
         },
+        onSettled: () => setPendingAction(null),
       }
     )
   }
@@ -106,6 +110,7 @@ export default function LinenProfile() {
                     onClick={() => handleQuickAction(sa.value)}
                     disabled={scanMutation.isPending}
                   >
+                    {pendingAction === sa.value && <Loader2 size={12} className="animate-spin mr-1.5" />}
                     {sa.label}
                   </Button>
                 ))}

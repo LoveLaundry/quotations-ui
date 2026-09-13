@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useLinens } from '../hooks/useLinen'
 import { LINEN_STATUS_CONFIG, LINEN_CATEGORIES, LINEN_CONDITIONS, type LinenStatus } from '../../../types/linen'
 import { Card, CardContent } from '../../../components/ui/card'
@@ -12,6 +12,7 @@ import { formatDate } from '../../../lib/utils'
 import { Search, ChevronLeft, ChevronRight, Download, X } from 'lucide-react'
 
 export default function LinenInventory() {
+  const navigate = useNavigate()
   const [search, setSearch] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
   const [category, setCategory] = useState('')
@@ -134,7 +135,11 @@ export default function LinenInventory() {
                 {data.items.map(linen => {
                   const stCfg = LINEN_STATUS_CONFIG[linen.status as LinenStatus] ?? { label: linen.status, color: '#6B7280', bg: '#F3F4F6' }
                   return (
-                    <tr key={linen.id} className="border-b border-[var(--border)] last:border-b-0 hover:bg-[var(--surface-hover)] transition-colors">
+                    <tr
+                      key={linen.id}
+                      onClick={() => navigate(`/linen/${linen.id}`)}
+                      className="border-b border-[var(--border)] last:border-b-0 hover:bg-[var(--surface-hover)] transition-colors cursor-pointer"
+                    >
                       <td className="px-4 py-3 font-mono text-[13px] font-semibold text-[var(--text-primary)]">{linen.linen_id}</td>
                       <td className="px-4 py-3 text-[var(--text-secondary)]">{linen.item_type}</td>
                       <td className="px-4 py-3 text-[var(--text-secondary)]">{linen.client_name}</td>
@@ -148,7 +153,7 @@ export default function LinenInventory() {
                       <td className="px-4 py-3 text-[var(--text-secondary)] text-center">{linen.wash_count}</td>
                       <td className="px-4 py-3 text-[var(--text-muted)] text-xs">{linen.last_scanned_date ? formatDate(linen.last_scanned_date) : '—'}</td>
                       <td className="px-4 py-3">
-                        <Link to={`/linen/${linen.id}`} className="text-[#DC2626] hover:underline text-xs font-semibold">View</Link>
+                        <Link to={`/linen/${linen.id}`} onClick={e => e.stopPropagation()} className="text-[#DC2626] hover:underline text-xs font-semibold">View</Link>
                       </td>
                     </tr>
                   )

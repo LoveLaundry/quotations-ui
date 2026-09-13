@@ -6,7 +6,7 @@ import { LINEN_CATEGORIES } from '../../../types/linen'
 import { Card, CardContent } from '../../../components/ui/card'
 import { Button } from '../../../components/ui/button'
 import { Breadcrumb } from '../../../components/ui/breadcrumb'
-import { Printer, Plus } from 'lucide-react'
+import { Printer, Plus, Loader2, CheckCircle } from 'lucide-react'
 
 interface TagItem {
   linen_id: string
@@ -114,24 +114,33 @@ export default function LinenTagGenerator() {
     const printWindow = window.open('', '_blank')
     if (!printWindow) return
 
+    const printDate = new Date().toLocaleDateString()
+
     printWindow.document.write(`<!DOCTYPE html>
 <html><head><title>Linen Tags</title>
 <style>
-  @page { size: A4; margin: 10mm; }
-  body { margin: 0; font-family: 'Courier New', monospace; }
-  .tags-grid { display: flex; flex-wrap: wrap; gap: 2mm; }
+  @page { size: A4; margin: 8mm; }
+  body { margin: 0; font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif; }
+  .print-header {
+    display: flex; justify-content: space-between; align-items: center;
+    border-bottom: 2px solid #000; padding-bottom: 2mm; margin-bottom: 4mm;
+    font-size: 10px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px;
+  }
+  .print-header .muted { font-weight: normal; color: #4B5563; letter-spacing: 0; text-transform: none; }
+  .tags-grid { display: flex; flex-wrap: wrap; gap: 2.5mm; }
   .tag-card {
-    border: 2px solid #000; padding: 3mm; width: 64mm; height: 34mm;
+    border: 2px solid #000; padding: 2.5mm; width: 63mm; height: 33mm;
     display: flex; flex-direction: column; align-items: center; gap: 1mm;
     box-sizing: border-box; page-break-inside: avoid; background: #fff;
   }
-  .tag-brand { font-size: 7px; font-weight: bold; text-transform: uppercase; letter-spacing: 2px; }
+  .tag-brand { font-size: 7px; font-weight: bold; text-transform: uppercase; letter-spacing: 2px; font-family: 'Courier New', monospace; }
   .tag-qr { display: flex; justify-content: center; }
   .tag-qr svg { display: block; }
   .tag-barcode { width: 80%; }
   .tag-barcode svg { width: 100%; height: 22px; }
-  .tag-id { font-size: 9px; font-weight: bold; letter-spacing: 1px; }
+  .tag-id { font-size: 9px; font-weight: bold; letter-spacing: 1px; font-family: 'Courier New', monospace; }
 </style></head><body>
+<div class="print-header"><span>LOVE LAUNDRY — Linen Tags</span><span class="muted">Printed ${printDate}</span></div>
 <div class="tags-grid">${tagCards}</div>
 <script>
   setTimeout(function() { window.print(); }, 300);
@@ -209,8 +218,18 @@ export default function LinenTagGenerator() {
         {/* Preview */}
         <div className="flex-1">
           {generatedTags.length > 0 ? (
-            <div>
-              <p className="text-sm font-semibold text-[var(--text-muted)] mb-3">Preview — {generatedTags.length} tags</p>
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                {allQrReady ? (
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-green-50 text-green-700 border border-green-200 text-xs font-semibold">
+                    <CheckCircle size={12} /> {generatedTags.length} tags ready to print
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-200 text-xs font-semibold">
+                    <Loader2 size={12} className="animate-spin" /> Preparing preview...
+                  </span>
+                )}
+              </div>
               <div className="flex flex-wrap gap-2">
                 {generatedTags.map(tag => <TagCard key={tag.linen_id} tag={tag} onReady={handleQrReady} />)}
               </div>

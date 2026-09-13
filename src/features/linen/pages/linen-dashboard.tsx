@@ -57,12 +57,12 @@ export default function LinenDashboard() {
             const key = status.toLowerCase()
             const value = (stats as unknown as Record<string, number>)[key] ?? 0
             return (
-              <Card key={status} className="border border-[var(--border)] shadow-sm hover:shadow-md transition-all duration-200 hover:border-[var(--border-2)]">
+              <Card key={status} className="group border border-[var(--border)] shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 hover:border-[var(--border-2)]">
                 <CardContent className="p-4 flex items-center gap-3">
                   <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: cfg.color }} />
                   <div className="min-w-0">
-                    <p className="text-[11px] font-medium text-[var(--text-muted)] truncate">{cfg.label}</p>
-                    <p className="text-lg font-bold text-[var(--text-primary)]">{value.toLocaleString()}</p>
+                    <p className="text-[11px] font-medium text-[var(--text-muted)] truncate group-hover:text-[var(--text-secondary)] transition-colors">{cfg.label}</p>
+                    <p className="text-lg font-bold transition-colors" style={{ color: cfg.color }}>{value.toLocaleString()}</p>
                   </div>
                 </CardContent>
               </Card>
