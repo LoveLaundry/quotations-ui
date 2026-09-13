@@ -19,79 +19,77 @@ export function SalarySlipPrint({ slip }: SalarySlipProps) {
           body { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
           .no-print { display: none !important; }
         }
-        .slip-container { border: 2px solid #E01E31; padding: 0; }
-        .slip-header { background: #ffffff; border-bottom: 2px solid #E01E31; }
-        .header-brand { display: flex; align-items: center; gap: 14px; padding: 16px 24px 12px; text-align: left; }
-        .brand-logo { width: 56px; height: 56px; object-fit: contain; background: #fff; border: 2px solid #E01E31; border-radius: 50%; padding: 6px; box-sizing: border-box; flex-shrink: 0; }
-        .brand-name { font-family: "Spectral", Georgia, serif; font-weight: 700; letter-spacing: -0.25px; font-size: 24px; color: #E01E31; line-height: 1.1; }
-        .brand-tagline { font-family: "Spectral", Georgia, serif; font-size: 12px; color: #6B7280; margin-top: 2px; }
-        .brand-contact { font-family: "Spectral", Georgia, serif; font-size: 11px; color: #9CA3AF; margin-top: 5px; line-height: 1.4; }
-        .header-title { border-top: 2px solid #E01E31; background: #FDF3F4; padding: 10px 24px; text-align: center; }
-        .slip-title { font-family: "Spectral", Georgia, serif; font-size: 18px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; color: #E01E31; }
-        .slip-period { font-family: "Spectral", Georgia, serif; font-size: 13px; color: #374151; margin-top: 2px; }
-        .slip-body { padding: 16px 24px; }
-        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 24px; font-size: 13px; }
-        .info-row { display: flex; justify-content: space-between; padding: 3px 0; border-bottom: 1px dotted #F3C9CE; }
-        .info-label { color: #B71C1C; font-weight: 500; }
-        .info-value { font-weight: 600; text-align: right; }
-        .section-title { background: #ffffff; color: #E01E31; border-left: 4px solid #E01E31; padding: 5px 12px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin: 12px 0 8px; border-bottom: 1px solid #F3C9CE; }
-        .calc-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-        .calc-table th { background: #ffffff; padding: 6px 10px; text-align: left; font-weight: 700; color: #B71C1C; border-bottom: 2px solid #E01E31; }
-        .calc-table th:last-child { text-align: right; }
-        .calc-table td { padding: 5px 10px; border-bottom: 1px solid #F7E5E7; }
-        .calc-table td:last-child { text-align: right; font-weight: 500; }
-        .calc-table tr.total-row td { border-top: 2px solid #E01E31; font-weight: 700; background: #ffffff; color: #B71C1C; }
-        .calc-table tr.subtotal-row td { border-top: 1px solid #F3C9CE; font-weight: 600; }
-        .net-salary-box { background: #ffffff; border: 2px solid #E01E31; color: #7F1620; padding: 12px 16px; text-align: center; margin: 12px 0; border-radius: 6px; }
-        .net-salary-box .amount { font-size: 24px; font-weight: 800; color: #E01E31; }
-        .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 0 20px; }
-        .advance-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 4px; }
-        .advance-table th { background: #ffffff; padding: 4px 8px; text-align: left; font-weight: 700; color: #B71C1C; border-bottom: 2px solid #E01E31; }
-        .advance-table td { padding: 3px 8px; border-bottom: 1px solid #F7E5E7; }
+        .slip-container { border: 1.5px solid #E01E31; padding: 0; }
+        .slip-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; padding: 12px 20px; border-bottom: 1.5px solid #E01E31; }
+        .brand-logo { width: 44px; height: 44px; object-fit: contain; background: #fff; border: 1.5px solid #E01E31; border-radius: 50%; padding: 5px; box-sizing: border-box; flex-shrink: 0; }
+        .brand-name { font-family: "Spectral", Georgia, serif; font-weight: 700; letter-spacing: -0.25px; font-size: 20px; color: #E01E31; line-height: 1.15; }
+        .brand-tagline { font-size: 11px; color: #6B7280; margin-top: 1px; }
+        .brand-contact { font-size: 10px; color: #9CA3AF; margin-top: 4px; line-height: 1.45; }
+        .doc-meta { text-align: right; }
+        .doc-title { font-size: 17px; font-weight: 800; letter-spacing: 2.5px; text-transform: uppercase; color: #E01E31; line-height: 1.1; }
+        .doc-period { font-size: 12px; color: #374151; margin-top: 3px; font-weight: 600; }
+        .slip-body { padding: 10px 20px 14px; }
+        .info-grid { display: grid; grid-template-columns: 1fr 1fr; column-gap: 28px; row-gap: 0; background: #FDF6F7; border: 1px solid #F3C9CE; border-radius: 6px; padding: 7px 12px; }
+        .info-row { display: flex; justify-content: space-between; gap: 10px; padding: 2px 0; font-size: 12px; }
+        .info-label { color: #6B7280; font-weight: 500; }
+        .info-value { font-weight: 700; text-align: right; }
+        .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 0 20px; margin-top: 8px; }
+        .section-title { color: #E01E31; border-left: 3px solid #E01E31; padding: 1px 0 1px 8px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+        .calc-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+        .calc-table td { padding: 2.5px 6px; border-bottom: 1px solid #F7E5E7; }
+        .calc-table tr:last-child td { border-bottom: none; }
+        .calc-table td:last-child { text-align: right; font-weight: 600; }
+        .calc-table tr.total-row td { border-top: 1.5px solid #E01E31; border-bottom: none; font-weight: 800; color: #B71C1C; }
+        .calc-table td .sub { display: block; font-size: 10px; color: #9CA3AF; font-weight: 400; }
+        .advance-table { width: 100%; border-collapse: collapse; font-size: 11px; }
+        .advance-table th { text-align: left; padding: 3px 6px; color: #B71C1C; font-weight: 700; border-bottom: 1.5px solid #E01E31; }
+        .advance-table th:last-child { text-align: right; }
+        .advance-table td { padding: 2.5px 6px; border-bottom: 1px solid #F7E5E7; }
         .advance-table td:last-child { text-align: right; }
-        .slip-footer { border-top: 2px solid #E01E31; padding: 12px 24px; display: flex; justify-content: space-between; align-items: flex-end; font-size: 12px; }
-        .sig-line { border-top: 1px solid #1F2937; width: 160px; text-align: center; padding-top: 4px; margin-top: 40px; }
-        .slip-number { font-size: 11px; color: #9CA3AF; }
-        .status-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 700; text-transform: uppercase; }
+        .net-salary { display: flex; align-items: center; justify-content: space-between; border: 1.5px solid #E01E31; border-radius: 6px; padding: 9px 16px; margin-top: 10px; background: #fff; }
+        .net-salary .label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #B71C1C; }
+        .net-salary .amount { font-size: 24px; font-weight: 800; color: #E01E31; }
+        .slip-footer { display: flex; justify-content: space-between; align-items: flex-end; padding: 6px 20px 0; margin-top: 2px; font-size: 11px; }
+        .sig-line { border-top: 1px solid #1F2937; width: 30%; text-align: center; padding-top: 4px; }
+        .slip-number { font-size: 10px; color: #9CA3AF; }
+        .status-badge { display: inline-block; padding: 1px 8px; border-radius: 4px; font-size: 10px; font-weight: 700; text-transform: uppercase; }
         .status-DRAFT { background: #fef3c7; color: #92400e; }
         .status-FINALIZED { background: #d1fae5; color: #065f46; }
         .status-CANCELLED { background: #fee2e2; color: #991b1b; }
       `}</style>
 
       <div className="slip-container">
+        {/* Compact one-row letterhead */}
         <div className="slip-header">
-          <div className="header-brand">
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <img className="brand-logo" src={iconPng} alt="Love Laundry" />
             <div>
               <div className="brand-name">{COMPANY.name}</div>
               <div className="brand-tagline">{COMPANY.tagline}</div>
               <div className="brand-contact">
-                {COMPANY.address.line1}, {COMPANY.address.line2} | Reg. {COMPANY.registrationNo}<br />
+                {COMPANY.address.line1}, {COMPANY.address.line2}<br />
                 Tel: {COMPANY.phone.primary} | {COMPANY.phone.secondary}
               </div>
             </div>
           </div>
-          <div className="header-title">
-            <div className="slip-title">Salary Slip</div>
-            <div className="slip-period">{periodMonth}</div>
+          <div className="doc-meta">
+            <div className="doc-title">Salary Slip</div>
+            <div className="doc-period">{periodMonth}</div>
+            <div className="slip-number" style={{ marginTop: 3 }}>{slip.slip_number}</div>
           </div>
         </div>
 
         <div className="slip-body">
           <div className="info-grid">
-            <div>
-              <div className="info-row"><span className="info-label">Employee Name</span><span className="info-value">{slip.employee_name}</span></div>
-              <div className="info-row"><span className="info-label">Salary Type</span><span className="info-value">{slip.salary_type}</span></div>
-              <div className="info-row"><span className="info-label">Period</span><span className="info-value">{slip.period_start} to {slip.period_end}</span></div>
-            </div>
-            <div>
-              <div className="info-row"><span className="info-label">Slip Number</span><span className="info-value">{slip.slip_number}</span></div>
-              <div className="info-row"><span className="info-label">Status</span><span className="info-value"><span className={`status-badge status-${slip.status}`}>{slip.status}</span></span></div>
-              <div className="info-row"><span className="info-label">Paid Date</span><span className="info-value">{slip.paid_date || '—'}</span></div>
-            </div>
+            <div className="info-row"><span className="info-label">Employee</span><span className="info-value">{slip.employee_name}</span></div>
+            <div className="info-row"><span className="info-label">Status</span><span className="info-value"><span className={`status-badge status-${slip.status}`}>{slip.status}</span></span></div>
+            <div className="info-row"><span className="info-label">Salary Type</span><span className="info-value">{slip.salary_type}</span></div>
+            <div className="info-row"><span className="info-label">Period</span><span className="info-value">{slip.period_start} → {slip.period_end}</span></div>
+            <div className="info-row"><span className="info-label">Department</span><span className="info-value">{slip.department || '—'}</span></div>
+            <div className="info-row"><span className="info-label">Paid Date</span><span className="info-value">{slip.paid_date || '—'}</span></div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 20px', marginTop: 12 }}>
+          <div className="two-col">
             <div>
               <div className="section-title">Attendance</div>
               <table className="calc-table">
@@ -100,14 +98,16 @@ export function SalarySlipPrint({ slip }: SalarySlipProps) {
                   <tr><td>Working Days</td><td>{slip.working_days}</td></tr>
                   <tr><td>Worked Days</td><td style={{ color: '#16a34a' }}>{slip.worked_days}</td></tr>
                   {slip.leave_days > 0 && <tr><td>Leave Days</td><td style={{ color: '#2563eb' }}>{slip.leave_days}</td></tr>}
+                  {slip.absent_days > 0 && <tr><td>Absent Days</td><td style={{ color: '#dc2626' }}>{slip.absent_days}</td></tr>}
                   {slip.holiday_count > 0 && <tr><td>Holidays</td><td style={{ color: '#9333ea' }}>{slip.holiday_count}</td></tr>}
                   {slip.weekend_count > 0 && <tr><td>Weekends</td><td style={{ color: '#9333ea' }}>{slip.weekend_count}</td></tr>}
-                  <tr><td>Absent Days</td><td style={{ color: '#dc2626' }}>{slip.absent_days}</td></tr>
                 </tbody>
               </table>
             </div>
             <div>
-              <div className="section-title">EPF / ETF {slip.epf_base ? ` · ${slip.epf_base === 'FULL' ? 'full base' : slip.epf_base === 'ATTENDANCE' ? 'attendance base' : 'adjusted base'}` : ''}</div>
+              <div className="section-title">
+                {slip.epf_base ? `EPF / ETF · ${slip.epf_base === 'FULL' ? 'Full Base' : slip.epf_base === 'ATTENDANCE' ? 'Attendance Base' : 'Adjusted Base'}` : 'EPF / ETF'}
+              </div>
               <table className="calc-table">
                 <tbody>
                   <tr><td>EPF (Employee)</td><td>{formatRs(slip.epf_employee)}</td></tr>
@@ -118,15 +118,15 @@ export function SalarySlipPrint({ slip }: SalarySlipProps) {
             </div>
           </div>
 
-          <div className="two-col" style={{ marginTop: 8 }}>
+          <div className="two-col" style={{ marginTop: 6 }}>
             <div>
               <div className="section-title">Earnings</div>
               <table className="calc-table">
                 <tbody>
                   <tr><td>Basic Salary</td><td>{formatRs(slip.basic_salary)}</td></tr>
-                  <tr><td>Adjusted Base ({slip.calendar_days} days)</td><td>{formatRs(slip.adjusted_base_salary)}</td></tr>
-                  <tr><td>Base for Period ({slip.worked_days} days worked)</td><td style={{ fontWeight: 700 }}>{formatRs(slip.base_salary_for_period ?? (slip.adjusted_base_salary * slip.worked_days / Math.max(slip.calendar_days, 1)))}</td></tr>
-                  {slip.overtime_pay > 0 && <tr><td>Overtime ({slip.overtime_hours} hrs × {formatRs(slip.overtime_rate)})</td><td>{formatRs(slip.overtime_pay)}</td></tr>}
+                  <tr><td>Adjusted Base<div className="sub">{slip.calendar_days} days</div></td><td>{formatRs(slip.adjusted_base_salary)}</td></tr>
+                  <tr><td>Base for Period<div className="sub">{slip.worked_days} days worked</div></td><td style={{ fontWeight: 700 }}>{formatRs(slip.base_salary_for_period ?? (slip.adjusted_base_salary * slip.worked_days / Math.max(slip.calendar_days, 1)))}</td></tr>
+                  {slip.overtime_pay > 0 && <tr><td>Overtime<div className="sub">{slip.overtime_hours} hrs × {Number(slip.overtime_rate || 0).toLocaleString('en-LK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div></td><td>{formatRs(slip.overtime_pay)}</td></tr>}
                   {slip.extra_work_total > 0 && <tr><td>Extra Work</td><td>{formatRs(slip.extra_work_total)}</td></tr>}
                   {slip.allowances > 0 && <tr><td>Allowances</td><td>{formatRs(slip.allowances)}</td></tr>}
                   <tr className="total-row"><td>Total Earnings</td><td>{formatRs(slip.total_earnings)}</td></tr>
@@ -152,7 +152,7 @@ export function SalarySlipPrint({ slip }: SalarySlipProps) {
               <div className="section-title">Advance Details</div>
               <table className="advance-table">
                 <thead>
-                  <tr><th>Date</th><th>Original Amount</th><th>Deducted</th><th style={{ textAlign: 'right' }}>Reason</th></tr>
+                  <tr><th>Date</th><th>Original</th><th>Deducted</th><th style={{ textAlign: 'right' }}>Reason</th></tr>
                 </thead>
                 <tbody>
                   {slip.advance_details.map((adv: any, i: number) => (
@@ -168,29 +168,22 @@ export function SalarySlipPrint({ slip }: SalarySlipProps) {
             </div>
           )}
 
-          <div className="net-salary-box">
-            <div style={{ fontSize: 12, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 4 }}>Net Salary</div>
-            <div className="amount">{formatRs(slip.net_salary)}</div>
-            {slip.paid && <div style={{ fontSize: 11, marginTop: 4, opacity: 0.8 }}>Paid on {slip.paid_date}</div>}
+          <div className="net-salary">
+            <span className="label">{slip.paid ? 'Net Salary · Paid' : 'Net Salary'}</span>
+            <span className="amount">{formatRs(slip.net_salary)}</span>
           </div>
 
           {slip.notes && (
-            <div style={{ fontSize: 12, color: '#4B5563', marginTop: 8, padding: '6px 10px', background: '#ffffff', border: '1px solid #F3C9CE', borderLeft: '3px solid #E01E31', borderRadius: 4 }}>
+            <div style={{ fontSize: 11, color: '#4B5563', marginTop: 8, padding: '6px 10px', background: '#ffffff', border: '1px solid #F3C9CE', borderLeft: '3px solid #E01E31', borderRadius: 4 }}>
               <strong>Notes:</strong> {slip.notes}
             </div>
           )}
         </div>
 
         <div className="slip-footer">
-          <div className="sig-line">
-            <div>Employee Signature</div>
-          </div>
-          <div className="sig-line">
-            <div>Authorized Signature</div>
-          </div>
-          <div className="sig-line">
-            <div>Date</div>
-          </div>
+          <div className="sig-line">Employee Signature</div>
+          <div className="sig-line">Authorized Signature</div>
+          <div className="sig-line">Date</div>
         </div>
       </div>
     </div>
