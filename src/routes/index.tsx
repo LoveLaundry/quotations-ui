@@ -58,6 +58,11 @@ import LinenScanner from '../features/linen/pages/linen-scanner'
 import LinenBulkScan from '../features/linen/pages/linen-bulk-scan'
 import LinenTagGenerator from '../features/linen/pages/linen-tag-generator'
 
+// Gate Pass (Camelot) receipt templates
+import GatePassHub from '../features/gatepass/pages/gate-pass-hub'
+import CamelotLinenReceipt from '../features/gatepass/pages/linen-receipt'
+import CamelotUniformReceipt from '../features/gatepass/pages/uniform-receipt'
+
 // Management module pages
 import ManagementDashboard from '../features/management/pages/management-dashboard'
 import HistoricalEntry from '../features/management/pages/historical-entry'
@@ -149,6 +154,9 @@ export const router = createBrowserRouter([
           // Linen Tracking
           { path: 'linen', element: <LinenDashboard /> },
           { path: 'linen/inventory', element: <LinenInventory /> },
+          { path: 'linen/gate-pass', element: <GatePassHub /> },
+          { path: 'linen/gate-pass/linen', element: <CamelotLinenReceipt /> },
+          { path: 'linen/gate-pass/uniform', element: <CamelotUniformReceipt /> },
           { path: 'linen/:id', element: <LinenProfile /> },
           { path: 'linen/scanner', element: <LinenScanner /> },
           { path: 'linen/bulk-scan', element: <LinenBulkScan /> },

@@ -42,6 +42,9 @@ const pageTitles: Record<string, string> = {
   '/linen/scanner': 'Scan Linen',
   '/linen/bulk-scan': 'Bulk Scan',
   '/linen/tags': 'Tag Generator',
+  '/linen/gate-pass': 'Gate Pass (Camelot)',
+  '/linen/gate-pass/linen': 'Camelot Linen Receipt',
+  '/linen/gate-pass/uniform': 'Camelot Uniform Receipt',
   '/management': 'Management Dashboard',
   '/management/transactions': 'All Transactions',
   '/management/historical-entry': 'Historical Data Entry',
@@ -69,6 +72,9 @@ function getPageTitle(pathname: string): string {
   if (pathname.match(/^\/gate-passes\/[^/]+$/)) return 'Gate Pass Details'
   if (pathname.match(/^\/deliveries\/[^/]+$/)) return 'Delivery Details'
   if (pathname.match(/^\/returns\/[^/]+$/)) return 'Return Details'
+  if (pathname === '/linen/gate-pass') return 'Gate Pass (Camelot)'
+  if (pathname === '/linen/gate-pass/linen') return 'Camelot Linen Receipt'
+  if (pathname === '/linen/gate-pass/uniform') return 'Camelot Uniform Receipt'
   if (pathname.match(/^\/linen\/[^/]+$/)) return 'Linen Profile'
   if (pathname.match(/^\/shop-bills\/[^/]+$/)) return 'Shop Bill Details'
   return pageTitles[pathname] ?? 'Love Laundry'

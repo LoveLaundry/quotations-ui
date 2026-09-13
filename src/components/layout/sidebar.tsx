@@ -78,6 +78,7 @@ const navGroups: { label: string; items: NavItem[] }[] = [
       { to: '/linen/scanner', label: 'Scan Linen', icon: Scan, end: false },
       { to: '/linen/bulk-scan', label: 'Bulk Scan', icon: Scan, end: false },
       { to: '/linen/tags', label: 'Tag Generator', icon: FileText, end: false },
+      { to: '/linen/gate-pass', label: 'Gate Pass (Camelot)', icon: FileText, end: false },
     ],
   },
   {
