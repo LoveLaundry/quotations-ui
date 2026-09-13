@@ -20,6 +20,7 @@ export default function SalaryHistoryPage() {
   const [statusFilter, setStatusFilter] = useState('')
   const [yearFilter, setYearFilter] = useState(new Date().getFullYear())
   const [viewSlip, setViewSlip] = useState<any>(null)
+  const [slipLang, setSlipLang] = useState<'EN' | 'SI'>('EN')
   const [payYear, setPayYear] = useState(new Date().getFullYear())
   const [payMonth, setPayMonth] = useState(new Date().getMonth() + 1)
   const [preview, setPreview] = useState<any>(null)
@@ -258,6 +259,18 @@ export default function SalaryHistoryPage() {
             <div className="sticky top-0 bg-white dark:bg-gray-800 border-b px-6 py-3 flex items-center justify-between z-10">
               <h3 className="font-semibold">{viewSlip.slip_number} — {viewSlip.employee_name}</h3>
               <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1 border rounded-lg p-1">
+                  <button
+                    onClick={() => setSlipLang('EN')}
+                    className={`px-2.5 py-1 rounded-md text-xs font-medium ${slipLang === 'EN' ? 'bg-red-600 text-white' : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700'}`}>
+                    English
+                  </button>
+                  <button
+                    onClick={() => setSlipLang('SI')}
+                    className={`px-2.5 py-1 rounded-md text-xs font-medium ${slipLang === 'SI' ? 'bg-red-600 text-white' : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700'}`}>
+                    සිංහල
+                  </button>
+                </div>
                 <button onClick={() => handlePrint()} className="px-3 py-1.5 bg-blue-600 text-white rounded-lg text-sm flex items-center gap-1">
                   <Printer size={14} /> Print
                 </button>
@@ -267,7 +280,7 @@ export default function SalaryHistoryPage() {
               </div>
             </div>
             <div className="p-6" ref={slipRef}>
-              <SalarySlipPrint slip={viewSlip} />
+              <SalarySlipPrint slip={viewSlip} lang={slipLang} />
             </div>
           </div>
         </div>

@@ -33,6 +33,7 @@ export default function SalarySlipPage() {
   const [loanDeduction, setLoanDeduction] = useState(0)
   const [otherDeductions, setOtherDeductions] = useState(0)
   const [notes, setNotes] = useState('')
+  const [slipLang, setSlipLang] = useState<'EN' | 'SI'>('EN')
 
   const { data: employees = [] } = useQuery({
     queryKey: ['mgmt-employees'],
@@ -355,7 +356,19 @@ export default function SalarySlipPage() {
             <h2 className="text-lg font-semibold flex items-center gap-2">
               <CheckCircle size={20} className="text-green-600" /> Slip Generated: {generatedSlip.slip_number}
             </h2>
-            <div className="flex gap-2">
+            <div className="flex gap-2 items-center">
+              <div className="flex items-center gap-1 border rounded-lg p-1">
+                <button
+                  onClick={() => setSlipLang('EN')}
+                  className={`px-3 py-1.5 rounded-md text-sm font-medium ${slipLang === 'EN' ? 'bg-red-600 text-white' : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700'}`}>
+                  English
+                </button>
+                <button
+                  onClick={() => setSlipLang('SI')}
+                  className={`px-3 py-1.5 rounded-md text-sm font-medium ${slipLang === 'SI' ? 'bg-red-600 text-white' : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700'}`}>
+                  සිංහල
+                </button>
+              </div>
               <button
                 onClick={() => handlePrint()}
                 className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm flex items-center gap-2"
@@ -371,7 +384,7 @@ export default function SalarySlipPage() {
             </div>
           </div>
           <div ref={slipRef}>
-            <SalarySlipPrint slip={generatedSlip} />
+            <SalarySlipPrint slip={generatedSlip} lang={slipLang} />
           </div>
         </div>
       )}

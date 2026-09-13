@@ -3,17 +3,146 @@ import iconPng from '../../../assets/icon.png'
 
 interface SalarySlipProps {
   slip: any
+  lang?: 'EN' | 'SI'
 }
 
-export function SalarySlipPrint({ slip }: SalarySlipProps) {
+const T = {
+  EN: {
+    title: 'Salary Slip',
+    employee: 'Employee',
+    status: 'Status',
+    salaryType: 'Salary Type',
+    period: 'Period',
+    department: 'Department',
+    paidDate: 'Paid Date',
+    attendance: 'Attendance',
+    calendarDays: 'Calendar Days',
+    workingDays: 'Working Days',
+    workedDays: 'Worked Days',
+    leaveDays: 'Leave Days',
+    absentDays: 'Absent Days',
+    holidays: 'Holidays',
+    weekends: 'Weekends',
+    epfEtf: 'EPF / ETF',
+    epfEtfBase: 'EPF / ETF · {base}',
+    epfEmployee: 'EPF (Employee)',
+    epfEmployer: 'EPF (Employer)',
+    etfEmployer: 'ETF (Employer)',
+    fullBase: 'Full Base',
+    adjustedBase: 'Adjusted Base',
+    attendanceBase: 'Attendance Base',
+    earnings: 'Earnings',
+    basicSalary: 'Basic Salary',
+    adjustedBaseLabel: 'Adjusted Base',
+    baseForPeriod: 'Base for Period',
+    overtime: 'Overtime',
+    extraWork: 'Extra Work',
+    allowances: 'Allowances',
+    totalEarnings: 'Total Earnings',
+    deductions: 'Deductions',
+    epfDeduction: 'EPF Deduction',
+    advanceDeductions: 'Advance Deductions',
+    loanDeduction: 'Loan Deduction',
+    otherDeductions: 'Other Deductions',
+    totalDeductions: 'Total Deductions',
+    advanceDetails: 'Advance Details',
+    date: 'Date',
+    original: 'Original',
+    deducted: 'Deducted',
+    reason: 'Reason',
+    netSalary: 'Net Salary',
+    netSalaryPaid: 'Net Salary · Paid',
+    notes: 'Notes',
+    employeeSig: 'Employee Signature',
+    authorizedSig: 'Authorized Signature',
+    days: (n: number) => `${n} days`,
+    daysWorked: (n: number) => `${n} days worked`,
+    hrs: 'hrs',
+    statusLabel: (s: string) => ({ DRAFT: 'DRAFT', FINALIZED: 'FINALIZED', CANCELLED: 'CANCELLED' }[s] || s),
+  },
+  SI: {
+    title: 'වැටුප් ස්ලිපය',
+    employee: 'සේවකයා',
+    status: 'තත්ත්වය',
+    salaryType: 'වැටුප් වර්ගය',
+    period: 'කාල සීමාව',
+    department: 'අංශය',
+    paidDate: 'ගෙවූ දිනය',
+    attendance: 'පැමිණීම',
+    calendarDays: 'කැලැන්ඩර් දින',
+    workingDays: 'වැඩකිරීමේ දින',
+    workedDays: 'වැඩ කළ දින',
+    leaveDays: 'නිවාඩු දින',
+    absentDays: 'නොපැමිණි දින',
+    holidays: 'පොදු නිවාඩු',
+    weekends: 'සති අන්ත දින',
+    epfEtf: 'EPF / ETF',
+    epfEtfBase: 'EPF / ETF · {base}',
+    epfEmployee: 'සේවක EPF',
+    epfEmployer: 'සේවා යෝජක EPF',
+    etfEmployer: 'සේවා යෝජක ETF',
+    fullBase: 'සම්පූර්ණ පදනම',
+    adjustedBase: 'සකස් කළ පදනම',
+    attendanceBase: 'පැමිණීම් පදනම',
+    earnings: 'ඉපැයීම්',
+    basicSalary: 'මූලික වැටුප',
+    adjustedBaseLabel: 'සකස් කළ මූලික',
+    baseForPeriod: 'කාලය සඳහා මූලික',
+    overtime: 'අධිකාල වැඩ',
+    extraWork: 'අතිරේක වැඩ',
+    allowances: 'දීමනා',
+    totalEarnings: 'මුළු ඉපැයීම්',
+    deductions: 'අඩුකිරීම්',
+    epfDeduction: 'EPF අඩුකිරීම',
+    advanceDeductions: 'අත්තිකාරම් අඩුකිරීම්',
+    loanDeduction: 'ණය අඩුකිරීම',
+    otherDeductions: 'වෙනත් අඩුකිරීම්',
+    totalDeductions: 'මුළු අඩුකිරීම්',
+    advanceDetails: 'අත්තිකාරම් විස්තර',
+    date: 'දිනය',
+    original: 'මුල් මුදල',
+    deducted: 'අඩු කළ',
+    reason: 'හේතුව',
+    netSalary: 'ශුද්ධ වැටුප',
+    netSalaryPaid: 'ශුද්ධ වැටුප · ගෙවා ඇත',
+    notes: 'සටහන්',
+    employeeSig: 'සේවක අත්සන',
+    authorizedSig: 'බලයලත් අත්සන',
+    days: (n: number) => `දින ${n}`,
+    daysWorked: (n: number) => `වැඩකළ දින ${n}`,
+    hrs: 'පැය',
+    statusLabel: (s: string) => ({ DRAFT: 'කෙටුම්පත', FINALIZED: 'අවසන්', CANCELLED: 'අවලංගු' }[s] || s),
+  },
+}
+
+const SI_MONTHS = ['ජනවාරි', 'පෙබරවාරි', 'මාර්තු', 'අප්රේල්', 'මැයි', 'ජූනි', 'ජුලි', 'අගෝස්තු', 'සැප්තැම්බර්', 'ඔක්තෝබර්', 'නොවැම්බර්', 'දෙසැම්බර්']
+
+export function SalarySlipPrint({ slip, lang = 'EN' }: SalarySlipProps) {
   if (!slip) return null
 
-  const formatRs = (val: number) => `Rs. ${Number(val || 0).toLocaleString('en-LK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-  const periodMonth = slip.period_start ? new Date(slip.period_start + 'T00:00:00').toLocaleString('en-US', { month: 'long', year: 'numeric' }) : ''
+  const isSi = lang === 'SI'
+  const t = T[isSi ? 'SI' : 'EN']
+  const fontFamily = isSi
+    ? '"Noto Sans Sinhala", "Iskoola Pota", "FMAbhaya", "Bhashitha", "Nirmala UI", sans-serif'
+    : '"Spectral", Georgia, serif'
+  const prefix = isSi ? 'රු. ' : 'Rs. '
+  const formatRs = (val: number) => `${prefix}${Number(val || 0).toLocaleString('en-LK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+
+  const start = slip.period_start ? new Date(slip.period_start + 'T00:00:00') : null
+  const periodMonth = start
+    ? isSi
+      ? `${SI_MONTHS[start.getMonth()]} ${start.getFullYear()}`
+      : start.toLocaleString('en-US', { month: 'long', year: 'numeric' })
+    : ''
+
+  const baseLabel = isSi
+    ? slip.epf_base === 'FULL' ? t.fullBase : slip.epf_base === 'ATTENDANCE' ? t.attendanceBase : t.adjustedBase
+    : slip.epf_base === 'FULL' ? t.fullBase : slip.epf_base === 'ATTENDANCE' ? t.attendanceBase : t.adjustedBase
 
   return (
-    <div className="w-full max-w-[800px] mx-auto bg-white text-black" style={{ fontFamily: '"Spectral", Georgia, serif' }}>
+    <div className="w-full max-w-[800px] mx-auto bg-white text-black" style={{ fontFamily }}>
       <style>{`
+        ${isSi ? `@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Sinhala:wght@400;600;700;800&display=swap');` : ''}
         @media print {
           @page { size: A4 portrait; margin: 12mm 15mm; }
           body { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
@@ -22,14 +151,14 @@ export function SalarySlipPrint({ slip }: SalarySlipProps) {
         .slip-container { border: 1.5px solid #E01E31; padding: 0; }
         .slip-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; padding: 12px 20px; border-bottom: 1.5px solid #E01E31; }
         .brand-logo { width: 44px; height: 44px; object-fit: contain; background: #fff; border: 1.5px solid #E01E31; border-radius: 50%; padding: 5px; box-sizing: border-box; flex-shrink: 0; }
-        .brand-name { font-family: "Spectral", Georgia, serif; font-weight: 700; letter-spacing: -0.25px; font-size: 20px; color: #E01E31; line-height: 1.15; }
+        .brand-name { font-weight: 700; letter-spacing: -0.25px; font-size: 20px; color: #E01E31; line-height: 1.15; }
         .brand-tagline { font-size: 11px; color: #6B7280; margin-top: 1px; }
         .brand-contact { font-size: 10px; color: #9CA3AF; margin-top: 4px; line-height: 1.45; }
         .doc-meta { text-align: right; }
         .doc-title { font-size: 17px; font-weight: 800; letter-spacing: 2.5px; text-transform: uppercase; color: #E01E31; line-height: 1.1; }
         .doc-period { font-size: 12px; color: #374151; margin-top: 3px; font-weight: 600; }
         .slip-body { padding: 10px 20px 14px; }
-        .info-grid { display: grid; grid-template-columns: 1fr 1fr; column-gap: 28px; row-gap: 0; background: #FDF6F7; border: 1px solid #F3C9CE; border-radius: 6px; padding: 7px 12px; }
+        .info-grid { display: grid; grid-template-columns: 1fr 1fr; column-gap: 28px; background: #FDF6F7; border: 1px solid #F3C9CE; border-radius: 6px; padding: 7px 12px; }
         .info-row { display: flex; justify-content: space-between; gap: 10px; padding: 2px 0; font-size: 12px; }
         .info-label { color: #6B7280; font-weight: 500; }
         .info-value { font-weight: 700; text-align: right; }
@@ -59,7 +188,6 @@ export function SalarySlipPrint({ slip }: SalarySlipProps) {
       `}</style>
 
       <div className="slip-container">
-        {/* Compact one-row letterhead */}
         <div className="slip-header">
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <img className="brand-logo" src={iconPng} alt="Love Laundry" />
@@ -73,7 +201,7 @@ export function SalarySlipPrint({ slip }: SalarySlipProps) {
             </div>
           </div>
           <div className="doc-meta">
-            <div className="doc-title">Salary Slip</div>
+            <div className="doc-title">{t.title}</div>
             <div className="doc-period">{periodMonth}</div>
             <div className="slip-number" style={{ marginTop: 3 }}>{slip.slip_number}</div>
           </div>
@@ -81,38 +209,36 @@ export function SalarySlipPrint({ slip }: SalarySlipProps) {
 
         <div className="slip-body">
           <div className="info-grid">
-            <div className="info-row"><span className="info-label">Employee</span><span className="info-value">{slip.employee_name}</span></div>
-            <div className="info-row"><span className="info-label">Status</span><span className="info-value"><span className={`status-badge status-${slip.status}`}>{slip.status}</span></span></div>
-            <div className="info-row"><span className="info-label">Salary Type</span><span className="info-value">{slip.salary_type}</span></div>
-            <div className="info-row"><span className="info-label">Period</span><span className="info-value">{slip.period_start} → {slip.period_end}</span></div>
-            <div className="info-row"><span className="info-label">Department</span><span className="info-value">{slip.department || '—'}</span></div>
-            <div className="info-row"><span className="info-label">Paid Date</span><span className="info-value">{slip.paid_date || '—'}</span></div>
+            <div className="info-row"><span className="info-label">{t.employee}</span><span className="info-value">{slip.employee_name}</span></div>
+            <div className="info-row"><span className="info-label">{t.status}</span><span className="info-value"><span className={`status-badge status-${slip.status}`}>{t.statusLabel(slip.status)}</span></span></div>
+            <div className="info-row"><span className="info-label">{t.salaryType}</span><span className="info-value">{slip.salary_type}</span></div>
+            <div className="info-row"><span className="info-label">{t.period}</span><span className="info-value">{slip.period_start} → {slip.period_end}</span></div>
+            <div className="info-row"><span className="info-label">{t.department}</span><span className="info-value">{slip.department || '—'}</span></div>
+            <div className="info-row"><span className="info-label">{t.paidDate}</span><span className="info-value">{slip.paid_date || '—'}</span></div>
           </div>
 
           <div className="two-col">
             <div>
-              <div className="section-title">Attendance</div>
+              <div className="section-title">{t.attendance}</div>
               <table className="calc-table">
                 <tbody>
-                  <tr><td>Calendar Days</td><td>{slip.calendar_days}</td></tr>
-                  <tr><td>Working Days</td><td>{slip.working_days}</td></tr>
-                  <tr><td>Worked Days</td><td style={{ color: '#16a34a' }}>{slip.worked_days}</td></tr>
-                  {slip.leave_days > 0 && <tr><td>Leave Days</td><td style={{ color: '#2563eb' }}>{slip.leave_days}</td></tr>}
-                  {slip.absent_days > 0 && <tr><td>Absent Days</td><td style={{ color: '#dc2626' }}>{slip.absent_days}</td></tr>}
-                  {slip.holiday_count > 0 && <tr><td>Holidays</td><td style={{ color: '#9333ea' }}>{slip.holiday_count}</td></tr>}
-                  {slip.weekend_count > 0 && <tr><td>Weekends</td><td style={{ color: '#9333ea' }}>{slip.weekend_count}</td></tr>}
+                  <tr><td>{t.calendarDays}</td><td>{slip.calendar_days}</td></tr>
+                  <tr><td>{t.workingDays}</td><td>{slip.working_days}</td></tr>
+                  <tr><td>{t.workedDays}</td><td style={{ color: '#16a34a' }}>{slip.worked_days}</td></tr>
+                  {slip.leave_days > 0 && <tr><td>{t.leaveDays}</td><td style={{ color: '#2563eb' }}>{slip.leave_days}</td></tr>}
+                  {slip.absent_days > 0 && <tr><td>{t.absentDays}</td><td style={{ color: '#dc2626' }}>{slip.absent_days}</td></tr>}
+                  {slip.holiday_count > 0 && <tr><td>{t.holidays}</td><td style={{ color: '#9333ea' }}>{slip.holiday_count}</td></tr>}
+                  {slip.weekend_count > 0 && <tr><td>{t.weekends}</td><td style={{ color: '#9333ea' }}>{slip.weekend_count}</td></tr>}
                 </tbody>
               </table>
             </div>
             <div>
-              <div className="section-title">
-                {slip.epf_base ? `EPF / ETF · ${slip.epf_base === 'FULL' ? 'Full Base' : slip.epf_base === 'ATTENDANCE' ? 'Attendance Base' : 'Adjusted Base'}` : 'EPF / ETF'}
-              </div>
+              <div className="section-title">{slip.epf_base ? `${t.epfEtf} · ${baseLabel}` : t.epfEtf}</div>
               <table className="calc-table">
                 <tbody>
-                  <tr><td>EPF (Employee)</td><td>{formatRs(slip.epf_employee)}</td></tr>
-                  <tr><td>EPF (Employer)</td><td>{formatRs(slip.epf_employer)}</td></tr>
-                  <tr><td>ETF (Employer)</td><td>{formatRs(slip.etf_employer)}</td></tr>
+                  <tr><td>{t.epfEmployee}</td><td>{formatRs(slip.epf_employee)}</td></tr>
+                  <tr><td>{t.epfEmployer}</td><td>{formatRs(slip.epf_employer)}</td></tr>
+                  <tr><td>{t.etfEmployer}</td><td>{formatRs(slip.etf_employer)}</td></tr>
                 </tbody>
               </table>
             </div>
@@ -120,28 +246,28 @@ export function SalarySlipPrint({ slip }: SalarySlipProps) {
 
           <div className="two-col" style={{ marginTop: 6 }}>
             <div>
-              <div className="section-title">Earnings</div>
+              <div className="section-title">{t.earnings}</div>
               <table className="calc-table">
                 <tbody>
-                  <tr><td>Basic Salary</td><td>{formatRs(slip.basic_salary)}</td></tr>
-                  <tr><td>Adjusted Base<div className="sub">{slip.calendar_days} days</div></td><td>{formatRs(slip.adjusted_base_salary)}</td></tr>
-                  <tr><td>Base for Period<div className="sub">{slip.worked_days} days worked</div></td><td style={{ fontWeight: 700 }}>{formatRs(slip.base_salary_for_period ?? (slip.adjusted_base_salary * slip.worked_days / Math.max(slip.calendar_days, 1)))}</td></tr>
-                  {slip.overtime_pay > 0 && <tr><td>Overtime<div className="sub">{slip.overtime_hours} hrs × {Number(slip.overtime_rate || 0).toLocaleString('en-LK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div></td><td>{formatRs(slip.overtime_pay)}</td></tr>}
-                  {slip.extra_work_total > 0 && <tr><td>Extra Work</td><td>{formatRs(slip.extra_work_total)}</td></tr>}
-                  {slip.allowances > 0 && <tr><td>Allowances</td><td>{formatRs(slip.allowances)}</td></tr>}
-                  <tr className="total-row"><td>Total Earnings</td><td>{formatRs(slip.total_earnings)}</td></tr>
+                  <tr><td>{t.basicSalary}</td><td>{formatRs(slip.basic_salary)}</td></tr>
+                  <tr><td>{t.adjustedBaseLabel}<div className="sub">{t.days(slip.calendar_days)}</div></td><td>{formatRs(slip.adjusted_base_salary)}</td></tr>
+                  <tr><td>{t.baseForPeriod}<div className="sub">{t.daysWorked(slip.worked_days)}</div></td><td style={{ fontWeight: 700 }}>{formatRs(slip.base_salary_for_period ?? (slip.adjusted_base_salary * slip.worked_days / Math.max(slip.calendar_days, 1)))}</td></tr>
+                  {slip.overtime_pay > 0 && <tr><td>{t.overtime}<div className="sub">{slip.overtime_hours} {t.hrs} × {Number(slip.overtime_rate || 0).toLocaleString('en-LK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div></td><td>{formatRs(slip.overtime_pay)}</td></tr>}
+                  {slip.extra_work_total > 0 && <tr><td>{t.extraWork}</td><td>{formatRs(slip.extra_work_total)}</td></tr>}
+                  {slip.allowances > 0 && <tr><td>{t.allowances}</td><td>{formatRs(slip.allowances)}</td></tr>}
+                  <tr className="total-row"><td>{t.totalEarnings}</td><td>{formatRs(slip.total_earnings)}</td></tr>
                 </tbody>
               </table>
             </div>
             <div>
-              <div className="section-title">Deductions</div>
+              <div className="section-title">{t.deductions}</div>
               <table className="calc-table">
                 <tbody>
-                  {slip.epf_employee > 0 && <tr><td>EPF Deduction</td><td>{formatRs(slip.epf_employee)}</td></tr>}
-                  {slip.advance_deductions > 0 && <tr><td>Advance Deductions</td><td>{formatRs(slip.advance_deductions)}</td></tr>}
-                  {slip.loan_deduction > 0 && <tr><td>Loan Deduction</td><td>{formatRs(slip.loan_deduction)}</td></tr>}
-                  {slip.other_deductions > 0 && <tr><td>Other Deductions</td><td>{formatRs(slip.other_deductions)}</td></tr>}
-                  <tr className="total-row"><td>Total Deductions</td><td>{formatRs(slip.total_deductions)}</td></tr>
+                  {slip.epf_employee > 0 && <tr><td>{t.epfDeduction}</td><td>{formatRs(slip.epf_employee)}</td></tr>}
+                  {slip.advance_deductions > 0 && <tr><td>{t.advanceDeductions}</td><td>{formatRs(slip.advance_deductions)}</td></tr>}
+                  {slip.loan_deduction > 0 && <tr><td>{t.loanDeduction}</td><td>{formatRs(slip.loan_deduction)}</td></tr>}
+                  {slip.other_deductions > 0 && <tr><td>{t.otherDeductions}</td><td>{formatRs(slip.other_deductions)}</td></tr>}
+                  <tr className="total-row"><td>{t.totalDeductions}</td><td>{formatRs(slip.total_deductions)}</td></tr>
                 </tbody>
               </table>
             </div>
@@ -149,10 +275,10 @@ export function SalarySlipPrint({ slip }: SalarySlipProps) {
 
           {(slip.advance_details || []).length > 0 && (
             <div style={{ marginTop: 8 }}>
-              <div className="section-title">Advance Details</div>
+              <div className="section-title">{t.advanceDetails}</div>
               <table className="advance-table">
                 <thead>
-                  <tr><th>Date</th><th>Original</th><th>Deducted</th><th style={{ textAlign: 'right' }}>Reason</th></tr>
+                  <tr><th>{t.date}</th><th>{t.original}</th><th>{t.deducted}</th><th style={{ textAlign: 'right' }}>{t.reason}</th></tr>
                 </thead>
                 <tbody>
                   {slip.advance_details.map((adv: any, i: number) => (
@@ -169,21 +295,21 @@ export function SalarySlipPrint({ slip }: SalarySlipProps) {
           )}
 
           <div className="net-salary">
-            <span className="label">{slip.paid ? 'Net Salary · Paid' : 'Net Salary'}</span>
+            <span className="label">{slip.paid ? t.netSalaryPaid : t.netSalary}</span>
             <span className="amount">{formatRs(slip.net_salary)}</span>
           </div>
 
           {slip.notes && (
             <div style={{ fontSize: 11, color: '#4B5563', marginTop: 8, padding: '6px 10px', background: '#ffffff', border: '1px solid #F3C9CE', borderLeft: '3px solid #E01E31', borderRadius: 4 }}>
-              <strong>Notes:</strong> {slip.notes}
+              <strong>{t.notes}:</strong> {slip.notes}
             </div>
           )}
         </div>
 
         <div className="slip-footer">
-          <div className="sig-line">Employee Signature</div>
-          <div className="sig-line">Authorized Signature</div>
-          <div className="sig-line">Date</div>
+          <div className="sig-line">{t.employeeSig}</div>
+          <div className="sig-line">{t.authorizedSig}</div>
+          <div className="sig-line">{t.date}</div>
         </div>
       </div>
     </div>
