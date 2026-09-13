@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useNavigate } from 'react-router-dom'
 import { employeesApi } from '../api/management-api'
 import { toast } from 'sonner'
-import { Plus, Pencil, Trash2, X, DollarSign, UserCheck, Filter } from 'lucide-react'
+import { Plus, Pencil, Trash2, X, DollarSign, UserCheck, Filter, FileText } from 'lucide-react'
 
 const DEPARTMENTS = ['WASHING', 'PRESSING', 'FINISHING', 'PACKING', 'DRY_CLEANING', 'DELIVERY', 'GENERAL']
 const SALARY_TYPES = ['MONTHLY', 'WEEKLY', 'DAILY']
@@ -14,6 +15,9 @@ const STATUS_FILTERS = [
 
 export default function ManagementEmployees() {
   const qc = useQueryClient()
+  const navigate = useNavigate()
+  const now = new Date()
+  const slipLabel = now.toLocaleString('default', { month: 'long' })
   const [showForm, setShowForm] = useState(false)
   const [showSalary, setShowSalary] = useState<any>(null)
   const [editing, setEditing] = useState<any>(null)
@@ -161,10 +165,18 @@ export default function ManagementEmployees() {
                 )}
               </div>
 
-              <button onClick={() => setShowSalary(emp)}
-                className="w-full flex items-center justify-center gap-1.5 px-3 py-2 text-sm bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 rounded-lg hover:bg-green-100">
-                <DollarSign size={14} /> Record Salary
-              </button>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => navigate(`/management/salary-slip?emp=${emp.id}&year=${now.getFullYear()}&month=${now.getMonth() + 1}`)}
+                  className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-sm bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/40"
+                >
+                  <FileText size={14} /> Slip ({slipLabel})
+                </button>
+                <button onClick={() => setShowSalary(emp)}
+                  className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-sm bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/40">
+                  <DollarSign size={14} /> Salary
+                </button>
+              </div>
             </div>
           )
         })}

@@ -1,8 +1,9 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useSearchParams } from 'react-router-dom'
 import { employeesApi, salaryApi } from '../api/management-api'
 import { toast } from 'sonner'
-import { Calculator, FileText, Printer, CheckCircle } from 'lucide-react'
+import { Calculator, FileText, Printer, CheckCircle, Sparkles } from 'lucide-react'
 import { useReactToPrint } from 'react-to-print'
 import { SalarySlipPrint } from '../components/salary-slip-print'
 
@@ -14,9 +15,14 @@ const MONTHS = [
 export default function SalarySlipPage() {
   const qc = useQueryClient()
   const slipRef = useRef<HTMLDivElement>(null)
-  const [selectedEmp, setSelectedEmp] = useState('')
-  const [year, setYear] = useState(new Date().getFullYear())
-  const [month, setMonth] = useState(new Date().getMonth() + 1)
+  const [searchParams] = useSearchParams()
+  const paramEmp = searchParams.get('emp') || ''
+  const paramYear = Number(searchParams.get('year')) || new Date().getFullYear()
+  const paramMonth = Number(searchParams.get('month')) || new Date().getMonth() + 1
+  const [selectedEmp, setSelectedEmp] = useState(paramEmp)
+  const [year, setYear] = useState(paramYear)
+  const [month, setMonth] = useState(paramMonth)
+  const didAutoCalc = useRef(false)
   const [periodType, setPeriodType] = useState<'MONTHLY' | 'WEEKLY'>('MONTHLY')
   const [weekStart, setWeekStart] = useState('')
   const [weekEnd, setWeekEnd] = useState('')
@@ -32,6 +38,20 @@ export default function SalarySlipPage() {
     queryKey: ['mgmt-employees'],
     queryFn: () => employeesApi.list('').then(r => r.data),
   })
+
+  useEffect(() => {
+    const emp = searchParams.get('emp') || ''
+    const y = Number(searchParams.get('year')) || new Date().getFullYear()
+    const m = Number(searchParams.get('month')) || new Date().getMonth() + 1
+    const valid = emp && employees.some((e: any) => e.id === emp)
+    if (valid) {
+      if (emp !== selectedEmp) { setSelectedEmp(emp); didAutoCalc.current = false }
+      if (y !== year) setYear(y)
+      if (m !== month) setMonth(m)
+      if (!didAutoCalc.current) { didAutoCalc.current = true; calcMut.mutate() }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams, employees])
 
   const calcMut = useMutation({
     mutationFn: () => {
@@ -113,8 +133,13 @@ export default function SalarySlipPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-3">
         <h1 className="text-2xl font-bold">Generate Salary Slip</h1>
+        {paramEmp && (
+          <span className="flex items-center gap-1.5 text-sm text-amber-600 dark:text-amber-400 font-medium">
+            <Sparkles size={15} /> Quick-launch from employee card — auto-calculated
+          </span>
+        )}
       </div>
 
       <div className="bg-white dark:bg-gray-800 rounded-xl border p-6 space-y-4">
@@ -131,7 +156,7 @@ export default function SalarySlipPage() {
               className="w-full mt-1 px-3 py-2 border rounded-lg text-sm"
             >
               <option value="">Select Employee</option>
-              {employees.filter((e: any) => e.is_active).map((e: any) => (
+              {employees.filter((e: any) => e.is_active || e.id === paramEmp).map((e: any) => (
                 <option key={e.id} value={e.id}>
                   {e.name} ({e.salary_type || 'MONTHLY'})
                 </option>

@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { employeesApi, attendanceApi, holidaysApi } from '../api/management-api'
 import { toast } from 'sonner'
-import { CalendarDays, Check, ChevronDown, Trash2, X, Pencil } from 'lucide-react'
+import { CalendarDays, Check, ChevronDown, ChevronLeft, ChevronRight, Trash2, X, Pencil, Plus } from 'lucide-react'
 
 const STATUSES = ['PRESENT', 'HALF_DAY', 'PAID_LEAVE', 'UNPAID_LEAVE', 'ABSENT'] as const
 const STATUS_LABEL: Record<string, string> = {
@@ -41,6 +41,12 @@ export default function AttendancePage() {
   const [bulkOt, setBulkOt] = useState(0)
   const [editDate, setEditDate] = useState<string | null>(null)
   const [editForm, setEditForm] = useState<any>(null)
+  const [quickDate, setQuickDate] = useState<string | null>(null)
+  const [quickOt, setQuickOt] = useState(0)
+  const todayStr = useMemo(() => {
+    const t = new Date()
+    return `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, '0')}-${String(t.getDate()).padStart(2, '0')}`
+  }, [])
 
   const startDate = `${year}-${String(month).padStart(2, '0')}-01`
   const endDate = `${year}-${String(month).padStart(2, '0')}-${String(monthRange(year, month).numDays).padStart(2, '0')}`
@@ -136,6 +142,21 @@ export default function AttendancePage() {
     setPickedDates(prev => { const n = new Set(prev); n.has(d) ? n.delete(d) : n.add(d); return n })
   }
 
+  const goPrev = () => {
+    if (month === 1) { setYear(year - 1); setMonth(12) } else setMonth(month - 1)
+    setPickedDates(new Set()); setEditDate(null); setQuickDate(null)
+  }
+
+  const goNext = () => {
+    if (month === 12) { setYear(year + 1); setMonth(1) } else setMonth(month + 1)
+    setPickedDates(new Set()); setEditDate(null); setQuickDate(null)
+  }
+
+  const goToday = () => {
+    setYear(now.getFullYear()); setMonth(now.getMonth() + 1)
+    setPickedDates(new Set()); setEditDate(null); setQuickDate(null)
+  }
+
   const openEdit = (day: string, rec: any) => {
     setEditDate(day)
     setEditForm({
@@ -190,9 +211,22 @@ export default function AttendancePage() {
       )}
 
       <div className="bg-white dark:bg-gray-800 rounded-xl border p-6 space-y-4">
-        <h2 className="text-lg font-semibold flex items-center gap-2">
-          <CalendarDays size={20} /> Monthly Attendance
-        </h2>
+        <div className="flex items-center justify-between flex-wrap gap-3">
+          <h2 className="text-lg font-semibold flex items-center gap-2">
+            <CalendarDays size={20} /> Monthly Attendance
+          </h2>
+          <div className="flex items-center gap-1.5">
+            <button onClick={goPrev} className="p-2 border rounded-lg text-sm hover:bg-gray-50 dark:hover:bg-gray-700" title="Previous month">
+              <ChevronLeft size={16} />
+            </button>
+            <button onClick={goToday} className="px-3 py-2 border rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700" title="Jump to today">
+              Today
+            </button>
+            <button onClick={goNext} className="p-2 border rounded-lg text-sm hover:bg-gray-50 dark:hover:bg-gray-700" title="Next month">
+              <ChevronRight size={16} />
+            </button>
+          </div>
+        </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
@@ -237,14 +271,15 @@ export default function AttendancePage() {
               const picked = pickedDates.has(d)
               const isHoliday = holidaySet.has(d)
               const isWeekend = dow === 0 || dow === 6
+              const isToday = d === todayStr
               const cellBg = isHoliday
                 ? 'bg-purple-50 dark:bg-purple-900/20' : isWeekend
                 ? 'bg-slate-50 dark:bg-slate-800/50' : 'bg-white dark:bg-gray-800'
               return (
                 <div key={d} onClick={() => togglePick(d)}
-                  className={`${cellBg} min-h-20 p-1.5 cursor-pointer flex flex-col gap-1 ${picked ? 'ring-2 ring-indigo-500' : ''}`}>
+                  className={`${cellBg} min-h-20 p-1.5 cursor-pointer flex flex-col gap-1 ${picked ? 'ring-2 ring-indigo-500' : ''} ${isToday ? 'ring-2 ring-red-400' : ''}`}>
                   <div className="flex items-center justify-between text-xs">
-                    <span className="font-medium">{Number(d.slice(8))}</span>
+                    <span className={`font-medium ${isToday ? 'bg-red-600 text-white rounded-full px-1.5 py-px' : ''}`}>{Number(d.slice(8))}</span>
                     <div className="flex items-center gap-1">
                       {isHoliday && <span className="text-[9px] text-purple-500 font-medium">H</span>}
                       {rec ? (
@@ -254,7 +289,12 @@ export default function AttendancePage() {
                           {STATUS_LABEL[rec.status] || rec.status}
                         </button>
                       ) : (
-                        <span className="text-[10px] text-gray-300 dark:text-gray-600">—</span>
+                        <button
+                          onClick={e => { e.stopPropagation(); setQuickDate(d); setQuickOt(0) }}
+                          className="text-[10px] px-1.5 py-0.5 rounded-full bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-300 hover:bg-indigo-100 hover:text-indigo-600 dark:hover:bg-indigo-900/40 dark:hover:text-indigo-300 font-medium"
+                          title="Quick save status">
+                          <Plus size={10} className="inline mr-0.5 -mt-px" /> Add
+                        </button>
                       )}
                     </div>
                   </div>
@@ -371,6 +411,52 @@ export default function AttendancePage() {
                   <Trash2 size={14} /> Delete
                 </button>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+    {/* Quick save card */}
+      {quickDate && (
+        <div className="fixed inset-0 bg-black/20 flex items-center justify-center z-40" onClick={() => setQuickDate(null)}>
+          <div className="bg-white dark:bg-gray-800 rounded-xl border p-5 w-[300px] space-y-3 shadow-xl" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between">
+              <h3 className="font-semibold flex items-center gap-2 text-sm">
+                <Check size={15} className="text-green-600" /> Quick save — {quickDate}
+              </h3>
+              <button onClick={() => setQuickDate(null)} className="text-gray-400 hover:text-gray-600"><X size={16} /></button>
+            </div>
+            <div className="grid grid-cols-1 gap-2">
+              {STATUSES.map(s => (
+                <button
+                  key={s}
+                  onClick={() => {
+                    createMut.mutate({
+                      employee_id: selectedEmp,
+                      date: quickDate,
+                      status: s,
+                      overtime_hours: quickOt || 0,
+                      check_in_time: '',
+                      check_out_time: '',
+                      notes: '',
+                    })
+                    setQuickDate(null)
+                  }}
+                  className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-left hover:-translate-y-0.5 transition border border-transparent ${STATUS_STYLE[s]}`}>
+                  {STATUS_LABEL[s]}
+                  <span className="ml-auto text-[11px] opacity-60">{s.replace('_', ' ')}</span>
+                </button>
+              ))}
+            </div>
+            <div className="flex items-center gap-2 pt-1 border-t">
+              <label className="text-xs text-gray-500">OT hrs</label>
+              <input type="number" step="0.5" min="0" value={quickOt}
+                onChange={e => setQuickOt(Number(e.target.value) || 0)}
+                className="w-20 px-2 py-1 border rounded-lg text-sm" />
+              <button
+                onClick={() => { setEditDate(quickDate); setEditForm({ status: 'PRESENT', overtime_hours: quickOt || 0, check_in_time: '', check_out_time: '', notes: '' }); setQuickDate(null) }}
+                className="ml-auto text-xs text-indigo-600 hover:underline">
+                Detailed…
+              </button>
             </div>
           </div>
         </div>
