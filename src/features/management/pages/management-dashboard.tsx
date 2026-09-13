@@ -1,7 +1,8 @@
 import { useQuery } from '@tanstack/react-query'
 import { dashboardApi } from '../api/management-api'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, Legend } from 'recharts'
-import { TrendingUp, TrendingDown, Users, Package, Wallet, AlertCircle, DollarSign, ShoppingCart } from 'lucide-react'
+import { TrendingUp, TrendingDown, Users, Package, Wallet, AlertCircle, DollarSign, ShoppingCart, UserCheck, FileText, HeartHandshake, UserCircle, Banknote, ListChecks, CalendarPlus, Sun, Zap, Settings, ArrowRight } from 'lucide-react'
+import { Link } from 'react-router-dom'
 
 function StatCard({ title, value, icon: Icon, color, sub }: { title: string; value: string; icon: any; color: string; sub?: string }) {
   return (
@@ -17,6 +18,17 @@ function StatCard({ title, value, icon: Icon, color, sub }: { title: string; val
     </div>
   )
 }
+
+const QUICK_ACTIONS = [
+  { to: '/management/employees', label: 'Employees', icon: UserCircle, color: 'bg-rose-500' },
+  { to: '/management/attendance-log', label: 'Log Attendance', icon: CalendarPlus, color: 'bg-teal-500' },
+  { to: '/management/salary-slip', label: 'Generate Slip', icon: Banknote, color: 'bg-emerald-500' },
+  { to: '/management/salary-history', label: 'Salary History', icon: ListChecks, color: 'bg-indigo-500' },
+  { to: '/management/advances', label: 'Advances', icon: Wallet, color: 'bg-amber-500' },
+  { to: '/management/holidays', label: 'Holidays', icon: Sun, color: 'bg-orange-500' },
+  { to: '/management/extra-work', label: 'Extra Work', icon: Zap, color: 'bg-purple-500' },
+  { to: '/management/company-settings', label: 'Company Settings', icon: Settings, color: 'bg-slate-600' },
+]
 
 export default function ManagementDashboard() {
   const { data, isLoading } = useQuery({
@@ -45,6 +57,32 @@ export default function ManagementDashboard() {
         <StatCard title="Customers" value={String(d.total_customers || 0)} icon={Users} color="bg-indigo-500" />
         <StatCard title="Total Expenses" value={fmt(d.total_expenses)} icon={TrendingDown} color="bg-orange-500" />
         <StatCard title="Outstanding" value={fmt(d.outstanding_payments)} icon={AlertCircle} color="bg-red-500" />
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <StatCard title="Active Employees" value={String(d.active_employees ?? '—')} icon={Users} color="bg-rose-500" />
+        <StatCard title="Present Today" value={(d.present_today ?? 0) + (d.on_leave_today ? ` / ${d.on_leave_today} leave` : '')} icon={UserCheck} color="bg-teal-500" />
+        <StatCard title="Draft Slips (Month)" value={String(d.draft_slips_month ?? '—')} icon={FileText} color="bg-fuchsia-500" sub={`${d.unpaid_slips_month ?? 0} finalized unpaid`} />
+        <StatCard title="Outstanding Advances" value={fmt(d.outstanding_advances)} icon={HeartHandshake} color="bg-slate-600" />
+      </div>
+
+      <div className="bg-white dark:bg-gray-800 rounded-xl border p-5">
+        <h3 className="font-semibold mb-4">Quick Actions</h3>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          {QUICK_ACTIONS.map(a => (
+            <Link
+              key={a.to}
+              to={a.to}
+              className="group flex items-center gap-3 rounded-lg border p-3 hover:shadow-sm transition hover:border-red-300"
+            >
+              <span className={`p-2 rounded-lg ${a.color} text-white`}>
+                <a.icon size={18} />
+              </span>
+              <span className="text-sm font-medium flex-1">{a.label}</span>
+              <ArrowRight size={14} className="text-gray-300 group-hover:text-red-500 transition" />
+            </Link>
+          ))}
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

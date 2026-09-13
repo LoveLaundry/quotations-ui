@@ -29,6 +29,14 @@ const pageTitles: Record<string, string> = {
   '/reports': 'Reports',
   '/users': 'Users',
   '/database-sync': 'Database Sync',
+  '/live-chat': 'Live Chat',
+  '/notifications': 'Notifications',
+  '/workers': 'Staff Management',
+  '/workers/daily-tasks': 'Daily Tasks',
+  '/shop-bills': 'Shop Bills',
+  '/shop-bills/dashboard': 'Shop Bills Dashboard',
+  '/shop-bills/new': 'Create Shop Bill',
+  '/legacy-invoice': 'Legacy Invoice',
   '/linen': 'Linen Dashboard',
   '/linen/inventory': 'Linen Inventory',
   '/linen/scanner': 'Scan Linen',
@@ -62,6 +70,7 @@ function getPageTitle(pathname: string): string {
   if (pathname.match(/^\/deliveries\/[^/]+$/)) return 'Delivery Details'
   if (pathname.match(/^\/returns\/[^/]+$/)) return 'Return Details'
   if (pathname.match(/^\/linen\/[^/]+$/)) return 'Linen Profile'
+  if (pathname.match(/^\/shop-bills\/[^/]+$/)) return 'Shop Bill Details'
   return pageTitles[pathname] ?? 'Love Laundry'
 }
 
