@@ -2,7 +2,7 @@ import { useState, useRef } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { employeesApi, salaryApi } from '../api/management-api'
 import { toast } from 'sonner'
-import { Eye, Printer, XCircle, CheckCircle, Wallet, PlayCircle } from 'lucide-react'
+import { Eye, Printer, Trash2, XCircle, CheckCircle, Wallet, PlayCircle } from 'lucide-react'
 import { useReactToPrint } from 'react-to-print'
 import { SalarySlipPrint } from '../components/salary-slip-print'
 
@@ -11,6 +11,7 @@ const STATUS_COLORS: Record<string, string> = {
   FINALIZED: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
   PAID: 'bg-sky-100 text-sky-800 dark:bg-sky-900/30 dark:text-sky-400',
   CANCELLED: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',
+  DELETED: 'bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-300',
 }
 
 export default function SalaryHistoryPage() {
@@ -26,6 +27,7 @@ export default function SalaryHistoryPage() {
   const [preview, setPreview] = useState<any>(null)
   const [previewLoading, setPreviewLoading] = useState(false)
   const [payrollLoading, setPayrollLoading] = useState(false)
+  const [tab, setTab] = useState<'ACTIVE' | 'DELETED'>('ACTIVE')
 
   const { data: employees = [] } = useQuery({
     queryKey: ['mgmt-employees'],
@@ -33,10 +35,11 @@ export default function SalaryHistoryPage() {
   })
 
   const { data: slips = [], isLoading } = useQuery({
-    queryKey: ['salary-slips', selectedEmp, statusFilter, yearFilter],
+    queryKey: ['salary-slips', tab, selectedEmp, statusFilter, yearFilter],
     queryFn: () => salaryApi.listSlips({
       employee_id: selectedEmp || undefined,
-      status: statusFilter || undefined,
+      status: tab === 'ACTIVE' ? (statusFilter || undefined) : undefined,
+      deleted: tab === 'DELETED',
       year: yearFilter,
     }).then(r => r.data),
   })
@@ -50,6 +53,12 @@ export default function SalaryHistoryPage() {
   const cancelMut = useMutation({
     mutationFn: (slipId: string) => salaryApi.cancelSlip(slipId),
     onSuccess: () => { toast.success('Salary slip cancelled'); qc.invalidateQueries({ queryKey: ['salary-slips'] }); setViewSlip(null) },
+    onError: (e: any) => toast.error(e.response?.data?.detail || 'Failed'),
+  })
+
+  const deleteMut = useMutation({
+    mutationFn: (slipId: string) => salaryApi.deleteSlip(slipId),
+    onSuccess: () => { toast.success('Salary slip deleted'); qc.invalidateQueries({ queryKey: ['salary-slips'] }); setViewSlip(null) },
     onError: (e: any) => toast.error(e.response?.data?.detail || 'Failed'),
   })
 
@@ -105,6 +114,24 @@ export default function SalaryHistoryPage() {
         <h1 className="text-2xl font-bold">Salary History</h1>
       </div>
 
+      {/* Tabs */}
+      <div className="flex items-center gap-2 border-b border-gray-200 dark:border-gray-700">
+        <button
+          onClick={() => setTab('ACTIVE')}
+          className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px ${tab === 'ACTIVE'
+            ? 'border-red-600 text-red-600'
+            : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'}`}>
+          Active Slips
+        </button>
+        <button
+          onClick={() => setTab('DELETED')}
+          className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px ${tab === 'DELETED'
+            ? 'border-red-600 text-red-600'
+            : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'}`}>
+          Deleted Slips
+        </button>
+      </div>
+
       {/* Payroll Run card */}
       <div className="bg-white dark:bg-gray-800 rounded-xl border p-5">
         <h2 className="font-semibold flex items-center gap-2 mb-3">
@@ -158,17 +185,19 @@ export default function SalaryHistoryPage() {
               ))}
             </select>
           </div>
-          <div>
-            <label className="text-sm font-medium text-gray-600 dark:text-gray-400">Status</label>
-            <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)}
-              className="w-full mt-1 px-3 py-2 border rounded-lg text-sm">
-              <option value="">All Statuses</option>
-              <option value="DRAFT">Draft</option>
-              <option value="FINALIZED">Finalized</option>
-              <option value="PAID">Paid</option>
-              <option value="CANCELLED">Cancelled</option>
-            </select>
-          </div>
+          {tab === 'ACTIVE' && (
+            <div>
+              <label className="text-sm font-medium text-gray-600 dark:text-gray-400">Status</label>
+              <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)}
+                className="w-full mt-1 px-3 py-2 border rounded-lg text-sm">
+                <option value="">All Statuses</option>
+                <option value="DRAFT">Draft</option>
+                <option value="FINALIZED">Finalized</option>
+                <option value="PAID">Paid</option>
+                <option value="CANCELLED">Cancelled</option>
+              </select>
+            </div>
+          )}
           <div>
             <label className="text-sm font-medium text-gray-600 dark:text-gray-400">Year</label>
             <input type="number" value={yearFilter} onChange={e => setYearFilter(Number(e.target.value))}
@@ -199,7 +228,7 @@ export default function SalaryHistoryPage() {
               {isLoading ? (
                 <tr><td colSpan={8} className="text-center py-8 text-gray-400">Loading...</td></tr>
               ) : slips.length === 0 ? (
-                <tr><td colSpan={8} className="text-center py-8 text-gray-400">No salary slips found</td></tr>
+                <tr><td colSpan={8} className="text-center py-8 text-gray-400">{tab === 'DELETED' ? 'No deleted salary slips found' : 'No salary slips found'}</td></tr>
               ) : (
                 slips.map((slip: any) => (
                   <tr key={slip.id} className="border-b hover:bg-gray-50 dark:hover:bg-gray-700/30">
@@ -236,11 +265,18 @@ export default function SalaryHistoryPage() {
                             <Wallet size={14} />
                           </button>
                         )}
-                        {slip.status !== 'PAID' && slip.status !== 'CANCELLED' && (
+                        {slip.status !== 'PAID' && slip.status !== 'CANCELLED' && slip.status !== 'DELETED' && (
                           <button
                             onClick={() => { if (confirm('Cancel this salary slip? Advances will be restored.')) cancelMut.mutate(slip.id) }}
                             className="p-1.5 hover:bg-red-100 text-red-600 rounded" title="Cancel" disabled={cancelMut.isPending}>
                             <XCircle size={14} />
+                          </button>
+                        )}
+                        {slip.status === 'CANCELLED' && (
+                          <button
+                            onClick={() => { if (confirm('Delete this cancelled salary slip? It will be moved to the Deleted section and excluded from all calculations.')) deleteMut.mutate(slip.id) }}
+                            className="p-1.5 hover:bg-gray-200 text-gray-600 rounded" title="Delete" disabled={deleteMut.isPending}>
+                            <Trash2 size={14} />
                           </button>
                         )}
                       </div>

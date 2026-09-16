@@ -58,7 +58,7 @@ const T = {
     days: (n: number) => `${n} days`,
     daysWorked: (n: number) => `${n} days worked`,
     hrs: 'hrs',
-    statusLabel: (s: string) => ({ DRAFT: 'DRAFT', FINALIZED: 'FINALIZED', CANCELLED: 'CANCELLED' }[s] || s),
+    statusLabel: (s: string) => ({ DRAFT: 'DRAFT', FINALIZED: 'FINALIZED', CANCELLED: 'CANCELLED', DELETED: 'DELETED' }[s] || s),
   },
   SI: {
     title: 'වැටුප් ස්ලිපය',
@@ -111,7 +111,7 @@ const T = {
     days: (n: number) => `දින ${n}`,
     daysWorked: (n: number) => `වැඩකළ දින ${n}`,
     hrs: 'පැය',
-    statusLabel: (s: string) => ({ DRAFT: 'කෙටුම්පත', FINALIZED: 'අවසන්', CANCELLED: 'අවලංගු' }[s] || s),
+    statusLabel: (s: string) => ({ DRAFT: 'කෙටුම්පත', FINALIZED: 'අවසන්', CANCELLED: 'අවලංගු', DELETED: 'මකා දමා ඇත' }[s] || s),
   },
 }
 
@@ -185,6 +185,7 @@ export function SalarySlipPrint({ slip, lang = 'EN' }: SalarySlipProps) {
         .status-DRAFT { background: #fef3c7; color: #92400e; }
         .status-FINALIZED { background: #d1fae5; color: #065f46; }
         .status-CANCELLED { background: #fee2e2; color: #991b1b; }
+        .status-DELETED { background: #e5e7eb; color: #4b5563; }
       `}</style>
 
       <div className="slip-container">

@@ -166,12 +166,14 @@ export const salaryApi = {
     if (params?.status) q.set('status', params.status)
     if (params?.year) q.set('year', String(params.year))
     if (params?.month) q.set('month', String(params.month))
+    if (params?.deleted) q.set('deleted', String(params.deleted))
     return mgmtApi.get(`/api/salary/slips?${q}`)
   },
   getSlip: (slipId: string) => mgmtApi.get(`/api/salary/slips/${slipId}`),
   updateSlip: (slipId: string, data: any) => mgmtApi.put(`/api/salary/slips/${slipId}`, data),
   finalizeSlip: (slipId: string) => mgmtApi.post(`/api/salary/slips/${slipId}/finalize`),
   cancelSlip: (slipId: string) => mgmtApi.post(`/api/salary/slips/${slipId}/cancel`),
+  deleteSlip: (slipId: string) => mgmtApi.delete(`/api/salary/slips/${slipId}`),
   paySlip: (slipId: string, amount: number) =>
     mgmtApi.post(`/api/salary/slips/${slipId}/pay?amount=${amount}`),
   employeeHistory: (empId: string) => mgmtApi.get(`/api/employees/${empId}/salary-history`),
