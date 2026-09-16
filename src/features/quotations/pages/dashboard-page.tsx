@@ -17,6 +17,7 @@ import {
 } from '../../../components/ui/card'
 import { Button } from '../../../components/ui/button'
 import { Skeleton } from '../../../components/ui/skeleton'
+import { StatCard } from '../../../components/ui/stat-card'
 import { useDashboardOverview, type DashboardOverviewData, type DashboardPeriod } from '../hooks/useBusinessDashboard'
 import { reports } from '../services/reports.service'
 import { BalancesPopup } from '../components/balances-popup'
@@ -30,10 +31,9 @@ const PERIODS: { value: DashboardPeriod; label: string }[] = [
   { value: 'year', label: 'Year' },
 ]
 
-function pctChange(cur: number, prev: number) {
-  if (prev === 0) return cur > 0 ? '+100%' : '0%'
-  const pct = ((cur - prev) / Math.max(1, prev)) * 100
-  return `${pct >= 0 ? '+' : ''}${pct.toFixed(0)}%`
+function pctNum(cur: number, prev: number) {
+  if (prev === 0) return cur > 0 ? 100 : 0
+  return ((cur - prev) / Math.max(1, prev)) * 100
 }
 
 function fmt(lkr: number) {
@@ -73,12 +73,12 @@ function fmtTimeAgo(ts: string | null) {
 function KpiCards({ data }: { data: DashboardOverviewData }) {
   const { current: c, previous: p } = data
   const kpis = [
-    { label: 'Revenue', value: `LKR ${fmt(c.revenue)}`, trend: pctChange(c.revenue, p.revenue), icon: DollarSign, accent: '#DC2626' },
-    { label: 'Collected', value: `LKR ${fmt(c.collected)}`, trend: pctChange(c.collected, p.collected), icon: Wallet, accent: '#16A34A' },
-    { label: 'Outstanding', value: `LKR ${fmt(c.outstanding)}`, trend: pctChange(c.outstanding, p.outstanding), icon: AlertTriangle, accent: '#D97706' },
-    { label: 'Collection Rate', value: `${c.collectionRate.toFixed(1)}%`, trend: pctChange(c.collectionRate, p.collectionRate), icon: TrendingUp, accent: '#2563EB' },
-    { label: 'Gate Passes', value: c.gatePasses, trend: pctChange(c.gatePasses, p.gatePasses), icon: ClipboardList, accent: '#7C3AED' },
-    { label: 'Active Clients', value: c.activeClients, trend: pctChange(c.activeClients, p.activeClients), icon: Users, accent: '#0891B2' },
+    { label: 'Revenue', value: `LKR ${fmt(c.revenue)}`, trend: pctNum(c.revenue, p.revenue), icon: <DollarSign size={20} />, color: 'red' as const },
+    { label: 'Collected', value: `LKR ${fmt(c.collected)}`, trend: pctNum(c.collected, p.collected), icon: <Wallet size={20} />, color: 'green' as const },
+    { label: 'Outstanding', value: `LKR ${fmt(c.outstanding)}`, trend: pctNum(c.outstanding, p.outstanding), icon: <AlertTriangle size={20} />, color: 'amber' as const },
+    { label: 'Collection Rate', value: `${c.collectionRate.toFixed(1)}%`, trend: pctNum(c.collectionRate, c.collectionRate), icon: <TrendingUp size={20} />, color: 'blue' as const },
+    { label: 'Gate Passes', value: c.gatePasses, trend: pctNum(c.gatePasses, p.gatePasses), icon: <ClipboardList size={20} />, color: 'purple' as const },
+    { label: 'Active Clients', value: c.activeClients, trend: pctNum(c.activeClients, c.activeClients), icon: <Users size={20} />, color: 'blue' as const },
   ]
 
   return (
@@ -90,18 +90,7 @@ function KpiCards({ data }: { data: DashboardOverviewData }) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: i * 0.05 }}
         >
-          <Card className="p-4 hover:shadow-md transition-shadow">
-            <div className="flex items-start justify-between mb-2">
-              <p className="text-[11px] font-semibold uppercase tracking-wide" style={{ color: 'var(--text-tertiary)' }}>{k.label}</p>
-              <div className="flex h-7 w-7 items-center justify-center rounded-lg" style={{ backgroundColor: `${k.accent}10`, color: k.accent }}>
-                <k.icon className="h-3.5 w-3.5" />
-              </div>
-            </div>
-            <p className="text-[22px] font-bold leading-tight" style={{ color: 'var(--text-primary)' }}>{k.value}</p>
-            <span className={`inline-flex items-center rounded-md px-1.5 py-0.5 text-[10px] font-semibold mt-2 ${k.trend.startsWith('+') || (!k.trend.startsWith('-') && k.trend !== '0%') ? 'bg-emerald-50 border border-emerald-200 text-emerald-700' : k.trend.startsWith('-') ? 'bg-red-50 border border-red-200 text-red-700' : 'bg-gray-50 border border-gray-200 text-gray-700'}`}>
-              {k.trend}
-            </span>
-          </Card>
+          <StatCard label={k.label} value={k.value} trend={k.trend} icon={k.icon} color={k.color} className="p-4" />
         </motion.div>
       ))}
     </div>

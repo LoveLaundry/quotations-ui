@@ -1,10 +1,13 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { employeesApi, salaryApi } from '../api/management-api'
 import { toast } from 'sonner'
 import { Eye, Printer, Trash2, XCircle, CheckCircle, Wallet, PlayCircle } from 'lucide-react'
 import { useReactToPrint } from 'react-to-print'
 import { SalarySlipPrint } from '../components/salary-slip-print'
+import { Pagination } from '../../../components/ui/pagination'
+
+const PAGE_SIZE = 20
 
 const STATUS_COLORS: Record<string, string> = {
   DRAFT: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400',
@@ -28,21 +31,31 @@ export default function SalaryHistoryPage() {
   const [previewLoading, setPreviewLoading] = useState(false)
   const [payrollLoading, setPayrollLoading] = useState(false)
   const [tab, setTab] = useState<'ACTIVE' | 'DELETED'>('ACTIVE')
+  const [offset, setOffset] = useState(0)
+  const limit = PAGE_SIZE
+
+  useEffect(() => {
+    setOffset(0)
+  }, [tab, selectedEmp, statusFilter, yearFilter])
 
   const { data: employees = [] } = useQuery({
     queryKey: ['mgmt-employees'],
     queryFn: () => employeesApi.list('').then(r => r.data),
   })
 
-  const { data: slips = [], isLoading } = useQuery({
-    queryKey: ['salary-slips', tab, selectedEmp, statusFilter, yearFilter],
+  const { data: slipsData = { items: [], total: 0 }, isLoading } = useQuery({
+    queryKey: ['salary-slips', tab, selectedEmp, statusFilter, yearFilter, offset, limit],
     queryFn: () => salaryApi.listSlips({
       employee_id: selectedEmp || undefined,
       status: tab === 'ACTIVE' ? (statusFilter || undefined) : undefined,
       deleted: tab === 'DELETED',
       year: yearFilter,
+      limit,
+      offset,
     }).then(r => r.data),
   })
+
+  const slips = slipsData.items
 
   const finalizeMut = useMutation({
     mutationFn: (slipId: string) => salaryApi.finalizeSlip(slipId),
@@ -204,7 +217,7 @@ export default function SalaryHistoryPage() {
               className="w-full mt-1 px-3 py-2 border rounded-lg text-sm" />
           </div>
           <div className="flex items-end">
-            <div className="text-sm text-gray-500 py-2">{slips.length} slip{slips.length !== 1 ? 's' : ''} found</div>
+            <div className="text-sm text-gray-500 py-2">{slipsData.total} slip{slipsData.total !== 1 ? 's' : ''} found</div>
           </div>
         </div>
       </div>
@@ -227,7 +240,7 @@ export default function SalaryHistoryPage() {
             <tbody>
               {isLoading ? (
                 <tr><td colSpan={8} className="text-center py-8 text-gray-400">Loading...</td></tr>
-              ) : slips.length === 0 ? (
+              ) : slipsData.items.length === 0 ? (
                 <tr><td colSpan={8} className="text-center py-8 text-gray-400">{tab === 'DELETED' ? 'No deleted salary slips found' : 'No salary slips found'}</td></tr>
               ) : (
                 slips.map((slip: any) => (
@@ -288,6 +301,8 @@ export default function SalaryHistoryPage() {
           </table>
         </div>
       </div>
+
+      <Pagination total={slipsData.total} limit={limit} offset={offset} onChange={setOffset} className="px-1" />
 
       {viewSlip && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">

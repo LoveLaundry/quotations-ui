@@ -1,27 +1,40 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { employeesApi, advancesApi } from '../api/management-api'
 import { toast } from 'sonner'
 import { Plus, X, Trash2 } from 'lucide-react'
+import { Pagination } from '../../../components/ui/pagination'
+
+const PAGE_SIZE = 20
 
 export default function AdvancesPage() {
   const qc = useQueryClient()
   const [showForm, setShowForm] = useState(false)
   const [empFilter, setEmpFilter] = useState('')
   const [statusFilter, setStatusFilter] = useState('OUTSTANDING')
+  const [offset, setOffset] = useState(0)
+  const limit = PAGE_SIZE
+
+  useEffect(() => {
+    setOffset(0)
+  }, [empFilter, statusFilter])
 
   const { data: employees = [] } = useQuery({
     queryKey: ['mgmt-employees'],
     queryFn: () => employeesApi.list('').then(r => r.data),
   })
 
-  const { data: advances = [], isLoading } = useQuery({
-    queryKey: ['advances', empFilter, statusFilter],
+  const { data: advancesData = { items: [], total: 0 }, isLoading } = useQuery({
+    queryKey: ['advances', empFilter, statusFilter, offset, limit],
     queryFn: () => advancesApi.list({
       employee_id: empFilter || undefined,
       status: statusFilter || undefined,
+      limit,
+      offset,
     }).then(r => r.data),
   })
+
+  const advances = advancesData.items
 
   const createMut = useMutation({
     mutationFn: (data: any) => advancesApi.create(data),
@@ -65,7 +78,7 @@ export default function AdvancesPage() {
         </div>
         <div className="bg-white dark:bg-gray-800 rounded-xl border p-4">
           <div className="text-sm text-gray-500">Records Shown</div>
-          <div className="text-2xl font-bold">{advances.length}</div>
+          <div className="text-2xl font-bold">{advancesData.total}</div>
         </div>
       </div>
 
@@ -158,6 +171,8 @@ export default function AdvancesPage() {
           </tbody>
         </table>
       </div>
+
+      <Pagination total={advancesData.total} limit={limit} offset={offset} onChange={setOffset} className="px-1" />
 
       {showForm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">

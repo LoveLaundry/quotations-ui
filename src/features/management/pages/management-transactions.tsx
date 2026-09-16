@@ -1,8 +1,21 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { transactionsApi, customersApi } from '../api/management-api'
 import { toast } from 'sonner'
-import { Eye, Trash2, X, Search } from 'lucide-react'
+import { Eye, Trash2, X, Search, ListChecks, DollarSign, TrendingUp } from 'lucide-react'
+import { PageHeader } from '../../../components/ui/page-header'
+import { StatCard } from '../../../components/ui/stat-card'
+import { FilterBar } from '../../../components/ui/filter-bar'
+import { Badge } from '../../../components/ui/badge'
+import { DataTable } from '../../../components/ui/data-table'
+import { EmptyState } from '../../../components/ui/empty-state'
+import { LoadingSpinner } from '../../../components/ui/loading-spinner'
+import { ExportButton } from '../../../components/ui/export-button'
+import { Pagination } from '../../../components/ui/pagination'
+
+const PAGE_SIZE = 20
+
+const LIST_LIMIT = 500
 
 export default function ManagementTransactions() {
   const qc = useQueryClient()
@@ -11,30 +24,84 @@ export default function ManagementTransactions() {
   const [customerId, setCustomerId] = useState('')
   const [search, setSearch] = useState('')
   const [viewTxn, setViewTxn] = useState<any>(null)
+  const [offset, setOffset] = useState(0)
+  const limit = PAGE_SIZE
 
-  const { data: customers = [] } = useQuery({
+  useEffect(() => {
+    setOffset(0)
+  }, [startDate, endDate, customerId, search])
+
+  const { data: customersData = { items: [] } } = useQuery({
     queryKey: ['mgmt-customers-list'],
-    queryFn: () => customersApi.list().then(r => r.data),
+    queryFn: () => customersApi.list('', LIST_LIMIT, 0).then(r => r.data),
   })
 
-  const { data: transactions = [], isLoading: _isLoading } = useQuery({
-    queryKey: ['mgmt-transactions', startDate, endDate, customerId, search],
-    queryFn: () => transactionsApi.list({ start_date: startDate, end_date: endDate, customer_id: customerId, search, limit: 200 }).then(r => r.data),
+  const customers = customersData.items
+
+  const { data: transactions = { items: [], total: 0 }, isLoading: _isLoading } = useQuery({
+    queryKey: ['mgmt-transactions', startDate, endDate, customerId, search, offset, limit],
+    queryFn: () => transactionsApi.list({ start_date: startDate, end_date: endDate, customer_id: customerId, search, limit, offset }).then(r => r.data),
   })
+
+  const pageTransactions = transactions.items
 
   const deleteMut = useMutation({
     mutationFn: (id: string) => transactionsApi.remove(id),
     onSuccess: () => { toast.success('Transaction deleted'); qc.invalidateQueries({ queryKey: ['mgmt-transactions'] }) },
   })
 
-  const totalAmount = transactions.reduce((s: number, t: any) => s + t.total_amount, 0)
-  const totalProfit = transactions.reduce((s: number, t: any) => s + t.total_profit, 0)
+  const totalAmount = pageTransactions.reduce((s: number, t: any) => s + t.total_amount, 0)
+  const totalProfit = pageTransactions.reduce((s: number, t: any) => s + t.total_profit, 0)
+
+  const txnColumns = [
+    { key: 'transaction_date', header: 'Date', render: (t: any) => t.transaction_date },
+    { key: 'customer_name', header: 'Customer', render: (t: any) => <span className="font-medium">{t.customer_name}</span> },
+    { key: 'invoice_number', header: 'Invoice', render: (t: any) => <span className="text-gray-500">{t.invoice_number || '—'}</span> },
+    { key: 'total_quantity', header: 'Qty', align: 'right' as const, render: (t: any) => t.total_quantity },
+    { key: 'total_amount', header: 'Amount', align: 'right' as const, render: (t: any) => `Rs. ${t.total_amount.toLocaleString()}` },
+    { key: 'total_cost', header: 'Cost', align: 'right' as const, render: (t: any) => `Rs. ${t.total_cost.toLocaleString()}` },
+    { key: 'total_profit', header: 'Profit', align: 'right' as const, render: (t: any) => <span className="text-green-600">Rs. {t.total_profit.toLocaleString()}</span> },
+    {
+      key: 'source', header: 'Source', align: 'center' as const,
+      render: (t: any) => <Badge variant={t.source === 'IMPORT' ? 'info' : 'neutral'}>{t.source}</Badge>,
+    },
+    {
+      key: 'actions', header: 'Actions', align: 'center' as const,
+      render: (t: any) => (
+        <div className="flex items-center justify-center gap-1">
+          <button onClick={() => setViewTxn(t)} className="p-1 hover:bg-gray-100 rounded"><Eye size={14} /></button>
+          <button onClick={() => { if (confirm('Delete this transaction?')) deleteMut.mutate(t.id) }} className="p-1 hover:bg-red-100 text-red-500 rounded"><Trash2 size={14} /></button>
+        </div>
+      ),
+    },
+  ]
+
+  const exportCols = [
+    { key: 'transaction_date', label: 'Date' },
+    { key: 'customer_name', label: 'Customer' },
+    { key: 'invoice_number', label: 'Invoice' },
+    { key: 'total_quantity', label: 'Qty' },
+    { key: 'total_amount', label: 'Amount' },
+    { key: 'total_cost', label: 'Cost' },
+    { key: 'total_profit', label: 'Profit' },
+    { key: 'source', label: 'Source' },
+  ]
 
   return (
     <div className="space-y-4">
-      <h1 className="text-2xl font-bold">All Transactions</h1>
+      <PageHeader
+        title="All Transactions"
+        subtitle={`${transactions.total} transactions`}
+        actions={<ExportButton data={pageTransactions} filename="transactions" columns={exportCols} />}
+      />
 
-      <div className="flex gap-3 flex-wrap items-end">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <StatCard label="Transactions" value={transactions.total} icon={<ListChecks size={20} />} color="blue" />
+        <StatCard label="Total Amount" value={`Rs. ${totalAmount.toLocaleString()}`} icon={<DollarSign size={20} />} color="amber" />
+        <StatCard label="Total Profit" value={`Rs. ${totalProfit.toLocaleString()}`} icon={<TrendingUp size={20} />} color="green" />
+      </div>
+
+      <FilterBar>
         <div>
           <label className="text-xs text-gray-500">From</label>
           <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} className="block px-3 py-2 border rounded-lg text-sm" />
@@ -52,63 +119,20 @@ export default function ManagementTransactions() {
           <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search invoice..."
             className="w-full pl-9 pr-3 py-2 border rounded-lg text-sm" />
         </div>
-      </div>
+      </FilterBar>
 
-      <div className="grid grid-cols-3 gap-4">
-        <div className="bg-white dark:bg-gray-800 rounded-xl border p-4">
-          <p className="text-sm text-gray-500">Transactions</p>
-          <p className="text-xl font-bold">{transactions.length}</p>
-        </div>
-        <div className="bg-white dark:bg-gray-800 rounded-xl border p-4">
-          <p className="text-sm text-gray-500">Total Amount</p>
-          <p className="text-xl font-bold">Rs. {totalAmount.toLocaleString()}</p>
-        </div>
-        <div className="bg-white dark:bg-gray-800 rounded-xl border p-4">
-          <p className="text-sm text-gray-500">Total Profit</p>
-          <p className="text-xl font-bold text-green-600">Rs. {totalProfit.toLocaleString()}</p>
-        </div>
-      </div>
-
-      <div className="overflow-x-auto rounded-xl border">
-        <table className="w-full text-sm">
-          <thead className="bg-gray-50 dark:bg-gray-800 sticky top-0">
-            <tr>
-              <th className="px-3 py-2.5 text-left">Date</th>
-              <th className="px-3 py-2.5 text-left">Customer</th>
-              <th className="px-3 py-2.5 text-left">Invoice</th>
-              <th className="px-3 py-2.5 text-right">Qty</th>
-              <th className="px-3 py-2.5 text-right">Amount</th>
-              <th className="px-3 py-2.5 text-right">Cost</th>
-              <th className="px-3 py-2.5 text-right">Profit</th>
-              <th className="px-3 py-2.5 text-center">Source</th>
-              <th className="px-3 py-2.5 text-center">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {transactions.map((t: any) => (
-              <tr key={t.id} className="border-t hover:bg-gray-50 dark:hover:bg-gray-800/50">
-                <td className="px-3 py-2">{t.transaction_date}</td>
-                <td className="px-3 py-2 font-medium">{t.customer_name}</td>
-                <td className="px-3 py-2 text-gray-500">{t.invoice_number || '—'}</td>
-                <td className="px-3 py-2 text-right">{t.total_quantity}</td>
-                <td className="px-3 py-2 text-right">Rs. {t.total_amount.toLocaleString()}</td>
-                <td className="px-3 py-2 text-right">Rs. {t.total_cost.toLocaleString()}</td>
-                <td className="px-3 py-2 text-right text-green-600">Rs. {t.total_profit.toLocaleString()}</td>
-                <td className="px-3 py-2 text-center">
-                  <span className={`text-xs px-2 py-0.5 rounded-full ${t.source === 'IMPORT' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 dark:bg-gray-700'}`}>
-                    {t.source}
-                  </span>
-                </td>
-                <td className="px-3 py-2 text-center">
-                  <button onClick={() => setViewTxn(t)} className="p-1 hover:bg-gray-100 rounded"><Eye size={14} /></button>
-                  <button onClick={() => { if (confirm('Delete this transaction?')) deleteMut.mutate(t.id) }} className="p-1 hover:bg-red-100 text-red-500 rounded"><Trash2 size={14} /></button>
-                </td>
-              </tr>
-            ))}
-            {transactions.length === 0 && <tr><td colSpan={9} className="px-3 py-8 text-center text-gray-400">No transactions found</td></tr>}
-          </tbody>
-        </table>
-      </div>
+      {_isLoading ? (
+        <LoadingSpinner label="Loading transactions..." className="py-12" />
+      ) : (
+        <>
+          <DataTable
+            columns={txnColumns}
+            data={pageTransactions}
+            emptyState={<EmptyState title="No transactions found" description="No transactions match your filters." />}
+          />
+          <Pagination total={transactions.total} limit={limit} offset={offset} onChange={setOffset} className="px-1" />
+        </>
+      )}
 
       {viewTxn && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">

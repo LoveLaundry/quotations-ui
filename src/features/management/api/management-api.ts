@@ -1,5 +1,12 @@
 import axios from 'axios'
 
+export interface Paginated<T> {
+  items: T[]
+  total: number
+  limit: number
+  offset: number
+}
+
 const mgmtApi = axios.create({
   baseURL: import.meta.env.VITE_MGMT_API_URL ?? 'http://localhost:8001',
   timeout: 15000,
@@ -14,7 +21,13 @@ mgmtApi.interceptors.request.use((config) => {
 
 // ── Customers ─────────────────────────────────────────────────────────────
 export const customersApi = {
-  list: (search = '') => mgmtApi.get(`/api/customers?search=${search}`),
+  list: (search = '', limit?: number, offset?: number) => {
+    const q = new URLSearchParams()
+    if (search) q.set('search', search)
+    if (limit != null) q.set('limit', String(limit))
+    if (offset != null) q.set('offset', String(offset))
+    return mgmtApi.get(`/api/customers?${q}`)
+  },
   summary: () => mgmtApi.get('/api/customers/summary'),
   get: (id: string) => mgmtApi.get(`/api/customers/${id}`),
   create: (data: any) => mgmtApi.post('/api/customers', data),
@@ -27,10 +40,12 @@ export const customersApi = {
 
 // ── Items & Categories ────────────────────────────────────────────────────
 export const itemsApi = {
-  list: (params?: { category_id?: string; search?: string }) => {
+  list: (params?: { category_id?: string; search?: string; limit?: number; offset?: number }) => {
     const q = new URLSearchParams()
     if (params?.category_id) q.set('category_id', params.category_id)
     if (params?.search) q.set('search', params.search)
+    if (params?.limit != null) q.set('limit', String(params.limit))
+    if (params?.offset != null) q.set('offset', String(params.offset))
     return mgmtApi.get(`/api/items?${q}`)
   },
   get: (id: string) => mgmtApi.get(`/api/items/${id}`),
@@ -70,6 +85,8 @@ export const expensesApi = {
     if (params?.start_date) q.set('start_date', params.start_date)
     if (params?.end_date) q.set('end_date', params.end_date)
     if (params?.category_id) q.set('category_id', params.category_id)
+    if (params?.limit != null) q.set('limit', String(params.limit))
+    if (params?.offset != null) q.set('offset', String(params.offset))
     return mgmtApi.get(`/api/expenses?${q}`)
   },
   summary: (params?: any) => {
@@ -113,6 +130,8 @@ export const paymentsApi = {
   list: (params?: any) => {
     const q = new URLSearchParams()
     if (params?.customer_id) q.set('customer_id', params.customer_id)
+    if (params?.limit != null) q.set('limit', String(params.limit))
+    if (params?.offset != null) q.set('offset', String(params.offset))
     return mgmtApi.get(`/api/payments?${q}`)
   },
   create: (data: any) => mgmtApi.post('/api/payments', data),
@@ -167,6 +186,8 @@ export const salaryApi = {
     if (params?.year) q.set('year', String(params.year))
     if (params?.month) q.set('month', String(params.month))
     if (params?.deleted) q.set('deleted', String(params.deleted))
+    if (params?.limit != null) q.set('limit', String(params.limit))
+    if (params?.offset != null) q.set('offset', String(params.offset))
     return mgmtApi.get(`/api/salary/slips?${q}`)
   },
   getSlip: (slipId: string) => mgmtApi.get(`/api/salary/slips/${slipId}`),
@@ -189,6 +210,8 @@ export const advancesApi = {
     const q = new URLSearchParams()
     if (params?.employee_id) q.set('employee_id', params.employee_id)
     if (params?.status) q.set('status', params.status)
+    if (params?.limit != null) q.set('limit', String(params.limit))
+    if (params?.offset != null) q.set('offset', String(params.offset))
     return mgmtApi.get(`/api/advances?${q}`)
   },
   get: (id: string) => mgmtApi.get(`/api/advances/${id}`),
@@ -227,6 +250,8 @@ export const extraWorkApi = {
     if (params?.category_id) q.set('category_id', params.category_id)
     if (params?.start_date) q.set('start_date', params.start_date)
     if (params?.end_date) q.set('end_date', params.end_date)
+    if (params?.limit != null) q.set('limit', String(params.limit))
+    if (params?.offset != null) q.set('offset', String(params.offset))
     return mgmtApi.get(`/api/extra-work/records?${q}`)
   },
   createRecord: (data: any) => mgmtApi.post('/api/extra-work/records', data),

@@ -1,9 +1,17 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { customersApi } from '../api/management-api'
 import { toast } from 'sonner'
-import { Plus, Pencil, Trash2, X, Eye, Phone, Mail, MapPin } from 'lucide-react'
+import { Plus, Pencil, Trash2, X, Eye, Phone, Mail, MapPin, Users, AlertTriangle } from 'lucide-react'
+import { PageHeader } from '../../../components/ui/page-header'
+import { StatCard } from '../../../components/ui/stat-card'
+import { FilterBar } from '../../../components/ui/filter-bar'
+import { EmptyState } from '../../../components/ui/empty-state'
+import { LoadingSpinner } from '../../../components/ui/loading-spinner'
+import { ExportButton } from '../../../components/ui/export-button'
+import { Pagination } from '../../../components/ui/pagination'
 
+const PAGE_SIZE = 12
 const TYPES = ['HOTEL', 'SHOP', 'INDIVIDUAL', 'RESTAURANT']
 const BILLING = ['PER_ITEM', 'PER_KG', 'FIXED_MONTHLY']
 const PAYMENT_TERMS = ['NET_15', 'NET_30', 'NET_60', 'CASH_ON_DELIVERY', 'PREPAID']
@@ -14,11 +22,20 @@ export default function ManagementCustomers() {
   const [editing, setEditing] = useState<any>(null)
   const [search, setSearch] = useState('')
   const [_viewCustomer, setViewCustomer] = useState<any>(null)
+  const [offset, setOffset] = useState(0)
+  const limit = PAGE_SIZE
 
-  const { data: customers = [], isLoading } = useQuery({
-    queryKey: ['mgmt-customers', search],
-    queryFn: () => customersApi.list(search).then(r => r.data),
+  useEffect(() => {
+    setOffset(0)
+  }, [search])
+
+  const { data: customers = { items: [], total: 0 }, isLoading } = useQuery({
+    queryKey: ['mgmt-customers', search, offset, limit],
+    queryFn: () => customersApi.list(search, limit, offset).then(r => r.data),
   })
+
+  const pageCustomers = customers.items
+  const totalCustomers = customers.total
 
   const { data: summaries = [] } = useQuery({
     queryKey: ['mgmt-customer-summary'],
@@ -43,22 +60,61 @@ export default function ManagementCustomers() {
     onError: (e: any) => toast.error(e.response?.data?.detail || 'Failed'),
   })
 
+  const totalOutstanding = summaries.reduce((s: number, sum: any) => s + (sum.outstanding_payments || 0), 0)
+
+  const exportCols = [
+    { key: 'name', label: 'Name' },
+    { key: 'customer_type', label: 'Type' },
+    { key: 'phone', label: 'Phone' },
+    { key: 'email', label: 'Email' },
+    { key: 'address', label: 'Address' },
+  ]
+
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between flex-wrap gap-3">
-        <h1 className="text-2xl font-bold">Customers / Hotels / Shops</h1>
-        <button onClick={() => { setEditing(null); setShowForm(true) }}
-          className="flex items-center gap-1.5 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm">
-          <Plus size={16} /> Add Customer
-        </button>
+      <PageHeader
+        title="Customers / Hotels / Shops"
+        subtitle={`${totalCustomers} total customers`}
+        actions={
+          <>
+            <ExportButton data={pageCustomers} filename="customers" columns={exportCols} />
+            <button onClick={() => { setEditing(null); setShowForm(true) }}
+              className="flex items-center gap-1.5 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm">
+              <Plus size={16} /> Add Customer
+            </button>
+          </>
+        }
+      />
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        <StatCard label="Total Customers" value={totalCustomers} icon={<Users size={20} />} color="blue" />
+        <StatCard label="Outstanding" value={`Rs. ${totalOutstanding.toLocaleString()}`} icon={<AlertTriangle size={20} />} color="amber" />
+        <StatCard label="Active" value={pageCustomers.filter((c: any) => c.is_active !== false).length} icon={<Users size={20} />} color="green" />
+        <StatCard label="Inactive" value={pageCustomers.filter((c: any) => c.is_active === false).length} icon={<Users size={20} />} color="gray" />
       </div>
 
-      <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search customers..."
-        className="w-full md:w-80 px-3 py-2 border rounded-lg text-sm focus:ring-1 focus:ring-red-500" />
+      <FilterBar>
+        <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search customers..."
+          className="w-full md:w-80 px-3 py-2 border rounded-lg text-sm focus:ring-1 focus:ring-red-500" />
+      </FilterBar>
 
-      {isLoading ? <div className="flex justify-center py-12"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600" /></div> : (
+      {isLoading ? <div className="flex justify-center py-12"><LoadingSpinner label="Loading customers..." /></div> : pageCustomers.length === 0 ? (
+        <EmptyState
+          title="No customers found"
+          description={search ? 'Try a different search term.' : 'Add your first customer to get started.'}
+          action={
+            !search && (
+              <button onClick={() => { setEditing(null); setShowForm(true) }}
+                className="flex items-center gap-1.5 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm">
+                <Plus size={16} /> Add Customer
+              </button>
+            )
+          }
+        />
+      ) : (
+        <>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {customers.map((c: any) => {
+          {pageCustomers.map((c: any) => {
             const sum = summaries.find((s: any) => s.id === c.id) || {}
             return (
               <div key={c.id} className={`bg-white dark:bg-gray-800 rounded-xl border p-5 space-y-3 ${!c.is_active ? 'opacity-60' : ''}`}>
@@ -102,6 +158,8 @@ export default function ManagementCustomers() {
             )
           })}
         </div>
+        <Pagination total={totalCustomers} limit={limit} offset={offset} onChange={setOffset} className="px-1" />
+        </>
       )}
 
       {/* Add/Edit Modal */}

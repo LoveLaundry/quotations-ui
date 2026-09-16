@@ -3,11 +3,16 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { extraWorkApi, employeesApi } from '../api/management-api'
 import { toast } from 'sonner'
 import { Plus, X, Trash2, Tag, Zap } from 'lucide-react'
+import { Pagination } from '../../../components/ui/pagination'
+
+const PAGE_SIZE = 20
 
 export default function ExtraWorkPage() {
   const qc = useQueryClient()
   const [showCatForm, setShowCatForm] = useState(false)
   const [showRecordForm, setShowRecordForm] = useState(false)
+  const [offset, setOffset] = useState(0)
+  const limit = PAGE_SIZE
 
   const { data: employees = [] } = useQuery({
     queryKey: ['mgmt-employees'],
@@ -19,10 +24,12 @@ export default function ExtraWorkPage() {
     queryFn: () => extraWorkApi.categories({ is_active: true }).then(r => r.data),
   })
 
-  const { data: records = [], isLoading } = useQuery({
-    queryKey: ['extra-work-records'],
-    queryFn: () => extraWorkApi.records().then(r => r.data),
+  const { data: recordsData = { items: [], total: 0 }, isLoading } = useQuery({
+    queryKey: ['extra-work-records', offset, limit],
+    queryFn: () => extraWorkApi.records({ limit, offset }).then(r => r.data),
   })
+
+  const records = recordsData.items
 
   const createCat = useMutation({
     mutationFn: (data: any) => extraWorkApi.createCategory(data),
@@ -130,6 +137,8 @@ export default function ExtraWorkPage() {
           </table>
         </div>
       </div>
+
+      <Pagination total={recordsData.total} limit={limit} offset={offset} onChange={setOffset} className="px-1" />
 
       {showCatForm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">

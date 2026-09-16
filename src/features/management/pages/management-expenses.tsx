@@ -1,8 +1,17 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { expensesApi } from '../api/management-api'
 import { toast } from 'sonner'
-import { Plus, Pencil, Trash2, X } from 'lucide-react'
+import { Plus, Pencil, Trash2, X, Receipt } from 'lucide-react'
+import { PageHeader } from '../../../components/ui/page-header'
+import { FilterBar } from '../../../components/ui/filter-bar'
+import { DataTable } from '../../../components/ui/data-table'
+import { EmptyState } from '../../../components/ui/empty-state'
+import { LoadingSpinner } from '../../../components/ui/loading-spinner'
+import { ExportButton } from '../../../components/ui/export-button'
+import { Pagination } from '../../../components/ui/pagination'
+
+const PAGE_SIZE = 20
 
 const PAYMENT_METHODS = ['CASH', 'BANK_TRANSFER', 'CHEQUE', 'CARD', 'ONLINE']
 
@@ -13,23 +22,31 @@ export default function ManagementExpenses() {
   const [startDate, setStartDate] = useState('')
   const [endDate, setEndDate] = useState('')
   const [catFilter, setCatFilter] = useState('')
+  const [offset, setOffset] = useState(0)
+  const limit = PAGE_SIZE
+
+  useEffect(() => {
+    setOffset(0)
+  }, [startDate, endDate, catFilter])
 
   const { data: categories = [] } = useQuery({
     queryKey: ['mgmt-expense-cats'],
     queryFn: () => expensesApi.categories().then(r => r.data),
   })
 
-  const { data: expenses = [], isLoading: _isLoading } = useQuery({
-    queryKey: ['mgmt-expenses', startDate, endDate, catFilter],
-    queryFn: () => expensesApi.list({ start_date: startDate, end_date: endDate, category_id: catFilter }).then(r => r.data),
+  const { data: expensesData = { items: [], total: 0 }, isLoading: _isLoading } = useQuery({
+    queryKey: ['mgmt-expenses', startDate, endDate, catFilter, offset, limit],
+    queryFn: () => expensesApi.list({ start_date: startDate, end_date: endDate, category_id: catFilter, limit, offset }).then(r => r.data),
   })
+
+  const pageExpenses = expensesData.items
 
   const { data: summary = [] } = useQuery({
     queryKey: ['mgmt-expense-summary', startDate, endDate],
     queryFn: () => expensesApi.summary({ start_date: startDate, end_date: endDate }).then(r => r.data),
   })
 
-  const totalExpenses = expenses.reduce((s: number, e: any) => s + e.amount, 0)
+  const totalExpenses = summary.reduce((s: number, item: any) => s + (item.total || 0), 0)
 
   const createMut = useMutation({
     mutationFn: (data: any) => expensesApi.create(data),
@@ -48,17 +65,50 @@ export default function ManagementExpenses() {
     onSuccess: () => { toast.success('Expense deleted'); qc.invalidateQueries({ queryKey: ['mgmt-expenses'] }) },
   })
 
+  const expenseColumns = [
+    { key: 'date', header: 'Date' },
+    { key: 'category_name', header: 'Category', render: (e: any) => <span className="text-xs px-2 py-0.5 rounded-full bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300">{e.category_name}</span> },
+    { key: 'description', header: 'Description' },
+    { key: 'amount', header: 'Amount', align: 'right' as const, render: (e: any) => <span className="font-medium">Rs. {e.amount.toLocaleString()}</span> },
+    { key: 'payment_method', header: 'Payment', render: (e: any) => <span className="text-xs px-2 py-0.5 rounded bg-gray-100 dark:bg-gray-700">{e.payment_method}</span> },
+    { key: 'reference', header: 'Reference', render: (e: any) => <span className="text-gray-400">{e.reference}</span> },
+    {
+      key: 'actions', header: 'Actions', align: 'center' as const,
+      render: (e: any) => (
+        <div className="flex items-center justify-center gap-1">
+          <button onClick={() => { setEditing(e); setShowForm(true) }} className="p-1 hover:bg-gray-100 rounded"><Pencil size={14} /></button>
+          <button onClick={() => deleteMut.mutate(e.id)} className="p-1 hover:bg-red-100 text-red-500 rounded"><Trash2 size={14} /></button>
+        </div>
+      ),
+    },
+  ]
+
+  const exportCols = [
+    { key: 'date', label: 'Date' },
+    { key: 'category_name', label: 'Category' },
+    { key: 'description', label: 'Description' },
+    { key: 'amount', label: 'Amount' },
+    { key: 'payment_method', label: 'Payment' },
+    { key: 'reference', label: 'Reference' },
+  ]
+
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between flex-wrap gap-3">
-        <h1 className="text-2xl font-bold">Expense Management</h1>
-        <button onClick={() => { setEditing(null); setShowForm(true) }}
-          className="flex items-center gap-1.5 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm">
-          <Plus size={16} /> Add Expense
-        </button>
-      </div>
+      <PageHeader
+        title="Expense Management"
+        subtitle={`${expensesData.total} expenses · Rs. ${totalExpenses.toLocaleString()} total`}
+        actions={
+          <>
+            <ExportButton data={pageExpenses} filename="expenses" columns={exportCols} />
+            <button onClick={() => { setEditing(null); setShowForm(true) }}
+              className="flex items-center gap-1.5 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm">
+              <Plus size={16} /> Add Expense
+            </button>
+          </>
+        }
+      />
 
-      <div className="flex gap-3 flex-wrap items-end">
+      <FilterBar>
         <div>
           <label className="text-xs text-gray-500">From</label>
           <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} className="block px-3 py-2 border rounded-lg text-sm" />
@@ -71,9 +121,8 @@ export default function ManagementExpenses() {
           <option value="">All Categories</option>
           {categories.map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
         </select>
-      </div>
+      </FilterBar>
 
-      {/* Summary cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <div className="bg-white dark:bg-gray-800 rounded-xl border p-4">
           <p className="text-sm text-gray-500">Total Expenses</p>
@@ -88,38 +137,18 @@ export default function ManagementExpenses() {
         ))}
       </div>
 
-      <div className="overflow-x-auto rounded-xl border">
-        <table className="w-full text-sm">
-          <thead className="bg-gray-50 dark:bg-gray-800">
-            <tr>
-              <th className="px-3 py-2.5 text-left">Date</th>
-              <th className="px-3 py-2.5 text-left">Category</th>
-              <th className="px-3 py-2.5 text-left">Description</th>
-              <th className="px-3 py-2.5 text-right">Amount</th>
-              <th className="px-3 py-2.5 text-left">Payment</th>
-              <th className="px-3 py-2.5 text-left">Reference</th>
-              <th className="px-3 py-2.5 text-center">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {expenses.map((e: any) => (
-              <tr key={e.id} className="border-t hover:bg-gray-50 dark:hover:bg-gray-800/50">
-                <td className="px-3 py-2">{e.date}</td>
-                <td className="px-3 py-2"><span className="text-xs px-2 py-0.5 rounded-full bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300">{e.category_name}</span></td>
-                <td className="px-3 py-2">{e.description}</td>
-                <td className="px-3 py-2 text-right font-medium">Rs. {e.amount.toLocaleString()}</td>
-                <td className="px-3 py-2"><span className="text-xs px-2 py-0.5 rounded bg-gray-100 dark:bg-gray-700">{e.payment_method}</span></td>
-                <td className="px-3 py-2 text-gray-400">{e.reference}</td>
-                <td className="px-3 py-2 text-center">
-                  <button onClick={() => { setEditing(e); setShowForm(true) }} className="p-1 hover:bg-gray-100 rounded"><Pencil size={14} /></button>
-                  <button onClick={() => deleteMut.mutate(e.id)} className="p-1 hover:bg-red-100 text-red-500 rounded"><Trash2 size={14} /></button>
-                </td>
-              </tr>
-            ))}
-            {expenses.length === 0 && <tr><td colSpan={7} className="px-3 py-8 text-center text-gray-400">No expenses found</td></tr>}
-          </tbody>
-        </table>
-      </div>
+      {_isLoading ? (
+        <LoadingSpinner label="Loading expenses..." className="py-12" />
+      ) : (
+        <>
+          <DataTable
+            columns={expenseColumns}
+            data={pageExpenses}
+            emptyState={<EmptyState icon={<Receipt size={28} />} title="No expenses found" description="No expenses match your filters." />}
+          />
+          <Pagination total={expensesData.total} limit={limit} offset={offset} onChange={setOffset} className="px-1" />
+        </>
+      )}
 
       {showForm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">

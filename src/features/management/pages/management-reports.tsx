@@ -5,6 +5,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { Filter } from 'lucide-react'
 
 const COLORS = ['#ef4444', '#3b82f6', '#22c55e', '#f59e0b', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316']
+const LIST_LIMIT = 500
 
 export default function ManagementReports() {
   const [report, setReport] = useState('profit-loss')
@@ -14,10 +15,12 @@ export default function ManagementReports() {
   const [year, setYear] = useState(new Date().getFullYear())
   const [month, setMonth] = useState(new Date().getMonth() + 1)
 
-  const { data: customers = [] } = useQuery({
+  const { data: customersData = { items: [] } } = useQuery({
     queryKey: ['mgmt-customers-list'],
-    queryFn: () => customersApi.list().then(r => r.data),
+    queryFn: () => customersApi.list('', LIST_LIMIT, 0).then(r => r.data),
   })
+
+  const customers = customersData.items
 
   const { data: plData } = useQuery({
     queryKey: ['mgmt-pl-report', startDate, endDate, customerId],

@@ -1,25 +1,38 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { paymentsApi, customersApi } from '../api/management-api'
 import { toast } from 'sonner'
 import { Plus, Trash2, X } from 'lucide-react'
+import { Pagination } from '../../../components/ui/pagination'
 
 const METHODS = ['CASH', 'BANK_TRANSFER', 'CHEQUE', 'CARD', 'ONLINE']
+const PAGE_SIZE = 20
+const LIST_LIMIT = 500
 
 export default function ManagementPayments() {
   const qc = useQueryClient()
   const [showForm, setShowForm] = useState(false)
   const [customerId, setCustomerId] = useState('')
+  const [offset, setOffset] = useState(0)
+  const limit = PAGE_SIZE
 
-  const { data: customers = [] } = useQuery({
+  useEffect(() => {
+    setOffset(0)
+  }, [customerId])
+
+  const { data: customersData = { items: [] } } = useQuery({
     queryKey: ['mgmt-customers-list'],
-    queryFn: () => customersApi.list().then(r => r.data),
+    queryFn: () => customersApi.list('', LIST_LIMIT, 0).then(r => r.data),
   })
 
-  const { data: payments = [], isLoading: _isLoading } = useQuery({
-    queryKey: ['mgmt-payments', customerId],
-    queryFn: () => paymentsApi.list({ customer_id: customerId }).then(r => r.data),
+  const customers = customersData.items
+
+  const { data: paymentsData = { items: [], total: 0 }, isLoading: _isLoading } = useQuery({
+    queryKey: ['mgmt-payments', customerId, offset, limit],
+    queryFn: () => paymentsApi.list({ customer_id: customerId, limit, offset }).then(r => r.data),
   })
+
+  const payments = paymentsData.items
 
   const createMut = useMutation({
     mutationFn: (data: any) => paymentsApi.create(data),
@@ -86,6 +99,8 @@ export default function ManagementPayments() {
           </tbody>
         </table>
       </div>
+
+      <Pagination total={paymentsData.total} limit={limit} offset={offset} onChange={setOffset} className="px-1" />
 
       {showForm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">

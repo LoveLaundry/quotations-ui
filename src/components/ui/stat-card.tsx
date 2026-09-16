@@ -1,59 +1,79 @@
 import React from 'react'
+import { TrendingUp, TrendingDown } from 'lucide-react'
 import { cn } from '../../lib/utils'
 
 interface StatCardProps {
   label: string
   value: string | number
+  icon?: React.ReactNode
+  trend?: number | string
+  trendLabel?: string
   description?: string
-  trend?: string
-  icon: React.ReactNode
+  color?: 'red' | 'green' | 'blue' | 'amber' | 'purple' | 'gray'
   className?: string
 }
 
-export function StatCard({ label, value, description, trend, icon, className }: StatCardProps) {
+const colorMap = {
+  red: { iconBg: 'bg-red-50 text-red-600 border border-red-200', trend: 'text-red-600' },
+  green: { iconBg: 'bg-emerald-50 text-emerald-600 border border-emerald-200', trend: 'text-emerald-600' },
+  blue: { iconBg: 'bg-blue-50 text-blue-600 border border-blue-200', trend: 'text-blue-600' },
+  amber: { iconBg: 'bg-amber-50 text-amber-600 border border-amber-200', trend: 'text-amber-600' },
+  purple: { iconBg: 'bg-purple-50 text-purple-600 border border-purple-200', trend: 'text-purple-600' },
+  gray: { iconBg: 'bg-gray-100 text-gray-600 border border-gray-200', trend: 'text-gray-600' },
+}
+
+export function StatCard({ label, value, icon, trend, trendLabel, description, color = 'gray', className }: StatCardProps) {
+  const c = colorMap[color]
+  const trendNum = typeof trend === 'number' ? trend : undefined
+  const trendStr = typeof trend === 'string' ? trend : undefined
+  const isPositive = trendNum !== undefined && trendNum > 0
+  const isNegative = trendNum !== undefined && trendNum < 0
+  const displayLabel = description || trendLabel
+
   return (
     <div
       className={cn(
-        'group relative overflow-hidden',
-        'rounded-xl border border-[#E5E7EB] bg-white p-6',
-        'shadow-sm',
-        'transition-all duration-300',
-        'hover:shadow-md hover:border-[#FCA5A5] hover:-translate-y-1',
+        'group relative overflow-hidden rounded-xl border border-[#E5E7EB] bg-white p-5',
+        'shadow-sm transition-all duration-200 hover:shadow-md hover:border-[#D1D5DB]',
         className,
       )}
     >
-      <div className="absolute -top-6 -right-6 h-24 w-24 rounded-full bg-red-500/0 group-hover:bg-red-500/5 blur-2xl transition-all duration-500 pointer-events-none" />
-
       <div className="flex items-start justify-between relative">
-        <div className="flex-1">
-          <p className="text-[12px] font-semibold uppercase tracking-wider text-[#6B7280]">
-            {label}
-          </p>
-          <p className="mt-2 text-[32px] font-bold text-[#111827] leading-none tracking-tight">
-            {value}
-          </p>
-          {description && (
-            <div className="flex items-center gap-2 mt-3">
-              {trend && (
-                <span className="inline-flex items-center rounded-md bg-emerald-50 border border-emerald-200 px-2 py-1 text-[11px] font-semibold text-emerald-700">
-                  {trend}
+        <div className="flex-1 min-w-0">
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-[#6B7280]">{label}</p>
+          <p className="mt-1.5 text-[28px] font-bold text-[#111827] leading-none tracking-tight truncate">{value}</p>
+          {(trendNum !== undefined || trendStr || displayLabel) && (
+            <div className="flex items-center gap-2 mt-2">
+              {trendNum !== undefined && (
+                <span className={cn(
+                  'inline-flex items-center gap-0.5 rounded-md px-1.5 py-0.5 text-[11px] font-semibold border',
+                  isPositive ? 'bg-emerald-50 border-emerald-200 text-emerald-700' :
+                  isNegative ? 'bg-red-50 border-red-200 text-red-700' :
+                  'bg-gray-50 border-gray-200 text-gray-600',
+                )}>
+                  {isPositive ? <TrendingUp size={11} /> : isNegative ? <TrendingDown size={11} /> : null}
+                  {isPositive ? '+' : ''}{trendNum.toFixed(1)}%
                 </span>
               )}
-              <span className="text-[13px] text-[#6B7280]">{description}</span>
+              {trendStr && (
+                <span className="inline-flex items-center rounded-md px-1.5 py-0.5 text-[11px] font-semibold bg-gray-50 border border-gray-200 text-gray-600">
+                  {trendStr}
+                </span>
+              )}
+              {displayLabel && !trendStr && (
+                <span className="text-[12px] text-[#6B7280]">{displayLabel}</span>
+              )}
             </div>
           )}
         </div>
-        <div
-          className={cn(
-            'flex h-12 w-12 shrink-0 items-center justify-center rounded-xl',
-            'bg-gradient-to-br from-[#F3F4F6] to-[#E5E7EB] text-[#6B7280] border border-[#E5E7EB]',
-            'group-hover:from-[#DC2626] group-hover:to-[#B91C1C] group-hover:text-white group-hover:border-[#B91C1C]',
-            'group-hover:shadow-lg group-hover:shadow-red-600/30',
-            'transition-all duration-300',
-          )}
-        >
-          {icon}
-        </div>
+        {icon && (
+          <div className={cn(
+            'flex h-10 w-10 shrink-0 items-center justify-center rounded-xl',
+            c.iconBg,
+          )}>
+            {icon}
+          </div>
+        )}
       </div>
     </div>
   )

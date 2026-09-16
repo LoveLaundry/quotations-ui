@@ -1,10 +1,12 @@
+import { useEffect } from 'react'
 import { AlertTriangle } from 'lucide-react'
 import { Button } from './button'
 
 interface ConfirmDialogProps {
   open: boolean
   title: string
-  description: string
+  message?: string
+  description?: string
   confirmLabel?: string
   cancelLabel?: string
   variant?: 'danger' | 'warning'
@@ -15,6 +17,7 @@ interface ConfirmDialogProps {
 export function ConfirmDialog({
   open,
   title,
+  message,
   description,
   confirmLabel = 'Confirm',
   cancelLabel = 'Cancel',
@@ -22,6 +25,15 @@ export function ConfirmDialog({
   onConfirm,
   onCancel,
 }: ConfirmDialogProps) {
+  useEffect(() => {
+    if (!open) return
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onCancel()
+    }
+    document.addEventListener('keydown', handler)
+    return () => document.removeEventListener('keydown', handler)
+  }, [open, onCancel])
+
   if (!open) return null
 
   const confirmClass = variant === 'danger'
@@ -41,7 +53,7 @@ export function ConfirmDialog({
           </div>
           <div>
             <h3 className="text-[15px] font-semibold" style={{ color: 'var(--text-primary)' }}>{title}</h3>
-            <p className="text-[13px] mt-1" style={{ color: 'var(--text-tertiary)' }}>{description}</p>
+            <p className="text-[13px] mt-1" style={{ color: 'var(--text-tertiary)' }}>{message || description}</p>
           </div>
         </div>
         <div className="flex gap-2 justify-end">

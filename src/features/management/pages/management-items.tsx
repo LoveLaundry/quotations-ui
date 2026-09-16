@@ -1,8 +1,11 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { itemsApi } from '../api/management-api'
 import { toast } from 'sonner'
 import { Plus, Pencil, Trash2, X, Tag, Package } from 'lucide-react'
+import { Pagination } from '../../../components/ui/pagination'
+
+const PAGE_SIZE = 20
 
 export default function ManagementItems() {
   const qc = useQueryClient()
@@ -11,15 +14,21 @@ export default function ManagementItems() {
   const [editing, setEditing] = useState<any>(null)
   const [catFilter, setCatFilter] = useState('')
   const [search, setSearch] = useState('')
+  const [offset, setOffset] = useState(0)
+  const limit = PAGE_SIZE
+
+  useEffect(() => {
+    setOffset(0)
+  }, [catFilter, search])
 
   const { data: categories = [] } = useQuery({
     queryKey: ['mgmt-categories'],
     queryFn: () => itemsApi.categories().then(r => r.data),
   })
 
-  const { data: items = [], isLoading: _isLoading } = useQuery({
-    queryKey: ['mgmt-items', catFilter, search],
-    queryFn: () => itemsApi.list({ category_id: catFilter, search }).then(r => r.data),
+  const { data: itemsData = { items: [], total: 0 }, isLoading: _isLoading } = useQuery({
+    queryKey: ['mgmt-items', catFilter, search, offset, limit],
+    queryFn: () => itemsApi.list({ category_id: catFilter, search, limit, offset }).then(r => r.data),
   })
 
   const createItemMut = useMutation({
@@ -62,7 +71,7 @@ export default function ManagementItems() {
 
       <div className="flex gap-1 bg-gray-100 dark:bg-gray-800 rounded-lg p-1 w-fit">
         <button onClick={() => setTab('items')} className={`px-4 py-1.5 rounded-md text-sm font-medium ${tab === 'items' ? 'bg-white dark:bg-gray-700 shadow' : ''}`}>
-          <Package size={14} className="inline mr-1" /> Items ({items.length})
+          <Package size={14} className="inline mr-1" /> Items ({itemsData.total})
         </button>
         <button onClick={() => setTab('categories')} className={`px-4 py-1.5 rounded-md text-sm font-medium ${tab === 'categories' ? 'bg-white dark:bg-gray-700 shadow' : ''}`}>
           <Tag size={14} className="inline mr-1" /> Categories ({categories.length})
@@ -95,7 +104,7 @@ export default function ManagementItems() {
                 </tr>
               </thead>
               <tbody>
-                {items.map((item: any) => (
+                {itemsData.items.map((item: any) => (
                   <tr key={item.id} className="border-t hover:bg-gray-50 dark:hover:bg-gray-800/50">
                     <td className="px-3 py-2 font-medium">{item.name}</td>
                     <td className="px-3 py-2"><span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-700">{item.category_name}</span></td>
@@ -110,10 +119,11 @@ export default function ManagementItems() {
                     </td>
                   </tr>
                 ))}
-                {items.length === 0 && <tr><td colSpan={8} className="px-3 py-8 text-center text-gray-400">No items found</td></tr>}
+                {itemsData.items.length === 0 && <tr><td colSpan={8} className="px-3 py-8 text-center text-gray-400">No items found</td></tr>}
               </tbody>
             </table>
           </div>
+          <Pagination total={itemsData.total} limit={limit} offset={offset} onChange={setOffset} className="px-1" />
         </>
       )}
 

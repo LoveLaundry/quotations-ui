@@ -6,6 +6,10 @@ import { toast } from 'sonner'
 import { Calculator, FileText, Printer, CheckCircle, Sparkles } from 'lucide-react'
 import { useReactToPrint } from 'react-to-print'
 import { SalarySlipPrint } from '../components/salary-slip-print'
+import { PageHeader } from '../../../components/ui/page-header'
+import { FilterBar } from '../../../components/ui/filter-bar'
+import { Badge } from '../../../components/ui/badge'
+import { ExportButton } from '../../../components/ui/export-button'
 
 const MONTHS = [
   'January', 'February', 'March', 'April', 'May', 'June',
@@ -134,27 +138,30 @@ export default function SalarySlipPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between flex-wrap gap-3">
-        <h1 className="text-2xl font-bold">Generate Salary Slip</h1>
-        {paramEmp && (
-          <span className="flex items-center gap-1.5 text-sm text-amber-600 dark:text-amber-400 font-medium">
-            <Sparkles size={15} /> Quick-launch from employee card — auto-calculated
-          </span>
-        )}
-      </div>
+      <PageHeader
+        title="Generate Salary Slip"
+        subtitle="Calculate earnings & deductions for an employee period"
+        actions={
+          paramEmp ? (
+            <span className="flex items-center gap-1.5 text-sm text-amber-600 dark:text-amber-400 font-medium">
+              <Sparkles size={15} /> Quick-launch from employee card — auto-calculated
+            </span>
+          ) : undefined
+        }
+      />
 
       <div className="bg-white dark:bg-gray-800 rounded-xl border p-6 space-y-4">
         <h2 className="text-lg font-semibold flex items-center gap-2">
           <Calculator size={20} /> Salary Calculation
         </h2>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <FilterBar>
           <div>
             <label className="text-sm font-medium text-gray-600 dark:text-gray-400">Employee</label>
             <select
               value={selectedEmp}
               onChange={e => { setSelectedEmp(e.target.value); setCalculation(null); setShowSlip(false) }}
-              className="w-full mt-1 px-3 py-2 border rounded-lg text-sm"
+              className="w-full min-w-[200px] mt-1 px-3 py-2 border rounded-lg text-sm"
             >
               <option value="">Select Employee</option>
               {employees.filter((e: any) => e.is_active || e.id === paramEmp).map((e: any) => (
@@ -231,7 +238,7 @@ export default function SalarySlipPage() {
               {calcMut.isPending ? 'Calculating...' : 'Calculate'}
             </button>
           </div>
-        </div>
+        </FilterBar>
       </div>
 
       {calculation && (
@@ -256,8 +263,11 @@ export default function SalarySlipPage() {
             </div>
 
             {calculation.existing_slip_id && (
-              <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 rounded-lg p-3 text-sm text-yellow-700 dark:text-yellow-300">
-                A salary slip already exists for this period (Status: {calculation.existing_slip_status}).
+              <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 rounded-lg p-3 text-sm text-yellow-700 dark:text-yellow-300 flex items-center gap-2 flex-wrap">
+                A salary slip already exists for this period · Status:{' '}
+                <Badge variant={calculation.existing_slip_status === 'PAID' ? 'success' : 'warning'}>
+                  {calculation.existing_slip_status}
+                </Badge>
               </div>
             )}
           </div>
@@ -331,7 +341,7 @@ export default function SalarySlipPage() {
       )}
 
       {calculation && !showSlip && (
-        <div className="flex gap-3">
+        <div className="flex gap-3 flex-wrap items-end">
           <textarea
             value={notes}
             onChange={e => setNotes(e.target.value)}
@@ -339,6 +349,7 @@ export default function SalarySlipPage() {
             rows={2}
             className="flex-1 px-3 py-2 border rounded-lg text-sm"
           />
+          <ExportButton data={[calculation]} filename={`salary-calc-${selectedEmp}-${year}-${month}`} label="Export Calc" />
           <button
             onClick={handleGenerate}
             disabled={generateMut.isPending}

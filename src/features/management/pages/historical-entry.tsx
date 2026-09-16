@@ -4,6 +4,8 @@ import { transactionsApi, customersApi, itemsApi } from '../api/management-api'
 import { toast } from 'sonner'
 import { Plus, Copy, Trash2, Save, ArrowDown } from 'lucide-react'
 
+const LIST_LIMIT = 500
+
 interface Row {
   id: string
   date: string
@@ -45,15 +47,19 @@ export default function HistoricalEntry() {
   const [_activeCol, setActiveCol] = useState(0)
   const tableRef = useRef<HTMLDivElement>(null)
 
-  const { data: customers = [] } = useQuery({
+  const { data: customersData = { items: [] } } = useQuery({
     queryKey: ['mgmt-customers-list'],
-    queryFn: () => customersApi.list().then(r => r.data),
+    queryFn: () => customersApi.list('', LIST_LIMIT, 0).then(r => r.data),
   })
 
-  const { data: itemsData = [] } = useQuery({
+  const customers = customersData.items
+
+  const { data: itemsEnvelope = { items: [] } } = useQuery({
     queryKey: ['mgmt-items-list'],
-    queryFn: () => itemsApi.list().then(r => r.data),
+    queryFn: () => itemsApi.list({ limit: LIST_LIMIT, offset: 0 }).then(r => r.data),
   })
+
+  const itemsData = itemsEnvelope.items
 
   const bulkMut = useMutation({
     mutationFn: (txns: any[]) => transactionsApi.bulkCreate({ transactions: txns }),

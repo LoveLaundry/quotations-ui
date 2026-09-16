@@ -3,21 +3,9 @@ import { dashboardApi } from '../api/management-api'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, Legend } from 'recharts'
 import { TrendingUp, TrendingDown, Users, Package, Wallet, AlertCircle, DollarSign, ShoppingCart, UserCheck, FileText, HeartHandshake, UserCircle, Banknote, ListChecks, CalendarPlus, Sun, Zap, Settings, ArrowRight } from 'lucide-react'
 import { Link } from 'react-router-dom'
-
-function StatCard({ title, value, icon: Icon, color, sub }: { title: string; value: string; icon: any; color: string; sub?: string }) {
-  return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl border p-5 flex items-start gap-4">
-      <div className={`p-3 rounded-lg ${color}`}>
-        <Icon size={22} className="text-white" />
-      </div>
-      <div>
-        <p className="text-sm text-gray-500 dark:text-gray-400">{title}</p>
-        <p className="text-2xl font-bold mt-1">{value}</p>
-        {sub && <p className="text-xs text-gray-400 mt-1">{sub}</p>}
-      </div>
-    </div>
-  )
-}
+import { StatCard } from '../../../components/ui/stat-card'
+import { PageHeader } from '../../../components/ui/page-header'
+import { LoadingSpinner } from '../../../components/ui/loading-spinner'
 
 const QUICK_ACTIONS = [
   { to: '/management/employees', label: 'Employees', icon: UserCircle, color: 'bg-rose-500' },
@@ -36,34 +24,34 @@ export default function ManagementDashboard() {
     queryFn: () => dashboardApi.get().then(r => r.data),
   })
 
-  if (isLoading) return <div className="flex items-center justify-center h-64"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600" /></div>
+  if (isLoading) return <div className="flex items-center justify-center h-64"><LoadingSpinner /></div>
 
   const d = data || {}
   const fmt = (n: number) => `Rs. ${(n || 0).toLocaleString()}`
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Management Dashboard</h1>
+      <PageHeader title="Management Dashboard" subtitle="Financial, HR and operational overview" />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard title="Today's Revenue" value={fmt(d.today_revenue)} icon={DollarSign} color="bg-green-500" />
-        <StatCard title="Monthly Revenue" value={fmt(d.month_revenue)} icon={TrendingUp} color="bg-blue-500" />
-        <StatCard title="6-Month Revenue" value={fmt(d.six_month_revenue)} icon={ShoppingCart} color="bg-purple-500" />
-        <StatCard title="Net Profit" value={fmt(d.net_profit)} icon={Wallet} color={d.net_profit >= 0 ? 'bg-emerald-500' : 'bg-red-500'} />
+        <StatCard label="Today's Revenue" value={fmt(d.today_revenue)} icon={<DollarSign size={20} />} color="green" />
+        <StatCard label="Monthly Revenue" value={fmt(d.month_revenue)} icon={<TrendingUp size={20} />} color="blue" />
+        <StatCard label="6-Month Revenue" value={fmt(d.six_month_revenue)} icon={<ShoppingCart size={20} />} color="purple" />
+        <StatCard label="Net Profit" value={fmt(d.net_profit)} icon={<Wallet size={20} />} color={d.net_profit >= 0 ? 'green' : 'red'} />
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard title="Total Pieces" value={(d.total_pieces || 0).toLocaleString()} icon={Package} color="bg-amber-500" />
-        <StatCard title="Customers" value={String(d.total_customers || 0)} icon={Users} color="bg-indigo-500" />
-        <StatCard title="Total Expenses" value={fmt(d.total_expenses)} icon={TrendingDown} color="bg-orange-500" />
-        <StatCard title="Outstanding" value={fmt(d.outstanding_payments)} icon={AlertCircle} color="bg-red-500" />
+        <StatCard label="Total Pieces" value={(d.total_pieces || 0).toLocaleString()} icon={<Package size={20} />} color="amber" />
+        <StatCard label="Customers" value={String(d.total_customers || 0)} icon={<Users size={20} />} color="blue" />
+        <StatCard label="Total Expenses" value={fmt(d.total_expenses)} icon={<TrendingDown size={20} />} color="amber" />
+        <StatCard label="Outstanding" value={fmt(d.outstanding_payments)} icon={<AlertCircle size={20} />} color="red" />
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard title="Active Employees" value={String(d.active_employees ?? '—')} icon={Users} color="bg-rose-500" />
-        <StatCard title="Present Today" value={(d.present_today ?? 0) + (d.on_leave_today ? ` / ${d.on_leave_today} leave` : '')} icon={UserCheck} color="bg-teal-500" />
-        <StatCard title="Draft Slips (Month)" value={String(d.draft_slips_month ?? '—')} icon={FileText} color="bg-fuchsia-500" sub={`${d.unpaid_slips_month ?? 0} finalized unpaid`} />
-        <StatCard title="Outstanding Advances" value={fmt(d.outstanding_advances)} icon={HeartHandshake} color="bg-slate-600" />
+        <StatCard label="Active Employees" value={String(d.active_employees ?? '—')} icon={<Users size={20} />} color="green" />
+        <StatCard label="Present Today" value={(d.present_today ?? 0) + (d.on_leave_today ? ` / ${d.on_leave_today} leave` : '')} icon={<UserCheck size={20} />} color="purple" />
+        <StatCard label="Draft Slips (Month)" value={String(d.draft_slips_month ?? '—')} icon={<FileText size={20} />} color="purple" trendLabel={`${d.unpaid_slips_month ?? 0} finalized unpaid`} />
+        <StatCard label="Outstanding Advances" value={fmt(d.outstanding_advances)} icon={<HeartHandshake size={20} />} color="amber" />
       </div>
 
       <div className="bg-white dark:bg-gray-800 rounded-xl border p-5">

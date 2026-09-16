@@ -1,9 +1,17 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 import { employeesApi } from '../api/management-api'
 import { toast } from 'sonner'
-import { Plus, Pencil, Trash2, X, DollarSign, UserCheck, Filter, FileText } from 'lucide-react'
+import { Plus, Pencil, Trash2, X, DollarSign, UserCheck, Filter, FileText, Users } from 'lucide-react'
+import { PageHeader } from '../../../components/ui/page-header'
+import { StatCard } from '../../../components/ui/stat-card'
+import { FilterBar } from '../../../components/ui/filter-bar'
+import { EmptyState } from '../../../components/ui/empty-state'
+import { LoadingSpinner } from '../../../components/ui/loading-spinner'
+import { Pagination } from '../../../components/ui/pagination'
+
+const PAGE_SIZE = 12
 
 const DEPARTMENTS = ['WASHING', 'PRESSING', 'FINISHING', 'PACKING', 'DRY_CLEANING', 'DELIVERY', 'GENERAL']
 const SALARY_TYPES = ['MONTHLY', 'WEEKLY', 'DAILY']
@@ -23,6 +31,12 @@ export default function ManagementEmployees() {
   const [editing, setEditing] = useState<any>(null)
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('ALL')
+  const [offset, setOffset] = useState(0)
+  const limit = PAGE_SIZE
+
+  useEffect(() => {
+    setOffset(0)
+  }, [search, statusFilter])
 
   const { data: employees = [], isLoading: _isLoading } = useQuery({
     queryKey: ['mgmt-employees', search],
@@ -32,6 +46,8 @@ export default function ManagementEmployees() {
   const filtered = statusFilter === 'ALL'
     ? employees
     : employees.filter((e: any) => (statusFilter === 'ACTIVE' ? e.is_active !== false : e.is_active === false))
+
+  const pageEmployees = filtered.slice(offset, offset + limit)
 
   const createMut = useMutation({
     mutationFn: (data: any) => employeesApi.create(data),
@@ -63,17 +79,29 @@ export default function ManagementEmployees() {
     onError: (e: any) => toast.error(e.response?.data?.detail || 'Failed'),
   })
 
+  const totalSalary = employees.reduce((s: number, e: any) => s + (e.basic_salary || 0), 0)
+
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between flex-wrap gap-3">
-        <h1 className="text-2xl font-bold">Employees & Salaries</h1>
-        <button onClick={() => { setEditing(null); setShowForm(true) }}
-          className="flex items-center gap-1.5 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm">
-          <Plus size={16} /> Add Employee
-        </button>
+      <PageHeader
+        title="Employees & Salaries"
+        subtitle={`${employees.length} employees`}
+        actions={
+          <button onClick={() => { setEditing(null); setShowForm(true) }}
+            className="flex items-center gap-1.5 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm">
+            <Plus size={16} /> Add Employee
+          </button>
+        }
+      />
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        <StatCard label="Total Employees" value={employees.length} icon={<Users size={20} />} color="blue" />
+        <StatCard label="Active" value={employees.filter((e: any) => e.is_active !== false).length} icon={<UserCheck size={20} />} color="green" />
+        <StatCard label="Inactive" value={employees.filter((e: any) => e.is_active === false).length} icon={<Users size={20} />} color="gray" />
+        <StatCard label="Total Salary" value={`Rs. ${totalSalary.toLocaleString()}`} icon={<DollarSign size={20} />} color="amber" />
       </div>
 
-      <div className="flex flex-wrap items-center gap-3">
+      <FilterBar>
         <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search employees..."
           className="flex-1 md:w-80 px-3 py-2 border rounded-lg text-sm" />
         <div className="flex items-center gap-1 border rounded-lg p-1">
@@ -88,10 +116,27 @@ export default function ManagementEmployees() {
             </button>
           ))}
         </div>
-      </div>
+      </FilterBar>
 
+      {_isLoading ? (
+        <LoadingSpinner label="Loading employees..." className="py-12" />
+      ) : filtered.length === 0 ? (
+        <EmptyState
+          title="No employees found"
+          description={search ? 'Try a different search term.' : 'Add your first employee to get started.'}
+          action={
+            !search && (
+              <button onClick={() => { setEditing(null); setShowForm(true) }}
+                className="flex items-center gap-1.5 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm">
+                <Plus size={16} /> Add Employee
+              </button>
+            )
+          }
+        />
+      ) : (
+      <>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {filtered.map((emp: any) => {
+        {pageEmployees.map((emp: any) => {
           const isActive = emp.is_active !== false
           const hasLeft = !!emp.leaving_date
           return (
@@ -181,9 +226,8 @@ export default function ManagementEmployees() {
           )
         })}
       </div>
-
-      {filtered.length === 0 && (
-        <div className="text-center py-10 text-gray-400 col-span-full">No employees found.</div>
+      <Pagination total={filtered.length} limit={limit} offset={offset} onChange={setOffset} className="px-1" />
+      </>
       )}
 
       {/* Add/Edit Employee */}
