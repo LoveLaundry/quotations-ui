@@ -26,6 +26,7 @@ import {
   CalendarBlank,
   CalendarPlus,
   Lightning,
+  Brain,
 } from '@phosphor-icons/react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Logo } from '../brand/logo'
@@ -117,6 +118,7 @@ const navGroups: { label: string; items: NavItem[] }[] = [
     label: 'Analytics',
     items: [
       { to: '/reports', label: 'Reports', icon: ChartBar, end: false, permission: 'view_reports' },
+      { to: '/ai-insights', label: 'AI Insights', icon: Brain, end: false },
     ],
   },
   {

@@ -83,6 +83,9 @@ import AttendancePage from '../features/management/pages/attendance-page'
 import AttendanceLogPage from '../features/management/pages/attendance-log-page'
 import CompanySettingsPage from '../features/management/pages/company-settings-page'
 
+// AI Insights pages
+import AiInsightsPage from '../features/ai/pages/ai-insights-page'
+
 export const router = createBrowserRouter([
   // ── Public routes ─────────────────────────────────────────────────────────────
   {
@@ -188,6 +191,7 @@ export const router = createBrowserRouter([
           // Analytics
           { path: 'reports', element: <ReportsPage /> },
           { path: 'customers', element: <CustomersPage /> },
+          { path: 'ai-insights', element: <AiInsightsPage /> },
 
           // System
           { path: 'categories', element: <CategoriesPage /> },
