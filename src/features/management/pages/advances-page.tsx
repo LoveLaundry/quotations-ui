@@ -4,6 +4,7 @@ import { employeesApi, advancesApi } from '../api/management-api'
 import { toast } from 'sonner'
 import { Plus, X, Trash2 } from 'lucide-react'
 import { Pagination } from '../../../components/ui/pagination'
+import { useEnterFlow } from '../../../hooks/use-enter-flow'
 
 const PAGE_SIZE = 20
 
@@ -14,6 +15,7 @@ export default function AdvancesPage() {
   const [statusFilter, setStatusFilter] = useState('OUTSTANDING')
   const [offset, setOffset] = useState(0)
   const limit = PAGE_SIZE
+  const flow = useEnterFlow()
 
   useEffect(() => {
     setOffset(0)
@@ -190,7 +192,7 @@ export default function AdvancesPage() {
                 date: fd.get('date'),
                 reason: fd.get('reason'),
               })
-            }} className="space-y-3">
+            }} ref={flow.ref} onKeyDown={flow.handleKeyDown} className="space-y-3">
               <div>
                 <label className="text-xs text-gray-500">Employee *</label>
                 <select name="employee_id" required className="w-full px-3 py-2 border rounded-lg text-sm">

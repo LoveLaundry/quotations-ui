@@ -10,6 +10,7 @@ import { FilterBar } from '../../../components/ui/filter-bar'
 import { EmptyState } from '../../../components/ui/empty-state'
 import { LoadingSpinner } from '../../../components/ui/loading-spinner'
 import { Pagination } from '../../../components/ui/pagination'
+import { useEnterFlow } from '../../../hooks/use-enter-flow'
 
 const PAGE_SIZE = 12
 
@@ -33,6 +34,8 @@ export default function ManagementEmployees() {
   const [statusFilter, setStatusFilter] = useState<string>('ALL')
   const [offset, setOffset] = useState(0)
   const limit = PAGE_SIZE
+  const flow = useEnterFlow()
+  const salaryFlow = useEnterFlow()
 
   useEffect(() => {
     setOffset(0)
@@ -259,7 +262,7 @@ export default function ManagementEmployees() {
                 updateMut.mutate({ id: editing.id, data })
               }
               else createMut.mutate(data)
-            }} className="space-y-3">
+            }} ref={flow.ref} onKeyDown={flow.handleKeyDown} className="space-y-3">
               <input name="name" defaultValue={editing?.name} placeholder="Full Name *" required className="w-full px-3 py-2 border rounded-lg text-sm" />
               <div className="grid grid-cols-2 gap-3">
                 <input name="position" defaultValue={editing?.position} placeholder="Position" className="w-full px-3 py-2 border rounded-lg text-sm" />
@@ -367,7 +370,7 @@ export default function ManagementEmployees() {
               data.advance_deduction = String(parseFloat(data.advance_deduction as string) || 0)
               data.amount_paid = String(parseFloat(data.amount_paid as string) || 0)
               createSalaryMut.mutate({ empId: showSalary.id, data })
-            }} className="space-y-3">
+            }} ref={salaryFlow.ref} onKeyDown={salaryFlow.handleKeyDown} className="space-y-3">
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="text-xs text-gray-500">Month</label>

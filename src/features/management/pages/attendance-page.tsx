@@ -3,6 +3,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { employeesApi, attendanceApi, holidaysApi } from '../api/management-api'
 import { toast } from 'sonner'
 import { CalendarDays, Check, ChevronDown, ChevronLeft, ChevronRight, Trash2, X, Pencil, Plus } from 'lucide-react'
+import { useDataGrid } from '../../../hooks/use-data-grid'
+import { useEnterFlow } from '../../../hooks/use-enter-flow'
 
 const STATUSES = ['PRESENT', 'HALF_DAY', 'PAID_LEAVE', 'UNPAID_LEAVE', 'ABSENT'] as const
 const STATUS_LABEL: Record<string, string> = {
@@ -88,6 +90,9 @@ export default function AttendancePage() {
   }, [holidaysData])
 
   const { days, firstDow } = useMemo(() => monthRange(year, month), [year, month])
+
+  const grid = useDataGrid({ columns: 7, rows: Math.max(1, Math.ceil(days.length / 7)) })
+  const editFlow = useEnterFlow<HTMLDivElement>()
 
   const byDate = useMemo(() => {
     const map: Record<string, any> = {}
@@ -258,14 +263,14 @@ export default function AttendancePage() {
         </div>
 
         <div className="overflow-x-auto rounded-xl border">
-          <div className="grid grid-cols-7 gap-px bg-gray-200 dark:bg-gray-700 min-w-[560px]">
+          <div onKeyDown={grid.handleKeyDown} className="grid grid-cols-7 gap-px bg-gray-200 dark:bg-gray-700 min-w-[560px]">
             {DAY_NAMES.map(dn => (
               <div key={dn} className="bg-gray-50 dark:bg-gray-800 px-2 py-2 text-center text-xs font-semibold text-gray-500 uppercase">{dn}</div>
             ))}
             {Array.from({ length: firstDow }).map((_, i) => (
               <div key={`blank-${i}`} className="bg-white dark:bg-gray-800 min-h-20" />
             ))}
-            {days.map((d: string) => {
+            {days.map((d: string, i: number) => {
               const rec = byDate[d]
               const dow = new Date(d + 'T00:00:00').getDay()
               const picked = pickedDates.has(d)
@@ -277,6 +282,7 @@ export default function AttendancePage() {
                 ? 'bg-slate-50 dark:bg-slate-800/50' : 'bg-white dark:bg-gray-800'
               return (
                 <div key={d} onClick={() => togglePick(d)}
+                  ref={grid.registerCell(Math.floor(i / 7), i % 7)} tabIndex={0}
                   className={`${cellBg} min-h-20 p-1.5 cursor-pointer flex flex-col gap-1 ${picked ? 'ring-2 ring-indigo-500' : ''} ${isToday ? 'ring-2 ring-red-400' : ''}`}>
                   <div className="flex items-center justify-between text-xs">
                     <span className={`font-medium ${isToday ? 'bg-red-600 text-white rounded-full px-1.5 py-px' : ''}`}>{Number(d.slice(8))}</span>
@@ -350,7 +356,7 @@ export default function AttendancePage() {
       {/* Edit modal */}
       {editDate && editForm && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" onClick={() => setEditDate(null)}>
-          <div className="bg-white dark:bg-gray-800 rounded-xl border p-6 w-[380px] space-y-4 shadow-xl" onClick={e => e.stopPropagation()}>
+          <div className="bg-white dark:bg-gray-800 rounded-xl border p-6 w-[380px] space-y-4 shadow-xl" onClick={e => e.stopPropagation()} ref={editFlow.ref} onKeyDown={editFlow.handleKeyDown}>
             <div className="flex items-center justify-between">
               <h3 className="font-semibold flex items-center gap-2">
                 <Pencil size={16} /> {editDate}

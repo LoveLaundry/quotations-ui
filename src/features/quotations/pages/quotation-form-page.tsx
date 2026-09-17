@@ -7,6 +7,7 @@ import { z } from 'zod'
 import { Button } from '../../../components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card'
 import { Input } from '../../../components/ui/input'
+import { useDataGrid, mergeRefs } from '../../../hooks/use-data-grid'
 import { Breadcrumb } from '../../../components/ui/breadcrumb'
 import { useCreateQuotation, useQuotation, useUpdateQuotation } from '../hooks/useQuotations'
 import type { QuotationFormValues } from '../../../types/quotation'
@@ -206,6 +207,12 @@ export default function QuotationFormPage() {
 
   const { fields, append, remove } = useFieldArray({ control, name: 'line_items' })
 
+  const grid = useDataGrid({
+    columns: 4,
+    rows: fields.length,
+    onAppendRow: () => append(newItem()),
+  })
+
   useEffect(() => {
     if (!existing) return
     reset({
@@ -404,8 +411,13 @@ export default function QuotationFormPage() {
                 ))}
               </datalist>
 
-              <div className="space-y-2">
-                {fields.map((field, idx) => (
+              <div className="space-y-2" onKeyDown={grid.handleKeyDown}>
+                {fields.map((field, idx) => {
+                  const regItem = register(`line_items.${idx}.item_name` as const)
+                  const regCat = register(`line_items.${idx}.category` as const)
+                  const regPrice = register(`line_items.${idx}.unit_price` as const)
+                  const regNotes = register(`line_items.${idx}.notes` as const)
+                  return (
                   <div
                     key={field.id}
                     className="rounded-lg border border-[#E4E7EC] bg-white p-3 hover:border-[#D1D5DB] transition-colors"
@@ -418,7 +430,8 @@ export default function QuotationFormPage() {
                     <div>
                       <p className="text-[11px] text-[#98A2B3] mb-1 sm:hidden">Item Name</p>
                       <Input
-                        {...register(`line_items.${idx}.item_name` as const)}
+                        {...regItem}
+                        ref={mergeRefs(regItem.ref, grid.registerCell(idx, 0))}
                         list="item-suggestions"
                         placeholder="e.g. Bed Sheet"
                       />
@@ -428,7 +441,8 @@ export default function QuotationFormPage() {
                     <div>
                       <p className="text-[11px] text-[#98A2B3] mb-1 sm:hidden">Category</p>
                       <Input
-                        {...register(`line_items.${idx}.category` as const)}
+                        {...regCat}
+                        ref={mergeRefs(regCat.ref, grid.registerCell(idx, 1))}
                         list="cat-suggestions"
                         placeholder="e.g. Bed Linen"
                       />
@@ -446,7 +460,8 @@ export default function QuotationFormPage() {
                           type="number"
                           min={0}
                           step={0.01}
-                          {...register(`line_items.${idx}.unit_price` as const)}
+                          {...regPrice}
+                          ref={mergeRefs(regPrice.ref, grid.registerCell(idx, 2))}
                           placeholder="125.00"
                           className="pl-11"
                         />
@@ -457,7 +472,8 @@ export default function QuotationFormPage() {
                     <div>
                       <p className="text-[11px] text-[#98A2B3] mb-1 sm:hidden">Notes</p>
                       <Input
-                        {...register(`line_items.${idx}.notes` as const)}
+                        {...regNotes}
+                        ref={mergeRefs(regNotes.ref, grid.registerCell(idx, 3))}
                         placeholder="e.g. (S, D)"
                       />
                     </div>
@@ -482,7 +498,8 @@ export default function QuotationFormPage() {
                       errors={errors}
                     />
                   </div>
-                ))}
+                  )
+                })}
               </div>
 
               <button

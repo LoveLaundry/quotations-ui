@@ -1,5 +1,6 @@
 import { useState, useCallback, useRef } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useDataGrid } from '../../../hooks/use-data-grid'
 import { transactionsApi, customersApi, itemsApi } from '../api/management-api'
 import { toast } from 'sonner'
 import { Plus, Copy, Trash2, Save, ArrowDown } from 'lucide-react'
@@ -43,8 +44,6 @@ function newRow(): Row {
 export default function HistoricalEntry() {
   const qc = useQueryClient()
   const [rows, setRows] = useState<Row[]>([newRow()])
-  const [activeRow, setActiveRow] = useState(0)
-  const [_activeCol, setActiveCol] = useState(0)
   const tableRef = useRef<HTMLDivElement>(null)
 
   const { data: customersData = { items: [] } } = useQuery({
@@ -85,6 +84,8 @@ export default function HistoricalEntry() {
 
   const addRow = useCallback(() => setRows(prev => [...prev, newRow()]), [])
 
+  const grid = useDataGrid({ columns: 12, rows: rows.length, onAppendRow: addRow })
+
   const copyRow = useCallback((idx: number) => {
     setRows(prev => {
       const copy = { ...prev[idx], id: crypto.randomUUID().slice(0, 8) }
@@ -105,27 +106,6 @@ export default function HistoricalEntry() {
     const copy = { ...last, id: crypto.randomUUID().slice(0, 8), date: today }
     setRows(prev => [...prev, copy])
   }, [rows])
-
-  const handleKeyDown = useCallback((e: React.KeyboardEvent, rowIdx: number, colIdx: number) => {
-    const cols = ['date', 'customer_id', 'invoice_number', 'item_id', 'qty_received', 'qty_washed', 'qty_delivered', 'qty_rejected', 'qty_damaged', 'rate', 'cost', 'notes']
-    if (e.key === 'Tab') {
-      e.preventDefault()
-      if (e.shiftKey) {
-        if (colIdx > 0) setActiveCol(colIdx - 1)
-        else if (rowIdx > 0) { setActiveRow(rowIdx - 1); setActiveCol(cols.length - 1) }
-      } else {
-        if (colIdx < cols.length - 1) setActiveCol(colIdx + 1)
-        else if (rowIdx < rows.length - 1) { setActiveRow(rowIdx + 1); setActiveCol(0) }
-        else { addRow(); setActiveRow(rows.length); setActiveCol(0) }
-      }
-    } else if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault()
-      if (rowIdx < rows.length - 1) setActiveRow(rowIdx + 1)
-      else { addRow(); setActiveRow(rows.length) }
-    } else if (e.key === 'Escape') {
-      setActiveCol(-1)
-    }
-  }, [rows.length, addRow])
 
   const handlePaste = useCallback((e: React.ClipboardEvent, rowIdx: number) => {
     const text = e.clipboardData.getData('text')
@@ -196,7 +176,7 @@ export default function HistoricalEntry() {
       <div className="flex items-center justify-between flex-wrap gap-3">
         <h1 className="text-2xl font-bold">Historical Data Entry</h1>
         <div className="flex gap-2 flex-wrap">
-          <button onClick={() => copyRow(Math.max(0, activeRow))} className="flex items-center gap-1.5 px-3 py-2 text-sm bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600">
+          <button onClick={() => copyRow(Math.max(0, grid.active?.row ?? 0))} className="flex items-center gap-1.5 px-3 py-2 text-sm bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600">
             <Copy size={14} /> Copy Row
           </button>
           <button onClick={duplicatePrevDay} className="flex items-center gap-1.5 px-3 py-2 text-sm bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600">
@@ -212,10 +192,10 @@ export default function HistoricalEntry() {
         </div>
       </div>
 
-      <p className="text-sm text-gray-500">Use <kbd className="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-700 rounded text-xs">Tab</kbd> to move between cells, <kbd className="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-700 rounded text-xs">Enter</kbd> for next row, paste from Excel with <kbd className="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-700 rounded text-xs">Ctrl+V</kbd></p>
+      <p className="text-sm text-gray-500">Use <kbd className="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-700 rounded text-xs">Tab</kbd>/<kbd className="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-700 rounded text-xs">Enter</kbd> to move between cells, <kbd className="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-700 rounded text-xs">↑</kbd>/<kbd className="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-700 rounded text-xs">↓</kbd> for next/prev row, paste from Excel with <kbd className="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-700 rounded text-xs">Ctrl+V</kbd></p>
 
       <div ref={tableRef} className="overflow-x-auto rounded-xl border">
-        <table className="w-full text-sm">
+        <table className="w-full text-sm" onKeyDown={grid.handleKeyDown}>
           <thead className="bg-gray-50 dark:bg-gray-800 sticky top-0">
             <tr>
               <th className="px-2 py-2 text-left w-8">#</th>
@@ -237,16 +217,16 @@ export default function HistoricalEntry() {
           </thead>
           <tbody>
             {rows.map((row, ri) => (
-              <tr key={row.id} className={`border-t ${ri === activeRow ? 'bg-red-50 dark:bg-red-900/20' : 'hover:bg-gray-50 dark:hover:bg-gray-800/50'}`}>
+              <tr key={row.id} className={`border-t ${grid.active?.row === ri ? 'bg-red-50 dark:bg-red-900/20' : 'hover:bg-gray-50 dark:hover:bg-gray-800/50'}`}>
                 <td className="px-2 py-1 text-gray-400 text-xs">{ri + 1}</td>
                 <td className="px-1 py-0.5">
                   <input type="date" value={row.date} onChange={e => updateRow(ri, 'date', e.target.value)}
-                    onKeyDown={e => handleKeyDown(e, ri, 0)}
+                    ref={grid.registerCell(ri, 0)}
                     className="w-full px-2 py-1.5 text-sm border-0 bg-transparent focus:ring-1 focus:ring-red-500 rounded" />
                 </td>
                 <td className="px-1 py-0.5">
                   <select value={row.customer_id} onChange={e => updateRow(ri, 'customer_id', e.target.value)}
-                    onKeyDown={e => handleKeyDown(e, ri, 1)}
+                    ref={grid.registerCell(ri, 1)}
                     className="w-full px-2 py-1.5 text-sm border-0 bg-transparent focus:ring-1 focus:ring-red-500 rounded">
                     <option value="">Select...</option>
                     {customerOpts}
@@ -254,12 +234,12 @@ export default function HistoricalEntry() {
                 </td>
                 <td className="px-1 py-0.5">
                   <input value={row.invoice_number} onChange={e => updateRow(ri, 'invoice_number', e.target.value)}
-                    onKeyDown={e => handleKeyDown(e, ri, 2)}
+                    ref={grid.registerCell(ri, 2)}
                     className="w-full px-2 py-1.5 text-sm border-0 bg-transparent focus:ring-1 focus:ring-red-500 rounded" placeholder="INV-" />
                 </td>
                 <td className="px-1 py-0.5">
                   <select value={row.item_id} onChange={e => updateRow(ri, 'item_id', e.target.value)}
-                    onKeyDown={e => handleKeyDown(e, ri, 3)}
+                    ref={grid.registerCell(ri, 3)}
                     className="w-full px-2 py-1.5 text-sm border-0 bg-transparent focus:ring-1 focus:ring-red-500 rounded">
                     <option value="">Select...</option>
                     {itemOpts}
@@ -268,7 +248,7 @@ export default function HistoricalEntry() {
                 {(['qty_received', 'qty_washed', 'qty_delivered', 'qty_rejected', 'qty_damaged', 'rate', 'cost'] as const).map((field, ci) => (
                   <td key={field} className="px-1 py-0.5">
                     <input type="number" value={row[field]} onChange={e => updateRow(ri, field, parseFloat(e.target.value) || 0)}
-                      onKeyDown={e => handleKeyDown(e, ri, ci + 4)}
+                      ref={grid.registerCell(ri, ci + 4)}
                       onPaste={e => handlePaste(e, ri)}
                       className="w-full px-2 py-1.5 text-sm border-0 bg-transparent focus:ring-1 focus:ring-red-500 rounded text-right" min={0} step={field === 'rate' || field === 'cost' ? 0.01 : 1} />
                   </td>
@@ -278,7 +258,7 @@ export default function HistoricalEntry() {
                 </td>
                 <td className="px-1 py-0.5">
                   <input value={row.notes} onChange={e => updateRow(ri, 'notes', e.target.value)}
-                    onKeyDown={e => handleKeyDown(e, ri, 11)}
+                    ref={grid.registerCell(ri, 11)}
                     className="w-full px-2 py-1.5 text-sm border-0 bg-transparent focus:ring-1 focus:ring-red-500 rounded" placeholder="Notes" />
                 </td>
                 <td className="px-1 py-0.5">

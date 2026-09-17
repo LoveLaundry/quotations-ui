@@ -4,6 +4,7 @@ import { useReactToPrint } from 'react-to-print'
 import { Button } from '../../../components/ui/button'
 import { Card } from '../../../components/ui/card'
 import { Breadcrumb } from '../../../components/ui/breadcrumb'
+import { useDataGrid } from '../../../hooks/use-data-grid'
 import { COMPANY } from '../../../config/company'
 
 interface InvoiceRow {
@@ -29,6 +30,7 @@ export default function LegacyInvoicePage() {
   }
 
   const addRow = () => setRows(prev => [...prev, makeRow()])
+  const grid = useDataGrid({ columns: 3, rows: rows.length, onAppendRow: addRow })
   const removeRow = (id: string) => {
     if (rows.length <= 1) return
     setRows(prev => prev.filter(r => r.id !== id))
@@ -84,7 +86,7 @@ export default function LegacyInvoicePage() {
             </Button>
           </div>
 
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto" onKeyDown={grid.handleKeyDown}>
             <table className="w-full text-[13px]">
               <thead>
                 <tr className="border-b border-[#E4E7EC]">
@@ -100,13 +102,13 @@ export default function LegacyInvoicePage() {
                   <tr key={row.id} className="border-b border-[#F2F4F7]">
                     <td className="py-2 pr-3 text-[#98A2B3]">{idx + 1}</td>
                     <td className="py-2 pr-3">
-                      <input type="date" value={row.date} onChange={e => updateRow(row.id, 'date', e.target.value)} className="h-9 w-full rounded-lg border border-[#E4E7EC] bg-white px-2 text-[13px] outline-none focus:border-[#DC2626] transition" />
+                      <input type="date" value={row.date} onChange={e => updateRow(row.id, 'date', e.target.value)} className="h-9 w-full rounded-lg border border-[#E4E7EC] bg-white px-2 text-[13px] outline-none focus:border-[#DC2626] transition" ref={grid.registerCell(idx, 0)} />
                     </td>
                     <td className="py-2 pr-3">
-                      <input type="text" value={row.billNumber} onChange={e => updateRow(row.id, 'billNumber', e.target.value)} placeholder="e.g. BL-001" className="h-9 w-full rounded-lg border border-[#E4E7EC] bg-white px-2 text-[13px] outline-none focus:border-[#DC2626] transition" />
+                      <input type="text" value={row.billNumber} onChange={e => updateRow(row.id, 'billNumber', e.target.value)} placeholder="e.g. BL-001" className="h-9 w-full rounded-lg border border-[#E4E7EC] bg-white px-2 text-[13px] outline-none focus:border-[#DC2626] transition" ref={grid.registerCell(idx, 1)} />
                     </td>
                     <td className="py-2 pr-3">
-                      <input type="number" min="0" step="0.01" value={row.amount || ''} onChange={e => updateRow(row.id, 'amount', parseFloat(e.target.value) || 0)} placeholder="0.00" className="h-9 w-full rounded-lg border border-[#E4E7EC] bg-white px-2 text-[13px] text-right outline-none focus:border-[#DC2626] transition" />
+                      <input type="number" min="0" step="0.01" value={row.amount || ''} onChange={e => updateRow(row.id, 'amount', parseFloat(e.target.value) || 0)} placeholder="0.00" className="h-9 w-full rounded-lg border border-[#E4E7EC] bg-white px-2 text-[13px] text-right outline-none focus:border-[#DC2626] transition" ref={grid.registerCell(idx, 2)} />
                     </td>
                     <td className="py-2">
                       <button onClick={() => removeRow(row.id)} disabled={rows.length <= 1} className="p-1.5 text-[#98A2B3] hover:text-[#DC2626] disabled:opacity-30 cursor-pointer">

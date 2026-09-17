@@ -3,11 +3,13 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { holidaysApi } from '../api/management-api'
 import { toast } from 'sonner'
 import { Plus, X, Trash2, Calendar } from 'lucide-react'
+import { useEnterFlow } from '../../../hooks/use-enter-flow'
 
 export default function HolidaysPage() {
   const qc = useQueryClient()
   const [showForm, setShowForm] = useState(false)
   const [yearFilter, setYearFilter] = useState(new Date().getFullYear())
+  const flow = useEnterFlow()
 
   const { data: holidays = [], isLoading } = useQuery({
     queryKey: ['holidays', yearFilter],
@@ -112,7 +114,7 @@ export default function HolidaysPage() {
                 description: fd.get('description'),
                 is_recurring: fd.get('is_recurring') === 'on',
               })
-            }} className="space-y-3">
+            }} ref={flow.ref} onKeyDown={flow.handleKeyDown} className="space-y-3">
               <div>
                 <label className="text-xs text-gray-500">Holiday Name *</label>
                 <input name="name" required className="w-full px-3 py-2 border rounded-lg text-sm" placeholder="e.g. National Day" />

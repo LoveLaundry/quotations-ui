@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Minus, Plus, Receipt, RotateCcw, Save, Search, X, PackageSearch } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card'
@@ -28,6 +28,7 @@ export function BillBuilder({ quotation }: BillBuilderProps) {
 
   const [search, setSearch] = useState('')
   const [counts, setCounts] = useState<Record<string, number>>({})
+  const [highlight, setHighlight] = useState(0)
 
   const setCount = (key: string, next: number) => {
     const safe = Number.isFinite(next) ? Math.max(0, Math.floor(next)) : 0
@@ -44,6 +45,10 @@ export function BillBuilder({ quotation }: BillBuilderProps) {
       .slice(0, 8)
   }, [items, search])
 
+  useEffect(() => {
+    setHighlight(prev => (searchResults.length === 0 ? 0 : Math.min(prev, searchResults.length - 1)))
+  }, [searchResults.length])
+
   const selectedRows = useMemo(
     () =>
       items
@@ -58,6 +63,26 @@ export function BillBuilder({ quotation }: BillBuilderProps) {
   const handleReset = () => {
     setCounts({})
     setSearch('')
+  }
+
+  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (searchResults.length === 0) return
+    if (e.key === 'ArrowDown') {
+      e.preventDefault()
+      setHighlight(prev => Math.min(prev + 1, searchResults.length - 1))
+      return
+    }
+    if (e.key === 'ArrowUp') {
+      e.preventDefault()
+      setHighlight(prev => Math.max(prev - 1, 0))
+      return
+    }
+    if (e.key === 'Enter') {
+      const target = searchResults[highlight]
+      if (!target) return
+      e.preventDefault()
+      if ((counts[target._key] ?? 0) === 0) setCount(target._key, 1)
+    }
   }
 
   const handleSave = () => {
@@ -107,6 +132,7 @@ export function BillBuilder({ quotation }: BillBuilderProps) {
                 autoFocus
                 value={search}
                 onChange={e => setSearch(e.target.value)}
+                onKeyDown={handleSearchKeyDown}
                 placeholder="Type to search items…"
                 className="h-9 w-full rounded-lg border border-[#E4E7EC] bg-white pl-9 pr-8 text-[13px] text-[#101828] outline-none focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/10 shadow-[0_1px_2px_rgba(16,24,40,0.05)]"
               />
@@ -121,6 +147,9 @@ export function BillBuilder({ quotation }: BillBuilderProps) {
                 </button>
               )}
             </div>
+            <p className="mt-1.5 text-[11px] text-[#98A2B3]">
+              Use ↑/↓ to move and Enter to add
+            </p>
           </div>
         </CardHeader>
 
@@ -145,13 +174,18 @@ export function BillBuilder({ quotation }: BillBuilderProps) {
             </p>
           ) : (
             <div className="divide-y divide-[#F2F4F7]">
-              {searchResults.map(li => {
+              {searchResults.map((li, index) => {
                 const qty = counts[li._key] ?? 0
                 return (
                   <div
                     key={li._key}
-                    className={`flex items-center justify-between gap-3 py-3 px-2 -mx-2 rounded-lg transition-colors ${
-                      qty > 0 ? 'bg-[#FFF8F8]' : ''
+                    onMouseEnter={() => setHighlight(index)}
+                    className={`flex items-center justify-between gap-3 py-3 px-2 -mx-2 rounded-lg border transition-colors ${
+                      index === highlight
+                        ? 'border-red-300 bg-[#FFF8F8]'
+                        : qty > 0
+                          ? 'border-transparent bg-[#FFF8F8]'
+                          : 'border-transparent'
                     }`}
                   >
                     <div className="min-w-0">

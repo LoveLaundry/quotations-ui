@@ -9,6 +9,8 @@ import { ErrorState } from '../../../components/ui/error-state'
 import { Breadcrumb } from '../../../components/ui/breadcrumb'
 import { deliveries } from '../services/delivery.service'
 import { useCreateDelivery } from '../hooks/useDeliveries'
+import { useDataGrid } from '../../../hooks/use-data-grid'
+import { useEnterFlow } from '../../../hooks/use-enter-flow'
 import type { PendingGatePass } from '../services/delivery.service'
 
 interface SelectedItem {
@@ -290,6 +292,25 @@ export default function CreateDeliveryPage() {
         return Array.from(map.entries())
     }, [fillMode, autoDistributed, items])
 
+    // ── Keyboard data-entry grids ─────────────────────────────────────────────
+    // Manual mode: one qty input per rendered item row (row index = flat order).
+    const manualRowIndex = useMemo(() => {
+        const m = new Map<string, number>()
+        let i = 0
+        for (const [, group] of itemsByGP) {
+            for (const item of group.items) {
+                m.set(`${item.gate_pass_id}||${item.item_name}||${item.specification}`, i++)
+            }
+        }
+        return m
+    }, [itemsByGP])
+
+    const manualGrid = useDataGrid({ columns: 1, rows: manualRowIndex.size })
+    const autoGrid = useDataGrid({ columns: 1, rows: autoItemTotals.length })
+
+    // Step-2 header fields flow (delivery date → delivered by → received by → notes)
+    const flow = useEnterFlow<HTMLDivElement>()
+
     return (
         <div className="space-y-5 pb-10">
             {/* Header */}
@@ -438,7 +459,7 @@ export default function CreateDeliveryPage() {
                             </div>
                         </CardHeader>
                         <CardContent className="pt-4">
-                            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                            <div ref={flow.ref} onKeyDown={flow.handleKeyDown} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                                 <div>
                                     <label className={labelClass}>Delivery Date</label>
                                     <input type="date" value={deliveryDate} onChange={e => setDeliveryDate(e.target.value)} className={inputClass} required />
@@ -518,8 +539,8 @@ export default function CreateDeliveryPage() {
                                     </button>
                                 </div>
                             </CardHeader>
-                            <CardContent className="pt-4 space-y-2">
-                                {autoItemTotals.map(total => {
+                            <CardContent className="pt-4 space-y-2" onKeyDown={autoGrid.handleKeyDown}>
+                                {autoItemTotals.map((total, ti) => {
                                     const entered = autoTotals.get(total.item_key) ?? 0
                                     const over = entered > total.total_pending
                                     return (
@@ -539,6 +560,7 @@ export default function CreateDeliveryPage() {
                                             </div>
                                             <div className="flex items-center gap-2 shrink-0">
                                                 <input
+                                                    ref={autoGrid.registerCell(ti, 0)}
                                                     type="number"
                                                     min={0}
                                                     max={total.total_pending}
@@ -622,7 +644,7 @@ export default function CreateDeliveryPage() {
                                     </div>
                                 </div>
                             </CardHeader>
-                            <CardContent className="pt-4 space-y-4">
+                            <CardContent className="pt-4 space-y-4" onKeyDown={manualGrid.handleKeyDown}>
                                 {itemsByGP.map(([gpId, group]) => {
                                     return (
                                         <div key={gpId} className="rounded-xl border border-[#E4E7EC] overflow-hidden">
@@ -642,8 +664,10 @@ export default function CreateDeliveryPage() {
                                             <div className="divide-y divide-[#F2F4F7]">
                                                 {group.items.map(item => {
                                                     const globalIdx = items.findIndex(i => i.gate_pass_id === item.gate_pass_id && i.item_name === item.item_name && i.specification === item.specification)
+                                                    const rowKey = `${item.gate_pass_id}||${item.item_name}||${item.specification}`
+                                                    const rIdx = manualRowIndex.get(rowKey) ?? 0
                                                     return (
-                                                        <div key={`${item.gate_pass_id}||${item.item_name}||${item.specification}`} className="flex items-center gap-3 px-4 py-3">
+                                                        <div key={rowKey} className="flex items-center gap-3 px-4 py-3">
                                                             <div className="flex-1 min-w-0">
                                                                 <p className="text-[13px] font-medium text-[#101828] truncate">
                                                                     {item.item_name}
@@ -657,6 +681,7 @@ export default function CreateDeliveryPage() {
                                                             </div>
                                                             <div className="flex items-center gap-2 shrink-0">
                                                                 <input
+                                                                    ref={manualGrid.registerCell(rIdx, 0)}
                                                                     type="number"
                                                                     min={0}
                                                                     max={item.pending_qty}

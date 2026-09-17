@@ -16,6 +16,7 @@ import { DEPARTMENTS } from '../types'
 import type { Worker } from '../types'
 import { ErrorState } from '../../../components/ui/error-state'
 import { Skeleton } from '../../../components/ui/skeleton'
+import { useEnterFlow } from '../../../hooks/use-enter-flow'
 
 const statusColors = {
   active: 'bg-emerald-50 text-emerald-700 border border-emerald-200',
@@ -33,6 +34,7 @@ export function WorkersPage() {
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editWorker, setEditWorker] = useState<Worker | null>(null)
   const [deleteConfirm, setDeleteConfirm] = useState<Worker | null>(null)
+  const flow = useEnterFlow<HTMLDivElement>()
   const [form, setForm] = useState({
     worker_name: '',
     department: 'GENERAL',
@@ -273,7 +275,7 @@ export function WorkersPage() {
                 </button>
               </div>
 
-              <div className="px-5 py-4 space-y-4">
+              <div ref={flow.ref} onKeyDown={flow.handleKeyDown} className="px-5 py-4 space-y-4">
                 <div>
                   <label className="text-[12px] font-medium text-[#374151] block mb-1">Full Name *</label>
                   <input

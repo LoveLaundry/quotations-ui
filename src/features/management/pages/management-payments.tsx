@@ -4,6 +4,7 @@ import { paymentsApi, customersApi } from '../api/management-api'
 import { toast } from 'sonner'
 import { Plus, Trash2, X } from 'lucide-react'
 import { Pagination } from '../../../components/ui/pagination'
+import { useEnterFlow } from '../../../hooks/use-enter-flow'
 
 const METHODS = ['CASH', 'BANK_TRANSFER', 'CHEQUE', 'CARD', 'ONLINE']
 const PAGE_SIZE = 20
@@ -15,6 +16,7 @@ export default function ManagementPayments() {
   const [customerId, setCustomerId] = useState('')
   const [offset, setOffset] = useState(0)
   const limit = PAGE_SIZE
+  const flow = useEnterFlow()
 
   useEffect(() => {
     setOffset(0)
@@ -115,7 +117,7 @@ export default function ManagementPayments() {
               const data = Object.fromEntries(fd)
               data.amount = String(parseFloat(data.amount as string) || 0)
               createMut.mutate(data)
-            }} className="space-y-3">
+            }} ref={flow.ref} onKeyDown={flow.handleKeyDown} className="space-y-3">
               <select name="customer_id" required className="w-full px-3 py-2 border rounded-lg text-sm">
                 <option value="">Select Customer *</option>
                 {customers.map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}

@@ -25,6 +25,7 @@ import { useWorkers, useDailyTasks, useCreateDailyTask, useUpdateDailyTask, useD
 import type { DailyLog, DailyLogCreate, TaskEntry, Worker } from '../types'
 import type { GatePass, GatePassItem } from '../../../types/operations'
 import { ErrorState } from '../../../components/ui/error-state'
+import { useDataGrid } from '../../../hooks/use-data-grid'
 
 const taskTypes = [
   { value: 'WASHING', label: 'Washing', icon: ArrowsClockwise, color: 'bg-blue-50 text-blue-600' },
@@ -640,6 +641,8 @@ function TaskDialog({ open, onClose, editEntry, workers, gatePasses, onSubmit, i
   const updateRow = (key: string, patch: Partial<TaskRow>) =>
     setRows(prev => prev.map(r => r.key === key ? { ...r, ...patch } : r))
 
+  const grid = useDataGrid({ columns: 6, rows: rows.length, onAppendRow: addManualRow })
+
   const handleCreateSubmit = () => {
     const tasks: TaskEntry[] = rows.map(r => ({
       task_type: r.task_type,
@@ -935,11 +938,12 @@ function TaskDialog({ open, onClose, editEntry, workers, gatePasses, onSubmit, i
                   Select gate pass items above, or add an item manually
                 </p>
               ) : (
-                <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
-                  {rows.map(row => (
+                <div onKeyDown={grid.handleKeyDown} className="space-y-2 max-h-72 overflow-y-auto pr-1">
+                  {rows.map((row, ri) => (
                     <div key={row.key} className="rounded-lg border border-[#E5E7EB] p-3 space-y-2 bg-[#FCFCFD]">
                       <div className="flex items-center gap-2">
                         <select
+                          ref={grid.registerCell(ri, 0)}
                           value={row.task_type}
                           onChange={e => updateRow(row.key, { task_type: e.target.value })}
                           className="rounded-lg border border-[#E5E7EB] px-2 py-1.5 text-[12px] text-[#111827] focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/10 transition-all appearance-none cursor-pointer"
@@ -961,6 +965,7 @@ function TaskDialog({ open, onClose, editEntry, workers, gatePasses, onSubmit, i
                         </button>
                       </div>
                       <input
+                        ref={grid.registerCell(ri, 1)}
                         value={row.description}
                         onChange={e => updateRow(row.key, { description: e.target.value })}
                         placeholder="Item / service description"
@@ -968,6 +973,7 @@ function TaskDialog({ open, onClose, editEntry, workers, gatePasses, onSubmit, i
                       />
                       <div className="grid grid-cols-3 gap-2">
                         <input
+                          ref={grid.registerCell(ri, 2)}
                           type="number" min="0"
                           value={row.quantity}
                           onChange={e => updateRow(row.key, { quantity: e.target.value })}
@@ -975,6 +981,7 @@ function TaskDialog({ open, onClose, editEntry, workers, gatePasses, onSubmit, i
                           className="rounded-lg border border-[#E5E7EB] px-2.5 py-1.5 text-[12px] text-[#111827] placeholder-[#9CA3AF] focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/10 transition-all"
                         />
                         <select
+                          ref={grid.registerCell(ri, 3)}
                           value={row.unit}
                           onChange={e => updateRow(row.key, { unit: e.target.value })}
                           className="rounded-lg border border-[#E5E7EB] px-2 py-1.5 text-[12px] text-[#111827] focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/10 transition-all appearance-none cursor-pointer"
@@ -982,6 +989,7 @@ function TaskDialog({ open, onClose, editEntry, workers, gatePasses, onSubmit, i
                           {['PIECES', 'KG', 'LOADS', 'HOURS'].map(u => <option key={u} value={u}>{u}</option>)}
                         </select>
                         <input
+                          ref={grid.registerCell(ri, 4)}
                           type="number" step="0.5" min="0"
                           value={row.hours_spent}
                           onChange={e => updateRow(row.key, { hours_spent: e.target.value })}
@@ -990,6 +998,7 @@ function TaskDialog({ open, onClose, editEntry, workers, gatePasses, onSubmit, i
                         />
                       </div>
                       <input
+                        ref={grid.registerCell(ri, 5)}
                         value={row.remark}
                         onChange={e => updateRow(row.key, { remark: e.target.value })}
                         placeholder="Remark (optional)"

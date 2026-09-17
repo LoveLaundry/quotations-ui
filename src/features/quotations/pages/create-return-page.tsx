@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { Plus, Trash2, ArrowLeft, Truck } from 'lucide-react'
 import { Card } from '../../../components/ui/card'
 import { Button } from '../../../components/ui/button'
 import { Breadcrumb } from '../../../components/ui/breadcrumb'
+import { useDataGrid } from '../../../hooks/use-data-grid'
 import { returns as returnsApi } from '../services/returns.service'
 import { gatepasses as gatepassApi } from '../services/gatepass.service'
 import { deliveries as deliveriesApi } from '../services/delivery.service'
@@ -136,6 +137,17 @@ export default function CreateReturnPage() {
 
   const selectedGPIndices = Object.keys(gpSelections).map(Number)
   const hasAnyItems = selectedGPIndices.length > 0 || customItems.some((i) => i.item_name.trim())
+
+  // Selected gate-pass items (in GP item order) — the rows of the GP entry grid.
+  const selectedGPItems = useMemo(
+    () => (selectedGP ? selectedGP.items.map((it, gi) => ({ it, gi })).filter(({ gi }) => gi in gpSelections) : []),
+    [selectedGP, gpSelections],
+  )
+
+  // Grids: GP rows = qty(0) → reason(1) → condition(2) → action(3);
+  // custom rows = name(0) → spec(1) → qty(2) → reason(3) → condition(4) → action(5) → notes(6).
+  const gpGrid = useDataGrid({ columns: 4, rows: selectedGPItems.length })
+  const customGrid = useDataGrid({ columns: 7, rows: customItems.length })
 
   const handleSubmit = async () => {
     if (!selectedGP) {
@@ -343,8 +355,8 @@ export default function CreateReturnPage() {
         {selectedGP && selectedGP.items.length > 0 && (
           <div className="mb-4">
             <p className="text-[12px] font-semibold text-[#6B7280] mb-2">From Gate Pass — tick items being returned:</p>
-            <div className="space-y-2">
-              {selectedGP.items.map((gpItem, gi) => {
+            <div className="space-y-2" onKeyDown={gpGrid.handleKeyDown}>
+              {selectedGPItems.map(({ it: gpItem, gi }, rIdx) => {
                 const isSelected = gi in gpSelections
                 const sel = gpSelections[gi]
 
@@ -382,6 +394,7 @@ export default function CreateReturnPage() {
                         <div>
                           <label className="text-[10px] text-[#98A2B3] mb-0.5 block">Qty</label>
                           <input
+                            ref={gpGrid.registerCell(rIdx, 0)}
                             type="number"
                             min={1}
                             max={gpItem.received_qty}
@@ -393,6 +406,7 @@ export default function CreateReturnPage() {
                         <div>
                           <label className="text-[10px] text-[#98A2B3] mb-0.5 block">Reason</label>
                           <select
+                            ref={gpGrid.registerCell(rIdx, 1)}
                             value={sel.reason}
                             onChange={(e) => updateGPItem(gi, 'reason', e.target.value)}
                             className="h-8 w-full rounded border border-[#E4E7EC] bg-white px-2 text-[12px] outline-none focus:border-[#D97706]"
@@ -405,6 +419,7 @@ export default function CreateReturnPage() {
                         <div>
                           <label className="text-[10px] text-[#98A2B3] mb-0.5 block">Condition</label>
                           <select
+                            ref={gpGrid.registerCell(rIdx, 2)}
                             value={sel.condition}
                             onChange={(e) => updateGPItem(gi, 'condition', e.target.value)}
                             className="h-8 w-full rounded border border-[#E4E7EC] bg-white px-2 text-[12px] outline-none focus:border-[#D97706]"
@@ -417,6 +432,7 @@ export default function CreateReturnPage() {
                         <div>
                           <label className="text-[10px] text-[#98A2B3] mb-0.5 block">Action</label>
                           <select
+                            ref={gpGrid.registerCell(rIdx, 3)}
                             value={sel.action}
                             onChange={(e) => updateGPItem(gi, 'action', e.target.value)}
                             className="h-8 w-full rounded border border-[#E4E7EC] bg-white px-2 text-[12px] outline-none focus:border-[#D97706]"
@@ -439,7 +455,7 @@ export default function CreateReturnPage() {
         {customItems.length > 0 && (
           <div>
             <p className="text-[12px] font-semibold text-[#6B7280] mb-2">Custom items:</p>
-            <div className="space-y-3">
+            <div className="space-y-3" onKeyDown={customGrid.handleKeyDown}>
               {customItems.map((item, idx) => (
                 <div key={idx} className="rounded-lg border border-[#E4E7EC] p-4 space-y-3">
                   <div className="flex items-center justify-between">
@@ -452,6 +468,7 @@ export default function CreateReturnPage() {
                     <div>
                       <label className="text-[11px] text-[#98A2B3] mb-1 block">Item Name</label>
                       <input
+                        ref={customGrid.registerCell(idx, 0)}
                         type="text"
                         value={item.item_name}
                         onChange={(e) => updateCustomItem(idx, 'item_name', e.target.value)}
@@ -462,6 +479,7 @@ export default function CreateReturnPage() {
                     <div>
                       <label className="text-[11px] text-[#98A2B3] mb-1 block">Specification</label>
                       <input
+                        ref={customGrid.registerCell(idx, 1)}
                         type="text"
                         value={item.specification || ''}
                         onChange={(e) => updateCustomItem(idx, 'specification', e.target.value || undefined)}
@@ -472,6 +490,7 @@ export default function CreateReturnPage() {
                     <div>
                       <label className="text-[11px] text-[#98A2B3] mb-1 block">Qty</label>
                       <input
+                        ref={customGrid.registerCell(idx, 2)}
                         type="number"
                         min={1}
                         value={item.returned_qty}
@@ -482,6 +501,7 @@ export default function CreateReturnPage() {
                     <div>
                       <label className="text-[11px] text-[#98A2B3] mb-1 block">Reason</label>
                       <select
+                        ref={customGrid.registerCell(idx, 3)}
                         value={item.reason}
                         onChange={(e) => updateCustomItem(idx, 'reason', e.target.value)}
                         className="h-9 w-full rounded-lg border border-[#E4E7EC] bg-white px-3 text-[13px] outline-none focus:border-[#D97706]"
@@ -494,6 +514,7 @@ export default function CreateReturnPage() {
                     <div>
                       <label className="text-[11px] text-[#98A2B3] mb-1 block">Condition</label>
                       <select
+                        ref={customGrid.registerCell(idx, 4)}
                         value={item.condition}
                         onChange={(e) => updateCustomItem(idx, 'condition', e.target.value)}
                         className="h-9 w-full rounded-lg border border-[#E4E7EC] bg-white px-3 text-[13px] outline-none focus:border-[#D97706]"
@@ -506,6 +527,7 @@ export default function CreateReturnPage() {
                     <div>
                       <label className="text-[11px] text-[#98A2B3] mb-1 block">Action</label>
                       <select
+                        ref={customGrid.registerCell(idx, 5)}
                         value={item.action}
                         onChange={(e) => updateCustomItem(idx, 'action', e.target.value)}
                         className="h-9 w-full rounded-lg border border-[#E4E7EC] bg-white px-3 text-[13px] outline-none focus:border-[#D97706]"
@@ -519,6 +541,7 @@ export default function CreateReturnPage() {
                   <div>
                     <label className="text-[11px] text-[#98A2B3] mb-1 block">Notes</label>
                     <input
+                      ref={customGrid.registerCell(idx, 6)}
                       type="text"
                       value={item.notes || ''}
                       onChange={(e) => updateCustomItem(idx, 'notes', e.target.value || undefined)}

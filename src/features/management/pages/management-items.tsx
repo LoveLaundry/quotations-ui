@@ -4,6 +4,7 @@ import { itemsApi } from '../api/management-api'
 import { toast } from 'sonner'
 import { Plus, Pencil, Trash2, X, Tag, Package } from 'lucide-react'
 import { Pagination } from '../../../components/ui/pagination'
+import { useEnterFlow } from '../../../hooks/use-enter-flow'
 
 const PAGE_SIZE = 20
 
@@ -16,6 +17,8 @@ export default function ManagementItems() {
   const [search, setSearch] = useState('')
   const [offset, setOffset] = useState(0)
   const limit = PAGE_SIZE
+  const itemFlow = useEnterFlow()
+  const catFlow = useEnterFlow()
 
   useEffect(() => {
     setOffset(0)
@@ -157,7 +160,7 @@ export default function ManagementItems() {
                 data.default_rate = String(parseFloat(data.default_rate as string) || 0)
                 if (editing) updateItemMut.mutate({ id: editing.id, data })
                 else createItemMut.mutate(data)
-              }} className="space-y-3">
+              }} ref={itemFlow.ref} onKeyDown={itemFlow.handleKeyDown} className="space-y-3">
                 <input name="name" defaultValue={editing?.name} placeholder="Item Name *" required className="w-full px-3 py-2 border rounded-lg text-sm" />
                 <select name="category_id" defaultValue={editing?.category_id || ''} required className="w-full px-3 py-2 border rounded-lg text-sm">
                   <option value="">Select Category *</option>
@@ -188,7 +191,7 @@ export default function ManagementItems() {
                 e.preventDefault()
                 const fd = new FormData(e.currentTarget)
                 createCatMut.mutate(Object.fromEntries(fd))
-              }} className="space-y-3">
+              }} ref={catFlow.ref} onKeyDown={catFlow.handleKeyDown} className="space-y-3">
                 <input name="name" defaultValue={editing?.name} placeholder="Category Name *" required className="w-full px-3 py-2 border rounded-lg text-sm" />
                 <textarea name="description" defaultValue={editing?.description} placeholder="Description" rows={2} className="w-full px-3 py-2 border rounded-lg text-sm" />
                 <div className="flex justify-end gap-2 pt-2">

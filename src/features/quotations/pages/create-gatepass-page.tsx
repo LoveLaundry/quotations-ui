@@ -1,10 +1,13 @@
-import { useState, useMemo, useRef, useEffect } from 'react'
+import { useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ClipboardList, Plus, Trash2, AlertCircle, ArrowLeft, Link2, X, ChevronDown, Sparkles } from 'lucide-react'
+import { ClipboardList, Plus, Trash2, AlertCircle, ArrowLeft, Link2, X, Sparkles } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from '../../../components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card'
 import { Breadcrumb } from '../../../components/ui/breadcrumb'
+import { SearchableSelect, type SearchableOption } from '../../../components/ui'
+import { useDataGrid, mergeRefs } from '../../../hooks/use-data-grid'
+import { useEnterFlow } from '../../../hooks/use-enter-flow'
 import { useCreateGatePass } from '../hooks/useGatePasses'
 import { useQuotations } from '../hooks/useQuotations'
 import type { GatePassItem } from '../../../types/operations'
@@ -32,19 +35,26 @@ const MISMATCH_REASONS = [
 ]
 
 // ─── Item Name Autocomplete ───────────────────────────────────────────────────
-interface ItemNameInputProps {
-    value: string
-    onChange: (name: string, category?: string, specification?: string) => void
-    quotationItems: Array<{ item_name: string; category?: string; specifications?: Array<{ specification: string; unit_price: number }> }>
-    inputClass: string
-    labelClass: string
-    isCustom: boolean
-    hasQuotation: boolean
+export interface ExpandedQuotationItem {
+    item_name: string
+    category?: string
+    specification?: string
+    label: string
+}
+
+export type QuotationItemSource = {
+    item_name: string
+    category?: string
+    specifications?: Array<{ specification: string; unit_price: number }>
+}
+
+export interface QuotationOption extends SearchableOption {
+    data: ExpandedQuotationItem
 }
 
 /** Expand a line item into one or more selectable entries (specs → individual rows) */
-function expandQuotationItems(items: ItemNameInputProps['quotationItems']): Array<{ item_name: string; category?: string; specification?: string; label: string }> {
-    const expanded: Array<{ item_name: string; category?: string; specification?: string; label: string }> = []
+export function expandQuotationItems(items: QuotationItemSource[]): ExpandedQuotationItem[] {
+    const expanded: ExpandedQuotationItem[] = []
     for (const li of items) {
         if (li.specifications && li.specifications.length > 0) {
             for (const spec of li.specifications) {
@@ -67,119 +77,15 @@ function expandQuotationItems(items: ItemNameInputProps['quotationItems']): Arra
     return expanded
 }
 
-export function ItemNameInput({ value, onChange, quotationItems, inputClass, labelClass, isCustom, hasQuotation }: ItemNameInputProps) {
-    const [open, setOpen] = useState(false)
-    const [search, setSearch] = useState(value)
-    const ref = useRef<HTMLDivElement>(null)
-
-    const expandedItems = useMemo(() => expandQuotationItems(quotationItems), [quotationItems])
-
-    useEffect(() => { setSearch(value) }, [value])
-
-    useEffect(() => {
-        const handler = (e: MouseEvent) => {
-            if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
-        }
-        document.addEventListener('mousedown', handler)
-        return () => document.removeEventListener('mousedown', handler)
-    }, [])
-
-    const filtered = expandedItems.filter(qi =>
-        qi.label.toLowerCase().includes(search.trim().toLowerCase())
-    )
-
-    const handleSelect = (qi: { item_name: string; category?: string; specification?: string; label: string }) => {
-        onChange(qi.item_name, qi.category, qi.specification)
-        setSearch(qi.label)
-        setOpen(false)
-    }
-
-    const handleBlur = () => {
-        if (search.trim() !== value) onChange(search.trim())
-    }
-
-    return (
-        <div ref={ref} className="relative">
-            <label className={labelClass}>Item Name</label>
-            <div className="relative">
-                <input
-                    type="text"
-                    value={search}
-                    onChange={e => {
-                        setSearch(e.target.value)
-                        onChange(e.target.value)
-                        if (hasQuotation) setOpen(true)
-                    }}
-                    onFocus={() => { if (hasQuotation) setOpen(true) }}
-                    onBlur={handleBlur}
-                    placeholder={hasQuotation ? 'Select or type item…' : 'e.g. Bed Sheet'}
-                    className={inputClass + (hasQuotation ? ' pr-8' : '')}
-                    required
-                    autoComplete="off"
-                />
-                {hasQuotation && (
-                    <button
-                        type="button"
-                        onMouseDown={e => { e.preventDefault(); setOpen(o => !o) }}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 text-[#98A2B3] hover:text-[#374151] transition cursor-pointer"
-                    >
-                        <ChevronDown className="h-3.5 w-3.5" />
-                    </button>
-                )}
-            </div>
-
-            {hasQuotation && value.trim() && isCustom && (
-                <div className="mt-1 inline-flex items-center gap-1 rounded-full bg-[#EFF6FF] border border-[#BFDBFE] px-2 py-0.5 text-[10px] font-semibold text-[#2563EB]">
-                    <Sparkles className="h-2.5 w-2.5" /> New · will be added to quotation
-                </div>
-            )}
-
-            <AnimatePresence>
-                {open && hasQuotation && (
-                    <motion.div
-                        initial={{ opacity: 0, y: -4 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -4 }}
-                        transition={{ duration: 0.12 }}
-                        className="absolute z-50 mt-1 w-full rounded-xl border border-[#E4E7EC] bg-white shadow-lg overflow-hidden"
-                    >
-                        {filtered.length === 0 ? (
-                            <div className="px-3 py-3 text-[12px] text-[#98A2B3]">
-                                {search.trim()
-                                    ? <span>No match — <span className="text-[#2563EB] font-medium">"{search}"</span> will be a new item</span>
-                                    : 'No items in this quotation'}
-                            </div>
-                        ) : (
-                            <div className="max-h-44 overflow-y-auto">
-                                {filtered.map((qi, i) => (
-                                    <button
-                                        key={`${qi.item_name}-${qi.specification ?? 'no-spec'}-${i}`}
-                                        type="button"
-                                        onMouseDown={e => { e.preventDefault(); handleSelect(qi) }}
-                                        className="flex w-full items-center gap-2 px-3 py-2.5 text-left hover:bg-[#F9FAFB] transition cursor-pointer"
-                                    >
-                                        <div className="min-w-0">
-                                            <p className="text-[13px] font-medium text-[#101828] truncate">{qi.item_name}</p>
-                                            <div className="flex items-center gap-1.5">
-                                                {qi.category && (
-                                                    <span className="text-[11px] text-[#98A2B3]">{qi.category}</span>
-                                                )}
-                                                {qi.specification && (
-                                                    <span className="inline-flex items-center rounded bg-[#FFF7ED] border border-[#FED7AA] px-1.5 py-px text-[10px] font-semibold text-[#EA580C]">
-                                                        {qi.specification}
-                                                    </span>
-                                                )}
-                                            </div>
-                                        </div>
-                                    </button>
-                                ))}
-                            </div>
-                        )}
-                    </motion.div>
-                )}
-            </AnimatePresence>
-        </div>
-    )
+/** Map expanded quotation items to SearchableSelect options (value = name+spec). */
+export function toQuotationOptions(items: QuotationItemSource[]): QuotationOption[] {
+    return expandQuotationItems(items).map((qi) => ({
+        value: qi.item_name + (qi.specification ?? ''),
+        label: qi.label,
+        sub: qi.category,
+        hint: qi.specification,
+        data: qi,
+    }))
 }
 
 export default function CreateGatePassPage() {
@@ -220,6 +126,10 @@ export default function CreateGatePassPage() {
 
     // Quotation item names for autocomplete & custom detection
     const quotationItemList = selectedQuotation?.line_items ?? []
+
+    const quotationItemOptions = useMemo(() => toQuotationOptions(quotationItemList), [quotationItemList])
+
+    const hasQuotation = !!selectedQuotation
     const quotationItemNames = new Set(quotationItemList.map(li => li.item_name.toLowerCase()))
 
     const isCustomItem = (item_name: string) =>
@@ -256,6 +166,19 @@ export default function CreateGatePassPage() {
 
     const removeItem = (index: number) =>
         setItems(prev => prev.filter((_, i) => i !== index))
+
+    // ── Grid: Item(0) → ClientQty(1) → ReceivedQty(2) → (mismatch) Reason(3) → Notes(4) ──
+    // Reason/Notes (cols 3–4) only exist when a row has a mismatch; for clean rows the
+    // received qty cell is also registered under cols 3–4 so Enter keeps flowing to the
+    // next row instead of getting stuck.
+    const grid = useDataGrid({
+        columns: 5,
+        rows: items.length,
+        onAppendRow: addItem,
+    })
+
+    // Header fields flow (gate pass no → client → date → received by → notes)
+    const flow = useEnterFlow<HTMLDivElement>()
 
     const isValid =
         gatePassNumber.trim() &&
@@ -426,7 +349,7 @@ export default function CreateGatePassPage() {
                         </div>
                     </CardHeader>
                     <CardContent className="pt-4">
-                        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                        <div ref={flow.ref} onKeyDown={flow.handleKeyDown} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                             <div>
                                 <label className={labelClass}>Gate Pass No.</label>
                                 <input
@@ -505,7 +428,7 @@ export default function CreateGatePassPage() {
                             </Button>
                         </div>
                     </CardHeader>
-                    <CardContent className="pt-4 space-y-3">
+                    <CardContent className="pt-4 space-y-3" onKeyDown={grid.handleKeyDown}>
                         <AnimatePresence initial={false}>
                             {items.map((item, idx) => (
                                 <motion.div
@@ -522,15 +445,27 @@ export default function CreateGatePassPage() {
                                     {/* Row 1: Name, Category, Spec, ClientQty, ReceivedQty */}
                                     <div className="grid gap-3 grid-cols-2 sm:grid-cols-5">
                                         <div className="col-span-2 sm:col-span-1">
-                                            <ItemNameInput
+                                            <label className={labelClass}>Item Name</label>
+                                            <SearchableSelect
+                                                ref={grid.registerCell(idx, 0)}
                                                 value={item.item_name}
-                                                onChange={(name, category, specification) => updateItemName(idx, name, category, specification)}
-                                                quotationItems={quotationItemList}
-                                                inputClass={inputClass}
-                                                labelClass={labelClass}
-                                                isCustom={isCustomItem(item.item_name)}
-                                                hasQuotation={!!selectedQuotation}
+                                                onValueChange={text => updateItemName(idx, text)}
+                                                options={quotationItemOptions}
+                                                onSelect={opt => {
+                                                    const data = (opt as QuotationOption).data
+                                                    updateItemName(idx, data.item_name, data.category, data.specification)
+                                                }}
+                                                onCreate={text => updateItemName(idx, text)}
+                                                onAdvance={() => grid.advance(idx, 0)}
+                                                placeholder={hasQuotation ? 'Select or type item…' : 'e.g. Bed Sheet'}
+                                                className={inputClass + ' pr-8'}
+                                                required
                                             />
+                                            {hasQuotation && item.item_name.trim() && isCustomItem(item.item_name) && (
+                                                <div className="mt-1 inline-flex items-center gap-1 rounded-full bg-[#EFF6FF] border border-[#BFDBFE] px-2 py-0.5 text-[10px] font-semibold text-[#2563EB]">
+                                                    <Sparkles className="h-2.5 w-2.5" /> New · will be added to quotation
+                                                </div>
+                                            )}
                                         </div>
                                         <div>
                                             <label className={labelClass}>Category</label>
@@ -555,6 +490,7 @@ export default function CreateGatePassPage() {
                                         <div>
                                             <label className={labelClass}>Client Qty</label>
                                             <input
+                                                ref={grid.registerCell(idx, 1)}
                                                 type="number"
                                                 min={0}
                                                 value={item.client_qty}
@@ -565,6 +501,11 @@ export default function CreateGatePassPage() {
                                         <div>
                                             <label className={labelClass}>Received Qty</label>
                                             <input
+                                                ref={mergeRefs(
+                                                    grid.registerCell(idx, 2),
+                                                    item.difference === 0 ? grid.registerCell(idx, 3) : undefined,
+                                                    item.difference === 0 ? grid.registerCell(idx, 4) : undefined,
+                                                )}
                                                 type="number"
                                                 min={0}
                                                 value={item.received_qty}
@@ -591,6 +532,7 @@ export default function CreateGatePassPage() {
                                                 <div className="w-48">
                                                     <label className={labelClass}>Mismatch Reason</label>
                                                     <select
+                                                        ref={grid.registerCell(idx, 3)}
                                                         value={item.mismatch_reason ?? ''}
                                                         onChange={e => updateItem(idx, 'mismatch_reason', e.target.value)}
                                                         className={inputClass + ' cursor-pointer'}
@@ -604,6 +546,7 @@ export default function CreateGatePassPage() {
                                                 <div className="flex-1 min-w-32">
                                                     <label className={labelClass}>Mismatch Notes</label>
                                                     <input
+                                                        ref={grid.registerCell(idx, 4)}
                                                         type="text"
                                                         value={item.mismatch_notes ?? ''}
                                                         onChange={e => updateItem(idx, 'mismatch_notes', e.target.value)}

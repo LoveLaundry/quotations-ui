@@ -10,6 +10,7 @@ import { PageHeader } from '../../../components/ui/page-header'
 import { FilterBar } from '../../../components/ui/filter-bar'
 import { Badge } from '../../../components/ui/badge'
 import { ExportButton } from '../../../components/ui/export-button'
+import { useEnterFlow } from '../../../hooks/use-enter-flow'
 
 const MONTHS = [
   'January', 'February', 'March', 'April', 'May', 'June',
@@ -38,6 +39,7 @@ export default function SalarySlipPage() {
   const [otherDeductions, setOtherDeductions] = useState(0)
   const [notes, setNotes] = useState('')
   const [slipLang, setSlipLang] = useState<'EN' | 'SI'>('EN')
+  const flow = useEnterFlow<HTMLDivElement>()
 
   const { data: employees = [] } = useQuery({
     queryKey: ['mgmt-employees'],
@@ -137,7 +139,7 @@ export default function SalarySlipPage() {
   const netSalary = totalEarnings - totalDeductions
 
   return (
-    <div className="space-y-6">
+    <div ref={flow.ref} onKeyDown={flow.handleKeyDown} className="space-y-6">
       <PageHeader
         title="Generate Salary Slip"
         subtitle="Calculate earnings & deductions for an employee period"

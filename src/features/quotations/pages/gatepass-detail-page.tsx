@@ -18,7 +18,8 @@ import { useGatePass, useUpdateGatePassStatus, useAdjustGatePass, useUpdateGateP
 import { useDeliveries } from '../hooks/useDeliveries'
 import { useQuotation } from '../hooks/useQuotations'
 import { returns as returnsApi } from '../services/returns.service'
-import { ItemNameInput } from './create-gatepass-page'
+import { SearchableSelect } from '../../../components/ui'
+import { toQuotationOptions, type QuotationOption } from './create-gatepass-page'
 import type { ReturnItem } from '../../../types/operations'
 
 const STATUS_CONFIG: Record<string, { label: string; bg: string; text: string; border: string; dot: string }> = {
@@ -84,6 +85,10 @@ export default function GatePassDetailPage() {
             specifications: li.specifications,
         })),
         [quotationQuery.data],
+    )
+    const editQuotationOptions = useMemo(
+        () => toQuotationOptions(quotationItemList),
+        [quotationItemList],
     )
     const allQuotationItemNames = useMemo(
         () => new Set(quotationItemList.map(qi => qi.item_name.toLowerCase())),
@@ -549,15 +554,24 @@ export default function GatePassDetailPage() {
                             {editItems.map((item: any, idx: number) => (
                                 <div key={idx} className="grid grid-cols-1 gap-2 rounded-lg border border-[#E4E7EC] bg-white p-3 sm:grid-cols-[1fr_1fr_1fr_74px_74px_36px] items-center">
                                     <div>
-                                        <ItemNameInput
+                                        <label className="block text-[10px] text-[#98A2B3] mb-0.5">Item Name</label>
+                                        <SearchableSelect
                                             value={item.item_name}
-                                            onChange={(name, category, specification) => updateEditItemName(idx, name, category, specification)}
-                                            quotationItems={quotationItemList}
-                                            inputClass="h-9 w-full rounded-lg border border-[#D0D5DD] bg-white px-3 text-[13px] outline-none focus:border-[#2563EB]"
-                                            labelClass="block text-[10px] text-[#98A2B3] mb-0.5"
-                                            isCustom={isEditCustomItem(item.item_name)}
-                                            hasQuotation={!!quotationQuery.data}
+                                            onValueChange={(name) => updateEditItemName(idx, name)}
+                                            options={editQuotationOptions}
+                                            onSelect={(opt) => {
+                                                const data = (opt as QuotationOption).data
+                                                updateEditItemName(idx, data.item_name, data.category, data.specification)
+                                            }}
+                                            onCreate={(text) => updateEditItemName(idx, text)}
+                                            placeholder={quotationQuery.data ? 'Select or type item…' : 'e.g. Bed Sheet'}
+                                            className="h-9 w-full rounded-lg border border-[#D0D5DD] bg-white px-3 text-[13px] outline-none focus:border-[#2563EB] pr-8"
                                         />
+                                        {quotationQuery.data && item.item_name?.trim() && isEditCustomItem(item.item_name) && (
+                                            <div className="mt-1 inline-flex items-center gap-1 rounded-full bg-[#EFF6FF] border border-[#BFDBFE] px-2 py-0.5 text-[10px] font-semibold text-[#2563EB]">
+                                                New · will be added to quotation
+                                            </div>
+                                        )}
                                     </div>
                                     <div>
                                         <label className="block text-[10px] text-[#98A2B3] mb-0.5">Category</label>

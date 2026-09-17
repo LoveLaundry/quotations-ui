@@ -10,6 +10,7 @@ import { EmptyState } from '../../../components/ui/empty-state'
 import { LoadingSpinner } from '../../../components/ui/loading-spinner'
 import { ExportButton } from '../../../components/ui/export-button'
 import { Pagination } from '../../../components/ui/pagination'
+import { useEnterFlow } from '../../../hooks/use-enter-flow'
 
 const PAGE_SIZE = 20
 
@@ -24,6 +25,7 @@ export default function ManagementExpenses() {
   const [catFilter, setCatFilter] = useState('')
   const [offset, setOffset] = useState(0)
   const limit = PAGE_SIZE
+  const flow = useEnterFlow()
 
   useEffect(() => {
     setOffset(0)
@@ -164,7 +166,7 @@ export default function ManagementExpenses() {
               data.amount = String(parseFloat(data.amount as string) || 0)
               if (editing) updateMut.mutate({ id: editing.id, data })
               else createMut.mutate(data)
-            }} className="space-y-3">
+            }} ref={flow.ref} onKeyDown={flow.handleKeyDown} className="space-y-3">
               <input name="date" type="date" defaultValue={editing?.date || new Date().toISOString().split('T')[0]} required className="w-full px-3 py-2 border rounded-lg text-sm" />
               <select name="category_id" defaultValue={editing?.category_id || ''} required className="w-full px-3 py-2 border rounded-lg text-sm">
                 <option value="">Select Category *</option>

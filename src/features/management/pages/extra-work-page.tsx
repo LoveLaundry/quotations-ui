@@ -4,6 +4,7 @@ import { extraWorkApi, employeesApi } from '../api/management-api'
 import { toast } from 'sonner'
 import { Plus, X, Trash2, Tag, Zap } from 'lucide-react'
 import { Pagination } from '../../../components/ui/pagination'
+import { useEnterFlow } from '../../../hooks/use-enter-flow'
 
 const PAGE_SIZE = 20
 
@@ -13,6 +14,8 @@ export default function ExtraWorkPage() {
   const [showRecordForm, setShowRecordForm] = useState(false)
   const [offset, setOffset] = useState(0)
   const limit = PAGE_SIZE
+  const catFlow = useEnterFlow()
+  const recFlow = useEnterFlow()
 
   const { data: employees = [] } = useQuery({
     queryKey: ['mgmt-employees'],
@@ -157,7 +160,7 @@ export default function ExtraWorkPage() {
                 calculation_method: fd.get('calculation_method') || 'FIXED',
                 description: fd.get('description'),
               })
-            }} className="space-y-3">
+            }} ref={catFlow.ref} onKeyDown={catFlow.handleKeyDown} className="space-y-3">
               <div>
                 <label className="text-xs text-gray-500">Name *</label>
                 <input name="name" required className="w-full px-3 py-2 border rounded-lg text-sm" placeholder="e.g. Ironing" />
@@ -209,7 +212,7 @@ export default function ExtraWorkPage() {
                 units,
                 notes: fd.get('notes'),
               })
-            }} className="space-y-3">
+            }} ref={recFlow.ref} onKeyDown={recFlow.handleKeyDown} className="space-y-3">
               <div>
                 <label className="text-xs text-gray-500">Employee *</label>
                 <select name="employee_id" required className="w-full px-3 py-2 border rounded-lg text-sm">

@@ -10,6 +10,7 @@ import { EmptyState } from '../../../components/ui/empty-state'
 import { LoadingSpinner } from '../../../components/ui/loading-spinner'
 import { ExportButton } from '../../../components/ui/export-button'
 import { Pagination } from '../../../components/ui/pagination'
+import { useEnterFlow } from '../../../hooks/use-enter-flow'
 
 const PAGE_SIZE = 12
 const TYPES = ['HOTEL', 'SHOP', 'INDIVIDUAL', 'RESTAURANT']
@@ -24,6 +25,7 @@ export default function ManagementCustomers() {
   const [_viewCustomer, setViewCustomer] = useState<any>(null)
   const [offset, setOffset] = useState(0)
   const limit = PAGE_SIZE
+  const flow = useEnterFlow()
 
   useEffect(() => {
     setOffset(0)
@@ -176,7 +178,7 @@ export default function ManagementCustomers() {
               const data = Object.fromEntries(fd)
               if (editing) updateMut.mutate({ id: editing.id, data })
               else createMut.mutate(data)
-            }} className="space-y-3">
+            }} ref={flow.ref} onKeyDown={flow.handleKeyDown} className="space-y-3">
               <input name="name" defaultValue={editing?.name} placeholder="Customer Name *" required className="w-full px-3 py-2 border rounded-lg text-sm" />
               <div className="grid grid-cols-2 gap-3">
                 <select name="customer_type" defaultValue={editing?.customer_type || 'HOTEL'} className="px-3 py-2 border rounded-lg text-sm">

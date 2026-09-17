@@ -1,6 +1,7 @@
 import { useState, useMemo, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ArrowLeft, Plus, Trash2, FileText, X, LayoutTemplate, Repeat } from 'lucide-react'
+import { useDataGrid } from '../../../hooks/use-data-grid'
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card'
 import { Button } from '../../../components/ui/button'
 import { Breadcrumb } from '../../../components/ui/breadcrumb'
@@ -72,6 +73,8 @@ export default function CreateShopBillPage() {
     if (items.length <= 1) return
     setItems(prev => prev.filter(item => item.key !== key))
   }
+
+  const grid = useDataGrid({ columns: 5, rows: items.length, onAppendRow: addItem })
 
   const loadFromQuotation = (quo: Quotation) => {
     setSelectedQuotation(quo)
@@ -256,12 +259,31 @@ export default function CreateShopBillPage() {
               </button>
             </div>
           </CardHeader>
-          <CardContent className="space-y-3">
+          <CardContent className="space-y-3" onKeyDown={grid.handleKeyDown}>
             {items.map((item, idx) => (
               <div key={item.key} className="grid grid-cols-12 gap-2 items-end">
                 <div className="col-span-12 md:col-span-2">
                   {idx === 0 && <label className="block text-[10px] font-semibold uppercase text-[#98A2B3] mb-1">Item Name *</label>}
-                  <input type="text" value={item.item_name} onChange={e => updateItem(item.key, 'item_name', e.target.value)} placeholder="Item name" className={inputClass} />
+                  <input type="text" value={item.item_name} onChange={e => updateItem(item.key, 'item_name', e.target.value)} placeholder="Item name" className={inputClass} ref={grid.registerCell(idx, 0)} />
+                </div>
+                <div className="col-span-3 md:col-span-1">
+                  {idx === 0 && <label className="block text-[10px] font-semibold uppercase text-[#98A2B3] mb-1">Qty *</label>}
+                  <input type="number" min={1} value={item.quantity} onChange={e => updateItem(item.key, 'quantity', e.target.value ? Number(e.target.value) : 1)} className={inputClass} ref={grid.registerCell(idx, 1)} />
+                </div>
+                <div className="col-span-4 md:col-span-1">
+                  {idx === 0 && <label className="block text-[10px] font-semibold uppercase text-[#98A2B3] mb-1">Price *</label>}
+                  <input type="number" min={0} step="0.01" value={item.unit_price || ''} onChange={e => updateItem(item.key, 'unit_price', e.target.value ? Number(e.target.value) : 0)} placeholder="0.00" className={inputClass} ref={grid.registerCell(idx, 2)} />
+                </div>
+                <div className="col-span-3 md:col-span-1">
+                  {idx === 0 && <label className="block text-[10px] font-semibold uppercase text-[#98A2B3] mb-1">Disc</label>}
+                  <input type="number" min={0} step="0.01" value={item.discount || ''} onChange={e => updateItem(item.key, 'discount', e.target.value ? Number(e.target.value) : 0)} placeholder="0" className={inputClass} ref={grid.registerCell(idx, 3)} />
+                </div>
+                <div className="col-span-3 md:col-span-1">
+                  {idx === 0 && <label className="block text-[10px] font-semibold uppercase text-[#98A2B3] mb-1">Type</label>}
+                  <select value={item.discount_type} onChange={e => updateItem(item.key, 'discount_type', e.target.value)} className={inputClass} ref={grid.registerCell(idx, 4)}>
+                    <option value="FIXED">Fixed</option>
+                    <option value="PERCENT">%</option>
+                  </select>
                 </div>
                 <div className="col-span-6 md:col-span-2">
                   {idx === 0 && <label className="block text-[10px] font-semibold uppercase text-[#98A2B3] mb-1">Spec</label>}
@@ -270,25 +292,6 @@ export default function CreateShopBillPage() {
                 <div className="col-span-6 md:col-span-1">
                   {idx === 0 && <label className="block text-[10px] font-semibold uppercase text-[#98A2B3] mb-1">Category</label>}
                   <input type="text" value={item.category} onChange={e => updateItem(item.key, 'category', e.target.value)} placeholder="Cat" className={inputClass} />
-                </div>
-                <div className="col-span-4 md:col-span-1">
-                  {idx === 0 && <label className="block text-[10px] font-semibold uppercase text-[#98A2B3] mb-1">Price *</label>}
-                  <input type="number" min={0} step="0.01" value={item.unit_price || ''} onChange={e => updateItem(item.key, 'unit_price', e.target.value ? Number(e.target.value) : 0)} placeholder="0.00" className={inputClass} />
-                </div>
-                <div className="col-span-3 md:col-span-1">
-                  {idx === 0 && <label className="block text-[10px] font-semibold uppercase text-[#98A2B3] mb-1">Qty *</label>}
-                  <input type="number" min={1} value={item.quantity} onChange={e => updateItem(item.key, 'quantity', e.target.value ? Number(e.target.value) : 1)} className={inputClass} />
-                </div>
-                <div className="col-span-3 md:col-span-1">
-                  {idx === 0 && <label className="block text-[10px] font-semibold uppercase text-[#98A2B3] mb-1">Disc</label>}
-                  <input type="number" min={0} step="0.01" value={item.discount || ''} onChange={e => updateItem(item.key, 'discount', e.target.value ? Number(e.target.value) : 0)} placeholder="0" className={inputClass} />
-                </div>
-                <div className="col-span-3 md:col-span-1">
-                  {idx === 0 && <label className="block text-[10px] font-semibold uppercase text-[#98A2B3] mb-1">Type</label>}
-                  <select value={item.discount_type} onChange={e => updateItem(item.key, 'discount_type', e.target.value)} className={inputClass}>
-                    <option value="FIXED">Fixed</option>
-                    <option value="PERCENT">%</option>
-                  </select>
                 </div>
                 <div className="col-span-2 md:col-span-1 text-right">
                   {idx === 0 && <label className="block text-[10px] font-transparent mb-1">&nbsp;</label>}

@@ -1,4 +1,9 @@
-import type { CSSProperties, ReactNode } from 'react'
+import type {
+  CSSProperties,
+  ClipboardEvent as ReactClipboardEvent,
+  KeyboardEvent as ReactKeyboardEvent,
+  ReactNode,
+} from 'react'
 
 /* ─────────────────────────────────────────────────────────────
    Shared primitives for the Camelot gatepass (printable receipt)
@@ -37,15 +42,21 @@ interface EditableCellProps {
   placeholder?: string
   fontSize?: number
   bold?: boolean
+  onKeyDown?: (e: ReactKeyboardEvent<HTMLInputElement>) => void
+  onPaste?: (e: ReactClipboardEvent<HTMLInputElement>) => void
+  className?: string
+  style?: CSSProperties
 }
 
-export function EditableCell({ value, onChange, width, align = 'center', placeholder, fontSize = 11, bold }: EditableCellProps) {
+export function EditableCell({ value, onChange, width, align = 'center', placeholder, fontSize = 11, bold, onKeyDown, onPaste, className, style }: EditableCellProps) {
   return (
     <input
       value={value}
       onChange={e => onChange(e.target.value)}
+      onKeyDown={onKeyDown}
+      onPaste={onPaste}
       placeholder={placeholder}
-      className="gp-cell-input"
+      className={className ? `gp-cell-input ${className}` : 'gp-cell-input'}
       style={{
         width: width ?? '100%',
         textAlign: align,
@@ -60,6 +71,7 @@ export function EditableCell({ value, onChange, width, align = 'center', placeho
         color: '#111827',
         fontFamily: 'inherit',
         minWidth: 0,
+        ...style,
       }}
     />
   )
