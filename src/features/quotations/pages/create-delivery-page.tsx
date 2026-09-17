@@ -268,8 +268,12 @@ export default function CreateDeliveryPage() {
             )
         }
 
-        await Promise.all(promises)
-        navigate('/deliveries')
+        const created = await Promise.all(promises)
+        const createdIds = created
+            .map((r: any) => (r && r.id != null ? String(r.id) : ''))
+            .filter(Boolean)
+        if (createdIds.length === 1) navigate(`/deliveries/${createdIds[0]}`)
+        else navigate('/deliveries')
     }
 
     // ── Items grouped by gate pass for manual display ─────────────────────────

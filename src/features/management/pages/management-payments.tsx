@@ -1,10 +1,13 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { paymentsApi, customersApi } from '../api/management-api'
 import { toast } from 'sonner'
 import { Plus, Trash2, X } from 'lucide-react'
 import { Pagination } from '../../../components/ui/pagination'
+import { ConfirmDialog } from '../../../components/ui/confirm-dialog'
 import { useEnterFlow } from '../../../hooks/use-enter-flow'
+import { useEscape } from '../../../hooks/use-escape'
+import { todayISO } from '../../../lib/date'
 
 const METHODS = ['CASH', 'BANK_TRANSFER', 'CHEQUE', 'CARD', 'ONLINE']
 const PAGE_SIZE = 20
@@ -13,6 +16,7 @@ const LIST_LIMIT = 500
 export default function ManagementPayments() {
   const qc = useQueryClient()
   const [showForm, setShowForm] = useState(false)
+  const [deleteTarget, setDeleteTarget] = useState<any>(null)
   const [customerId, setCustomerId] = useState('')
   const [offset, setOffset] = useState(0)
   const limit = PAGE_SIZE
@@ -21,6 +25,8 @@ export default function ManagementPayments() {
   useEffect(() => {
     setOffset(0)
   }, [customerId])
+
+  useEscape(showForm, useCallback(() => setShowForm(false), []))
 
   const { data: customersData = { items: [] } } = useQuery({
     queryKey: ['mgmt-customers-list'],
@@ -44,7 +50,7 @@ export default function ManagementPayments() {
 
   const deleteMut = useMutation({
     mutationFn: (id: string) => paymentsApi.remove(id),
-    onSuccess: () => { toast.success('Payment deleted'); qc.invalidateQueries({ queryKey: ['mgmt-payments'] }) },
+    onSuccess: () => { toast.success('Payment deleted'); qc.invalidateQueries({ queryKey: ['mgmt-payments'] }); setDeleteTarget(null) },
   })
 
   const totalPaid = payments.reduce((s: number, p: any) => s + p.amount, 0)
@@ -93,7 +99,7 @@ export default function ManagementPayments() {
                 <td className="px-3 py-2 text-gray-400">{p.reference}</td>
                 <td className="px-3 py-2 text-gray-400">{p.notes}</td>
                 <td className="px-3 py-2 text-center">
-                  <button onClick={() => { if (confirm('Delete this payment?')) deleteMut.mutate(p.id) }} className="p-1 hover:bg-red-100 text-red-500 rounded"><Trash2 size={14} /></button>
+                  <button onClick={() => setDeleteTarget(p)} className="p-1 hover:bg-red-100 text-red-500 rounded"><Trash2 size={14} /></button>
                 </td>
               </tr>
             ))}
@@ -118,7 +124,7 @@ export default function ManagementPayments() {
               data.amount = String(parseFloat(data.amount as string) || 0)
               createMut.mutate(data)
             }} ref={flow.ref} onKeyDown={flow.handleKeyDown} className="space-y-3">
-              <select name="customer_id" required className="w-full px-3 py-2 border rounded-lg text-sm">
+              <select name="customer_id" required autoFocus className="w-full px-3 py-2 border rounded-lg text-sm">
                 <option value="">Select Customer *</option>
                 {customers.map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
@@ -127,18 +133,28 @@ export default function ManagementPayments() {
                 <select name="payment_method" className="px-3 py-2 border rounded-lg text-sm">
                   {METHODS.map(m => <option key={m} value={m}>{m.replace('_', ' ')}</option>)}
                 </select>
-                <input name="payment_date" type="date" defaultValue={new Date().toISOString().split('T')[0]} required className="px-3 py-2 border rounded-lg text-sm" />
+                <input name="payment_date" type="date" defaultValue={todayISO()} required className="px-3 py-2 border rounded-lg text-sm" />
               </div>
               <input name="reference" placeholder="Reference" className="w-full px-3 py-2 border rounded-lg text-sm" />
               <textarea name="notes" placeholder="Notes" rows={2} className="w-full px-3 py-2 border rounded-lg text-sm" />
               <div className="flex justify-end gap-2 pt-2">
                 <button type="button" onClick={() => setShowForm(false)} className="px-4 py-2 text-sm bg-gray-100 rounded-lg">Cancel</button>
-                <button type="submit" className="px-4 py-2 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700">Save Payment</button>
+                <button type="submit" disabled={createMut.isPending} className="px-4 py-2 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-60 disabled:cursor-not-allowed">{createMut.isPending ? 'Saving…' : 'Save Payment'}</button>
               </div>
             </form>
           </div>
         </div>
       )}
+
+      <ConfirmDialog
+        open={!!deleteTarget}
+        title="Delete Payment"
+        message={`Delete this payment of Rs. ${deleteTarget?.amount?.toLocaleString() ?? ''}?`}
+        confirmLabel="Delete"
+        loading={deleteMut.isPending}
+        onConfirm={() => deleteTarget && deleteMut.mutate(deleteTarget.id)}
+        onCancel={() => setDeleteTarget(null)}
+      />
     </div>
   )
 }

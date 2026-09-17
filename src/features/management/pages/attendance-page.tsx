@@ -5,6 +5,8 @@ import { toast } from 'sonner'
 import { CalendarDays, Check, ChevronDown, ChevronLeft, ChevronRight, Trash2, X, Pencil, Plus } from 'lucide-react'
 import { useDataGrid } from '../../../hooks/use-data-grid'
 import { useEnterFlow } from '../../../hooks/use-enter-flow'
+import { useEscape } from '../../../hooks/use-escape'
+import { ConfirmDialog } from '../../../components/ui/confirm-dialog'
 
 const STATUSES = ['PRESENT', 'HALF_DAY', 'PAID_LEAVE', 'UNPAID_LEAVE', 'ABSENT'] as const
 const STATUS_LABEL: Record<string, string> = {
@@ -45,6 +47,9 @@ export default function AttendancePage() {
   const [editForm, setEditForm] = useState<any>(null)
   const [quickDate, setQuickDate] = useState<string | null>(null)
   const [quickOt, setQuickOt] = useState(0)
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null)
+  useEscape(!!editDate, () => setEditDate(null))
+  useEscape(!!quickDate, () => setQuickDate(null))
   const todayStr = useMemo(() => {
     const t = new Date()
     return `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, '0')}-${String(t.getDate()).padStart(2, '0')}`
@@ -126,6 +131,7 @@ export default function AttendancePage() {
     onSuccess: () => {
       toast.success('Record deleted')
       setEditDate(null)
+      setDeleteTarget(null)
       qc.invalidateQueries({ queryKey: ['attendance', selectedEmp] })
       qc.invalidateQueries({ queryKey: ['attendance-summary', selectedEmp] })
     },
@@ -411,7 +417,7 @@ export default function AttendancePage() {
                 Save
               </button>
               {byDate[editDate]?.id && (
-                <button onClick={() => { if (confirm('Delete this attendance record?')) deleteMut.mutate(byDate[editDate].id) }}
+                <button onClick={() => setDeleteTarget(byDate[editDate].id)}
                   disabled={deleteMut.isPending}
                   className="px-4 py-2 bg-white border border-red-300 text-red-600 rounded-lg text-sm font-medium hover:bg-red-50 disabled:opacity-50 flex items-center gap-1">
                   <Trash2 size={14} /> Delete
@@ -467,6 +473,16 @@ export default function AttendancePage() {
           </div>
         </div>
       )}
+
+      <ConfirmDialog
+        open={!!deleteTarget}
+        title="Delete this attendance record?"
+        message="This attendance record will be permanently removed."
+        confirmLabel="Delete"
+        loading={deleteMut.isPending}
+        onConfirm={() => { if (deleteTarget) deleteMut.mutate(deleteTarget) }}
+        onCancel={() => setDeleteTarget(null)}
+      />
     </div>
   )
 }

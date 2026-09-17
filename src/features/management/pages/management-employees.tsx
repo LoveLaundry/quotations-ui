@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 import { employeesApi } from '../api/management-api'
@@ -10,7 +10,10 @@ import { FilterBar } from '../../../components/ui/filter-bar'
 import { EmptyState } from '../../../components/ui/empty-state'
 import { LoadingSpinner } from '../../../components/ui/loading-spinner'
 import { Pagination } from '../../../components/ui/pagination'
+import { ConfirmDialog } from '../../../components/ui/confirm-dialog'
 import { useEnterFlow } from '../../../hooks/use-enter-flow'
+import { useEscape } from '../../../hooks/use-escape'
+import { todayISO } from '../../../lib/date'
 
 const PAGE_SIZE = 12
 
@@ -29,6 +32,7 @@ export default function ManagementEmployees() {
   const slipLabel = now.toLocaleString('default', { month: 'long' })
   const [showForm, setShowForm] = useState(false)
   const [showSalary, setShowSalary] = useState<any>(null)
+  const [deactivateTarget, setDeactivateTarget] = useState<any>(null)
   const [editing, setEditing] = useState<any>(null)
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('ALL')
@@ -40,6 +44,9 @@ export default function ManagementEmployees() {
   useEffect(() => {
     setOffset(0)
   }, [search, statusFilter])
+
+  useEscape(showForm, useCallback(() => { setShowForm(false); setEditing(null) }, []))
+  useEscape(!!showSalary, useCallback(() => setShowSalary(null), []))
 
   const { data: employees = [], isLoading: _isLoading } = useQuery({
     queryKey: ['mgmt-employees', search],
@@ -66,7 +73,7 @@ export default function ManagementEmployees() {
 
   const deactivateMut = useMutation({
     mutationFn: (id: string) => employeesApi.remove(id),
-    onSuccess: () => { toast.success('Employee deactivated'); qc.invalidateQueries({ queryKey: ['mgmt-employees'] }) },
+    onSuccess: () => { toast.success('Employee deactivated'); qc.invalidateQueries({ queryKey: ['mgmt-employees'] }); setDeactivateTarget(null) },
     onError: (e: any) => toast.error(e.response?.data?.detail || 'Failed'),
   })
 
@@ -158,7 +165,7 @@ export default function ManagementEmployees() {
                   <button onClick={() => { setEditing(emp); setShowForm(true) }} className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded" title="Edit"><Pencil size={14} /></button>
                   {isActive ? (
                     <button
-                      onClick={() => { if (confirm(`Deactivate ${emp.name}?`)) deactivateMut.mutate(emp.id) }}
+                      onClick={() => setDeactivateTarget(emp)}
                       className="p-1.5 hover:bg-red-100 text-red-500 rounded" title="Deactivate"><Trash2 size={14} /></button>
                   ) : (
                     <button
@@ -263,7 +270,7 @@ export default function ManagementEmployees() {
               }
               else createMut.mutate(data)
             }} ref={flow.ref} onKeyDown={flow.handleKeyDown} className="space-y-3">
-              <input name="name" defaultValue={editing?.name} placeholder="Full Name *" required className="w-full px-3 py-2 border rounded-lg text-sm" />
+              <input name="name" defaultValue={editing?.name} placeholder="Full Name *" required autoFocus className="w-full px-3 py-2 border rounded-lg text-sm" />
               <div className="grid grid-cols-2 gap-3">
                 <input name="position" defaultValue={editing?.position} placeholder="Position" className="w-full px-3 py-2 border rounded-lg text-sm" />
                 <select name="department" defaultValue={editing?.department || 'GENERAL'} className="px-3 py-2 border rounded-lg text-sm">
@@ -341,7 +348,7 @@ export default function ManagementEmployees() {
               <textarea name="notes" defaultValue={editing?.notes} placeholder="Notes" rows={2} className="w-full px-3 py-2 border rounded-lg text-sm" />
               <div className="flex justify-end gap-2 pt-2">
                 <button type="button" onClick={() => { setShowForm(false); setEditing(null) }} className="px-4 py-2 text-sm bg-gray-100 rounded-lg">Cancel</button>
-                <button type="submit" className="px-4 py-2 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700">{editing ? 'Update' : 'Create'}</button>
+                <button type="submit" disabled={createMut.isPending || updateMut.isPending} className="px-4 py-2 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-60 disabled:cursor-not-allowed">{createMut.isPending || updateMut.isPending ? 'Saving…' : (editing ? 'Update' : 'Create')}</button>
               </div>
             </form>
           </div>
@@ -374,7 +381,7 @@ export default function ManagementEmployees() {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="text-xs text-gray-500">Month</label>
-                  <select name="month" className="w-full px-3 py-2 border rounded-lg text-sm">
+                  <select name="month" defaultValue={now.getMonth() + 1} className="w-full px-3 py-2 border rounded-lg text-sm" autoFocus>
                     {Array.from({length: 12}, (_, i) => <option key={i+1} value={i+1}>{new Date(0, i).toLocaleString('default', {month:'long'})}</option>)}
                   </select>
                 </div>
@@ -428,18 +435,28 @@ export default function ManagementEmployees() {
                 </div>
                 <div>
                   <label className="text-xs text-gray-500">Payment Date</label>
-                  <input name="payment_date" type="date" className="w-full px-3 py-2 border rounded-lg text-sm" />
+                  <input name="payment_date" type="date" defaultValue={todayISO()} className="w-full px-3 py-2 border rounded-lg text-sm" />
                 </div>
               </div>
               <textarea name="notes" placeholder="Notes" rows={2} className="w-full px-3 py-2 border rounded-lg text-sm" />
               <div className="flex justify-end gap-2 pt-2">
                 <button type="button" onClick={() => setShowSalary(null)} className="px-4 py-2 text-sm bg-gray-100 rounded-lg">Cancel</button>
-                <button type="submit" className="px-4 py-2 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700">Save Salary</button>
+                <button type="submit" disabled={createSalaryMut.isPending} className="px-4 py-2 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-60 disabled:cursor-not-allowed">{createSalaryMut.isPending ? 'Saving…' : 'Save Salary'}</button>
               </div>
             </form>
           </div>
         </div>
       )}
+
+      <ConfirmDialog
+        open={!!deactivateTarget}
+        title="Deactivate Employee"
+        message={`Deactivate ${deactivateTarget?.name}?`}
+        confirmLabel="Deactivate"
+        loading={deactivateMut.isPending}
+        onConfirm={() => deactivateTarget && deactivateMut.mutate(deactivateTarget.id)}
+        onCancel={() => setDeactivateTarget(null)}
+      />
     </div>
   )
 }

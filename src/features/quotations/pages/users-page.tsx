@@ -9,6 +9,8 @@ import authApi from '../../../api/auth-api'
 import { Breadcrumb } from '../../../components/ui/breadcrumb'
 import { Card, CardContent } from '../../../components/ui/card'
 import { Button } from '../../../components/ui/button'
+import { useEnterFlow } from '../../../hooks/use-enter-flow'
+import { useEscape } from '../../../hooks/use-escape'
 
 interface UserForm {
     user_name: string
@@ -55,6 +57,9 @@ export default function UsersPage() {
     const [form, setForm] = useState<UserForm>(emptyForm)
     const [submitting, setSubmitting] = useState(false)
     const [showPw, setShowPw] = useState(false)
+    const flow = useEnterFlow()
+
+    useEscape(showModal, () => setShowModal(false))
 
     const fetchUsers = async () => {
         setLoadingUsers(true)
@@ -305,7 +310,7 @@ export default function UsersPage() {
                                 </div>
 
                                 {/* Form */}
-                                <form onSubmit={handleSubmit} className="p-6 space-y-4 max-h-[75vh] overflow-y-auto">
+                                <form onSubmit={handleSubmit} ref={flow.ref} onKeyDown={flow.handleKeyDown} className="p-6 space-y-4 max-h-[75vh] overflow-y-auto">
                                     <div className="grid grid-cols-2 gap-3">
                                         <div>
                                             <label className="block text-[12px] font-medium text-[#374151] mb-1.5">
@@ -318,6 +323,7 @@ export default function UsersPage() {
                                                 className={inputClass}
                                                 placeholder="John Silva"
                                                 required
+                                                autoFocus
                                             />
                                         </div>
                                         <div>

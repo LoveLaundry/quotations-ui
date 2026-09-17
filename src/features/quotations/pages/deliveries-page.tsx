@@ -4,6 +4,7 @@ import { Plus, Search, Truck, X } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { Card } from '../../../components/ui/card'
 import { Button } from '../../../components/ui/button'
+import { Badge } from '../../../components/ui/badge'
 import { EmptyState } from '../../../components/ui/empty-state'
 import { ErrorState } from '../../../components/ui/error-state'
 import { Skeleton } from '../../../components/ui/skeleton'
@@ -12,11 +13,20 @@ import { formatDate } from '../../../lib/utils'
 import { useDeliveries } from '../hooks/useDeliveries'
 import type { Delivery } from '../../../types/operations'
 
+function deliveryStatusBadge(d: Delivery) {
+    const s = (d.status || '').toUpperCase()
+    if (s === 'DELIVERED') return { label: 'Delivered', variant: 'success' as const }
+    if (s.includes('PARTIAL')) return { label: 'Partially Delivered', variant: 'warning' as const }
+    return { label: 'Pending', variant: 'neutral' as const }
+}
+
 function DeliveryCard({ d }: { d: Delivery }) {
     const totalPieces = d.items.reduce(
         (sum, item) => sum + item.quantity,
         0
     )
+
+    const status = deliveryStatusBadge(d)
 
     if (!d.id) {
         return null
@@ -43,9 +53,12 @@ function DeliveryCard({ d }: { d: Delivery }) {
                         </p>
                     </div>
 
-                    <span className="inline-flex items-center gap-1 rounded-full bg-[#F0FDF4] border border-[#BBF7D0] px-2 py-0.5 text-[11px] font-semibold text-[#16A34A] whitespace-nowrap">
-                        {totalPieces} pcs
-                    </span>
+                    <div className="flex flex-col items-end gap-1 shrink-0">
+                        <span className="inline-flex items-center gap-1 rounded-full bg-[#F0FDF4] border border-[#BBF7D0] px-2 py-0.5 text-[11px] font-semibold text-[#16A34A] whitespace-nowrap">
+                            {totalPieces} pcs
+                        </span>
+                        <Badge variant={status.variant}>{status.label}</Badge>
+                    </div>
                 </div>
 
                 <div className="flex items-center justify-between border-t border-[#F2F4F7] pt-3 text-[12px] text-[#6B7280]">

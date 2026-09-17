@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { Search } from 'lucide-react'
 import { Bell, List, SignOut, User, UserCircle, PaperPlaneTilt, FileText } from '@phosphor-icons/react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { cn } from '../../lib/utils'
@@ -14,9 +15,10 @@ interface TopBarProps {
   sidebarCollapsed: boolean
   showSearch?: boolean
   onMobileMenuToggle: () => void
+  onOpenSearch?: () => void
 }
 
-export function TopBar({ title, sidebarCollapsed, onMobileMenuToggle }: TopBarProps) {
+export function TopBar({ title, sidebarCollapsed, onMobileMenuToggle, onOpenSearch }: TopBarProps) {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
   const [showMenu, setShowMenu] = useState(false)
@@ -90,6 +92,21 @@ export function TopBar({ title, sidebarCollapsed, onMobileMenuToggle }: TopBarPr
       </div>
 
       <div className="flex items-center gap-3 shrink-0">
+        {/* Search trigger */}
+        <button
+          type="button"
+          onClick={() => onOpenSearch?.()}
+          className="flex h-9 items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3 text-[var(--text-muted)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] hover:border-[var(--border-2)] transition-all duration-200 cursor-pointer shadow-sm"
+          aria-label="Search"
+          title="Search (Ctrl+K)"
+        >
+          <Search size={16} />
+          <span className="hidden sm:inline text-[12px] font-medium">Search</span>
+          <kbd className="hidden lg:inline-flex items-center rounded-md border border-[var(--border)] bg-white px-1.5 py-0.5 text-[10px] font-semibold text-[var(--text-muted)]">
+            Ctrl K
+          </kbd>
+        </button>
+
         {/* Notifications */}
         <div className="relative" ref={notificationsRef}>
           <button

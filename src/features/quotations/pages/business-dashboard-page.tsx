@@ -66,11 +66,28 @@ interface KpiProps {
   icon: React.ReactNode
   accent: string
   delta?: { text: string; good: boolean }
+  to?: string
 }
 
-function KpiCard({ label, value, icon, accent, delta }: KpiProps) {
+function KpiCard({ label, value, icon, accent, delta, to }: KpiProps) {
+  const navigate = useNavigate()
+  const clickable = Boolean(to)
+
   return (
-    <div className="rounded-2xl border border-[#E4E7EC] bg-white p-5 shadow-sm transition-all hover:shadow-md">
+    <div
+      role={clickable ? 'button' : undefined}
+      tabIndex={clickable ? 0 : undefined}
+      onClick={() => { if (to) navigate(to) }}
+      onKeyDown={clickable ? e => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault()
+          navigate(to!)
+        }
+      } : undefined}
+      className={`rounded-2xl border border-[#E4E7EC] bg-white p-5 shadow-sm transition-all hover:shadow-md ${
+        clickable ? 'cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/40 hover:border-[#D1D5DB]' : ''
+      }`}
+    >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="text-[12px] font-semibold uppercase tracking-wide text-[#6B7280]">{label}</p>
@@ -161,6 +178,7 @@ export default function BusinessDashboardPage() {
     cur: number
     prev: number
     better: boolean
+    to?: string
   }> = [
     {
       label: 'Revenue',
@@ -170,6 +188,7 @@ export default function BusinessDashboardPage() {
       cur: current.revenue,
       prev: previous.revenue,
       better: true,
+      to: '/bills',
     },
     {
       label: 'Collected',
@@ -179,6 +198,7 @@ export default function BusinessDashboardPage() {
       cur: current.collected,
       prev: previous.collected,
       better: true,
+      to: '/bills',
     },
     {
       label: 'Outstanding',
@@ -188,6 +208,7 @@ export default function BusinessDashboardPage() {
       cur: current.outstanding,
       prev: previous.outstanding,
       better: false,
+      to: '/bills',
     },
     {
       label: 'Collection Rate',
@@ -197,6 +218,7 @@ export default function BusinessDashboardPage() {
       cur: current.collectionRate,
       prev: previous.collectionRate,
       better: true,
+      to: '/bills',
     },
   ]
 
@@ -208,6 +230,7 @@ export default function BusinessDashboardPage() {
     cur: number
     prev: number
     better: boolean
+    to?: string
   }> = [
     {
       label: 'Gate Passes',
@@ -217,6 +240,7 @@ export default function BusinessDashboardPage() {
       cur: current.gatePasses,
       prev: previous.gatePasses,
       better: true,
+      to: '/gate-passes',
     },
     {
       label: 'Items Received',
@@ -226,6 +250,7 @@ export default function BusinessDashboardPage() {
       cur: current.itemsReceived,
       prev: previous.itemsReceived,
       better: true,
+      to: '/gate-passes',
     },
     {
       label: 'Items Delivered',
@@ -235,6 +260,7 @@ export default function BusinessDashboardPage() {
       cur: current.itemsDelivered,
       prev: previous.itemsDelivered,
       better: true,
+      to: '/deliveries',
     },
     {
       label: 'Pending Items',
@@ -244,6 +270,7 @@ export default function BusinessDashboardPage() {
       cur: current.itemsPending,
       prev: previous.itemsPending,
       better: false,
+      to: '/deliveries',
     },
   ]
 
@@ -320,6 +347,7 @@ export default function BusinessDashboardPage() {
               icon={k.icon}
               accent={k.accent}
               delta={{ text: d.text, good: d.good }}
+              to={k.to}
             />
           )
         })}
@@ -337,6 +365,7 @@ export default function BusinessDashboardPage() {
               icon={k.icon}
               accent={k.accent}
               delta={{ text: d.text, good: d.good }}
+              to={k.to}
             />
           )
         })}

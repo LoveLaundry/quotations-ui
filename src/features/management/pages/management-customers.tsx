@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { customersApi } from '../api/management-api'
 import { toast } from 'sonner'
@@ -10,7 +10,9 @@ import { EmptyState } from '../../../components/ui/empty-state'
 import { LoadingSpinner } from '../../../components/ui/loading-spinner'
 import { ExportButton } from '../../../components/ui/export-button'
 import { Pagination } from '../../../components/ui/pagination'
+import { ConfirmDialog } from '../../../components/ui/confirm-dialog'
 import { useEnterFlow } from '../../../hooks/use-enter-flow'
+import { useEscape } from '../../../hooks/use-escape'
 
 const PAGE_SIZE = 12
 const TYPES = ['HOTEL', 'SHOP', 'INDIVIDUAL', 'RESTAURANT']
@@ -23,9 +25,12 @@ export default function ManagementCustomers() {
   const [editing, setEditing] = useState<any>(null)
   const [search, setSearch] = useState('')
   const [_viewCustomer, setViewCustomer] = useState<any>(null)
+  const [deleteTarget, setDeleteTarget] = useState<any>(null)
   const [offset, setOffset] = useState(0)
   const limit = PAGE_SIZE
   const flow = useEnterFlow()
+
+  useEscape(showForm, useCallback(() => { setShowForm(false); setEditing(null) }, []))
 
   useEffect(() => {
     setOffset(0)
@@ -58,7 +63,7 @@ export default function ManagementCustomers() {
 
   const deleteMut = useMutation({
     mutationFn: (id: string) => customersApi.remove(id),
-    onSuccess: () => { toast.success('Customer deactivated'); qc.invalidateQueries({ queryKey: ['mgmt-customers'] }) },
+    onSuccess: () => { toast.success('Customer deactivated'); qc.invalidateQueries({ queryKey: ['mgmt-customers'] }); setDeleteTarget(null) },
     onError: (e: any) => toast.error(e.response?.data?.detail || 'Failed'),
   })
 
@@ -128,7 +133,7 @@ export default function ManagementCustomers() {
                   <div className="flex gap-1">
                     <button onClick={() => setViewCustomer(c)} className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"><Eye size={14} /></button>
                     <button onClick={() => { setEditing(c); setShowForm(true) }} className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"><Pencil size={14} /></button>
-                    <button onClick={() => deleteMut.mutate(c.id)} className="p-1.5 hover:bg-red-100 dark:hover:bg-red-900/30 text-red-500 rounded"><Trash2 size={14} /></button>
+                    <button onClick={() => setDeleteTarget(c)} className="p-1.5 hover:bg-red-100 dark:hover:bg-red-900/30 text-red-500 rounded"><Trash2 size={14} /></button>
                   </div>
                 </div>
 
@@ -179,7 +184,7 @@ export default function ManagementCustomers() {
               if (editing) updateMut.mutate({ id: editing.id, data })
               else createMut.mutate(data)
             }} ref={flow.ref} onKeyDown={flow.handleKeyDown} className="space-y-3">
-              <input name="name" defaultValue={editing?.name} placeholder="Customer Name *" required className="w-full px-3 py-2 border rounded-lg text-sm" />
+              <input name="name" defaultValue={editing?.name} placeholder="Customer Name *" required autoFocus className="w-full px-3 py-2 border rounded-lg text-sm" />
               <div className="grid grid-cols-2 gap-3">
                 <select name="customer_type" defaultValue={editing?.customer_type || 'HOTEL'} className="px-3 py-2 border rounded-lg text-sm">
                   {TYPES.map(t => <option key={t} value={t}>{t}</option>)}
@@ -200,14 +205,24 @@ export default function ManagementCustomers() {
               <textarea name="notes" defaultValue={editing?.notes} placeholder="Notes" rows={2} className="w-full px-3 py-2 border rounded-lg text-sm" />
               <div className="flex justify-end gap-2 pt-2">
                 <button type="button" onClick={() => { setShowForm(false); setEditing(null) }} className="px-4 py-2 text-sm bg-gray-100 rounded-lg">Cancel</button>
-                <button type="submit" className="px-4 py-2 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700">
-                  {editing ? 'Update' : 'Create'}
+                <button type="submit" disabled={createMut.isPending || updateMut.isPending} className="px-4 py-2 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-60 disabled:cursor-not-allowed">
+                  {createMut.isPending || updateMut.isPending ? 'Saving…' : (editing ? 'Update' : 'Create')}
                 </button>
               </div>
             </form>
           </div>
         </div>
       )}
+
+      <ConfirmDialog
+        open={!!deleteTarget}
+        title="Deactivate Customer"
+        message={`Deactivate ${deleteTarget?.name}?`}
+        confirmLabel="Deactivate"
+        loading={deleteMut.isPending}
+        onConfirm={() => deleteTarget && deleteMut.mutate(deleteTarget.id)}
+        onCancel={() => setDeleteTarget(null)}
+      />
     </div>
   )
 }

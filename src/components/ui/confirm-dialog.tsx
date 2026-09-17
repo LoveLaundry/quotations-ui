@@ -10,6 +10,7 @@ interface ConfirmDialogProps {
   confirmLabel?: string
   cancelLabel?: string
   variant?: 'danger' | 'warning'
+  loading?: boolean
   onConfirm: () => void
   onCancel: () => void
 }
@@ -22,17 +23,18 @@ export function ConfirmDialog({
   confirmLabel = 'Confirm',
   cancelLabel = 'Cancel',
   variant = 'danger',
+  loading = false,
   onConfirm,
   onCancel,
 }: ConfirmDialogProps) {
   useEffect(() => {
     if (!open) return
     const handler = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onCancel()
+      if (e.key === 'Escape' && !loading) onCancel()
     }
     document.addEventListener('keydown', handler)
     return () => document.removeEventListener('keydown', handler)
-  }, [open, onCancel])
+  }, [open, loading, onCancel])
 
   if (!open) return null
 
@@ -41,7 +43,7 @@ export function ConfirmDialog({
     : 'bg-[#D97706] hover:bg-[#B45309] text-white'
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center" onClick={onCancel}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="absolute inset-0 bg-black/40" />
       <div
         className="relative bg-[var(--surface)] rounded-xl border border-[var(--border)] shadow-lg p-6 max-w-sm w-full mx-4"
@@ -57,8 +59,10 @@ export function ConfirmDialog({
           </div>
         </div>
         <div className="flex gap-2 justify-end">
-          <Button variant="outline" size="sm" onClick={onCancel}>{cancelLabel}</Button>
-          <Button size="sm" className={confirmClass} onClick={onConfirm}>{confirmLabel}</Button>
+          <Button variant="outline" size="sm" onClick={onCancel} disabled={loading}>{cancelLabel}</Button>
+          <Button size="sm" className={confirmClass} onClick={onConfirm} disabled={loading}>
+            {loading ? 'Working…' : confirmLabel}
+          </Button>
         </div>
       </div>
     </div>

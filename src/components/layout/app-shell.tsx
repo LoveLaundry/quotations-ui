@@ -3,6 +3,7 @@ import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Sidebar } from './sidebar'
 import { TopBar } from './top-bar'
+import { CommandSearch } from '../ui/command-search'
 import { cn } from '../../lib/utils'
 import { useAuth } from '../../context/AuthContext'
 import { setUnauthorizedHandler } from '../../api/interceptors'
@@ -84,6 +85,7 @@ function getPageTitle(pathname: string): string {
 export function AppShell() {
   const [collapsed, setCollapsed] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
+  const [cmdOpen, setCmdOpen] = useState(false)
   const location = useLocation()
   const navigate = useNavigate()
   const { logout } = useAuth()
@@ -120,7 +122,10 @@ export function AppShell() {
         title={getPageTitle(location.pathname)}
         sidebarCollapsed={collapsed}
         onMobileMenuToggle={() => setMobileOpen(v => !v)}
+        onOpenSearch={() => setCmdOpen(true)}
       />
+
+      <CommandSearch open={cmdOpen} onClose={() => setCmdOpen(false)} />
 
       <main className={cn(
         'min-h-screen pt-16 transition-[padding-left] duration-200',

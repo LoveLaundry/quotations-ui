@@ -2,6 +2,8 @@ import { useState, useMemo, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ArrowLeft, Plus, Trash2, FileText, X, LayoutTemplate, Repeat } from 'lucide-react'
 import { useDataGrid } from '../../../hooks/use-data-grid'
+import { useEnterFlow } from '../../../hooks/use-enter-flow'
+import { todayISO } from '../../../lib/date'
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card'
 import { Button } from '../../../components/ui/button'
 import { Breadcrumb } from '../../../components/ui/breadcrumb'
@@ -36,7 +38,7 @@ export default function CreateShopBillPage() {
   const [clientName, setClientName] = useState('')
   const [selectedQuotation, setSelectedQuotation] = useState<Quotation | null>(null)
   const [notes, setNotes] = useState('')
-  const [deliveryDate, setDeliveryDate] = useState('')
+  const [deliveryDate, setDeliveryDate] = useState(() => todayISO())
   const [discounts, setDiscounts] = useState<number>(0)
   const [transportFee, setTransportFee] = useState<number>(0)
   const [taxes, setTaxes] = useState<number>(0)
@@ -75,6 +77,15 @@ export default function CreateShopBillPage() {
   }
 
   const grid = useDataGrid({ columns: 5, rows: items.length, onAppendRow: addItem })
+
+  const flow = useEnterFlow<HTMLDivElement>()
+
+  const handleFormKeyDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
+    if (e.key !== 'Enter' || e.defaultPrevented) return
+    const target = e.target as HTMLElement
+    if (target.tagName !== 'INPUT' && target.tagName !== 'SELECT' && target.tagName !== 'TEXTAREA') return
+    e.preventDefault()
+  }
 
   const loadFromQuotation = (quo: Quotation) => {
     setSelectedQuotation(quo)
@@ -186,11 +197,12 @@ export default function CreateShopBillPage() {
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-5">
+      <form onSubmit={handleSubmit} onKeyDown={handleFormKeyDown} className="space-y-5">
         {/* Bill Info */}
         <Card>
           <CardHeader><CardTitle className="text-[15px]">Bill Information</CardTitle></CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent>
+            <div ref={flow.ref} onKeyDown={flow.handleKeyDown} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-[11px] font-semibold uppercase tracking-wide text-[#6B7280] mb-1.5">Bill Number (auto-generated if empty)</label>
@@ -198,7 +210,7 @@ export default function CreateShopBillPage() {
               </div>
               <div>
                 <label className="block text-[11px] font-semibold uppercase tracking-wide text-[#6B7280] mb-1.5">Client Name *</label>
-                <input type="text" required value={clientName} onChange={e => setClientName(e.target.value)} placeholder="Shop / client name" className={inputClass} />
+                <input type="text" required autoFocus value={clientName} onChange={e => setClientName(e.target.value)} placeholder="Shop / client name" className={inputClass} />
               </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -245,6 +257,7 @@ export default function CreateShopBillPage() {
             <div>
               <label className="block text-[11px] font-semibold uppercase tracking-wide text-[#6B7280] mb-1.5">Notes</label>
               <textarea value={notes} onChange={e => setNotes(e.target.value)} rows={2} placeholder="Optional notes…" className={`${inputClass} h-auto py-2 resize-none`} />
+            </div>
             </div>
           </CardContent>
         </Card>

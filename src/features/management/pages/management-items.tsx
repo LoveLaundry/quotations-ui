@@ -1,10 +1,12 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { itemsApi } from '../api/management-api'
 import { toast } from 'sonner'
 import { Plus, Pencil, Trash2, X, Tag, Package } from 'lucide-react'
 import { Pagination } from '../../../components/ui/pagination'
+import { ConfirmDialog } from '../../../components/ui/confirm-dialog'
 import { useEnterFlow } from '../../../hooks/use-enter-flow'
+import { useEscape } from '../../../hooks/use-escape'
 
 const PAGE_SIZE = 20
 
@@ -13,6 +15,8 @@ export default function ManagementItems() {
   const [tab, setTab] = useState<'items' | 'categories'>('items')
   const [showForm, setShowForm] = useState(false)
   const [editing, setEditing] = useState<any>(null)
+  const [deleteItemTarget, setDeleteItemTarget] = useState<any>(null)
+  const [deleteCatTarget, setDeleteCatTarget] = useState<any>(null)
   const [catFilter, setCatFilter] = useState('')
   const [search, setSearch] = useState('')
   const [offset, setOffset] = useState(0)
@@ -23,6 +27,8 @@ export default function ManagementItems() {
   useEffect(() => {
     setOffset(0)
   }, [catFilter, search])
+
+  useEscape(showForm, useCallback(() => { setShowForm(false); setEditing(null) }, []))
 
   const { data: categories = [] } = useQuery({
     queryKey: ['mgmt-categories'],
@@ -48,7 +54,7 @@ export default function ManagementItems() {
 
   const deleteItemMut = useMutation({
     mutationFn: (id: string) => itemsApi.remove(id),
-    onSuccess: () => { toast.success('Item deactivated'); qc.invalidateQueries({ queryKey: ['mgmt-items'] }) },
+    onSuccess: () => { toast.success('Item deactivated'); qc.invalidateQueries({ queryKey: ['mgmt-items'] }); setDeleteItemTarget(null) },
   })
 
   const createCatMut = useMutation({
@@ -59,7 +65,7 @@ export default function ManagementItems() {
 
   const deleteCatMut = useMutation({
     mutationFn: (id: string) => itemsApi.removeCategory(id),
-    onSuccess: () => { toast.success('Category deactivated'); qc.invalidateQueries({ queryKey: ['mgmt-categories'] }) },
+    onSuccess: () => { toast.success('Category deactivated'); qc.invalidateQueries({ queryKey: ['mgmt-categories'] }); setDeleteCatTarget(null) },
   })
 
   return (
@@ -118,7 +124,7 @@ export default function ManagementItems() {
                     <td className="px-3 py-2 text-right text-green-600">Rs. {((item.total_revenue || 0) - (item.total_cost || 0)).toLocaleString()}</td>
                     <td className="px-3 py-2 text-center">
                       <button onClick={() => { setEditing(item); setShowForm(true) }} className="p-1 hover:bg-gray-100 rounded"><Pencil size={14} /></button>
-                      <button onClick={() => deleteItemMut.mutate(item.id)} className="p-1 hover:bg-red-100 text-red-500 rounded"><Trash2 size={14} /></button>
+                      <button onClick={() => setDeleteItemTarget(item)} className="p-1 hover:bg-red-100 text-red-500 rounded"><Trash2 size={14} /></button>
                     </td>
                   </tr>
                 ))}
@@ -138,7 +144,7 @@ export default function ManagementItems() {
                 <p className="font-medium">{cat.name}</p>
                 <p className="text-sm text-gray-400">{cat.description || 'No description'}</p>
               </div>
-              <button onClick={() => deleteCatMut.mutate(cat.id)} className="p-1.5 hover:bg-red-100 text-red-500 rounded"><Trash2 size={14} /></button>
+              <button onClick={() => setDeleteCatTarget(cat)} className="p-1.5 hover:bg-red-100 text-red-500 rounded"><Trash2 size={14} /></button>
             </div>
           ))}
         </div>
@@ -161,7 +167,7 @@ export default function ManagementItems() {
                 if (editing) updateItemMut.mutate({ id: editing.id, data })
                 else createItemMut.mutate(data)
               }} ref={itemFlow.ref} onKeyDown={itemFlow.handleKeyDown} className="space-y-3">
-                <input name="name" defaultValue={editing?.name} placeholder="Item Name *" required className="w-full px-3 py-2 border rounded-lg text-sm" />
+                <input name="name" defaultValue={editing?.name} placeholder="Item Name *" required autoFocus className="w-full px-3 py-2 border rounded-lg text-sm" />
                 <select name="category_id" defaultValue={editing?.category_id || ''} required className="w-full px-3 py-2 border rounded-lg text-sm">
                   <option value="">Select Category *</option>
                   {categories.map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
@@ -183,7 +189,7 @@ export default function ManagementItems() {
                 </select>
                 <div className="flex justify-end gap-2 pt-2">
                   <button type="button" onClick={() => { setShowForm(false); setEditing(null) }} className="px-4 py-2 text-sm bg-gray-100 rounded-lg">Cancel</button>
-                  <button type="submit" className="px-4 py-2 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700">{editing ? 'Update' : 'Create'}</button>
+                  <button type="submit" disabled={createItemMut.isPending || updateItemMut.isPending} className="px-4 py-2 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-60 disabled:cursor-not-allowed">{createItemMut.isPending || updateItemMut.isPending ? 'Saving…' : (editing ? 'Update' : 'Create')}</button>
                 </div>
               </form>
             ) : (
@@ -192,17 +198,36 @@ export default function ManagementItems() {
                 const fd = new FormData(e.currentTarget)
                 createCatMut.mutate(Object.fromEntries(fd))
               }} ref={catFlow.ref} onKeyDown={catFlow.handleKeyDown} className="space-y-3">
-                <input name="name" defaultValue={editing?.name} placeholder="Category Name *" required className="w-full px-3 py-2 border rounded-lg text-sm" />
+                <input name="name" defaultValue={editing?.name} placeholder="Category Name *" required autoFocus className="w-full px-3 py-2 border rounded-lg text-sm" />
                 <textarea name="description" defaultValue={editing?.description} placeholder="Description" rows={2} className="w-full px-3 py-2 border rounded-lg text-sm" />
                 <div className="flex justify-end gap-2 pt-2">
                   <button type="button" onClick={() => { setShowForm(false); setEditing(null) }} className="px-4 py-2 text-sm bg-gray-100 rounded-lg">Cancel</button>
-                  <button type="submit" className="px-4 py-2 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700">Create</button>
+                  <button type="submit" disabled={createCatMut.isPending} className="px-4 py-2 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-60 disabled:cursor-not-allowed">{createCatMut.isPending ? 'Saving…' : 'Create'}</button>
                 </div>
               </form>
             )}
           </div>
         </div>
       )}
+
+      <ConfirmDialog
+        open={!!deleteItemTarget}
+        title="Deactivate Item"
+        message={`Deactivate ${deleteItemTarget?.name}?`}
+        confirmLabel="Deactivate"
+        loading={deleteItemMut.isPending}
+        onConfirm={() => deleteItemTarget && deleteItemMut.mutate(deleteItemTarget.id)}
+        onCancel={() => setDeleteItemTarget(null)}
+      />
+      <ConfirmDialog
+        open={!!deleteCatTarget}
+        title="Deactivate Category"
+        message={`Deactivate ${deleteCatTarget?.name}?`}
+        confirmLabel="Deactivate"
+        loading={deleteCatMut.isPending}
+        onConfirm={() => deleteCatTarget && deleteCatMut.mutate(deleteCatTarget.id)}
+        onCancel={() => setDeleteCatTarget(null)}
+      />
     </div>
   )
 }

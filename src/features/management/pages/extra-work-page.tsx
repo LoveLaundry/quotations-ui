@@ -4,7 +4,11 @@ import { extraWorkApi, employeesApi } from '../api/management-api'
 import { toast } from 'sonner'
 import { Plus, X, Trash2, Tag, Zap } from 'lucide-react'
 import { Pagination } from '../../../components/ui/pagination'
+import { LoadingSpinner } from '../../../components/ui/loading-spinner'
+import { ConfirmDialog } from '../../../components/ui/confirm-dialog'
 import { useEnterFlow } from '../../../hooks/use-enter-flow'
+import { useEscape } from '../../../hooks/use-escape'
+import { todayISO } from '../../../lib/date'
 
 const PAGE_SIZE = 20
 
@@ -12,10 +16,14 @@ export default function ExtraWorkPage() {
   const qc = useQueryClient()
   const [showCatForm, setShowCatForm] = useState(false)
   const [showRecordForm, setShowRecordForm] = useState(false)
+  const [deleteCatTarget, setDeleteCatTarget] = useState<string | null>(null)
+  const [deleteRecTarget, setDeleteRecTarget] = useState<string | null>(null)
   const [offset, setOffset] = useState(0)
   const limit = PAGE_SIZE
   const catFlow = useEnterFlow()
   const recFlow = useEnterFlow()
+  useEscape(showCatForm, () => setShowCatForm(false))
+  useEscape(showRecordForm, () => setShowRecordForm(false))
 
   const { data: employees = [] } = useQuery({
     queryKey: ['mgmt-employees'],
@@ -42,7 +50,7 @@ export default function ExtraWorkPage() {
 
   const deleteCat = useMutation({
     mutationFn: (id: string) => extraWorkApi.deleteCategory(id),
-    onSuccess: () => { toast.success('Category deleted'); qc.invalidateQueries({ queryKey: ['extra-work-categories'] }) },
+    onSuccess: () => { toast.success('Category deleted'); setDeleteCatTarget(null); qc.invalidateQueries({ queryKey: ['extra-work-categories'] }) },
     onError: (e: any) => toast.error(e.response?.data?.detail || 'Failed'),
   })
 
@@ -54,7 +62,7 @@ export default function ExtraWorkPage() {
 
   const deleteRec = useMutation({
     mutationFn: (id: string) => extraWorkApi.deleteRecord(id),
-    onSuccess: () => { toast.success('Record deleted'); qc.invalidateQueries({ queryKey: ['extra-work-records'] }) },
+    onSuccess: () => { toast.success('Record deleted'); setDeleteRecTarget(null); qc.invalidateQueries({ queryKey: ['extra-work-records'] }) },
     onError: (e: any) => toast.error(e.response?.data?.detail || 'Failed'),
   })
 
@@ -91,7 +99,7 @@ export default function ExtraWorkPage() {
               {c.name}
               <span className="text-xs text-gray-500">Rs. {Number(c.rate || 0).toLocaleString()}/{c.unit || 'unit'}</span>
               {c.calculation_method && <span className="text-xs text-gray-400">({c.calculation_method})</span>}
-              <button onClick={() => { if (confirm(`Delete category "${c.name}"?`)) deleteCat.mutate(c.id) }} className="text-red-500 hover:text-red-700">
+              <button onClick={() => setDeleteCatTarget(c.id)} className="text-red-500 hover:text-red-700">
                 <Trash2 size={13} />
               </button>
             </span>
@@ -116,7 +124,7 @@ export default function ExtraWorkPage() {
             </thead>
             <tbody>
               {isLoading ? (
-                <tr><td colSpan={7} className="py-8 text-center text-gray-400">Loading...</td></tr>
+                <tr><td colSpan={7} className="py-8 text-center"><LoadingSpinner size="sm" /></td></tr>
               ) : records.length === 0 ? (
                 <tr><td colSpan={7} className="py-8 text-center text-gray-400">No extra work records.</td></tr>
               ) : (
@@ -129,7 +137,7 @@ export default function ExtraWorkPage() {
                     <td className="py-2 pr-4 text-right">Rs. {Number(r.rate || 0).toLocaleString()}</td>
                     <td className="py-2 pr-4 text-right font-medium">Rs. {Number(r.amount || 0).toLocaleString()}</td>
                     <td className="py-2">
-                      <button onClick={() => { if (confirm('Delete this record?')) deleteRec.mutate(r.id) }} className="text-red-500 hover:text-red-700">
+                      <button onClick={() => setDeleteRecTarget(r.id)} className="text-red-500 hover:text-red-700">
                         <Trash2 size={14} />
                       </button>
                     </td>
@@ -163,7 +171,7 @@ export default function ExtraWorkPage() {
             }} ref={catFlow.ref} onKeyDown={catFlow.handleKeyDown} className="space-y-3">
               <div>
                 <label className="text-xs text-gray-500">Name *</label>
-                <input name="name" required className="w-full px-3 py-2 border rounded-lg text-sm" placeholder="e.g. Ironing" />
+                <input name="name" required autoFocus className="w-full px-3 py-2 border rounded-lg text-sm" placeholder="e.g. Ironing" />
               </div>
               <div>
                 <label className="text-xs text-gray-500">Rate per unit (Rs.) *</label>
@@ -215,7 +223,7 @@ export default function ExtraWorkPage() {
             }} ref={recFlow.ref} onKeyDown={recFlow.handleKeyDown} className="space-y-3">
               <div>
                 <label className="text-xs text-gray-500">Employee *</label>
-                <select name="employee_id" required className="w-full px-3 py-2 border rounded-lg text-sm">
+                <select name="employee_id" required autoFocus className="w-full px-3 py-2 border rounded-lg text-sm">
                   <option value="">Select Employee</option>
                   {employees.filter((e: any) => e.is_active).map((e: any) => (
                     <option key={e.id} value={e.id}>{e.name}</option>
@@ -224,7 +232,7 @@ export default function ExtraWorkPage() {
               </div>
               <div>
                 <label className="text-xs text-gray-500">Date *</label>
-                <input name="date" type="date" required className="w-full px-3 py-2 border rounded-lg text-sm" />
+                <input name="date" type="date" required defaultValue={todayISO()} className="w-full px-3 py-2 border rounded-lg text-sm" />
               </div>
               <div>
                 <label className="text-xs text-gray-500">Category *</label>
@@ -238,7 +246,7 @@ export default function ExtraWorkPage() {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="text-xs text-gray-500">Units *</label>
-                  <input name="units" type="number" step="0.1" min="0" required className="w-full px-3 py-2 border rounded-lg text-sm" />
+                  <input name="units" type="number" step="0.1" min="0" required defaultValue="1" className="w-full px-3 py-2 border rounded-lg text-sm" />
                 </div>
                 <div>
                   <label className="text-xs text-gray-500">Amount</label>
@@ -261,6 +269,26 @@ export default function ExtraWorkPage() {
           </div>
         </div>
       )}
+
+      <ConfirmDialog
+        open={!!deleteCatTarget}
+        title="Delete category?"
+        message="This category and its rate will be permanently removed."
+        confirmLabel="Delete"
+        loading={deleteCat.isPending}
+        onConfirm={() => { if (deleteCatTarget) deleteCat.mutate(deleteCatTarget) }}
+        onCancel={() => setDeleteCatTarget(null)}
+      />
+
+      <ConfirmDialog
+        open={!!deleteRecTarget}
+        title="Delete this record?"
+        message="This extra work record will be permanently removed."
+        confirmLabel="Delete"
+        loading={deleteRec.isPending}
+        onConfirm={() => { if (deleteRecTarget) deleteRec.mutate(deleteRecTarget) }}
+        onCancel={() => setDeleteRecTarget(null)}
+      />
     </div>
   )
 }

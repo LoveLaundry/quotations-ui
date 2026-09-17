@@ -17,6 +17,7 @@ import type { Worker } from '../types'
 import { ErrorState } from '../../../components/ui/error-state'
 import { Skeleton } from '../../../components/ui/skeleton'
 import { useEnterFlow } from '../../../hooks/use-enter-flow'
+import { useEscape } from '../../../hooks/use-escape'
 
 const statusColors = {
   active: 'bg-emerald-50 text-emerald-700 border border-emerald-200',
@@ -35,6 +36,8 @@ export function WorkersPage() {
   const [editWorker, setEditWorker] = useState<Worker | null>(null)
   const [deleteConfirm, setDeleteConfirm] = useState<Worker | null>(null)
   const flow = useEnterFlow<HTMLDivElement>()
+  useEscape(dialogOpen, () => setDialogOpen(false))
+  useEscape(!!deleteConfirm, () => setDeleteConfirm(null))
   const [form, setForm] = useState({
     worker_name: '',
     department: 'GENERAL',
@@ -283,6 +286,7 @@ export function WorkersPage() {
                     value={form.worker_name}
                     onChange={e => setForm(f => ({ ...f, worker_name: e.target.value }))}
                     placeholder="e.g. Ravi Kumar"
+                    autoFocus
                     className="w-full rounded-lg border border-[#E5E7EB] px-3 py-2.5 text-[13px] text-[#111827] placeholder-[#9CA3AF] focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/10 transition-all"
                   />
                 </div>

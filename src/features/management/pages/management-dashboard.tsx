@@ -34,24 +34,24 @@ export default function ManagementDashboard() {
       <PageHeader title="Management Dashboard" subtitle="Financial, HR and operational overview" />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard label="Today's Revenue" value={fmt(d.today_revenue)} icon={<DollarSign size={20} />} color="green" />
-        <StatCard label="Monthly Revenue" value={fmt(d.month_revenue)} icon={<TrendingUp size={20} />} color="blue" />
-        <StatCard label="6-Month Revenue" value={fmt(d.six_month_revenue)} icon={<ShoppingCart size={20} />} color="purple" />
-        <StatCard label="Net Profit" value={fmt(d.net_profit)} icon={<Wallet size={20} />} color={d.net_profit >= 0 ? 'green' : 'red'} />
+        <StatCard label="Today's Revenue" value={fmt(d.today_revenue)} icon={<DollarSign size={20} />} color="green" to="/management/transactions" />
+        <StatCard label="Monthly Revenue" value={fmt(d.month_revenue)} icon={<TrendingUp size={20} />} color="blue" to="/management/transactions" />
+        <StatCard label="6-Month Revenue" value={fmt(d.six_month_revenue)} icon={<ShoppingCart size={20} />} color="purple" to="/management/transactions" />
+        <StatCard label="Net Profit" value={fmt(d.net_profit)} icon={<Wallet size={20} />} color={d.net_profit >= 0 ? 'green' : 'red'} to="/management/transactions" />
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard label="Total Pieces" value={(d.total_pieces || 0).toLocaleString()} icon={<Package size={20} />} color="amber" />
-        <StatCard label="Customers" value={String(d.total_customers || 0)} icon={<Users size={20} />} color="blue" />
-        <StatCard label="Total Expenses" value={fmt(d.total_expenses)} icon={<TrendingDown size={20} />} color="amber" />
-        <StatCard label="Outstanding" value={fmt(d.outstanding_payments)} icon={<AlertCircle size={20} />} color="red" />
+        <StatCard label="Total Pieces" value={(d.total_pieces || 0).toLocaleString()} icon={<Package size={20} />} color="amber" to="/management/items" />
+        <StatCard label="Customers" value={String(d.total_customers || 0)} icon={<Users size={20} />} color="blue" to="/management/customers" />
+        <StatCard label="Total Expenses" value={fmt(d.total_expenses)} icon={<TrendingDown size={20} />} color="amber" to="/management/expenses" />
+        <StatCard label="Outstanding" value={fmt(d.outstanding_payments)} icon={<AlertCircle size={20} />} color="red" to="/management/payments" />
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard label="Active Employees" value={String(d.active_employees ?? '—')} icon={<Users size={20} />} color="green" />
-        <StatCard label="Present Today" value={(d.present_today ?? 0) + (d.on_leave_today ? ` / ${d.on_leave_today} leave` : '')} icon={<UserCheck size={20} />} color="purple" />
-        <StatCard label="Draft Slips (Month)" value={String(d.draft_slips_month ?? '—')} icon={<FileText size={20} />} color="purple" trendLabel={`${d.unpaid_slips_month ?? 0} finalized unpaid`} />
-        <StatCard label="Outstanding Advances" value={fmt(d.outstanding_advances)} icon={<HeartHandshake size={20} />} color="amber" />
+        <StatCard label="Active Employees" value={String(d.active_employees ?? '—')} icon={<Users size={20} />} color="green" to="/management/employees" />
+        <StatCard label="Present Today" value={(d.present_today ?? 0) + (d.on_leave_today ? ` / ${d.on_leave_today} leave` : '')} icon={<UserCheck size={20} />} color="purple" to="/management/attendance" />
+        <StatCard label="Draft Slips (Month)" value={String(d.draft_slips_month ?? '—')} icon={<FileText size={20} />} color="purple" trendLabel={`${d.unpaid_slips_month ?? 0} finalized unpaid`} to="/management/salary-history" />
+        <StatCard label="Outstanding Advances" value={fmt(d.outstanding_advances)} icon={<HeartHandshake size={20} />} color="amber" to="/management/advances" />
       </div>
 
       <div className="bg-white dark:bg-gray-800 rounded-xl border p-5">

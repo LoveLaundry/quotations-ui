@@ -225,7 +225,12 @@ export default function CreateGatePassPage() {
                 items,
                 ...(selectedQuotation ? { quotation_id: String(selectedQuotation.id) } : {}),
             },
-            { onSuccess: () => navigate('/gate-passes') },
+            {
+                onSuccess: record => {
+                    const recordId = record && record.id != null ? String(record.id) : ''
+                    navigate(recordId ? `/gate-passes/${recordId}` : '/gate-passes')
+                },
+            },
         )
     }
 

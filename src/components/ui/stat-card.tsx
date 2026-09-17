@@ -1,5 +1,6 @@
 import React from 'react'
 import { TrendingUp, TrendingDown } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 import { cn } from '../../lib/utils'
 
 interface StatCardProps {
@@ -11,6 +12,9 @@ interface StatCardProps {
   description?: string
   color?: 'red' | 'green' | 'blue' | 'amber' | 'purple' | 'gray'
   className?: string
+  /** Navigate on click */
+  to?: string
+  onClick?: () => void
 }
 
 const colorMap = {
@@ -22,19 +26,35 @@ const colorMap = {
   gray: { iconBg: 'bg-gray-100 text-gray-600 border border-gray-200', trend: 'text-gray-600' },
 }
 
-export function StatCard({ label, value, icon, trend, trendLabel, description, color = 'gray', className }: StatCardProps) {
+export function StatCard({ label, value, icon, trend, trendLabel, description, color = 'gray', className, to, onClick }: StatCardProps) {
+  const navigate = useNavigate()
   const c = colorMap[color]
   const trendNum = typeof trend === 'number' ? trend : undefined
   const trendStr = typeof trend === 'string' ? trend : undefined
   const isPositive = trendNum !== undefined && trendNum > 0
   const isNegative = trendNum !== undefined && trendNum < 0
   const displayLabel = description || trendLabel
+  const clickable = Boolean(to || onClick)
 
   return (
     <div
+      role={clickable ? 'button' : undefined}
+      tabIndex={clickable ? 0 : undefined}
+      onClick={() => {
+        if (onClick) onClick()
+        else if (to) navigate(to)
+      }}
+      onKeyDown={clickable ? e => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault()
+          if (onClick) onClick()
+          else if (to) navigate(to)
+        }
+      } : undefined}
       className={cn(
         'group relative overflow-hidden rounded-xl border border-[#E5E7EB] bg-white p-5',
         'shadow-sm transition-all duration-200 hover:shadow-md hover:border-[#D1D5DB]',
+        clickable && 'cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/40',
         className,
       )}
     >

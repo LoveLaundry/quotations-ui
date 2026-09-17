@@ -11,8 +11,11 @@ import { ErrorState } from '../../../components/ui/error-state'
 import { Skeleton } from '../../../components/ui/skeleton'
 import { Breadcrumb } from '../../../components/ui/breadcrumb'
 import { VerificationStatus } from '../../../components/ui/verification-status'
+import { Pagination } from '../../../components/ui/pagination'
 import { formatDate } from '../../../lib/utils'
 import { useBills } from '../hooks/useBills'
+
+const PAGE_SIZE = 20
 
 export default function BillsListPage() {
   const [searchInput, setSearchInput] = useState('')
@@ -20,21 +23,28 @@ export default function BillsListPage() {
   const [dateFrom, setDateFrom] = useState('')
   const [dateTo, setDateTo] = useState('')
   const [paymentStatus, setPaymentStatus] = useState('')
+  const [offset, setOffset] = useState(0)
 
   useEffect(() => {
     const t = setTimeout(() => setSearch(searchInput.trim()), 350)
     return () => clearTimeout(t)
   }, [searchInput])
 
+  useEffect(() => {
+    setOffset(0)
+  }, [search, dateFrom, dateTo, paymentStatus])
+
   const { data, isLoading, isError, error } = useBills({
     search: search || undefined,
     date_from: dateFrom || undefined,
     date_to: dateTo || undefined,
     payment_status: paymentStatus || undefined,
-    limit: 50,
+    skip: offset,
+    limit: PAGE_SIZE,
   })
 
   const bills = data?.items ?? []
+  const total = data?.total ?? 0
   const hasFilters = Boolean(search || dateFrom || dateTo || paymentStatus)
 
   const clearFilters = () => {
@@ -43,6 +53,7 @@ export default function BillsListPage() {
     setDateFrom('')
     setDateTo('')
     setPaymentStatus('')
+    setOffset(0)
   }
   
   const handleExportExcel = () => {
@@ -181,7 +192,8 @@ export default function BillsListPage() {
           }
         />
       ) : (
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {bills.map(bill => ( bill.id &&
             <Link key={bill.id} to={`/bills/${bill.id}`}>
               <Card hover className="cursor-pointer p-4 h-full">
@@ -235,7 +247,11 @@ export default function BillsListPage() {
               </Card>
             </Link>
           ))}
-        </div>
+          </div>
+          <div className="mt-4">
+            <Pagination total={total} limit={PAGE_SIZE} offset={offset} onChange={setOffset} />
+          </div>
+        </>
       )}
     </div>
   )

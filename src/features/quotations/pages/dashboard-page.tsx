@@ -73,12 +73,12 @@ function fmtTimeAgo(ts: string | null) {
 function KpiCards({ data }: { data: DashboardOverviewData }) {
   const { current: c, previous: p } = data
   const kpis = [
-    { label: 'Revenue', value: `LKR ${fmt(c.revenue)}`, trend: pctNum(c.revenue, p.revenue), icon: <DollarSign size={20} />, color: 'red' as const },
-    { label: 'Collected', value: `LKR ${fmt(c.collected)}`, trend: pctNum(c.collected, p.collected), icon: <Wallet size={20} />, color: 'green' as const },
-    { label: 'Outstanding', value: `LKR ${fmt(c.outstanding)}`, trend: pctNum(c.outstanding, p.outstanding), icon: <AlertTriangle size={20} />, color: 'amber' as const },
-    { label: 'Collection Rate', value: `${c.collectionRate.toFixed(1)}%`, trend: pctNum(c.collectionRate, c.collectionRate), icon: <TrendingUp size={20} />, color: 'blue' as const },
-    { label: 'Gate Passes', value: c.gatePasses, trend: pctNum(c.gatePasses, p.gatePasses), icon: <ClipboardList size={20} />, color: 'purple' as const },
-    { label: 'Active Clients', value: c.activeClients, trend: pctNum(c.activeClients, c.activeClients), icon: <Users size={20} />, color: 'blue' as const },
+    { label: 'Revenue', value: `LKR ${fmt(c.revenue)}`, trend: pctNum(c.revenue, p.revenue), icon: <DollarSign size={20} />, color: 'red' as const, to: '/bills' },
+    { label: 'Collected', value: `LKR ${fmt(c.collected)}`, trend: pctNum(c.collected, c.collected), icon: <Wallet size={20} />, color: 'green' as const, to: '/bills' },
+    { label: 'Outstanding', value: `LKR ${fmt(c.outstanding)}`, trend: pctNum(c.outstanding, c.outstanding), icon: <AlertTriangle size={20} />, color: 'amber' as const, to: '/bills' },
+    { label: 'Collection Rate', value: `${c.collectionRate.toFixed(1)}%`, trend: pctNum(c.collectionRate, c.collectionRate), icon: <TrendingUp size={20} />, color: 'blue' as const, to: '/bills' },
+    { label: 'Gate Passes', value: c.gatePasses, trend: pctNum(c.gatePasses, p.gatePasses), icon: <ClipboardList size={20} />, color: 'purple' as const, to: '/gate-passes' },
+    { label: 'Active Clients', value: c.activeClients, trend: pctNum(c.activeClients, c.activeClients), icon: <Users size={20} />, color: 'blue' as const, to: '/customers' },
   ]
 
   return (
@@ -90,7 +90,7 @@ function KpiCards({ data }: { data: DashboardOverviewData }) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: i * 0.05 }}
         >
-          <StatCard label={k.label} value={k.value} trend={k.trend} icon={k.icon} color={k.color} className="p-4" />
+          <StatCard label={k.label} value={k.value} trend={k.trend} icon={k.icon} color={k.color} to={k.to} className="p-4" />
         </motion.div>
       ))}
     </div>

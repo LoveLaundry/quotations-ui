@@ -1,4 +1,5 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { Search, Receipt, Building2, ArrowLeft, X } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card'
 import { Button } from '../../../components/ui/button'
@@ -12,8 +13,17 @@ import type { Quotation } from '../../../types/quotation'
 
 export default function CreateBillPage() {
   const { data: quotations = [], isLoading, isError, error } = useQuotations()
+  const [searchParams] = useSearchParams()
   const [search, setSearch] = useState('')
   const [selected, setSelected] = useState<Quotation | null>(null)
+
+  const quotationId = searchParams.get('quotation_id')
+
+  useEffect(() => {
+    if (!quotationId || isLoading) return
+    const match = quotations.find(quo => String(quo.id) === quotationId)
+    if (match) setSelected(match)
+  }, [quotationId, quotations, isLoading])
 
   const filteredQuotations = useMemo(() => {
     const q = search.trim().toLowerCase()

@@ -191,7 +191,7 @@ export default function CreateReturnPage() {
         })
       }
 
-      await returnsApi.create({
+      const created = await returnsApi.create({
         gate_pass_id: selectedGP.id!,
         delivery_id: selectedDeliveryId || undefined,
         client_name: clientName,
@@ -199,7 +199,8 @@ export default function CreateReturnPage() {
         bill_adjustment: adjustment.adjustment_type !== 'NONE' ? adjustment : undefined,
         notes: notes || undefined,
       })
-      navigate('/returns')
+      const createdId = created ? created.return_id || created._id : ''
+      navigate(createdId ? `/returns/${String(createdId)}` : '/returns')
     } catch (err: any) {
       setError(err?.response?.data?.detail || err?.message || 'Failed to create return')
     } finally {

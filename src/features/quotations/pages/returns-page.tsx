@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Plus, Search, RotateCcw, X, Send } from 'lucide-react'
+import { toast } from 'sonner'
 import { motion } from 'framer-motion'
 import { Card } from '../../../components/ui/card'
 import { Button } from '../../../components/ui/button'
@@ -125,9 +126,10 @@ export default function ReturnsPage() {
   const handleResent = async (returnId: string, itemName: string, spec: string) => {
     try {
       await returnsApi.markResent(returnId, itemName, spec)
+      toast.success('Marked as sent')
       fetchReturns()
     } catch (err: any) {
-      alert(err?.response?.data?.detail || 'Failed to mark as sent')
+      toast.error(err?.response?.data?.detail || 'Failed to mark as sent')
     }
   }
 

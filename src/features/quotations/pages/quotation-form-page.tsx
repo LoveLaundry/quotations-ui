@@ -1,6 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { ArrowLeft, Plus, Trash2, GripVertical, X } from 'lucide-react'
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import { useFieldArray, useForm } from 'react-hook-form'
 import { useNavigate, useParams } from 'react-router-dom'
 import { z } from 'zod'
@@ -8,6 +8,7 @@ import { Button } from '../../../components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card'
 import { Input } from '../../../components/ui/input'
 import { useDataGrid, mergeRefs } from '../../../hooks/use-data-grid'
+import { useEnterFlow } from '../../../hooks/use-enter-flow'
 import { Breadcrumb } from '../../../components/ui/breadcrumb'
 import { useCreateQuotation, useQuotation, useUpdateQuotation } from '../hooks/useQuotations'
 import type { QuotationFormValues } from '../../../types/quotation'
@@ -213,6 +214,33 @@ export default function QuotationFormPage() {
     onAppendRow: () => append(newItem()),
   })
 
+  const flow = useEnterFlow<HTMLDivElement>()
+  const tagRef = useRef<HTMLSelectElement | null>(null)
+  const regTag = register('tag')
+
+  const handleHeaderKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    flow.handleKeyDown(e)
+    if (
+      e.key === 'Enter' &&
+      !e.shiftKey &&
+      !e.ctrlKey &&
+      !e.metaKey &&
+      !e.altKey &&
+      !e.defaultPrevented &&
+      e.target === tagRef.current
+    ) {
+      e.preventDefault()
+      grid.focusCell(0, 0)
+    }
+  }
+
+  const handleFormKeyDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
+    if (e.key !== 'Enter' || e.defaultPrevented) return
+    const target = e.target as HTMLElement
+    if (target.tagName !== 'INPUT' && target.tagName !== 'SELECT' && target.tagName !== 'TEXTAREA') return
+    e.preventDefault()
+  }
+
   useEffect(() => {
     if (!existing) return
     reset({
@@ -308,7 +336,7 @@ export default function QuotationFormPage() {
           Loading quotation…
         </div>
       ) : (
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <form onSubmit={handleSubmit(onSubmit)} onKeyDown={handleFormKeyDown} className="space-y-4">
           <Card>
             <CardHeader className="border-b border-[#F2F4F7] pb-4">
               <div>
@@ -319,11 +347,12 @@ export default function QuotationFormPage() {
               </div>
             </CardHeader>
             <CardContent className="pt-4">
-              <div className="grid gap-4 sm:grid-cols-3">
+              <div ref={flow.ref} onKeyDown={handleHeaderKeyDown} className="grid gap-4 sm:grid-cols-3">
                 <div>
                   <Label>Hotel / Client Name *</Label>
                   <Input
                     {...register('client_name')}
+                    autoFocus={!isEdit}
                     placeholder="e.g. Nilawin Hotel, Avenra Garden Hotel"
                   />
                   <FieldErr msg={errors.client_name?.message} />
@@ -338,7 +367,8 @@ export default function QuotationFormPage() {
                 <div>
                   <Label>Quotation Type *</Label>
                   <select
-                    {...register('tag')}
+                    {...regTag}
+                    ref={mergeRefs(regTag.ref, tagRef)}
                     className="flex h-10 w-full rounded-lg border border-[#D0D5DD] bg-white px-3 py-2 text-[14px] ring-offset-white focus:outline-none focus:ring-2 focus:ring-[#16A34A] focus:ring-offset-0 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     <option value="shop">Shop (Public)</option>

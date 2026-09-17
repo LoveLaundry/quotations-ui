@@ -48,40 +48,48 @@ export default function ShopBillsDashboardPage() {
         <>
           {/* KPI Cards */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <Card className="p-4">
-              <div className="flex items-center gap-2 mb-2">
-                <Receipt className="h-4 w-4 text-[#6B7280]" />
-                <p className="text-[11px] font-semibold uppercase text-[#6B7280]">Total Bills</p>
-              </div>
-              {loadingSummary ? <Skeleton className="h-7 w-20" /> : <p className="text-[22px] font-bold text-[#101828]">{summary?.total_bills ?? 0}</p>}
-              {loadingSummary ? <Skeleton className="h-4 w-16 mt-1" /> : <p className="text-[12px] text-[#98A2B3] mt-0.5">{summary?.period_bills ?? 0} in period</p>}
-            </Card>
-            <Card className="p-4">
-              <div className="flex items-center gap-2 mb-2">
-                <TrendingUp className="h-4 w-4 text-[#16A34A]" />
-                <p className="text-[11px] font-semibold uppercase text-[#6B7280]">Revenue</p>
-              </div>
-              {loadingSummary ? <Skeleton className="h-7 w-24" /> : <p className="text-[22px] font-bold text-[#16A34A]">{fmt(summary?.total_revenue ?? 0)}</p>}
-            </Card>
-            <Card className="p-4">
-              <div className="flex items-center gap-2 mb-2">
-                <DollarSign className="h-4 w-4 text-[#DC2626]" />
-                <p className="text-[11px] font-semibold uppercase text-[#6B7280]">Outstanding</p>
-              </div>
-              {loadingSummary ? <Skeleton className="h-7 w-24" /> : <p className="text-[22px] font-bold text-[#DC2626]">{fmt(summary?.total_outstanding ?? 0)}</p>}
-            </Card>
-            <Card className="p-4">
-              <div className="flex items-center gap-2 mb-2">
-                <AlertTriangle className="h-4 w-4 text-[#D97706]" />
-                <p className="text-[11px] font-semibold uppercase text-[#6B7280]">Overdue</p>
-              </div>
-              {loadingSummary ? <Skeleton className="h-7 w-20" /> : (
-                <>
-                  <p className="text-[22px] font-bold text-[#D97706]">{summary?.overdue_count ?? 0}</p>
-                  <p className="text-[12px] text-[#D97706] mt-0.5">{fmt(summary?.overdue_amount ?? 0)}</p>
-                </>
-              )}
-            </Card>
+            <Link to="/shop-bills" className="block group">
+              <Card className="p-4 group-hover:border-[#DC2626]/40 transition-colors">
+                <div className="flex items-center gap-2 mb-2">
+                  <Receipt className="h-4 w-4 text-[#6B7280]" />
+                  <p className="text-[11px] font-semibold uppercase text-[#6B7280]">Total Bills</p>
+                </div>
+                {loadingSummary ? <Skeleton className="h-7 w-20" /> : <p className="text-[22px] font-bold text-[#101828]">{summary?.total_bills ?? 0}</p>}
+                {loadingSummary ? <Skeleton className="h-4 w-16 mt-1" /> : <p className="text-[12px] text-[#98A2B3] mt-0.5">{summary?.period_bills ?? 0} in period</p>}
+              </Card>
+            </Link>
+            <Link to="/shop-bills" className="block group">
+              <Card className="p-4 group-hover:border-[#16A34A]/40 transition-colors">
+                <div className="flex items-center gap-2 mb-2">
+                  <TrendingUp className="h-4 w-4 text-[#16A34A]" />
+                  <p className="text-[11px] font-semibold uppercase text-[#6B7280]">Revenue</p>
+                </div>
+                {loadingSummary ? <Skeleton className="h-7 w-24" /> : <p className="text-[22px] font-bold text-[#16A34A]">{fmt(summary?.total_revenue ?? 0)}</p>}
+              </Card>
+            </Link>
+            <Link to="/shop-bills" className="block group">
+              <Card className="p-4 group-hover:border-[#DC2626]/40 transition-colors">
+                <div className="flex items-center gap-2 mb-2">
+                  <DollarSign className="h-4 w-4 text-[#DC2626]" />
+                  <p className="text-[11px] font-semibold uppercase text-[#6B7280]">Outstanding</p>
+                </div>
+                {loadingSummary ? <Skeleton className="h-7 w-24" /> : <p className="text-[22px] font-bold text-[#DC2626]">{fmt(summary?.total_outstanding ?? 0)}</p>}
+              </Card>
+            </Link>
+            <Link to="/shop-bills" className="block group">
+              <Card className="p-4 group-hover:border-[#F59E0B]/40 transition-colors">
+                <div className="flex items-center gap-2 mb-2">
+                  <AlertTriangle className="h-4 w-4 text-[#D97706]" />
+                  <p className="text-[11px] font-semibold uppercase text-[#6B7280]">Overdue</p>
+                </div>
+                {loadingSummary ? <Skeleton className="h-7 w-20" /> : (
+                  <>
+                    <p className="text-[22px] font-bold text-[#D97706]">{summary?.overdue_count ?? 0}</p>
+                    <p className="text-[12px] text-[#D97706] mt-0.5">{fmt(summary?.overdue_amount ?? 0)}</p>
+                  </>
+                )}
+              </Card>
+            </Link>
           </div>
 
           {/* Status + Payment Breakdown */}

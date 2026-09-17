@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Button } from '../../../components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card'
+import { ConfirmDialog } from '../../../components/ui/confirm-dialog'
 import { EmptyState } from '../../../components/ui/empty-state'
 import { ErrorState } from '../../../components/ui/error-state'
 import { Input } from '../../../components/ui/input'
@@ -12,7 +13,8 @@ import { Breadcrumb } from '../../../components/ui/breadcrumb'
 import { formatDate } from '../../../lib/utils'
 import { useDeleteQuotation, useQuotations } from '../hooks/useQuotations'
 import { QuotationPreviewDialog } from '../components/quotation-preview-dialog'
-import type { Quotation } from '../../../types/quotation'
+import { ORDER_STATUSES } from '../../../types/quotation'
+import type { OrderStatus, Quotation } from '../../../types/quotation'
 
 const STATUS_CONFIG = {
   draft:           { label: 'Draft',    cls: 'bg-[#F9FAFB] text-[#6B7280] border-[#E4E7EC]' },
@@ -37,13 +39,24 @@ export default function QuotationsPage() {
 
   const [search, setSearch] = useState('')
   const [preview, setPreview] = useState<Quotation | null>(null)
+  const [statusFilter, setStatusFilter] = useState<'all' | OrderStatus>('all')
+  const [deleteTarget, setDeleteTarget] = useState<Quotation | null>(null)
 
   const filtered = useMemo(
     () =>
       (data ?? [])
-        .filter(q => (q.client_name ?? '').toLowerCase().includes(search.toLowerCase()))
+        .filter(q => {
+          const term = search.trim().toLowerCase()
+          const matchesSearch =
+            !term ||
+            (q.client_name ?? '').toLowerCase().includes(term) ||
+            (q.quotation_title ?? '').toLowerCase().includes(term) ||
+            (q.line_items ?? []).some(li => (li.item_name ?? '').toLowerCase().includes(term))
+          const matchesStatus = statusFilter === 'all' || q.status === statusFilter
+          return matchesSearch && matchesStatus
+        })
         .sort((a, b) => (a.client_name ?? '').localeCompare(b.client_name ?? '')),
-    [data, search],
+    [data, search, statusFilter],
   )
 
   return (
@@ -72,7 +85,29 @@ export default function QuotationsPage() {
             </CardTitle>
             <div className="relative w-full">
               <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[#9CA3AF]" />
-              <Input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by hotel name…" className="pl-9" />
+              <Input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by name, title or item…" className="pl-9" />
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {(['all', ...ORDER_STATUSES] as const).map(s => {
+                const active = statusFilter === s
+                const cfg = s === 'all' ? null : STATUS_CONFIG[s]
+                return (
+                  <button
+                    key={s}
+                    type="button"
+                    onClick={() => setStatusFilter(s)}
+                    className={`rounded-md border px-2 py-1 text-[11px] font-semibold whitespace-nowrap transition cursor-pointer ${
+                      active
+                        ? cfg
+                          ? cfg.cls
+                          : 'bg-[#101828] text-white border-[#101828]'
+                        : 'bg-white text-[#6B7280] border-[#E4E7EC] hover:bg-[#F9FAFB]'
+                    }`}
+                  >
+                    {s === 'all' ? 'All' : cfg?.label ?? s}
+                  </button>
+                )
+              })}
             </div>
           </div>
         </CardHeader>
@@ -127,7 +162,7 @@ export default function QuotationsPage() {
                     </Button>
                     <Button
                       variant="ghost" size="icon"
-                      onClick={() => deleteMutation.mutate(String(q.id))}
+                      onClick={() => setDeleteTarget(q)}
                       aria-label="Delete"
                       className="text-[#DC2626] hover:bg-[#FFF1F1]"
                     >
@@ -148,6 +183,24 @@ export default function QuotationsPage() {
       </Card>
 
       <QuotationPreviewDialog quotation={preview} open={Boolean(preview)} onOpenChange={o => !o && setPreview(null)} />
+
+      <ConfirmDialog
+        open={Boolean(deleteTarget)}
+        title="Delete Quotation?"
+        message={
+          deleteTarget
+            ? `${deleteTarget.client_name}${deleteTarget.quotation_title ? ` — ${deleteTarget.quotation_title}` : ''} will be permanently deleted. This cannot be undone.`
+            : undefined
+        }
+        confirmLabel="Delete"
+        variant="danger"
+        loading={deleteMutation.isPending}
+        onConfirm={() => {
+          if (!deleteTarget) return
+          deleteMutation.mutate(String(deleteTarget.id), { onSettled: () => setDeleteTarget(null) })
+        }}
+        onCancel={() => setDeleteTarget(null)}
+      />
     </div>
   )
 }

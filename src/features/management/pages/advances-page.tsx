@@ -4,18 +4,24 @@ import { employeesApi, advancesApi } from '../api/management-api'
 import { toast } from 'sonner'
 import { Plus, X, Trash2 } from 'lucide-react'
 import { Pagination } from '../../../components/ui/pagination'
+import { LoadingSpinner } from '../../../components/ui/loading-spinner'
+import { ConfirmDialog } from '../../../components/ui/confirm-dialog'
 import { useEnterFlow } from '../../../hooks/use-enter-flow'
+import { useEscape } from '../../../hooks/use-escape'
+import { todayISO } from '../../../lib/date'
 
 const PAGE_SIZE = 20
 
 export default function AdvancesPage() {
   const qc = useQueryClient()
   const [showForm, setShowForm] = useState(false)
+  const [cancelTarget, setCancelTarget] = useState<string | null>(null)
   const [empFilter, setEmpFilter] = useState('')
   const [statusFilter, setStatusFilter] = useState('OUTSTANDING')
   const [offset, setOffset] = useState(0)
   const limit = PAGE_SIZE
   const flow = useEnterFlow()
+  useEscape(showForm, () => setShowForm(false))
 
   useEffect(() => {
     setOffset(0)
@@ -52,6 +58,7 @@ export default function AdvancesPage() {
     mutationFn: (id: string) => advancesApi.cancel(id),
     onSuccess: () => {
       toast.success('Advance cancelled')
+      setCancelTarget(null)
       qc.invalidateQueries({ queryKey: ['advances'] })
     },
     onError: (e: any) => toast.error(e.response?.data?.detail || 'Failed'),
@@ -131,7 +138,7 @@ export default function AdvancesPage() {
           </thead>
           <tbody>
             {isLoading ? (
-              <tr><td colSpan={8} className="text-center py-8 text-gray-400">Loading...</td></tr>
+              <tr><td colSpan={8} className="text-center py-8"><LoadingSpinner size="sm" /></td></tr>
             ) : advances.length === 0 ? (
               <tr><td colSpan={8} className="text-center py-8 text-gray-400">No advances found</td></tr>
             ) : (
@@ -157,9 +164,7 @@ export default function AdvancesPage() {
                     <td className="px-4 py-3 text-center">
                       {adv.status === 'OUTSTANDING' && (
                         <button
-                          onClick={() => {
-                            if (confirm('Cancel this advance?')) cancelMut.mutate(adv.id)
-                          }}
+                          onClick={() => setCancelTarget(adv.id)}
                           className="p-1.5 hover:bg-red-100 text-red-500 rounded"
                         >
                           <Trash2 size={14} />
@@ -195,7 +200,7 @@ export default function AdvancesPage() {
             }} ref={flow.ref} onKeyDown={flow.handleKeyDown} className="space-y-3">
               <div>
                 <label className="text-xs text-gray-500">Employee *</label>
-                <select name="employee_id" required className="w-full px-3 py-2 border rounded-lg text-sm">
+                <select name="employee_id" required autoFocus className="w-full px-3 py-2 border rounded-lg text-sm">
                   <option value="">Select Employee</option>
                   {employees.filter((e: any) => e.is_active).map((e: any) => (
                     <option key={e.id} value={e.id}>{e.name}</option>
@@ -209,7 +214,7 @@ export default function AdvancesPage() {
                 </div>
                 <div>
                   <label className="text-xs text-gray-500">Date *</label>
-                  <input name="date" type="date" required className="w-full px-3 py-2 border rounded-lg text-sm" />
+                  <input name="date" type="date" required defaultValue={todayISO()} className="w-full px-3 py-2 border rounded-lg text-sm" />
                 </div>
               </div>
               <div>
@@ -226,6 +231,16 @@ export default function AdvancesPage() {
           </div>
         </div>
       )}
+
+      <ConfirmDialog
+        open={!!cancelTarget}
+        title="Cancel this advance?"
+        message="This advance will be marked cancelled and will no longer be deducted from salary."
+        confirmLabel="Cancel Advance"
+        loading={cancelMut.isPending}
+        onConfirm={() => { if (cancelTarget) cancelMut.mutate(cancelTarget) }}
+        onCancel={() => setCancelTarget(null)}
+      />
     </div>
   )
 }

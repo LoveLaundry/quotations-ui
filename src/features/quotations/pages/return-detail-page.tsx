@@ -9,6 +9,7 @@ import { EmptyState } from '../../../components/ui/empty-state'
 import { ErrorState } from '../../../components/ui/error-state'
 import { Skeleton } from '../../../components/ui/skeleton'
 import { Breadcrumb } from '../../../components/ui/breadcrumb'
+import { toast } from 'sonner'
 import { formatDate } from '../../../lib/utils'
 import { returns as returnsApi } from '../services/returns.service'
 import type { Return } from '../../../types/operations'
@@ -76,8 +77,9 @@ export default function ReturnDetailPage() {
       const updated = await returnsApi.update(returnData.return_id, { status: newStatus })
       setReturnData(updated)
       setStatusOpen(false)
+      toast.success(`Status updated to ${newStatus}`)
     } catch (err: any) {
-      alert(err?.response?.data?.detail || 'Failed to update status')
+      toast.error(err?.response?.data?.detail || 'Failed to update status')
     } finally {
       setUpdating(false)
     }
@@ -88,8 +90,9 @@ export default function ReturnDetailPage() {
     try {
       const updated = await returnsApi.markResent(returnData.return_id, itemName, spec)
       setReturnData(updated)
+      toast.success('Marked as sent')
     } catch (err: any) {
-      alert(err?.response?.data?.detail || 'Failed to mark as sent')
+      toast.error(err?.response?.data?.detail || 'Failed to mark as sent')
     }
   }
 

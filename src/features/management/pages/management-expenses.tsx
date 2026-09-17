@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { expensesApi } from '../api/management-api'
 import { toast } from 'sonner'
@@ -10,7 +10,10 @@ import { EmptyState } from '../../../components/ui/empty-state'
 import { LoadingSpinner } from '../../../components/ui/loading-spinner'
 import { ExportButton } from '../../../components/ui/export-button'
 import { Pagination } from '../../../components/ui/pagination'
+import { ConfirmDialog } from '../../../components/ui/confirm-dialog'
 import { useEnterFlow } from '../../../hooks/use-enter-flow'
+import { useEscape } from '../../../hooks/use-escape'
+import { todayISO } from '../../../lib/date'
 
 const PAGE_SIZE = 20
 
@@ -20,6 +23,7 @@ export default function ManagementExpenses() {
   const qc = useQueryClient()
   const [showForm, setShowForm] = useState(false)
   const [editing, setEditing] = useState<any>(null)
+  const [deleteTarget, setDeleteTarget] = useState<any>(null)
   const [startDate, setStartDate] = useState('')
   const [endDate, setEndDate] = useState('')
   const [catFilter, setCatFilter] = useState('')
@@ -30,6 +34,8 @@ export default function ManagementExpenses() {
   useEffect(() => {
     setOffset(0)
   }, [startDate, endDate, catFilter])
+
+  useEscape(showForm, useCallback(() => { setShowForm(false); setEditing(null) }, []))
 
   const { data: categories = [] } = useQuery({
     queryKey: ['mgmt-expense-cats'],
@@ -64,7 +70,7 @@ export default function ManagementExpenses() {
 
   const deleteMut = useMutation({
     mutationFn: (id: string) => expensesApi.remove(id),
-    onSuccess: () => { toast.success('Expense deleted'); qc.invalidateQueries({ queryKey: ['mgmt-expenses'] }) },
+    onSuccess: () => { toast.success('Expense deleted'); qc.invalidateQueries({ queryKey: ['mgmt-expenses'] }); setDeleteTarget(null) },
   })
 
   const expenseColumns = [
@@ -79,7 +85,7 @@ export default function ManagementExpenses() {
       render: (e: any) => (
         <div className="flex items-center justify-center gap-1">
           <button onClick={() => { setEditing(e); setShowForm(true) }} className="p-1 hover:bg-gray-100 rounded"><Pencil size={14} /></button>
-          <button onClick={() => deleteMut.mutate(e.id)} className="p-1 hover:bg-red-100 text-red-500 rounded"><Trash2 size={14} /></button>
+          <button onClick={() => setDeleteTarget(e)} className="p-1 hover:bg-red-100 text-red-500 rounded"><Trash2 size={14} /></button>
         </div>
       ),
     },
@@ -167,7 +173,7 @@ export default function ManagementExpenses() {
               if (editing) updateMut.mutate({ id: editing.id, data })
               else createMut.mutate(data)
             }} ref={flow.ref} onKeyDown={flow.handleKeyDown} className="space-y-3">
-              <input name="date" type="date" defaultValue={editing?.date || new Date().toISOString().split('T')[0]} required className="w-full px-3 py-2 border rounded-lg text-sm" />
+              <input name="date" type="date" defaultValue={editing?.date || todayISO()} required autoFocus className="w-full px-3 py-2 border rounded-lg text-sm" />
               <select name="category_id" defaultValue={editing?.category_id || ''} required className="w-full px-3 py-2 border rounded-lg text-sm">
                 <option value="">Select Category *</option>
                 {categories.map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
@@ -183,12 +189,22 @@ export default function ManagementExpenses() {
               <textarea name="notes" defaultValue={editing?.notes} placeholder="Notes" rows={2} className="w-full px-3 py-2 border rounded-lg text-sm" />
               <div className="flex justify-end gap-2 pt-2">
                 <button type="button" onClick={() => { setShowForm(false); setEditing(null) }} className="px-4 py-2 text-sm bg-gray-100 rounded-lg">Cancel</button>
-                <button type="submit" className="px-4 py-2 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700">{editing ? 'Update' : 'Add'}</button>
+                <button type="submit" disabled={createMut.isPending || updateMut.isPending} className="px-4 py-2 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-60 disabled:cursor-not-allowed">{createMut.isPending || updateMut.isPending ? 'Saving…' : (editing ? 'Update' : 'Add')}</button>
               </div>
             </form>
           </div>
         </div>
       )}
+
+      <ConfirmDialog
+        open={!!deleteTarget}
+        title="Delete Expense"
+        message={`Delete this expense (Rs. ${deleteTarget?.amount?.toLocaleString() ?? ''})?`}
+        confirmLabel="Delete"
+        loading={deleteMut.isPending}
+        onConfirm={() => deleteTarget && deleteMut.mutate(deleteTarget.id)}
+        onCancel={() => setDeleteTarget(null)}
+      />
     </div>
   )
 }

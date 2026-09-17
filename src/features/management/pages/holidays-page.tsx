@@ -3,13 +3,19 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { holidaysApi } from '../api/management-api'
 import { toast } from 'sonner'
 import { Plus, X, Trash2, Calendar } from 'lucide-react'
+import { LoadingSpinner } from '../../../components/ui/loading-spinner'
+import { ConfirmDialog } from '../../../components/ui/confirm-dialog'
 import { useEnterFlow } from '../../../hooks/use-enter-flow'
+import { useEscape } from '../../../hooks/use-escape'
+import { todayISO } from '../../../lib/date'
 
 export default function HolidaysPage() {
   const qc = useQueryClient()
   const [showForm, setShowForm] = useState(false)
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null)
   const [yearFilter, setYearFilter] = useState(new Date().getFullYear())
   const flow = useEnterFlow()
+  useEscape(showForm, () => setShowForm(false))
 
   const { data: holidays = [], isLoading } = useQuery({
     queryKey: ['holidays', yearFilter],
@@ -30,6 +36,7 @@ export default function HolidaysPage() {
     mutationFn: (id: string) => holidaysApi.remove(id),
     onSuccess: () => {
       toast.success('Holiday removed')
+      setDeleteTarget(null)
       qc.invalidateQueries({ queryKey: ['holidays'] })
     },
     onError: (e: any) => toast.error(e.response?.data?.detail || 'Failed'),
@@ -66,7 +73,7 @@ export default function HolidaysPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {isLoading ? (
-          <div className="text-center py-8 text-gray-400 col-span-3">Loading...</div>
+          <div className="text-center py-8 text-gray-400 col-span-3"><LoadingSpinner size="sm" /></div>
         ) : holidays.length === 0 ? (
           <div className="text-center py-8 text-gray-400 col-span-3">No holidays defined for {yearFilter}</div>
         ) : (
@@ -86,9 +93,7 @@ export default function HolidaysPage() {
                 )}
               </div>
               <button
-                onClick={() => {
-                  if (confirm('Delete this holiday?')) deleteMut.mutate(h.id)
-                }}
+                onClick={() => setDeleteTarget(h.id)}
                 className="p-1.5 hover:bg-red-100 text-red-500 rounded"
               >
                 <Trash2 size={14} />
@@ -117,11 +122,11 @@ export default function HolidaysPage() {
             }} ref={flow.ref} onKeyDown={flow.handleKeyDown} className="space-y-3">
               <div>
                 <label className="text-xs text-gray-500">Holiday Name *</label>
-                <input name="name" required className="w-full px-3 py-2 border rounded-lg text-sm" placeholder="e.g. National Day" />
+                <input name="name" required autoFocus className="w-full px-3 py-2 border rounded-lg text-sm" placeholder="e.g. National Day" />
               </div>
               <div>
                 <label className="text-xs text-gray-500">Date *</label>
-                <input name="date" type="date" required className="w-full px-3 py-2 border rounded-lg text-sm" />
+                <input name="date" type="date" required defaultValue={todayISO()} className="w-full px-3 py-2 border rounded-lg text-sm" />
               </div>
               <div>
                 <label className="text-xs text-gray-500">Description</label>
@@ -141,6 +146,16 @@ export default function HolidaysPage() {
           </div>
         </div>
       )}
+
+      <ConfirmDialog
+        open={!!deleteTarget}
+        title="Delete this holiday?"
+        message="This holiday will be permanently removed from the calendar."
+        confirmLabel="Delete"
+        loading={deleteMut.isPending}
+        onConfirm={() => { if (deleteTarget) deleteMut.mutate(deleteTarget) }}
+        onCancel={() => setDeleteTarget(null)}
+      />
     </div>
   )
 }
