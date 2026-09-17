@@ -32,7 +32,12 @@ export default function AttendanceLogPage() {
   })
 
   const activeEmployees = useMemo(
-    () => employees.filter((e: any) => e.is_active !== false),
+    () => employees.filter((e: any) => e.is_active !== false && e.attendance_required !== false),
+    [employees],
+  )
+
+  const fixedSalaryEmployees = useMemo(
+    () => employees.filter((e: any) => e.is_active !== false && e.attendance_required === false),
     [employees],
   )
 
@@ -173,13 +178,19 @@ export default function AttendanceLogPage() {
           </table>
         </div>
         {activeEmployees.length === 0 && (
-          <div className="text-center py-10 text-gray-400">No active employees found.</div>
+          <div className="text-center py-10 text-gray-400">No attendance-based active employees found.</div>
         )}
       </div>
 
+      {fixedSalaryEmployees.length > 0 && (
+        <p className="text-xs text-amber-600 dark:text-amber-400">
+          {fixedSalaryEmployees.length} employee(s) on a fixed salary arrangement ({fixedSalaryEmployees.map((e: any) => e.name).join(', ')}) are excluded — attendance is not required for their pay.
+        </p>
+      )}
+
       <p className="text-xs text-gray-400">
-        Select a date, set each employee's status, then Save All. PAID_LEAVE counts as worked in salary.
-        UNPAID_LEAVE and ABSENT reduce the salary base. Overwrites existing records for {logDate}.
+        Select a date, set each employee's status, then Save All. Employees with a fixed salary arrangement (attendance not required) are excluded.
+        PAID_LEAVE counts as worked in salary. UNPAID_LEAVE and ABSENT reduce the salary base. Overwrites existing records for {logDate}.
       </p>
     </div>
   )

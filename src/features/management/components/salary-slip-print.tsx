@@ -37,8 +37,12 @@ const T = {
     baseForPeriod: 'Base for Period',
     overtime: 'Overtime',
     extraWork: 'Extra Work',
+    bonus: 'Bonus',
+    otherPayments: 'Other Payments',
     allowances: 'Allowances',
     totalEarnings: 'Total Earnings',
+    attendanceNotRequired: 'Attendance not required — fixed salary arrangement',
+    arrangement: 'Arrangement',
     deductions: 'Deductions',
     epfDeduction: 'EPF Deduction',
     advanceDeductions: 'Advance Deductions',
@@ -90,8 +94,12 @@ const T = {
     baseForPeriod: 'කාලය සඳහා මූලික',
     overtime: 'අධිකාල වැඩ',
     extraWork: 'අතිරේක වැඩ',
+    bonus: 'උපදේශන/ප්රසාද',
+    otherPayments: 'වෙනත් ගෙවීම්',
     allowances: 'දීමනා',
     totalEarnings: 'මුළු ඉපැයීම්',
+    attendanceNotRequired: 'පැමිණීම අවශ්ය නොවේ — ස්ථිර වැටුප් සකස් කිරීම',
+    arrangement: 'සකස් කිරීම',
     deductions: 'අඩුකිරීම්',
     epfDeduction: 'EPF අඩුකිරීම',
     advanceDeductions: 'අත්තිකාරම් අඩුකිරීම්',
@@ -212,7 +220,7 @@ export function SalarySlipPrint({ slip, lang = 'EN' }: SalarySlipProps) {
           <div className="info-grid">
             <div className="info-row"><span className="info-label">{t.employee}</span><span className="info-value">{slip.employee_name}</span></div>
             <div className="info-row"><span className="info-label">{t.status}</span><span className="info-value"><span className={`status-badge status-${slip.status}`}>{t.statusLabel(slip.status)}</span></span></div>
-            <div className="info-row"><span className="info-label">{t.salaryType}</span><span className="info-value">{slip.salary_type}</span></div>
+            <div className="info-row"><span className="info-label">{t.salaryType}</span><span className="info-value">{slip.salary_type}{slip.attendance_required === false ? ' · Fixed' : ''}</span></div>
             <div className="info-row"><span className="info-label">{t.period}</span><span className="info-value">{slip.period_start} → {slip.period_end}</span></div>
             <div className="info-row"><span className="info-label">{t.department}</span><span className="info-value">{slip.department || '—'}</span></div>
             <div className="info-row"><span className="info-label">{t.paidDate}</span><span className="info-value">{slip.paid_date || '—'}</span></div>
@@ -220,7 +228,8 @@ export function SalarySlipPrint({ slip, lang = 'EN' }: SalarySlipProps) {
 
           <div className="two-col">
             <div>
-              <div className="section-title">{t.attendance}</div>
+              <div className="section-title">{slip.attendance_required === false ? t.attendanceNotRequired : t.attendance}</div>
+              {slip.attendance_required !== false ? (
               <table className="calc-table">
                 <tbody>
                   <tr><td>{t.calendarDays}</td><td>{slip.calendar_days}</td></tr>
@@ -232,6 +241,11 @@ export function SalarySlipPrint({ slip, lang = 'EN' }: SalarySlipProps) {
                   {slip.weekend_count > 0 && <tr><td>{t.weekends}</td><td style={{ color: '#9333ea' }}>{slip.weekend_count}</td></tr>}
                 </tbody>
               </table>
+              ) : (
+                <div style={{ fontSize: 12, color: '#92400e', background: '#FDF6F7', border: '1px solid #F3C9CE', padding: '8px 10px', borderRadius: 4, fontWeight: 600 }}>
+                  {t.attendanceNotRequired}
+                </div>
+              )}
             </div>
             <div>
               <div className="section-title">{slip.epf_base ? `${t.epfEtf} · ${baseLabel}` : t.epfEtf}</div>
@@ -255,6 +269,8 @@ export function SalarySlipPrint({ slip, lang = 'EN' }: SalarySlipProps) {
                   <tr><td>{t.baseForPeriod}<div className="sub">{t.daysWorked(slip.worked_days)}</div></td><td style={{ fontWeight: 700 }}>{formatRs(slip.base_salary_for_period ?? (slip.adjusted_base_salary * slip.worked_days / Math.max(slip.calendar_days, 1)))}</td></tr>
                   {slip.overtime_pay > 0 && <tr><td>{t.overtime}<div className="sub">{slip.overtime_hours} {t.hrs} × {Number(slip.overtime_rate || 0).toLocaleString('en-LK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div></td><td>{formatRs(slip.overtime_pay)}</td></tr>}
                   {slip.extra_work_total > 0 && <tr><td>{t.extraWork}</td><td>{formatRs(slip.extra_work_total)}</td></tr>}
+                  {slip.bonus > 0 && <tr><td>{t.bonus}</td><td>{formatRs(slip.bonus)}</td></tr>}
+                  {slip.other_payments > 0 && <tr><td>{t.otherPayments}</td><td>{formatRs(slip.other_payments)}</td></tr>}
                   {slip.allowances > 0 && <tr><td>{t.allowances}</td><td>{formatRs(slip.allowances)}</td></tr>}
                   <tr className="total-row"><td>{t.totalEarnings}</td><td>{formatRs(slip.total_earnings)}</td></tr>
                 </tbody>

@@ -204,6 +204,19 @@ export const salaryApi = {
     mgmtApi.post(`/api/salary/payroll-run?year=${year}&month=${month}`),
 }
 
+// ── Salary Packages (per-month arrangement overrides) ───────────────────────
+export const salaryPackagesApi = {
+  list: (params?: { employee_id?: string; month?: string }) => {
+    const q = new URLSearchParams()
+    if (params?.employee_id) q.set('employee_id', params.employee_id)
+    if (params?.month) q.set('month', params.month)
+    return mgmtApi.get(`/api/salary/packages?${q}`)
+  },
+  upsert: (data: any) => mgmtApi.post('/api/salary/packages', data),
+  update: (id: string, data: any) => mgmtApi.put(`/api/salary/packages/${id}`, data),
+  remove: (id: string) => mgmtApi.delete(`/api/salary/packages/${id}`),
+}
+
 // ── Advances ─────────────────────────────────────────────────────────────
 export const advancesApi = {
   list: (params?: any) => {

@@ -115,6 +115,11 @@ export default function SalarySlipPage() {
       overtime_pay: calculation.overtime_pay,
       allowances,
       allowance_details: [],
+      bonus: calculation.bonus || 0,
+      other_payments: calculation.other_payments || 0,
+      components: calculation.components || [],
+      attendance_required: calculation.attendance_required ?? true,
+      calculation_method: calculation.calculation_method || 'MONTHLY_ATTENDANCE',
       extra_work_total: calculation.extra_work_total,
       extra_work_details: calculation.extra_work_details || [],
       epf_employee: calculation.epf_employee,
@@ -124,19 +129,31 @@ export default function SalarySlipPage() {
       advance_deductions: calculation.advance_deductions,
       advance_details: calculation.advance_details || [],
       loan_deduction: loanDeduction,
-      other_deductions: otherDeductions,
+      other_deductions: (otherDeductions || 0) + (calculation.other_deductions || 0),
       status: 'DRAFT',
       notes,
     })
   }
 
+  const attendanceRequired = calculation ? calculation.attendance_required !== false : true
+
   const totalEarnings = calculation
     ? calculation.base_salary_for_period + calculation.overtime_pay + calculation.extra_work_total + allowances
+      + (calculation.bonus || 0) + (calculation.other_payments || 0)
     : 0
   const totalDeductions = calculation
-    ? calculation.epf_employee + calculation.advance_deductions + loanDeduction + otherDeductions
+    ? calculation.epf_employee + calculation.advance_deductions + loanDeduction + otherDeductions + (calculation.other_deductions || 0)
     : 0
   const netSalary = totalEarnings - totalDeductions
+
+  const calMethodLabel = (m: string) => ({
+    MONTHLY_ATTENDANCE: 'Monthly · attendance-based',
+    FIXED_MONTHLY: 'Monthly · fixed amount',
+    WEEKLY_ATTENDANCE: 'Weekly · attendance-based',
+    WEEKLY_FIXED: 'Weekly · fixed amount',
+    DAILY_WORKED_DAYS: 'Daily · days worked',
+    CONTRACT: 'Contract · fixed amount',
+  }[m] || m || '')
 
   return (
     <div ref={flow.ref} onKeyDown={flow.handleKeyDown} className="space-y-6">
@@ -166,9 +183,9 @@ export default function SalarySlipPage() {
               className="w-full min-w-[200px] mt-1 px-3 py-2 border rounded-lg text-sm"
             >
               <option value="">Select Employee</option>
-              {employees.filter((e: any) => e.is_active || e.id === paramEmp).map((e: any) => (
+              {employees.filter((e: any) => e.is_active !== false || e.id === paramEmp).map((e: any) => (
                 <option key={e.id} value={e.id}>
-                  {e.name} ({e.salary_type || 'MONTHLY'})
+                  {e.name} ({e.salary_type || 'MONTHLY'}{e.attendance_required === false ? ' · fixed' : ''})
                 </option>
               ))}
             </select>
@@ -246,8 +263,10 @@ export default function SalarySlipPage() {
       {calculation && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div className="bg-white dark:bg-gray-800 rounded-xl border p-6 space-y-4">
-            <h3 className="font-semibold text-lg">Attendance & Base Salary</h3>
-            <div className="grid grid-cols-2 gap-3 text-sm">
+            {attendanceRequired ? (
+            <>
+              <h3 className="font-semibold text-lg">Attendance & Base Salary</h3>
+              <div className="grid grid-cols-2 gap-3 text-sm">
               <div className="flex justify-between"><span className="text-gray-500">Salary Type</span><span className="font-medium">{calculation.salary_type}</span></div>
               <div className="flex justify-between"><span className="text-gray-500">Calendar Days</span><span className="font-medium">{calculation.calendar_days}</span></div>
               <div className="flex justify-between"><span className="text-gray-500">Working Days</span><span className="font-medium">{calculation.total_working_days}</span></div>
@@ -262,7 +281,22 @@ export default function SalarySlipPage() {
                 <span className="font-semibold">Base for Period</span>
                 <span className="font-bold">Rs. {calculation.base_salary_for_period.toLocaleString()}</span>
               </div>
-            </div>
+                </div>
+              </>
+            ) : (
+              <>
+                <h3 className="font-semibold text-lg">Salary Arrangement</h3>
+                <div className="grid grid-cols-2 gap-3 text-sm">
+                  <div className="flex justify-between"><span className="text-gray-500">Salary Type</span><span className="font-medium">{calculation.salary_type}</span></div>
+                  <div className="flex justify-between"><span className="text-gray-500">Method</span><span className="font-medium">{calMethodLabel(calculation.calculation_method)}</span></div>
+                  <div className="flex justify-between"><span className="text-gray-500">Configured Amount</span><span className="font-medium">Rs. {calculation.basic_salary.toLocaleString()}</span></div>
+                  <div className="flex justify-between"><span className="text-gray-500">Base for Period</span><span className="font-medium">Rs. {calculation.base_salary_for_period.toLocaleString()}</span></div>
+                </div>
+                <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 rounded-lg p-3 text-sm text-amber-700 dark:text-amber-300">
+                  Fixed salary arrangement — attendance is not required and does not affect this employee's pay. Prorated only for mid-period joins/leaves.
+                </div>
+              </>
+            )}
 
             {calculation.existing_slip_id && (
               <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 rounded-lg p-3 text-sm text-yellow-700 dark:text-yellow-300 flex items-center gap-2 flex-wrap">
@@ -286,6 +320,12 @@ export default function SalarySlipPage() {
                 )}
                 {calculation.extra_work_total > 0 && (
                   <div className="flex justify-between"><span>Extra Work</span><span>Rs. {calculation.extra_work_total.toLocaleString()}</span></div>
+                )}
+                {calculation.bonus > 0 && (
+                  <div className="flex justify-between text-green-700"><span>Bonus</span><span>Rs. {calculation.bonus.toLocaleString()}</span></div>
+                )}
+                {calculation.other_payments > 0 && (
+                  <div className="flex justify-between text-green-700"><span>Other Payments</span><span>Rs. {calculation.other_payments.toLocaleString()}</span></div>
                 )}
                 {calculation.allowance > 0 && (
                   <div className="flex justify-between text-gray-500">
@@ -311,6 +351,9 @@ export default function SalarySlipPage() {
                 )}
                 {calculation.advance_deductions > 0 && (
                   <div className="flex justify-between"><span>Advances</span><span className="text-red-600">- Rs. {calculation.advance_deductions.toLocaleString()}</span></div>
+                )}
+                {calculation.other_deductions > 0 && (
+                  <div className="flex justify-between"><span>Configured Deductions (components)</span><span className="text-red-600">- Rs. {calculation.other_deductions.toLocaleString()}</span></div>
                 )}
                 <div className="flex items-center gap-2">
                   <span className="text-gray-500">Loan Deduction</span>

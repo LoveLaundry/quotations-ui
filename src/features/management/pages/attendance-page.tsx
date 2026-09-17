@@ -245,7 +245,7 @@ export default function AttendancePage() {
             <select value={selectedEmp} onChange={e => { setSelectedEmp(e.target.value); setPickedDates(new Set()) }}
               className="w-full mt-1 px-3 py-2 border rounded-lg text-sm">
               <option value="">Select Employee</option>
-              {employees.filter((e: any) => e.is_active).map((e: any) => (
+              {employees.filter((e: any) => e.is_active && e.attendance_required !== false).map((e: any) => (
                 <option key={e.id} value={e.id}>{e.name} ({e.salary_type || 'MONTHLY'})</option>
               ))}
             </select>

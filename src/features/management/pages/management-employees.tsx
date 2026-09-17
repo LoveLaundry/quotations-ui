@@ -18,7 +18,24 @@ import { todayISO } from '../../../lib/date'
 const PAGE_SIZE = 12
 
 const DEPARTMENTS = ['WASHING', 'PRESSING', 'FINISHING', 'PACKING', 'DRY_CLEANING', 'DELIVERY', 'GENERAL']
-const SALARY_TYPES = ['MONTHLY', 'WEEKLY', 'DAILY']
+const SALARY_TYPES = ['MONTHLY', 'WEEKLY', 'DAILY', 'CONTRACT']
+
+const SALARY_TYPE_LABELS: Record<string, string> = {
+  MONTHLY: 'Monthly',
+  WEEKLY: 'Weekly',
+  DAILY: 'Daily',
+  CONTRACT: 'Contract',
+  FIXED_MONTHLY: 'Monthly (fixed)',
+}
+
+const CALC_METHOD_LABELS: Record<string, string> = {
+  MONTHLY_ATTENDANCE: 'Monthly · attendance-based',
+  FIXED_MONTHLY: 'Monthly · fixed amount',
+  WEEKLY_ATTENDANCE: 'Weekly · attendance-based',
+  WEEKLY_FIXED: 'Weekly · fixed amount',
+  DAILY_WORKED_DAYS: 'Daily · days worked',
+  CONTRACT: 'Contract · fixed amount',
+}
 const STATUS_FILTERS = [
   { key: 'ALL', label: 'All' },
   { key: 'ACTIVE', label: 'Active' },
@@ -149,6 +166,16 @@ export default function ManagementEmployees() {
         {pageEmployees.map((emp: any) => {
           const isActive = emp.is_active !== false
           const hasLeft = !!emp.leaving_date
+          const attendanceReq = emp.attendance_required !== false
+          const calcMethod = emp.salary_type === 'MONTHLY' ? (attendanceReq ? 'MONTHLY_ATTENDANCE' : 'FIXED_MONTHLY')
+            : emp.salary_type === 'WEEKLY' ? (attendanceReq ? 'WEEKLY_ATTENDANCE' : 'WEEKLY_FIXED')
+            : emp.salary_type === 'DAILY' ? 'DAILY_WORKED_DAYS'
+            : emp.salary_type === 'CONTRACT' ? 'CONTRACT'
+            : emp.salary_type || 'MONTHLY'
+          const payAmount = emp.salary_type === 'DAILY' ? emp.daily_rate
+            : emp.salary_type === 'WEEKLY' ? (emp.weekly_rate || emp.daily_rate * 6)
+            : emp.salary_type === 'CONTRACT' ? emp.contract_amount
+            : emp.basic_salary
           return (
             <div key={emp.id} className={`bg-white dark:bg-gray-800 rounded-xl border p-5 space-y-3 ${!isActive ? 'opacity-70' : ''}`}>
               <div className="flex items-start justify-between">
@@ -158,6 +185,9 @@ export default function ManagementEmployees() {
                     <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${isActive ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300' : 'bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400'}`}>
                       {isActive ? 'ACTIVE' : 'INACTIVE'}
                     </span>
+                    {!attendanceReq && (
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300" title="Fixed salary arrangement — attendance not required for payroll">FIXED</span>
+                    )}
                   </div>
                   <p className="text-sm text-gray-500">{emp.employee_code ? `#${emp.employee_code}` : ''} {emp.position || emp.department}</p>
                 </div>
@@ -181,16 +211,16 @@ export default function ManagementEmployees() {
                   <p className="font-medium">Rs. {emp.basic_salary.toLocaleString()}</p>
                 </div>
                 <div>
-                  <p className="text-gray-400">Daily Rate</p>
-                  <p className="font-medium">Rs. {emp.daily_rate.toLocaleString()}</p>
+                  <p className="text-gray-400">Configured Pay</p>
+                  <p className="font-medium">Rs. {(payAmount || 0).toLocaleString()}{emp.salary_type === 'WEEKLY' ? ' / week' : emp.salary_type === 'DAILY' ? ' / day' : ''}</p>
                 </div>
                 <div>
                   <p className="text-gray-400">Department</p>
                   <p className="font-medium">{emp.department}</p>
                 </div>
                 <div>
-                  <p className="text-gray-400">Salary Type</p>
-                  <p className="font-medium">{emp.salary_type || 'MONTHLY'}</p>
+                  <p className="text-gray-400">Salary Arrangement</p>
+                  <p className="font-medium">{CALC_METHOD_LABELS[calcMethod] || calcMethod}</p>
                 </div>
                 <div>
                   <p className="text-gray-400">Phone</p>
@@ -254,9 +284,14 @@ export default function ManagementEmployees() {
               const data: any = Object.fromEntries(fd)
               data.basic_salary = String(parseFloat(data.basic_salary as string) || 0)
               data.daily_rate = String(parseFloat(data.daily_rate as string) || 0)
+              data.weekly_rate = String(parseFloat(data.weekly_rate as string) || 0)
+              data.contract_amount = String(parseFloat(data.contract_amount as string) || 0)
+              data.overtime_rate = String(parseFloat(data.overtime_rate as string) || 0)
               data.allowance = String(parseFloat(data.allowance as string) || 0)
               data.epf_rate = String(parseFloat(data.epf_rate as string) || 0)
               data.etf_rate = String(parseFloat(data.etf_rate as string) || 0)
+              data.attendance_required = fd.get('attendance_required') === 'on'
+              data.salary_components = []
               ;['position', 'phone', 'nic', 'joined_date', 'leaving_date', 'notes'].forEach(k => {
                 if (!data[k]) delete data[k]
               })
@@ -278,23 +313,43 @@ export default function ManagementEmployees() {
                 </select>
               </div>
               <div>
-                <label className="text-xs text-gray-500">Salary Type</label>
+                <label className="text-xs text-gray-500">Pay Frequency</label>
                 <select name="salary_type" defaultValue={editing?.salary_type || 'MONTHLY'} className="w-full px-3 py-2 border rounded-lg text-sm">
-                  {SALARY_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                  {SALARY_TYPES.map(t => <option key={t} value={t}>{SALARY_TYPE_LABELS[t] || t}</option>)}
                 </select>
+                {editing?.salary_type === 'MONTHLY' && editing?.attendance_required === false && (
+                  <p className="text-[11px] text-amber-600 dark:text-amber-400 mt-1">Current arrangement: Monthly fixed amount (attendance not required) — a full fixed salary every month.</p>
+                )}
               </div>
+              <label className="flex items-center gap-2 text-sm">
+                <input name="attendance_required" type="checkbox" defaultChecked={editing?.attendance_required !== false} className="rounded" />
+                Attendance required for salary
+                <span className="text-[11px] text-gray-400">(off = fixed salary, no attendance needed, e.g. contract/water-disposal worker)</span>
+              </label>
               <div className="grid grid-cols-2 gap-3">
                 <input name="phone" defaultValue={editing?.phone} placeholder="Phone" className="w-full px-3 py-2 border rounded-lg text-sm" />
                 <input name="nic" defaultValue={editing?.nic} placeholder="NIC" className="w-full px-3 py-2 border rounded-lg text-sm" />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs text-gray-500">Basic Salary (Rs.)</label>
+                  <label className="text-xs text-gray-500">Basic Salary (Rs. / month)</label>
                   <input name="basic_salary" type="number" step="0.01" defaultValue={editing?.basic_salary} className="w-full px-3 py-2 border rounded-lg text-sm" />
                 </div>
                 <div>
-                  <label className="text-xs text-gray-500">Daily Rate (Rs.)</label>
+                  <label className="text-xs text-gray-500">Daily Rate (Rs. / day)</label>
                   <input name="daily_rate" type="number" step="0.01" defaultValue={editing?.daily_rate} className="w-full px-3 py-2 border rounded-lg text-sm" />
+                </div>
+                <div>
+                  <label className="text-xs text-gray-500">Weekly Rate (Rs. / week)</label>
+                  <input name="weekly_rate" type="number" step="0.01" defaultValue={editing?.weekly_rate} className="w-full px-3 py-2 border rounded-lg text-sm" />
+                </div>
+                <div>
+                  <label className="text-xs text-gray-500">Contract Amount (Rs. / period)</label>
+                  <input name="contract_amount" type="number" step="0.01" defaultValue={editing?.contract_amount} className="w-full px-3 py-2 border rounded-lg text-sm" />
+                </div>
+                <div>
+                  <label className="text-xs text-gray-500">Overtime Rate (Rs. / hr)</label>
+                  <input name="overtime_rate" type="number" step="0.01" defaultValue={editing?.overtime_rate} className="w-full px-3 py-2 border rounded-lg text-sm" />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-3">

@@ -1,13 +1,26 @@
 import { useState, useRef, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { employeesApi, salaryApi } from '../api/management-api'
+import { employeesApi, salaryApi, salaryPackagesApi } from '../api/management-api'
 import { toast } from 'sonner'
-import { Eye, Printer, Trash2, XCircle, CheckCircle, Wallet, PlayCircle } from 'lucide-react'
+import { Eye, Printer, Trash2, XCircle, CheckCircle, Wallet, PlayCircle, Settings2 } from 'lucide-react'
 import { useReactToPrint } from 'react-to-print'
 import { SalarySlipPrint } from '../components/salary-slip-print'
 import { Pagination } from '../../../components/ui/pagination'
 
 const PAGE_SIZE = 20
+
+const CALC_METHOD_LABELS: Record<string, string> = {
+  MONTHLY_ATTENDANCE: 'Monthly · attendance',
+  FIXED_MONTHLY: 'Monthly · fixed',
+  WEEKLY_ATTENDANCE: 'Weekly · attendance',
+  WEEKLY_FIXED: 'Weekly · fixed',
+  DAILY_WORKED_DAYS: 'Daily · worked days',
+  CONTRACT: 'Contract · fixed',
+}
+
+const SALARY_TYPE_OPTIONS = ['MONTHLY', 'WEEKLY', 'DAILY', 'CONTRACT']
+
+const PACKAGE_KEYS: (keyof any)[] = ['basic_salary', 'daily_rate', 'weekly_rate', 'contract_amount', 'overtime_rate', 'allowance', 'epf_rate', 'etf_rate']
 
 const STATUS_COLORS: Record<string, string> = {
   DRAFT: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400',
@@ -121,6 +134,35 @@ export default function SalaryHistoryPage() {
     documentTitle: viewSlip ? `SalarySlip-${viewSlip.slip_number}` : 'SalarySlip',
   })
 
+  const [overrideEmp, setOverrideEmp] = useState<any>(null)
+  const [overrideMonth, setOverrideMonth] = useState('')
+
+  const overrideMut = useMutation({
+    mutationFn: (data: any) => salaryPackagesApi.upsert(data),
+    onSuccess: () => { toast.success('Month arrangement saved'); setOverrideEmp(null); setPreview(null) },
+    onError: (e: any) => toast.error(e.response?.data?.detail || 'Failed'),
+  })
+
+  const openOverride = (row: any) => {
+    setOverrideMonth(`${payYear}-${String(payMonth).padStart(2, '0')}`)
+    setOverrideEmp({
+      employee_id: row.employee_id,
+      name: row.employee_name,
+      salary_type: row.salary_type || 'MONTHLY',
+      attendance_required: row.attendance_required !== false,
+      basic_salary: row.basic_salary || 0,
+      daily_rate: row.daily_rate || 0,
+      weekly_rate: row.weekly_rate || 0,
+      contract_amount: row.contract_amount || 0,
+      overtime_rate: row.overtime_rate || 0,
+      allowance: row.allowance || 0,
+      allowance_type: row.allowance_type || 'FIXED',
+      epf_rate: row.epf_rate || 0,
+      etf_rate: row.etf_rate || 0,
+      epf_base: row.epf_base || 'ADJUSTED',
+    })
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -176,12 +218,53 @@ export default function SalaryHistoryPage() {
         </div>
 
         {preview && (
-          <div className="mt-4 border-t pt-4 grid grid-cols-2 md:grid-cols-5 gap-3 text-sm">
-            <div><div className="text-2xl font-bold">{preview.count}</div><div className="text-xs text-gray-400">Employees</div></div>
-            <div><div className="text-2xl font-bold text-red-600">Rs. {(preview.total_gross || 0).toLocaleString()}</div><div className="text-xs text-gray-400">Gross Total</div></div>
-            <div><div className="text-2xl font-bold text-red-600">Rs. {(preview.total_deductions || 0).toLocaleString()}</div><div className="text-xs text-gray-400">Deductions</div></div>
-            <div><div className="text-2xl font-bold text-green-600">Rs. {(preview.total_net || 0).toLocaleString()}</div><div className="text-xs text-gray-400">Net Payroll</div></div>
-            <div className="text-xs text-gray-400 col-span-2 md:col-span-1">Missing slips will be created on Run Payroll. Existing slips are skipped.</div>
+          <div className="mt-4 border-t pt-4 space-y-4">
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-3 text-sm">
+              <div><div className="text-2xl font-bold">{preview.count}</div><div className="text-xs text-gray-400">Employees</div></div>
+              <div><div className="text-2xl font-bold text-red-600">Rs. {(preview.total_gross || 0).toLocaleString()}</div><div className="text-xs text-gray-400">Gross Total</div></div>
+              <div><div className="text-2xl font-bold text-red-600">Rs. {(preview.total_deductions || 0).toLocaleString()}</div><div className="text-xs text-gray-400">Deductions</div></div>
+              <div><div className="text-2xl font-bold text-green-600">Rs. {(preview.total_net || 0).toLocaleString()}</div><div className="text-xs text-gray-400">Net Payroll</div></div>
+              <div className="text-xs text-gray-400">Missing slips will be created on Run Payroll. Existing slips are skipped.</div>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b bg-gray-50 dark:bg-gray-700/50 text-left">
+                    <th className="px-3 py-2 font-medium">Employee</th>
+                    <th className="px-3 py-2 font-medium">Salary Type</th>
+                    <th className="px-3 py-2 font-medium">Arrangement</th>
+                    <th className="px-3 py-2 font-medium">Attendance</th>
+                    <th className="px-3 py-2 font-medium text-right">Base (Period)</th>
+                    <th className="px-3 py-2 font-medium text-right">Net</th>
+                    <th className="px-3 py-2 font-medium">Existing Slip</th>
+                    <th className="px-3 py-2 font-medium"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {(preview.employees || []).map((row: any) => (
+                    <tr key={row.employee_id} className="border-b hover:bg-gray-50 dark:hover:bg-gray-700/30">
+                      <td className="px-3 py-2 font-medium">{row.employee_name}</td>
+                      <td className="px-3 py-2">{row.salary_type || 'MONTHLY'}</td>
+                      <td className="px-3 py-2 text-xs">{CALC_METHOD_LABELS[row.calculation_method] || row.calculation_method || '—'}</td>
+                      <td className="px-3 py-2">{row.attendance_required !== false ? 'Required' : <span className="text-amber-600 font-medium">Not required (fixed)</span>}</td>
+                      <td className="px-3 py-2 text-right">Rs. {(row.base_salary_for_period || 0).toLocaleString()}</td>
+                      <td className="px-3 py-2 text-right font-semibold">Rs. {(row.net_salary || 0).toLocaleString()}</td>
+                      <td className="px-3 py-2 text-xs">{row.existing_slip_status ? <span className="text-green-600">{row.existing_slip_status}</span> : <span className="text-gray-400">—</span>}</td>
+                      <td className="px-3 py-2 text-right">
+                        <button
+                          onClick={() => openOverride(row)}
+                          disabled={!!row.existing_slip_id}
+                          className="inline-flex items-center gap-1 px-2 py-1 text-xs bg-gray-100 dark:bg-gray-700 rounded hover:bg-gray-200 disabled:opacity-40 disabled:cursor-not-allowed"
+                          title={row.existing_slip_id ? 'A slip already exists for this month — finalize-protected' : 'Override this month\'s arrangement before running payroll'}>
+                          <Settings2 size={12} /> Adjust
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
       </div>
@@ -229,6 +312,7 @@ export default function SalaryHistoryPage() {
               <tr className="border-b bg-gray-50 dark:bg-gray-700/50">
                 <th className="text-left px-4 py-3 font-medium">Slip #</th>
                 <th className="text-left px-4 py-3 font-medium">Employee</th>
+                <th className="text-left px-4 py-3 font-medium">Arrangement</th>
                 <th className="text-left px-4 py-3 font-medium">Period</th>
                 <th className="text-right px-4 py-3 font-medium">Earnings</th>
                 <th className="text-right px-4 py-3 font-medium">Deductions</th>
@@ -239,14 +323,18 @@ export default function SalaryHistoryPage() {
             </thead>
             <tbody>
               {isLoading ? (
-                <tr><td colSpan={8} className="text-center py-8 text-gray-400">Loading...</td></tr>
+                <tr><td colSpan={9} className="text-center py-8 text-gray-400">Loading...</td></tr>
               ) : slipsData.items.length === 0 ? (
-                <tr><td colSpan={8} className="text-center py-8 text-gray-400">{tab === 'DELETED' ? 'No deleted salary slips found' : 'No salary slips found'}</td></tr>
+                <tr><td colSpan={9} className="text-center py-8 text-gray-400">{tab === 'DELETED' ? 'No deleted salary slips found' : 'No salary slips found'}</td></tr>
               ) : (
                 slips.map((slip: any) => (
                   <tr key={slip.id} className="border-b hover:bg-gray-50 dark:hover:bg-gray-700/30">
                     <td className="px-4 py-3 font-mono text-xs">{slip.slip_number}</td>
                     <td className="px-4 py-3">{slip.employee_name}</td>
+                    <td className="px-4 py-3 text-xs text-gray-600 dark:text-gray-400">
+                      {CALC_METHOD_LABELS[slip.calculation_method] || slip.calculation_method || slip.salary_type || '—'}
+                      {slip.attendance_required === false && <span className="ml-1 text-amber-600 font-medium">· fixed</span>}
+                    </td>
                     <td className="px-4 py-3">{slip.period_start}</td>
                     <td className="px-4 py-3 text-right">Rs. {(slip.total_earnings || 0).toLocaleString()}</td>
                     <td className="px-4 py-3 text-right text-red-600">Rs. {(slip.total_deductions || 0).toLocaleString()}</td>
@@ -303,6 +391,98 @@ export default function SalaryHistoryPage() {
       </div>
 
       <Pagination total={slipsData.total} limit={limit} offset={offset} onChange={setOffset} className="px-1" />
+
+      {overrideEmp && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-1">
+              <h3 className="font-semibold flex items-center gap-2"><Settings2 size={18} /> Adjust Month Arrangement</h3>
+              <button onClick={() => setOverrideEmp(null)}><XCircle size={20} /></button>
+            </div>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+              {overrideEmp.name} · {overrideMonth} — saved as a per-month override for this employee. Past finalized months are never changed.
+            </p>
+            <form onSubmit={e => {
+              e.preventDefault()
+              const fd = new FormData(e.currentTarget)
+              const data: any = { ...overrideEmp }
+              PACKAGE_KEYS.forEach(k => { data[k] = Number(fd.get(k as string)) || 0 })
+              data.salary_type = fd.get('salary_type') as string
+              data.allowance_type = (fd.get('allowance_type') as string) || 'FIXED'
+              data.epf_base = (fd.get('epf_base') as string) || 'ADJUSTED'
+              data.attendance_required = fd.get('attendance_required') === 'on'
+              data.month = overrideMonth
+              data.salary_components = []
+              overrideMut.mutate(data)
+            }} className="space-y-3">
+              <div>
+                <label className="text-xs text-gray-500">Pay Frequency</label>
+                <select name="salary_type" defaultValue={overrideEmp.salary_type || 'MONTHLY'} className="w-full px-3 py-2 border rounded-lg text-sm">
+                  {SALARY_TYPE_OPTIONS.map(t => <option key={t} value={t}>{t}</option>)}
+                </select>
+              </div>
+              <label className="flex items-center gap-2 text-sm">
+                <input name="attendance_required" type="checkbox" defaultChecked={overrideEmp.attendance_required !== false} className="rounded" />
+                Attendance required for salary <span className="text-[11px] text-gray-400">(off = fixed amount, attendance not needed)</span>
+              </label>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs text-gray-500">Basic Salary (month)</label>
+                  <input name="basic_salary" type="number" step="0.01" defaultValue={overrideEmp.basic_salary} className="w-full px-3 py-2 border rounded-lg text-sm" />
+                </div>
+                <div>
+                  <label className="text-xs text-gray-500">Daily Rate</label>
+                  <input name="daily_rate" type="number" step="0.01" defaultValue={overrideEmp.daily_rate} className="w-full px-3 py-2 border rounded-lg text-sm" />
+                </div>
+                <div>
+                  <label className="text-xs text-gray-500">Weekly Rate</label>
+                  <input name="weekly_rate" type="number" step="0.01" defaultValue={overrideEmp.weekly_rate} className="w-full px-3 py-2 border rounded-lg text-sm" />
+                </div>
+                <div>
+                  <label className="text-xs text-gray-500">Contract Amount</label>
+                  <input name="contract_amount" type="number" step="0.01" defaultValue={overrideEmp.contract_amount} className="w-full px-3 py-2 border rounded-lg text-sm" />
+                </div>
+                <div>
+                  <label className="text-xs text-gray-500">Overtime Rate (Rs./hr)</label>
+                  <input name="overtime_rate" type="number" step="0.01" defaultValue={overrideEmp.overtime_rate} className="w-full px-3 py-2 border rounded-lg text-sm" />
+                </div>
+                <div>
+                  <label className="text-xs text-gray-500">Allowance</label>
+                  <input name="allowance" type="number" step="0.01" defaultValue={overrideEmp.allowance} className="w-full px-3 py-2 border rounded-lg text-sm" />
+                </div>
+                <div>
+                  <label className="text-xs text-gray-500">Allowance Type</label>
+                  <select name="allowance_type" defaultValue={overrideEmp.allowance_type || 'FIXED'} className="w-full px-3 py-2 border rounded-lg text-sm">
+                    <option value="FIXED">Fixed</option>
+                    <option value="ADJUSTED">Adjusted</option>
+                    <option value="ATTENDANCE">Attendance</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-xs text-gray-500">EPF Base</label>
+                  <select name="epf_base" defaultValue={overrideEmp.epf_base || 'ADJUSTED'} className="w-full px-3 py-2 border rounded-lg text-sm">
+                    <option value="ADJUSTED">Adjusted</option>
+                    <option value="ATTENDANCE">Attendance</option>
+                    <option value="FULL">Full</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-xs text-gray-500">EPF Rate %</label>
+                  <input name="epf_rate" type="number" step="0.01" defaultValue={overrideEmp.epf_rate} className="w-full px-3 py-2 border rounded-lg text-sm" />
+                </div>
+                <div>
+                  <label className="text-xs text-gray-500">ETF Rate %</label>
+                  <input name="etf_rate" type="number" step="0.01" defaultValue={overrideEmp.etf_rate} className="w-full px-3 py-2 border rounded-lg text-sm" />
+                </div>
+              </div>
+              <div className="flex justify-end gap-2 pt-2">
+                <button type="button" onClick={() => setOverrideEmp(null)} className="px-4 py-2 text-sm bg-gray-100 dark:bg-gray-700 rounded-lg">Cancel</button>
+                <button type="submit" disabled={overrideMut.isPending} className="px-4 py-2 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-60">{overrideMut.isPending ? 'Saving…' : 'Save Arrangement'}</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {viewSlip && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
