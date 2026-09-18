@@ -28,9 +28,11 @@ export default function SalarySlipPage() {
   const [year, setYear] = useState(paramYear)
   const [month, setMonth] = useState(paramMonth)
   const didAutoCalc = useRef(false)
-  const [periodType, setPeriodType] = useState<'MONTHLY' | 'WEEKLY'>('MONTHLY')
+  const [periodType, setPeriodType] = useState<'MONTHLY' | 'WEEKLY' | 'CUSTOM'>('MONTHLY')
   const [weekStart, setWeekStart] = useState('')
   const [weekEnd, setWeekEnd] = useState('')
+  const [rangeStart, setRangeStart] = useState('')
+  const [rangeEnd, setRangeEnd] = useState('')
   const [calculation, setCalculation] = useState<any>(null)
   const [showSlip, setShowSlip] = useState(false)
   const [generatedSlip, setGeneratedSlip] = useState<any>(null)
@@ -64,6 +66,8 @@ export default function SalarySlipPage() {
     mutationFn: () => {
       if (periodType === 'WEEKLY' && weekStart && weekEnd)
         return salaryApi.calculatePeriod(selectedEmp, weekStart, weekEnd, 'WEEKLY').then(r => r.data)
+      if (periodType === 'CUSTOM' && rangeStart && rangeEnd)
+        return salaryApi.calculatePeriod(selectedEmp, rangeStart, rangeEnd, 'CUSTOM').then(r => r.data)
       return salaryApi.calculate(selectedEmp, year, month).then(r => r.data)
     },
     onSuccess: (res) => {
@@ -137,6 +141,10 @@ export default function SalarySlipPage() {
 
   const attendanceRequired = calculation ? calculation.attendance_required !== false : true
 
+  const rangeMissing = periodType === 'WEEKLY' ? !weekStart || !weekEnd
+    : periodType === 'CUSTOM' ? !rangeStart || !rangeEnd
+    : false
+
   const totalEarnings = calculation
     ? calculation.base_salary_for_period + calculation.overtime_pay + calculation.extra_work_total + allowances
       + (calculation.bonus || 0) + (calculation.other_payments || 0)
@@ -199,6 +207,7 @@ export default function SalarySlipPage() {
             >
               <option value="MONTHLY">Monthly</option>
               <option value="WEEKLY">Weekly</option>
+              <option value="CUSTOM">Any Days Range</option>
             </select>
           </div>
           {periodType === 'MONTHLY' ? (
@@ -225,7 +234,7 @@ export default function SalarySlipPage() {
                 </select>
               </div>
             </>
-          ) : (
+          ) : periodType === 'WEEKLY' ? (
             <>
               <div>
                 <label className="text-sm font-medium text-gray-600 dark:text-gray-400">Week Start</label>
@@ -246,11 +255,32 @@ export default function SalarySlipPage() {
                 />
               </div>
             </>
+          ) : (
+            <>
+              <div>
+                <label className="text-sm font-medium text-gray-600 dark:text-gray-400">Start Date</label>
+                <input
+                  type="date"
+                  value={rangeStart}
+                  onChange={e => { setRangeStart(e.target.value); setCalculation(null) }}
+                  className="w-full mt-1 px-3 py-2 border rounded-lg text-sm"
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-600 dark:text-gray-400">End Date</label>
+                <input
+                  type="date"
+                  value={rangeEnd}
+                  onChange={e => { setRangeEnd(e.target.value); setCalculation(null) }}
+                  className="w-full mt-1 px-3 py-2 border rounded-lg text-sm"
+                />
+              </div>
+            </>
           )}
           <div className="flex items-end">
             <button
               onClick={() => calcMut.mutate()}
-              disabled={!selectedEmp || calcMut.isPending}
+              disabled={!selectedEmp || calcMut.isPending || rangeMissing}
               className="w-full px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 text-sm font-medium flex items-center justify-center gap-2"
             >
               <Calculator size={16} />
