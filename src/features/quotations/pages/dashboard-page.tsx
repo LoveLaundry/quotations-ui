@@ -614,12 +614,22 @@ function TodayDeliveries({ data }: { data: DashboardOverviewData }) {
                   <span className="text-[14px] font-semibold text-gray-900">{client.client_name}</span>
                 </div>
                 <div className="flex items-center gap-4 text-[12px]">
+                  {client.has_note_delivery && (
+                    <span className="inline-flex items-center rounded-full bg-amber-50 border border-amber-200 px-2 py-0.5 text-[11px] font-semibold text-amber-700">
+                      Marked by note
+                    </span>
+                  )}
                   <span className="text-gray-500">Sent today: <span className="font-semibold text-gray-900">{client.total_qty}</span></span>
                   {totalPending > 0 && (
                     <span className="text-gray-500">Pending: <span className="font-semibold text-gray-900">{totalPending}</span></span>
                   )}
                 </div>
               </div>
+              {(client.note_deliveries ?? []).map((n) => (
+                <div key={n.gate_pass_number} className="px-5 py-2 bg-amber-50/60 border-b border-amber-100 text-[12px] text-amber-800">
+                  <span className="font-mono font-semibold">#{n.gate_pass_number}</span> — {n.note || 'Marked delivered (note)'}
+                </div>
+              ))}
               {/* Table */}
               <table className="w-full text-left">
                 <thead>

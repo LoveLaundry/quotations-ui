@@ -123,11 +123,19 @@ export interface TodayDeliveryItem {
   quantity: number
 }
 
+export interface TodayDeliveryNote {
+  gate_pass_number: string
+  note: string
+  delivered_date?: string
+}
+
 export interface TodayDeliveryClient {
   client_name: string
   delivered_items: TodayDeliveryItem[]
   total_qty: number
   pending_items: { item_name: string; specification: string; received: number; delivered: number; returned?: number; pending: number }[]
+  note_deliveries?: TodayDeliveryNote[]
+  has_note_delivery?: boolean
 }
 
 export interface DashboardOverviewData {
