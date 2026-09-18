@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { gatepasses } from '../services/gatepass.service'
 import type { GatePass, GatePassCreate, GatePassMarkDelivered } from '../../../types/operations'
@@ -7,6 +7,27 @@ export const gatepassKeys = {
     all: ['gatepasses'] as const,
     list: (params?: object) => [...gatepassKeys.all, 'list', params] as const,
     detail: (id: string) => [...gatepassKeys.all, id] as const,
+}
+
+/**
+ * Query keys whose results depend on gate pass delivery state.
+ * Any delivery / status / quantity change must invalidate all of these or
+ * dashboards and reports keep showing stale pending totals.
+ */
+export const DELIVERY_DEPENDENT_KEYS = [
+    ['gatepasses'],
+    ['deliveries'],
+    ['dashboard'],
+    ['reports'],
+    ['notifications'],
+    ['pending-gatepasses'],
+    ['client-summary'],
+] as const
+
+export function invalidateDeliveryData(qc: QueryClient) {
+    for (const queryKey of DELIVERY_DEPENDENT_KEYS) {
+        qc.invalidateQueries({ queryKey })
+    }
 }
 
 export function useGatePasses(params?: { client_name?: string; status?: string }) {
@@ -29,7 +50,7 @@ export function useCreateGatePass() {
     return useMutation({
         mutationFn: (data: GatePassCreate) => gatepasses.create(data),
         onSuccess: () => {
-            qc.invalidateQueries({ queryKey: gatepassKeys.all })
+            invalidateDeliveryData(qc)
             toast.success('Gate pass created successfully')
         },
         onError: (e: Error) => toast.error(e.message || 'Failed to create gate pass'),
@@ -42,7 +63,7 @@ export function useUpdateGatePassStatus() {
         mutationFn: ({ id, status }: { id: string; status: string }) =>
             gatepasses.updateStatus(id, status),
         onSuccess: () => {
-            qc.invalidateQueries({ queryKey: gatepassKeys.all })
+            invalidateDeliveryData(qc)
             toast.success('Status updated')
         },
         onError: () => toast.error('Failed to update status'),
@@ -55,7 +76,7 @@ export function useMarkGatePassDelivered() {
         mutationFn: ({ id, data }: { id: string; data: GatePassMarkDelivered }) =>
             gatepasses.markDelivered(id, data),
         onSuccess: (res: GatePass) => {
-            qc.invalidateQueries({ queryKey: gatepassKeys.all })
+            invalidateDeliveryData(qc)
             toast.success(`Gate pass marked delivered${res?.marked_delivered ? ' with note' : ''}`)
         },
         onError: (e: any) => toast.error(e?.response?.data?.detail || e?.message || 'Failed to mark delivered'),
@@ -77,7 +98,7 @@ export function useAdjustGatePass() {
             reason: string
         }) => gatepasses.adjust(id, item_name, corrected_qty, reason),
         onSuccess: () => {
-            qc.invalidateQueries({ queryKey: gatepassKeys.all })
+            invalidateDeliveryData(qc)
             toast.success('Item quantity adjusted')
         },
         onError: () => toast.error('Failed to adjust quantity'),
@@ -97,7 +118,7 @@ export function useUpdateGatePassDate() {
             reason?: string
         }) => gatepasses.updateDate(id, receiving_date, reason),
         onSuccess: () => {
-            qc.invalidateQueries({ queryKey: gatepassKeys.all })
+            invalidateDeliveryData(qc)
             toast.success('Receiving date updated')
         },
         onError: () => toast.error('Failed to update receiving date'),
@@ -115,7 +136,7 @@ export function useUpdateGatePass() {
             payload: Parameters<typeof gatepasses.update>[1]
         }) => gatepasses.update(id, payload),
         onSuccess: () => {
-            qc.invalidateQueries({ queryKey: gatepassKeys.all })
+            invalidateDeliveryData(qc)
             toast.success('Gate pass updated')
         },
         onError: () => toast.error('Failed to update gate pass'),
@@ -145,7 +166,7 @@ export function useCreateBillFromGatePass() {
                 client_name,
             }),
         onSuccess: () => {
-            qc.invalidateQueries({ queryKey: gatepassKeys.all })
+            invalidateDeliveryData(qc)
             toast.success('Bill created from gate pass')
         },
         onError: (e: any) => toast.error(e?.message || 'Failed to create bill'),

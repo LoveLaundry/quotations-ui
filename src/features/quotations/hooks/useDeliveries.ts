@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { deliveries } from '../services/delivery.service'
+import { invalidateDeliveryData } from './useGatePasses'
 import type { DeliveryCreate } from '../../../types/operations'
 
 export const deliveryKeys = {
@@ -29,9 +30,7 @@ export function useCreateDelivery() {
     return useMutation({
         mutationFn: (data: DeliveryCreate) => deliveries.create(data),
         onSuccess: () => {
-            qc.invalidateQueries({ queryKey: deliveryKeys.all })
-            // Also invalidate gate passes since delivery changes their status
-            qc.invalidateQueries({ queryKey: ['gatepasses'] })
+            invalidateDeliveryData(qc)
             toast.success('Delivery recorded successfully')
         },
         onError: (e: Error) => toast.error(e.message || 'Failed to record delivery'),
