@@ -58,6 +58,7 @@ export function useNotifications() {
 
     const result: GatePassPendingEntry[] = []
     for (const gp of gatePasses) {
+      const isMarkedDelivered = Boolean(gp.marked_delivered)
       const lookupKeys = [gp.id, (gp as { _id?: string })._id, gp.gate_pass_number].filter(
         Boolean,
       ) as string[]
@@ -74,7 +75,7 @@ export function useNotifications() {
 
       for (const item of gp.items ?? []) {
         const received = Number(item.received_qty) || 0
-        const delivered = Number(delMap?.get(item.item_name) ?? 0)
+        const delivered = isMarkedDelivered ? received : Number(delMap?.get(item.item_name) ?? 0)
         const retQty = Number(clientReturned.get(item.item_name) ?? 0)
         const pending = Math.max(0, received - delivered + retQty)
         if (pending > 0) {

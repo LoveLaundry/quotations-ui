@@ -20,6 +20,18 @@ export interface GatePassItem {
     mismatch_notes?: string
 }
 
+export interface GatePassMarkDelivered {
+    note: string
+    delivered_date?: string
+}
+
+export interface MarkedDeliveredInfo {
+    note: string
+    delivered_date?: string
+    user_id?: string
+    at?: string
+}
+
 export interface GatePass {
     id: string
     gate_pass_number: string
@@ -31,6 +43,7 @@ export interface GatePass {
     notes?: string
     adjustments?: object[]
     quotation_id?: string
+    marked_delivered?: MarkedDeliveredInfo | null
     created_at: string
     updated_at: string
     verification?: Verification

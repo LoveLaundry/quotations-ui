@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { gatepasses } from '../services/gatepass.service'
-import type { GatePassCreate } from '../../../types/operations'
+import type { GatePass, GatePassCreate, GatePassMarkDelivered } from '../../../types/operations'
 
 export const gatepassKeys = {
     all: ['gatepasses'] as const,
@@ -46,6 +46,19 @@ export function useUpdateGatePassStatus() {
             toast.success('Status updated')
         },
         onError: () => toast.error('Failed to update status'),
+    })
+}
+
+export function useMarkGatePassDelivered() {
+    const qc = useQueryClient()
+    return useMutation({
+        mutationFn: ({ id, data }: { id: string; data: GatePassMarkDelivered }) =>
+            gatepasses.markDelivered(id, data),
+        onSuccess: (res: GatePass) => {
+            qc.invalidateQueries({ queryKey: gatepassKeys.all })
+            toast.success(`Gate pass marked delivered${res?.marked_delivered ? ' with note' : ''}`)
+        },
+        onError: (e: any) => toast.error(e?.response?.data?.detail || e?.message || 'Failed to mark delivered'),
     })
 }
 

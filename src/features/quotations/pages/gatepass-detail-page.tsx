@@ -14,7 +14,7 @@ import { ErrorState } from '../../../components/ui/error-state'
 import { Skeleton } from '../../../components/ui/skeleton'
 import { Breadcrumb } from '../../../components/ui/breadcrumb'
 import { formatDate } from '../../../lib/utils'
-import { useGatePass, useUpdateGatePassStatus, useAdjustGatePass, useUpdateGatePassDate, useCreateBillFromGatePass, useUpdateGatePass } from '../hooks/useGatePasses'
+import { useGatePass, useUpdateGatePassStatus, useAdjustGatePass, useUpdateGatePassDate, useCreateBillFromGatePass, useUpdateGatePass, useMarkGatePassDelivered } from '../hooks/useGatePasses'
 import { useDeliveries } from '../hooks/useDeliveries'
 import { useQuotation } from '../hooks/useQuotations'
 import { returns as returnsApi } from '../services/returns.service'
@@ -53,8 +53,12 @@ export default function GatePassDetailPage() {
     const { data: deliveries = [] } = useDeliveries({ gate_pass_id: id })
     const updateStatus = useUpdateGatePassStatus()
     const adjust = useAdjustGatePass()
+    const markDelivered = useMarkGatePassDelivered()
 
     const [statusOpen, setStatusOpen] = useState(false)
+    const [markOpen, setMarkOpen] = useState(false)
+    const [markNote, setMarkNote] = useState('')
+    const [markDate, setMarkDate] = useState(() => new Date().toISOString().split('T')[0])
     const [adjustingItem, setAdjustingItem] = useState<string | null>(null)
     const [adjustQty, setAdjustQty] = useState(0)
     const [adjustReason, setAdjustReason] = useState('')
@@ -100,6 +104,15 @@ export default function GatePassDetailPage() {
 
     const deliveredMap = useMemo(() => {
         const map: Record<string, number> = {}
+        if (gp?.marked_delivered) {
+            // Completed via catch-up note when the dispatch was never recorded —
+            // every received item counts as delivered so nothing stays pending.
+            for (const it of gp.items) {
+                const key = `${it.item_name}||${it.specification || ''}`
+                map[key] = it.received_qty
+            }
+            return map
+        }
         for (const d of deliveries) {
             if (d.status === 'CANCELLED') continue
             for (const it of d.items) {
@@ -108,7 +121,7 @@ export default function GatePassDetailPage() {
             }
         }
         return map
-    }, [deliveries])
+    }, [deliveries, gp])
 
     const { data: returnsList = [] } = useQuery({
         queryKey: ['returns'],
@@ -365,6 +378,22 @@ export default function GatePassDetailPage() {
                             </Button>
                         ))}
 
+                    {!['DELIVERED', 'CANCELLED'].includes(gp.status) && (
+                        <Button
+                            size="sm"
+                            onClick={() => {
+                                setMarkNote('')
+                                setMarkDate(new Date().toISOString().split('T')[0])
+                                setMarkOpen(true)
+                            }}
+                            disabled={markDelivered.isPending}
+                            className="bg-[#16A34A] hover:bg-[#15803D] text-white"
+                            title="Complete with a note when the delivery was never recorded"
+                        >
+                            <CheckCircle2 className="h-3.5 w-3.5" /> Mark Delivered
+                        </Button>
+                    )}
+
                     <Link to="/deliveries/new">
                         <Button size="sm" className="bg-[#2563EB] hover:bg-[#1D4ED8] text-white">
                             <Truck className="h-3.5 w-3.5" /> Record Delivery
@@ -451,6 +480,26 @@ export default function GatePassDetailPage() {
                     </Card>
                 ))}
             </div>
+
+            {/* Completed by note (delivery was never recorded) */}
+            {gp.marked_delivered && (
+                <Card className="border-[#BBF7D0] bg-[#F0FDF4] p-4">
+                    <div className="flex items-start gap-2.5">
+                        <CheckCircle2 className="h-4 w-4 text-[#16A34A] mt-0.5 shrink-0" />
+                        <div>
+                            <p className="text-[13px] font-semibold text-[#15803D]">
+                                Completed as delivered by note
+                                {(gp.marked_delivered as any)?.delivered_date && (
+                                    <span className="font-normal text-[#6B7280]">
+                                        {' '}· {formatDate(String((gp.marked_delivered as any).delivered_date))}
+                                    </span>
+                                )}
+                            </p>
+                            <p className="text-[12px] text-[#374151] mt-0.5">{(gp.marked_delivered as any)?.note}</p>
+                        </div>
+                    </div>
+                </Card>
+            )}
 
             {/* Create Bill from Gate Pass */}
             {billingOpen && (
@@ -791,6 +840,71 @@ export default function GatePassDetailPage() {
                         ))}
                     </CardContent>
                 </Card>
+            )}
+
+            {/* Mark Delivered (catch-up) modal */}
+            {markOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+                    <div className="w-full max-w-md rounded-xl border border-[#E4E7EC] bg-white p-5 shadow-xl">
+                        <div className="flex items-center justify-between mb-3">
+                            <p className="text-[14px] font-semibold text-[#101828]">Mark Delivered & Complete</p>
+                            <button onClick={() => setMarkOpen(false)} className="text-[#98A2B3] hover:text-[#374151] transition cursor-pointer">
+                                <X className="h-4 w-4" />
+                            </button>
+                        </div>
+                        <p className="text-[12px] text-[#6B7280] mb-4">
+                            Use this when the laundry was delivered but the dispatch was never recorded on the delivery date. A note is required to complete this gate pass.
+                        </p>
+                        <div className="space-y-3">
+                            <div>
+                                <label className="block text-[11px] font-semibold uppercase tracking-wide text-[#6B7280] mb-1.5">Delivered Date</label>
+                                <input
+                                    type="date"
+                                    value={markDate}
+                                    onChange={e => setMarkDate(e.target.value)}
+                                    className="h-9 w-full rounded-lg border border-[#E4E7EC] bg-white px-3 text-[13px] outline-none focus:border-[#16A34A]"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-[11px] font-semibold uppercase tracking-wide text-[#6B7280] mb-1.5">
+                                    Note <span className="text-[#DC2626]">*</span>
+                                </label>
+                                <textarea
+                                    value={markNote}
+                                    onChange={e => setMarkNote(e.target.value)}
+                                    rows={3}
+                                    placeholder="e.g. Delivered to hotel front office on that day, sign sheet not updated"
+                                    className="w-full rounded-lg border border-[#E4E7EC] bg-white px-3 py-2 text-[13px] text-[#101828] outline-none focus:border-[#16A34A] resize-none"
+                                />
+                            </div>
+                        </div>
+                        <div className="flex justify-end gap-2 mt-5">
+                            <Button variant="secondary" size="sm" onClick={() => setMarkOpen(false)}>
+                                Cancel
+                            </Button>
+                            <Button
+                                size="sm"
+                                onClick={() => {
+                                    if (!markNote.trim() || !id) return
+                                    markDelivered.mutate(
+                                        {
+                                            id,
+                                            data: {
+                                                note: markNote.trim(),
+                                                delivered_date: markDate || undefined,
+                                            },
+                                        },
+                                        { onSuccess: () => setMarkOpen(false) },
+                                    )
+                                }}
+                                disabled={!markNote.trim() || markDelivered.isPending}
+                                className="bg-[#16A34A] hover:bg-[#15803D] text-white disabled:opacity-40"
+                            >
+                                <CheckCircle2 className="h-3.5 w-3.5" /> {markDelivered.isPending ? 'Completing…' : 'Complete as Delivered'}
+                            </Button>
+                        </div>
+                    </div>
+                </div>
             )}
         </div>
     )

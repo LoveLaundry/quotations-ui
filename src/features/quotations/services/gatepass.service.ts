@@ -1,5 +1,5 @@
 import billsApi from '../../../api/bills-api'
-import type { GatePass, GatePassCreate } from '../../../types/operations'
+import type { GatePass, GatePassCreate, GatePassMarkDelivered } from '../../../types/operations'
 
 function toISODatetime(dateStr: string): string {
     if (dateStr.includes('T')) return dateStr
@@ -23,6 +23,9 @@ export const gatepasses = {
 
     updateStatus: (id: string, status: string) =>
         billsApi.patch<GatePass>(`/gatepasses/${id}/status`, null, { params: { status_update: status } }).then((r: any) => r.data),
+
+    markDelivered: (id: string, data: GatePassMarkDelivered) =>
+        billsApi.post<GatePass>(`/gatepasses/${id}/mark-delivered`, data).then((r: any) => r.data),
 
     adjust: (id: string, item_name: string, corrected_qty: number, reason: string) =>
         billsApi.post<GatePass>(`/gatepasses/${id}/adjust`, { item_name, corrected_qty, reason }).then((r: any) => r.data),
