@@ -1,9 +1,9 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { RouterProvider } from 'react-router-dom'
+import { Suspense } from 'react'
 import { Toaster } from 'sonner'
 import { router } from './routes'
 import './App.css'
-import { useEffect, useState } from 'react'
 import LoveLoader from './components/ui/LoveLoader'
 import { ThemeProvider } from './context/ThemeContext'
 
@@ -30,22 +30,14 @@ const queryClient = new QueryClient({
 })
 
 function App() {
-
-  const [ isLoading, setIsLoading ] = useState(true);
-
-  useEffect(()=>{
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 600);
-
-    return () => clearTimeout(timer);
-  }, []);
-  
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
-        { isLoading && <LoveLoader/> }
-        <RouterProvider router={router} />
+        {/* Suspense covers route-level lazy chunks: the loader only shows while
+            a page bundle is actually being fetched, removing the old 600ms wait. */}
+        <Suspense fallback={<LoveLoader />}>
+          <RouterProvider router={router} />
+        </Suspense>
         <Toaster
           richColors
           position="top-right"

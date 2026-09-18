@@ -1,90 +1,101 @@
+import { lazy } from 'react'
 import { createBrowserRouter, Navigate } from 'react-router-dom'
 import { AppShell } from '../components/layout/app-shell'
 import { ProtectedRoute } from '../components/layout/protected-route'
 import { AdminRoute } from '../components/layout/admin-route'
-import LoginPage from '../features/auth/pages/login-page'
+// Eager: must always be available to render if a lazy chunk fails to load.
+import ErrorPage from '../features/quotations/pages/error-page'
 
-import DashboardPage from '../features/quotations/pages/dashboard-page'
-import QuotationsPage from '../features/quotations/pages/quotations-page'
-import QuotationDetailPage from '../features/quotations/pages/quotation-detail-page'
-import QuotationPrintPage from '../features/quotations/pages/quotation-print-page'
-import QuotationFormPage from '../features/quotations/pages/quotation-form-page'
-import CategoriesPage from '../features/quotations/pages/categories-page'
-import SettingsPage from '../features/quotations/pages/settings-page'
-import ProfilePage from '../features/quotations/pages/profile-page'
-import NotFoundPage from '../features/quotations/pages/not-found-page'
-import BillsListPage from '../features/quotations/pages/bills-list-page'
-import CreateBillPage from '../features/quotations/pages/create-bill-page'
-import BillDetailPage from '../features/quotations/pages/bill-detail-page'
-import InvoiceCreatePage from '../features/quotations/pages/invoice-create-page'
+// Route-level code splitting: every page is loaded on demand so the initial
+// bundle only contains the shell + login. Named-export pages are wrapped
+// so each lazy() call resolves to a default component.
+
+const LoginPage = lazy(() => import('../features/auth/pages/login-page'))
+const GuestQuotationsPage = lazy(() => import('../features/quotations/pages/guest-quotations-page'))
 
 // Operations pages
-import GatePassesPage from '../features/quotations/pages/gatepasses-page'
-import CreateGatePassPage from '../features/quotations/pages/create-gatepass-page'
-import GatePassDetailPage from '../features/quotations/pages/gatepass-detail-page'
-import DeliveriesPage from '../features/quotations/pages/deliveries-page'
-import CreateDeliveryPage from '../features/quotations/pages/create-delivery-page'
-import DispatchPage from '../features/quotations/pages/dispatch-page'
-import DeliveryDetailPage from '../features/quotations/pages/delivery-detail-page'
-import ReportsPage from '../features/quotations/pages/reports-page'
-import BusinessDashboardPage from '../features/quotations/pages/business-dashboard-page'
-import LiveChatPage from '../features/quotations/pages/live-chat-page'
-import ErrorPage from '../features/quotations/pages/error-page'
-import UsersPage from '../features/quotations/pages/users-page'
-import GuestQuotationsPage from '../features/quotations/pages/guest-quotations-page'
-import NotificationsPage from '../features/quotations/pages/notifications-page'
-import DatabaseSyncPage from '../features/quotations/pages/database-sync-page'
-import CustomersPage from '../features/quotations/pages/customers-page'
-import ReturnsPage from '../features/quotations/pages/returns-page'
-import CreateReturnPage from '../features/quotations/pages/create-return-page'
-import ReturnDetailPage from '../features/quotations/pages/return-detail-page'
+const DashboardPage = lazy(() => import('../features/quotations/pages/dashboard-page'))
+const QuotationsPage = lazy(() => import('../features/quotations/pages/quotations-page'))
+const QuotationDetailPage = lazy(() => import('../features/quotations/pages/quotation-detail-page'))
+const QuotationPrintPage = lazy(() => import('../features/quotations/pages/quotation-print-page'))
+const QuotationFormPage = lazy(() => import('../features/quotations/pages/quotation-form-page'))
+const CategoriesPage = lazy(() => import('../features/quotations/pages/categories-page'))
+const SettingsPage = lazy(() => import('../features/quotations/pages/settings-page'))
+const ProfilePage = lazy(() => import('../features/quotations/pages/profile-page'))
+const BillsListPage = lazy(() => import('../features/quotations/pages/bills-list-page'))
+const CreateBillPage = lazy(() => import('../features/quotations/pages/create-bill-page'))
+const BillDetailPage = lazy(() => import('../features/quotations/pages/bill-detail-page'))
+const InvoiceCreatePage = lazy(() => import('../features/quotations/pages/invoice-create-page'))
+const GatePassesPage = lazy(() => import('../features/quotations/pages/gatepasses-page'))
+const CreateGatePassPage = lazy(() => import('../features/quotations/pages/create-gatepass-page'))
+const GatePassDetailPage = lazy(() => import('../features/quotations/pages/gatepass-detail-page'))
+const DeliveriesPage = lazy(() => import('../features/quotations/pages/deliveries-page'))
+const CreateDeliveryPage = lazy(() => import('../features/quotations/pages/create-delivery-page'))
+const DispatchPage = lazy(() => import('../features/quotations/pages/dispatch-page'))
+const DeliveryDetailPage = lazy(() => import('../features/quotations/pages/delivery-detail-page'))
+const ReportsPage = lazy(() => import('../features/quotations/pages/reports-page'))
+const BusinessDashboardPage = lazy(() => import('../features/quotations/pages/business-dashboard-page'))
+const LiveChatPage = lazy(() => import('../features/quotations/pages/live-chat-page'))
+const UsersPage = lazy(() => import('../features/quotations/pages/users-page'))
+const NotificationsPage = lazy(() => import('../features/quotations/pages/notifications-page'))
+const DatabaseSyncPage = lazy(() => import('../features/quotations/pages/database-sync-page'))
+const CustomersPage = lazy(() => import('../features/quotations/pages/customers-page'))
+const ReturnsPage = lazy(() => import('../features/quotations/pages/returns-page'))
+const CreateReturnPage = lazy(() => import('../features/quotations/pages/create-return-page'))
+const ReturnDetailPage = lazy(() => import('../features/quotations/pages/return-detail-page'))
 
 // Shop Bills pages
-import ShopBillsListPage from '../features/shop-bills/pages/shop-bills-list-page'
-import CreateShopBillPage from '../features/shop-bills/pages/create-shop-bill-page'
-import ShopBillDetailPage from '../features/shop-bills/pages/shop-bill-detail-page'
-import ShopBillsDashboardPage from '../features/shop-bills/pages/shop-bills-dashboard-page'
-import LegacyInvoicePage from '../features/shop-bills/pages/legacy-invoice-page'
+const ShopBillsListPage = lazy(() => import('../features/shop-bills/pages/shop-bills-list-page'))
+const CreateShopBillPage = lazy(() => import('../features/shop-bills/pages/create-shop-bill-page'))
+const ShopBillDetailPage = lazy(() => import('../features/shop-bills/pages/shop-bill-detail-page'))
+const ShopBillsDashboardPage = lazy(() => import('../features/shop-bills/pages/shop-bills-dashboard-page'))
+const LegacyInvoicePage = lazy(() => import('../features/shop-bills/pages/legacy-invoice-page'))
 
-// Workers pages
-import { WorkersPage } from '../features/workers/pages/workers-page'
-import { DailyTasksPage } from '../features/workers/pages/daily-tasks-page'
+// Workers pages (named exports)
+const WorkersPage = lazy(() =>
+  import('../features/workers/pages/workers-page').then(m => ({ default: m.WorkersPage })),
+)
+const DailyTasksPage = lazy(() =>
+  import('../features/workers/pages/daily-tasks-page').then(m => ({ default: m.DailyTasksPage })),
+)
 
 // Linen Tracking pages
-import LinenDashboard from '../features/linen/pages/linen-dashboard'
-import LinenInventory from '../features/linen/pages/linen-inventory'
-import LinenProfile from '../features/linen/pages/linen-profile'
-import LinenScanner from '../features/linen/pages/linen-scanner'
-import LinenBulkScan from '../features/linen/pages/linen-bulk-scan'
-import LinenTagGenerator from '../features/linen/pages/linen-tag-generator'
+const LinenDashboard = lazy(() => import('../features/linen/pages/linen-dashboard'))
+const LinenInventory = lazy(() => import('../features/linen/pages/linen-inventory'))
+const LinenProfile = lazy(() => import('../features/linen/pages/linen-profile'))
+const LinenScanner = lazy(() => import('../features/linen/pages/linen-scanner'))
+const LinenBulkScan = lazy(() => import('../features/linen/pages/linen-bulk-scan'))
+const LinenTagGenerator = lazy(() => import('../features/linen/pages/linen-tag-generator'))
 
 // Gate Pass (Camelot) receipt templates
-import GatePassHub from '../features/gatepass/pages/gate-pass-hub'
-import CamelotLinenReceipt from '../features/gatepass/pages/linen-receipt'
-import CamelotUniformReceipt from '../features/gatepass/pages/uniform-receipt'
+const GatePassHub = lazy(() => import('../features/gatepass/pages/gate-pass-hub'))
+const CamelotLinenReceipt = lazy(() => import('../features/gatepass/pages/linen-receipt'))
+const CamelotUniformReceipt = lazy(() => import('../features/gatepass/pages/uniform-receipt'))
 
 // Management module pages
-import ManagementDashboard from '../features/management/pages/management-dashboard'
-import HistoricalEntry from '../features/management/pages/historical-entry'
-import ImportWizard from '../features/management/pages/import-wizard'
-import ManagementCustomers from '../features/management/pages/management-customers'
-import ManagementItems from '../features/management/pages/management-items'
-import ManagementExpenses from '../features/management/pages/management-expenses'
-import ManagementEmployees from '../features/management/pages/management-employees'
-import ManagementTransactions from '../features/management/pages/management-transactions'
-import ManagementPayments from '../features/management/pages/management-payments'
-import ManagementReports from '../features/management/pages/management-reports'
-import SalarySlipPage from '../features/management/pages/salary-slip-page'
-import SalaryHistoryPage from '../features/management/pages/salary-history-page'
-import AdvancesPage from '../features/management/pages/advances-page'
-import HolidaysPage from '../features/management/pages/holidays-page'
-import ExtraWorkPage from '../features/management/pages/extra-work-page'
-import AttendancePage from '../features/management/pages/attendance-page'
-import AttendanceLogPage from '../features/management/pages/attendance-log-page'
-import CompanySettingsPage from '../features/management/pages/company-settings-page'
+const ManagementDashboard = lazy(() => import('../features/management/pages/management-dashboard'))
+const HistoricalEntry = lazy(() => import('../features/management/pages/historical-entry'))
+const ImportWizard = lazy(() => import('../features/management/pages/import-wizard'))
+const ManagementCustomers = lazy(() => import('../features/management/pages/management-customers'))
+const ManagementItems = lazy(() => import('../features/management/pages/management-items'))
+const ManagementExpenses = lazy(() => import('../features/management/pages/management-expenses'))
+const ManagementEmployees = lazy(() => import('../features/management/pages/management-employees'))
+const ManagementTransactions = lazy(() => import('../features/management/pages/management-transactions'))
+const ManagementPayments = lazy(() => import('../features/management/pages/management-payments'))
+const ManagementReports = lazy(() => import('../features/management/pages/management-reports'))
+const SalarySlipPage = lazy(() => import('../features/management/pages/salary-slip-page'))
+const SalaryHistoryPage = lazy(() => import('../features/management/pages/salary-history-page'))
+const AdvancesPage = lazy(() => import('../features/management/pages/advances-page'))
+const HolidaysPage = lazy(() => import('../features/management/pages/holidays-page'))
+const ExtraWorkPage = lazy(() => import('../features/management/pages/extra-work-page'))
+const AttendancePage = lazy(() => import('../features/management/pages/attendance-page'))
+const AttendanceLogPage = lazy(() => import('../features/management/pages/attendance-log-page'))
+const CompanySettingsPage = lazy(() => import('../features/management/pages/company-settings-page'))
 
 // AI Insights pages
-import AiInsightsPage from '../features/ai/pages/ai-insights-page'
+const AiInsightsPage = lazy(() => import('../features/ai/pages/ai-insights-page'))
+
+const NotFoundPage = lazy(() => import('../features/quotations/pages/not-found-page'))
 
 export const router = createBrowserRouter([
   // ── Public routes ─────────────────────────────────────────────────────────────
