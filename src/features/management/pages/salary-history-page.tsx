@@ -227,6 +227,16 @@ export default function SalaryHistoryPage() {
               <div className="text-xs text-gray-400">Missing slips will be created on Run Payroll. Existing slips are skipped.</div>
             </div>
 
+            <div className="rounded-xl border border-indigo-200 bg-indigo-50/60 dark:border-indigo-800/60 dark:bg-indigo-900/10 p-3">
+              <div className="text-xs font-semibold text-indigo-600 dark:text-indigo-300 mb-2">Projection — if every employee attends all remaining working days</div>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+                <div><div className="text-xl font-bold text-indigo-700 dark:text-indigo-200">Rs. {(preview.projected_total_gross || 0).toLocaleString()}</div><div className="text-xs text-gray-400">Gross Total</div></div>
+                <div><div className="text-xl font-bold text-indigo-700 dark:text-indigo-200">Rs. {(preview.projected_total_deductions || 0).toLocaleString()}</div><div className="text-xs text-gray-400">Deductions</div></div>
+                <div><div className="text-xl font-bold text-indigo-700 dark:text-indigo-200">Rs. {(preview.projected_total_net || 0).toLocaleString()}</div><div className="text-xs text-gray-400">Net Payroll</div></div>
+                <div><div className="text-xl font-bold text-green-700 dark:text-green-300">+ Rs. {(preview.projected_total_net_variance || 0).toLocaleString()}</div><div className="text-xs text-gray-400">Additional if all attend</div></div>
+              </div>
+            </div>
+
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
