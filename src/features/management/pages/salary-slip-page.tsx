@@ -98,6 +98,10 @@ export default function SalarySlipPage() {
 
   const handleGenerate = () => {
     if (!calculation) return
+    if (calculation.existing_slip_id) {
+      toast.error('These dates are already covered by a previous salary slip')
+      return
+    }
 
     generateMut.mutate({
       employee_id: selectedEmp,
@@ -329,11 +333,16 @@ export default function SalarySlipPage() {
             )}
 
             {calculation.existing_slip_id && (
-              <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 rounded-lg p-3 text-sm text-yellow-700 dark:text-yellow-300 flex items-center gap-2 flex-wrap">
-                A salary slip already exists for this period · Status:{' '}
+              <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 rounded-lg p-3 text-sm text-red-700 dark:text-red-300 flex items-center gap-2 flex-wrap">
+                These dates are already covered by a salary slip
+                {calculation.existing_slip_period ? ` (${calculation.existing_slip_period})` : ' for this employee'}
+                {' '}· Status:{' '}
                 <Badge variant={calculation.existing_slip_status === 'PAID' ? 'success' : 'warning'}>
                   {calculation.existing_slip_status}
                 </Badge>
+                <span className="w-full">
+                  A new slip may only cover dates that are not included in any previous slip. Cancel the existing slip first or choose different dates.
+                </span>
               </div>
             )}
           </div>
@@ -427,11 +436,12 @@ export default function SalarySlipPage() {
           <ExportButton data={[calculation]} filename={`salary-calc-${selectedEmp}-${year}-${month}`} label="Export Calc" />
           <button
             onClick={handleGenerate}
-            disabled={generateMut.isPending}
+            disabled={generateMut.isPending || !!calculation?.existing_slip_id}
+            title={calculation?.existing_slip_id ? 'These dates are already covered by a previous salary slip' : undefined}
             className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 text-sm font-medium flex items-center gap-2 self-end"
           >
             <FileText size={16} />
-            {generateMut.isPending ? 'Generating...' : 'Generate Slip'}
+            {generateMut.isPending ? 'Generating...' : calculation?.existing_slip_id ? 'Dates Already Covered' : 'Generate Slip'}
           </button>
         </div>
       )}
