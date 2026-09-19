@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Plus, Search, ClipboardList, X, Filter } from 'lucide-react'
+import { Plus, Search, ClipboardList, X, Filter, Building2, Rows } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { Card } from '../../../components/ui/card'
 import { Button } from '../../../components/ui/button'
@@ -10,7 +10,7 @@ import { Skeleton } from '../../../components/ui/skeleton'
 import { Breadcrumb } from '../../../components/ui/breadcrumb'
 import { formatDate } from '../../../lib/utils'
 import { useGatePasses } from '../hooks/useGatePasses'
-import type { GatePass } from '../../../types/operations'
+import type { GatePass, GatePassItem } from '../../../types/operations'
 
 const STATUS_CONFIG: Record<string, { label: string; bg: string; text: string; border: string; dot: string }> = {
     RECEIVED: { label: 'Received', bg: '#EFF6FF', text: '#2563EB', border: '#BFDBFE', dot: '#3B82F6' },
@@ -69,10 +69,34 @@ function GatePassCard({ gp }: { gp: GatePass }) {
     )
 }
 
+function ClientGroupHeader({ client, count, totalPieces, latestDate }: {
+    client: string
+    count: number
+    totalPieces: number
+    latestDate: string
+}) {
+    return (
+        <div className="flex items-center gap-3 rounded-xl border border-[#E4E7EC] bg-white px-4 py-3 shadow-sm">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#EFF6FF] text-[#2563EB] border border-[#BFDBFE]">
+                <Building2 className="h-4 w-4" />
+            </div>
+            <div className="min-w-0">
+                <p className="text-[13px] font-semibold text-[#101828] truncate">{client}</p>
+                <p className="text-[11px] text-[#98A2B3]">
+                    {count} gate pass{count !== 1 ? 'es' : ''}
+                    {' · '}{totalPieces} pcs
+                </p>
+            </div>
+            {latestDate && <span className="ml-auto text-[11px] text-[#98A2B3]">{formatDate(latestDate)}</span>}
+        </div>
+    )
+}
+
 export default function GatePassesPage() {
     const [searchInput, setSearchInput] = useState('')
     const [clientName, setClientName] = useState('')
     const [statusFilter, setStatusFilter] = useState('')
+    const [viewMode, setViewMode] = useState<'grouped' | 'all'>('grouped')
 
     useEffect(() => {
         const t = setTimeout(() => setClientName(searchInput.trim()), 350)
@@ -91,6 +115,28 @@ export default function GatePassesPage() {
         setClientName('')
         setStatusFilter('')
     }
+
+    const grouped = useMemo(() => {
+        const map = new Map<string, { client: string; gatePasses: GatePass[]; totalPieces: number; latestDate: string }>()
+        for (const gp of gatePasses) {
+            const client = gp.client_name || 'Unknown'
+            const pieces = gp.items.reduce((s: number, i: GatePassItem) => s + i.received_qty, 0)
+            const entry = map.get(client)
+            if (entry) {
+                entry.gatePasses.push(gp)
+                entry.totalPieces += pieces
+                if (gp.receiving_date > entry.latestDate) entry.latestDate = gp.receiving_date
+            } else {
+                map.set(client, {
+                    client,
+                    gatePasses: [gp],
+                    totalPieces: pieces,
+                    latestDate: gp.receiving_date,
+                })
+            }
+        }
+        return [...map.values()].sort((a, b) => a.client.localeCompare(b.client))
+    }, [gatePasses])
 
     return (
         <div className="space-y-5 pb-10">
@@ -147,6 +193,23 @@ export default function GatePassesPage() {
                         </select>
                     </div>
 
+                    <div className="flex items-center rounded-lg border border-[#E4E7EC] bg-white p-0.5 shadow-sm">
+                        <button
+                            type="button"
+                            onClick={() => setViewMode('grouped')}
+                            className={`flex h-8 items-center gap-1.5 rounded-md px-3 text-[12px] font-medium transition-colors cursor-pointer ${viewMode === 'grouped' ? 'bg-[#2563EB] text-white' : 'text-[#667085] hover:text-[#2563EB]'}`}
+                        >
+                            <Building2 className="h-3.5 w-3.5" /> By Hotel / Shop
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => setViewMode('all')}
+                            className={`flex h-8 items-center gap-1.5 rounded-md px-3 text-[12px] font-medium transition-colors cursor-pointer ${viewMode === 'all' ? 'bg-[#2563EB] text-white' : 'text-[#667085] hover:text-[#2563EB]'}`}
+                        >
+                            <Rows className="h-3.5 w-3.5" /> All
+                        </button>
+                    </div>
+
                     {hasFilters && (
                         <Button variant="ghost" size="sm" onClick={clearFilters}>Clear</Button>
                     )}
@@ -180,6 +243,31 @@ export default function GatePassesPage() {
                         )
                     }
                 />
+            ) : viewMode === 'grouped' ? (
+                <div className="space-y-6">
+                    {grouped.map(g => (
+                        <section key={g.client} className="space-y-3">
+                            <ClientGroupHeader
+                                client={g.client}
+                                count={g.gatePasses.length}
+                                totalPieces={g.totalPieces}
+                                latestDate={g.latestDate}
+                            />
+                            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                                {g.gatePasses.map((gp: any, i: number) => (
+                                    <motion.div
+                                        key={gp.id}
+                                        initial={{ opacity: 0, y: 6 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        transition={{ delay: i * 0.03 }}
+                                    >
+                                        <GatePassCard gp={gp} />
+                                    </motion.div>
+                                ))}
+                            </div>
+                        </section>
+                    ))}
+                </div>
             ) : (
                 <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                     {gatePasses.map((gp: any, i: number) => (
