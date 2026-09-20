@@ -7,11 +7,11 @@ export const COMPANY = {
     line2: 'Chilaw, Puttalam, Sri Lanka',
   },
   phone: {
-    primary: '077-2400919',
+    primary: '+94 77 4200 919',
     secondary: '071-2978922',
   },
   email: 'lovelaundry01@gmail.com',
-  whatsapp: 'https://wa.me/94772400919',
+  whatsapp: 'https://wa.me/94774200919',
   facebook: 'https://www.facebook.com/lovelaundrylk',
   googleMaps: 'https://maps.app.goo.gl/LoveLaundryLocation',
 } as const

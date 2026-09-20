@@ -233,7 +233,7 @@ export const BillPrintTemplate = React.forwardRef<HTMLDivElement, BillPrintTempl
           {/* Contact */}
           <div className="bp-contact">
             <div>
-              <p style={{ margin: 0 }}>Tel: 077-2400919 / 071-2978922</p>
+              <p style={{ margin: 0 }}>Tel: +94 77 4200 919 / 071-2978922</p>
               <p style={{ margin: 0 }}>Email: lovelaundry01@gmail.com</p>
             </div>
             <div style={{ textAlign: 'right' }}>
