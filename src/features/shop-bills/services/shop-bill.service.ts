@@ -1,5 +1,5 @@
 import billsApi from '../../../api/bills-api'
-import type { ShopBill, ShopBillCreate, ShopBillListParams, ShopBillPayment, BillTemplate, BillTemplateCreate } from '../../../types/shop-bill'
+import type { ShopBill, ShopBillCreate, ShopBillListParams, ShopBillPayment, BillTemplate, BillTemplateCreate, LegacyInvoice, LegacyInvoiceCreate } from '../../../types/shop-bill'
 
 export const shopBillService = {
   list: (params?: ShopBillListParams) =>
@@ -52,6 +52,19 @@ export const shopBillService = {
   // Feature 5b: Manual Bill
   manualBill: (clientName: string, amount: number, date?: string, notes?: string) =>
     billsApi.post<ShopBill>('/shop-bills/manual', { client_name: clientName, amount, date, notes }).then((r: any) => r.data),
+
+  // Legacy invoices (manually-entered, must always be persisted)
+  createLegacyInvoice: (data: LegacyInvoiceCreate) =>
+    billsApi.post<LegacyInvoice>('/shop-bills/legacy', data).then((r: any) => r.data),
+
+  listLegacyInvoices: (params?: { skip?: number; limit?: number; search?: string }) =>
+    billsApi.get<{ items: LegacyInvoice[]; total: number }>('/shop-bills/legacy', { params }).then((r: any) => r.data),
+
+  getLegacyInvoice: (id: string) =>
+    billsApi.get<LegacyInvoice>(`/shop-bills/legacy/${id}`).then((r: any) => r.data),
+
+  deleteLegacyInvoice: (id: string) =>
+    billsApi.delete(`/shop-bills/legacy/${id}`).then((r: any) => r.data),
 
   // Feature 6: Split
   split: (billId: string, itemIndices: number[]) =>

@@ -97,3 +97,26 @@ export interface BillTemplateCreate {
   taxes?: number
   notes?: string
 }
+
+export interface LegacyInvoiceEntry {
+  date?: string
+  bill_number?: string
+  amount: number
+}
+
+export interface LegacyInvoiceCreate {
+  shop_name: string
+  description?: string
+  entries: LegacyInvoiceEntry[]
+}
+
+export interface LegacyInvoice {
+  id: string
+  invoice_number: string
+  shop_name: string
+  description?: string
+  entries: LegacyInvoiceEntry[]
+  total_entries: number
+  grand_total: number
+  created_at: string
+}

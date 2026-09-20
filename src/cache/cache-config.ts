@@ -34,6 +34,7 @@ export const CACHE_RESOURCES = new Set<string>([
   'reports',
   // Shop bills
   'shop-bills',
+  'legacy-invoices',
   // Workers
   'workers',
   'daily-logs',
@@ -68,6 +69,7 @@ export const STALE_TIMES: Record<string, number> = {
   // Money-critical lists.
   'shop-bills': 180_000,
   bills: 180_000,
+  'legacy-invoices': 300_000,
   payments: 180_000,
   transactions: 180_000,
   // Master lists / operational records.
