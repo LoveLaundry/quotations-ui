@@ -7,7 +7,7 @@ export interface Paginated<T> {
   offset: number
 }
 
-const mgmtApi = axios.create({
+export const mgmtApi = axios.create({
   baseURL: import.meta.env.VITE_MGMT_API_URL ?? 'http://localhost:8001',
   timeout: 15000,
   headers: { 'Content-Type': 'application/json' },

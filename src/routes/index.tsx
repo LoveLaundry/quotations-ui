@@ -91,6 +91,7 @@ const ExtraWorkPage = lazy(() => import('../features/management/pages/extra-work
 const AttendancePage = lazy(() => import('../features/management/pages/attendance-page'))
 const AttendanceLogPage = lazy(() => import('../features/management/pages/attendance-log-page'))
 const CompanySettingsPage = lazy(() => import('../features/management/pages/company-settings-page'))
+const ReportsBackupPage = lazy(() => import('../features/reports-backup/reports-backup-page'))
 
 // AI Insights pages
 const AiInsightsPage = lazy(() => import('../features/ai/pages/ai-insights-page'))
@@ -215,6 +216,7 @@ export const router = createBrowserRouter([
             children: [
               { path: 'users', element: <UsersPage /> },
               { path: 'database-sync', element: <DatabaseSyncPage /> },
+              { path: 'reports-backup', element: <ReportsBackupPage /> },
             ],
           },
 

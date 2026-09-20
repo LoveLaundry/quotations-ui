@@ -27,6 +27,7 @@ import {
   CalendarPlus,
   Lightning,
   Brain,
+  CloudArrowDown,
 } from '@phosphor-icons/react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Logo } from '../brand/logo'
@@ -221,6 +222,7 @@ function SidebarContent({
     ...(isAdmin ? [
       { to: '/users', label: 'Users', icon: Users, end: false },
       { to: '/database-sync', label: 'Database Sync', icon: Database, end: false },
+      { to: '/reports-backup', label: 'Daily Report & Backup', icon: CloudArrowDown, end: false },
     ] : []),
   ]
 
