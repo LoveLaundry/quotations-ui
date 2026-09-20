@@ -1,13 +1,23 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { QueryClient, type QueryClientConfig } from '@tanstack/react-query'
+import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client'
 import { RouterProvider } from 'react-router-dom'
-import { Suspense } from 'react'
+import { Suspense, useEffect, useMemo, useRef, type ReactNode } from 'react'
 import { Toaster } from 'sonner'
 import { router } from './routes'
 import './App.css'
 import LoveLoader from './components/ui/LoveLoader'
 import { ThemeProvider } from './context/ThemeContext'
+import { useAuth } from './context/AuthContext'
+import { sanitizeScope } from './cache/db'
+import { createIndexedDbPersister } from './cache/persister'
+import {
+  CACHE_MAX_AGE_MS,
+  CACHE_VERSION,
+  configureQueryDefaults,
+  shouldPersistQuery,
+} from './cache/cache-config'
 
-const queryClient = new QueryClient({
+const queryClientConfig: QueryClientConfig = {
   defaultOptions: {
     queries: {
       staleTime: 1000 * 60,
@@ -27,11 +37,60 @@ const queryClient = new QueryClient({
       retry: false,
     },
   },
-})
+}
+
+const queryClient = new QueryClient(queryClientConfig)
+
+// Per-resource staleness (dashboards short, reference data long) — applied at
+// query creation on top of the global default above.
+configureQueryDefaults(queryClient)
+
+/**
+ * Cache-first data layer backed by the per-user local_cache_db (IndexedDB):
+ *
+ *  1. On (re)load the persisted React Query snapshot is restored before the
+ *     UI needs it, so lists/dashboards paint instantly from local data.
+ *  2. Stale queries then refresh from the remote APIs in the background.
+ *  3. Cache events re-persist the fresh snapshot (debounced) so local data
+ *     always reflects the latest successful API response.
+ *
+ * The hosted service databases stay the source of truth — this layer is a
+ * pure read/perf optimization and never mutates remote state.
+ */
+function CacheHostProvider({ children }: { children: ReactNode }) {
+  const { user } = useAuth()
+  const scope = sanitizeScope(user?.id ?? '')
+  const persister = useMemo(() => createIndexedDbPersister(scope), [scope])
+  const prevScope = useRef(scope)
+
+  // On login/logout (scope change) drop whatever another user's session left
+  // in the shared in-memory client before the new user's snapshot hydrates.
+  useEffect(() => {
+    if (prevScope.current !== scope) {
+      prevScope.current = scope
+      queryClient.clear()
+    }
+  }, [scope])
+
+  return (
+    <PersistQueryClientProvider
+      key={scope}
+      client={queryClient}
+      persistOptions={{
+        persister,
+        buster: CACHE_VERSION,
+        maxAge: CACHE_MAX_AGE_MS,
+        dehydrateOptions: { shouldDehydrateQuery: shouldPersistQuery },
+      }}
+    >
+      {children}
+    </PersistQueryClientProvider>
+  )
+}
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
+    <CacheHostProvider>
       <ThemeProvider>
         {/* Suspense covers route-level lazy chunks: the loader only shows while
             a page bundle is actually being fetched, removing the old 600ms wait. */}
@@ -53,7 +112,7 @@ function App() {
           }}
         />
       </ThemeProvider>
-    </QueryClientProvider>
+    </CacheHostProvider>
   )
 }
 

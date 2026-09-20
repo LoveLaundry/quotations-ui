@@ -33,6 +33,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui
 import { Button } from '../../../components/ui/button'
 import { Skeleton } from '../../../components/ui/skeleton'
 import { ErrorState } from '../../../components/ui/error-state'
+import { SyncStatusBar } from '../../../components/ui/sync-status-bar'
 import { useBusinessDashboard, type DashboardPeriod } from '../hooks/useBusinessDashboard'
 
 const PERIODS: { key: DashboardPeriod; label: string }[] = [
@@ -295,6 +296,7 @@ export default function BusinessDashboardPage() {
           <p className="text-[13px] text-[#98A2B3] mt-0.5">
             Financial, operational and client performance for the selected period
           </p>
+          <SyncStatusBar queryKey={['dashboard']} label="Dashboard" className="mt-2" />
         </div>
         <div className="inline-flex rounded-xl bg-[#F3F4F6] p-1 self-start">
           {PERIODS.map((p) => (

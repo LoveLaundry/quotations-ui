@@ -10,6 +10,7 @@ import { EmptyState } from '../../../components/ui/empty-state'
 import { ErrorState } from '../../../components/ui/error-state'
 import { Skeleton } from '../../../components/ui/skeleton'
 import { Breadcrumb } from '../../../components/ui/breadcrumb'
+import { SyncStatusBar } from '../../../components/ui/sync-status-bar'
 import { VerificationStatus } from '../../../components/ui/verification-status'
 import { Pagination } from '../../../components/ui/pagination'
 import { formatDate } from '../../../lib/utils'
@@ -87,7 +88,9 @@ export default function BillsListPage() {
           <h1 className="text-dashboard-title mt-1">Bills</h1>
           <p className="text-[13px] text-[#98A2B3] mt-0.5">
             {data ? `${data.total} bill${data.total === 1 ? '' : 's'}` : 'Saved bills'}
-          </p>        </div>
+          </p>
+          <SyncStatusBar queryKey={['bills']} label="Bills" className="mt-2" />
+        </div>
         <div className="flex gap-2">
           <Button variant="secondary" onClick={handleExportExcel} disabled={!bills.length}>
             <Download className="h-4 w-4 mr-2" /> Export

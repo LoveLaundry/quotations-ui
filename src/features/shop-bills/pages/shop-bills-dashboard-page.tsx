@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui
 import { Breadcrumb } from '../../../components/ui/breadcrumb'
 import { Skeleton } from '../../../components/ui/skeleton'
 import { ErrorState } from '../../../components/ui/error-state'
+import { SyncStatusBar } from '../../../components/ui/sync-status-bar'
 import { useShopBillDashboard, useStatusCounts, usePaymentSummary } from '../hooks/useShopBills'
 
 const fmt = (v: number) => `Rs. ${v.toLocaleString('en-LK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
@@ -32,6 +33,7 @@ export default function ShopBillsDashboardPage() {
             <Link to="/shop-bills" className="text-[#98A2B3] hover:text-[#374151]"><ArrowLeft className="h-4 w-4" /></Link>
             <h1 className="text-dashboard-title">Shop Bills Dashboard</h1>
           </div>
+          <SyncStatusBar queryKey={['shop-bills']} label="Shop bills" className="mt-2" />
         </div>
         <div className="flex gap-2">
           {[7, 30, 90, 365].map(d => (

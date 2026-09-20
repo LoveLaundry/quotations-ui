@@ -8,6 +8,7 @@ import { EmptyState } from '../../../components/ui/empty-state'
 import { ErrorState } from '../../../components/ui/error-state'
 import { Skeleton } from '../../../components/ui/skeleton'
 import { Breadcrumb } from '../../../components/ui/breadcrumb'
+import { SyncStatusBar } from '../../../components/ui/sync-status-bar'
 import { formatDate } from '../../../lib/utils'
 import { useGatePasses } from '../hooks/useGatePasses'
 import type { GatePass, GatePassItem } from '../../../types/operations'
@@ -148,6 +149,7 @@ export default function GatePassesPage() {
                     <p className="text-[13px] text-[#98A2B3] mt-0.5">
                         {isLoading ? 'Loading…' : `${gatePasses.length} record${gatePasses.length !== 1 ? 's' : ''}`}
                     </p>
+                    <SyncStatusBar queryKey={['gatepasses']} label="Gate passes" className="mt-2" />
                 </div>
                 <Link to="/gate-passes/new">
                     <Button className="shadow-lg shadow-blue-600/20 bg-[#2563EB] hover:bg-[#1D4ED8] text-white">

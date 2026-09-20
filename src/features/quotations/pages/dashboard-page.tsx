@@ -18,6 +18,7 @@ import {
 import { Button } from '../../../components/ui/button'
 import { Skeleton } from '../../../components/ui/skeleton'
 import { StatCard } from '../../../components/ui/stat-card'
+import { SyncStatusBar } from '../../../components/ui/sync-status-bar'
 import { useDashboardOverview, type DashboardOverviewData, type DashboardPeriod } from '../hooks/useBusinessDashboard'
 import { reports } from '../services/reports.service'
 import { BalancesPopup } from '../components/balances-popup'
@@ -984,6 +985,7 @@ export default function DashboardPage() {
           <p className="text-page-subtitle">
             Business overview — Registration No: 40-3064
           </p>
+          <SyncStatusBar queryKey={['dashboard']} label="Dashboard" className="mt-2" />
         </div>
         <div className="flex items-center gap-2 shrink-0">
           <div className="relative" ref={exportRef}>

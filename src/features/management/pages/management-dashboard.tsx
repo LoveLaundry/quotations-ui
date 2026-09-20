@@ -5,6 +5,7 @@ import { TrendingUp, TrendingDown, Users, Package, Wallet, AlertCircle, DollarSi
 import { Link } from 'react-router-dom'
 import { StatCard } from '../../../components/ui/stat-card'
 import { PageHeader } from '../../../components/ui/page-header'
+import { SyncStatusBar } from '../../../components/ui/sync-status-bar'
 import { LoadingSpinner } from '../../../components/ui/loading-spinner'
 
 const QUICK_ACTIONS = [
@@ -32,6 +33,7 @@ export default function ManagementDashboard() {
   return (
     <div className="space-y-6">
       <PageHeader title="Management Dashboard" subtitle="Financial, HR and operational overview" />
+      <SyncStatusBar queryKey={['mgmt-dashboard']} label="Mgmt dashboard" />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard label="Today's Revenue" value={fmt(d.today_revenue)} icon={<DollarSign size={20} />} color="green" to="/management/transactions" />
