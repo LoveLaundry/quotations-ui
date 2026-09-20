@@ -31,6 +31,47 @@ const cellInputClass = 'h-9 w-full rounded-lg border border-[#E4E7EC] bg-white p
 
 const fmtMoney = (v: number) => `Rs. ${(Number(v) || 0).toLocaleString('en-LK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
 
+const legacyPrintStyles = `
+  @media print {
+    .li-print-sheet { margin: 0; padding: 0; width: 100%; min-height: auto; }
+    @page { size: A4; margin: 0; }
+    @page :first { margin: 0; }
+  }
+  @page { size: A4; margin: 0; }
+  @page :first { margin: 0; }
+
+  .li-print-sheet { font-family: "Spectral", Georgia, serif; color: #000; background: #fff; }
+  .li-sheet { width: 210mm; min-height: 297mm; padding: 12mm; box-sizing: border-box; font-size: 13px; line-height: 1.4; }
+  .li-header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #000; padding-bottom: 8px; margin-bottom: 8px; }
+  .li-logo { width: 80px; height: 80px; object-fit: contain; border: 2px solid #DC2626; border-radius: 50%; padding: 4px; box-sizing: border-box; }
+  .li-company-center { text-align: center; flex: 1; }
+  .li-company-name { font-size: 28px; font-weight: 800; text-transform: uppercase; letter-spacing: 3px; line-height: 1.2; margin: 0; font-family: "Spectral", Georgia, serif; }
+  .li-company-tagline { font-size: 16px; font-weight: 600; margin: 2px 0 0 0; font-family: "Spectral", Georgia, serif; }
+  .li-invoice-box { width: 170px; border: 2px solid #000; font-size: 12px; text-align: center; padding: 4px 6px; }
+  .li-invoice-box .t { font-weight: 700; font-size: 12px; }
+  .li-invoice-box .v { border-bottom: 2px dotted #000; margin: 3px 0; padding: 1px 4px; font-weight: 700; }
+  .li-services { display: flex; justify-content: center; gap: 20px; font-size: 11px; font-weight: 700; border-bottom: 2px solid #000; padding-bottom: 8px; margin-bottom: 8px; flex-wrap: wrap; }
+  .li-service-dot { width: 5px; height: 5px; border-radius: 50%; background: #000; display: inline-block; margin-right: 4px; }
+  .li-contact { display: flex; justify-content: space-between; font-size: 11px; font-weight: 700; margin-bottom: 12px; }
+  .li-customer-row { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 12px; font-weight: 700; }
+  .li-customer-left { width: 55%; }
+  .li-detail-line { display: flex; margin-bottom: 3px; }
+  .li-detail-label { width: 90px; flex-shrink: 0; }
+  .li-detail-value { flex: 1; border-bottom: 1px dotted #000; padding-left: 4px; }
+  .li-items-table { width: 100%; border-collapse: collapse; border: 2px solid #000; font-size: 12px; font-weight: 700; margin-bottom: 6px; }
+  .li-items-table th, .li-items-table td { border: 2px solid #000; padding: 4px 6px; }
+  .li-items-table th { font-weight: 700; text-align: left; }
+  .li-items-table td { height: 22px; }
+  .li-conditions { font-size: 10px; font-weight: 700; line-height: 1.3; margin-top: 14px; }
+  .li-conditions p { margin: 0 0 3px 0; }
+  .li-conditions ul { margin: 0; padding-left: 16px; }
+  .li-conditions li { margin-bottom: 1px; }
+  .li-signatures { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 30px; font-size: 12px; font-weight: 700; text-align: center; }
+  .li-sig-box { width: 150px; }
+  .li-sig-line { border-top: 2px dotted #000; padding-top: 4px; }
+  .li-id-line { border-bottom: 2px dotted #000; padding-bottom: 2px; margin-bottom: 4px; padding-left: 10px; padding-right: 10px; }
+`
+
 function makeRow(): InvoiceRow {
   return { id: crypto.randomUUID(), date: '', billNumber: '', amount: 0 }
 }
@@ -116,6 +157,9 @@ export default function LegacyInvoicePage() {
   const nowStr = new Date().toISOString().slice(0, 10).replace(/-/g, '')
   const previewNumber = saved?.invoice_number ?? `INV-${nowStr}-LEGACY`
 
+  const printEntries = saved?.entries ?? verticalRows.map(r => ({ date: r.date, bill_number: r.billNumber, amount: r.amount }))
+  const printTotal = saved?.grand_total ?? grandTotal
+
   const { data: listData, isLoading: listLoading, isError: listError, error: listErr } = useLegacyInvoices({
     search: searchInput.trim() || undefined,
     limit: 50,
@@ -124,22 +168,30 @@ export default function LegacyInvoicePage() {
   return (
     <div className="space-y-5 pb-10">
       {/* Header */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between print:hidden">
-        <div>
-          <Breadcrumb items={[{ label: 'Dashboard', href: '/' }, { label: 'Shop Bills', href: '/shop-bills' }, { label: 'Legacy Invoice' }]} />
-          <h1 className="text-dashboard-title mt-1">Legacy Invoice</h1>
-          <p className="text-[13px] text-[#98A2B3] mt-0.5">
-            Aggregate old paper bills into one invoice — every invoice is saved, then printed.
-          </p>
-          <SyncStatusBar queryKey={['legacy-invoices']} label="Invoices" className="mt-2" />
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <Button variant="outline" onClick={handlePrint} disabled={!shopName.trim() && !saved} className="gap-2 cursor-pointer">
-            <Printer size={16} /> Print
-          </Button>
-          <Button onClick={handleSave} disabled={!canSave} className="gap-2 cursor-pointer">
-            <Save size={16} /> {saveInvoice.isPending ? 'Saving…' : 'Save Invoice'}
-          </Button>
+      <div className="print:hidden">
+        <Breadcrumb items={[{ label: 'Dashboard', href: '/' }, { label: 'Shop Bills', href: '/shop-bills' }, { label: 'Legacy Invoice' }]} />
+        <div className="mt-3 flex flex-col gap-4 rounded-2xl border border-[#E4E7EC] bg-white px-4 py-3 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-3">
+            <div className="h-12 w-12 shrink-0 rounded-full border-2 border-[#DC2626] bg-white p-1 flex items-center justify-center">
+              <img src="/icon.png" alt="Love Laundry" className="h-full w-full rounded-full object-contain" />
+            </div>
+            <div>
+              <h1 className="text-[17px] font-extrabold uppercase tracking-[2px] text-[#101828] leading-tight">Love Laundry</h1>
+              <p className="text-[11px] font-semibold text-[#6B7280]">and dry cleaning experts</p>
+              <p className="mt-0.5 text-[12px] text-[#98A2B3]">Legacy Invoice — aggregate old paper bills, save, then print.</p>
+            </div>
+          </div>
+          <div className="flex flex-col items-start gap-2 sm:items-end">
+            <div className="flex flex-wrap items-center gap-2">
+              <Button variant="outline" onClick={handlePrint} disabled={!shopName.trim() && !saved} className="gap-2 cursor-pointer">
+                <Printer size={16} /> Print
+              </Button>
+              <Button onClick={handleSave} disabled={!canSave} className="gap-2 cursor-pointer">
+                <Save size={16} /> {saveInvoice.isPending ? 'Saving…' : 'Save Invoice'}
+              </Button>
+            </div>
+            <SyncStatusBar queryKey={['legacy-invoices']} label="Invoices" />
+          </div>
         </div>
       </div>
 
@@ -318,69 +370,121 @@ export default function LegacyInvoicePage() {
 
       {/* Printable Invoice */}
       <div ref={printRef} className="hidden print:block">
-        <div className="p-8 font-sans text-[12px] text-[#101828]">
-          {/* Header */}
-          <div className="flex items-start justify-between mb-8">
-            <div>
-              <h1 className="text-[22px] font-bold text-[#DC2626]">{COMPANY.name}</h1>
-              <p className="text-[11px] text-[#6B7280]">{COMPANY.tagline}</p>
-              <p className="text-[11px] text-[#6B7280] mt-1">{COMPANY.address.line1}</p>
-              <p className="text-[11px] text-[#6B7280]">{COMPANY.address.line2}</p>
-              <p className="text-[11px] text-[#6B7280]">Reg: {COMPANY.registrationNo}</p>
+        <style dangerouslySetInnerHTML={{ __html: legacyPrintStyles }} />
+        <div className="li-print-sheet">
+          <div className="li-sheet">
+            {/* Header */}
+            <div className="li-header">
+              <div>
+                <img src="/icon.png" alt="Love Laundry" className="li-logo" />
+              </div>
+              <div className="li-company-center">
+                <h1 className="li-company-name">Love Laundry</h1>
+                <h2 className="li-company-tagline">and dry cleaning experts</h2>
+              </div>
+              <div className="li-invoice-box">
+                <div className="t">INVOICE</div>
+                <div className="v">{previewNumber}</div>
+                <div>{new Date().toLocaleDateString('en-LK')}</div>
+              </div>
             </div>
-            <div className="text-right">
-              <h2 className="text-[18px] font-bold text-[#101828]">INVOICE</h2>
-              <p className="text-[11px] text-[#6B7280] mt-1">{previewNumber}</p>
-              <p className="text-[11px] text-[#6B7280]">Date: {new Date().toLocaleDateString('en-LK')}</p>
-            </div>
-          </div>
 
-          {/* Bill To */}
-          <div className="mb-6 p-4 bg-[#F9FAFB] rounded-lg">
-            <p className="text-[10px] font-semibold uppercase text-[#98A2B3] mb-1">Bill To</p>
-            <p className="text-[14px] font-bold text-[#101828]">{saved?.shop_name || shopName}</p>
-            {(saved?.description || description) && <p className="text-[12px] text-[#6B7280] mt-0.5">{saved?.description || description}</p>}
-          </div>
-
-          {/* Table */}
-          <table className="w-full text-[12px] mb-6">
-            <thead>
-              <tr className="bg-[#F9FAFB] border-y border-[#E4E7EC]">
-                <th className="py-2 px-3 text-left font-semibold text-[#6B7280]">#</th>
-                <th className="py-2 px-3 text-left font-semibold text-[#6B7280]">Date</th>
-                <th className="py-2 px-3 text-left font-semibold text-[#6B7280]">Bill Number</th>
-                <th className="py-2 px-3 text-right font-semibold text-[#6B7280]">Amount (Rs.)</th>
-              </tr>
-            </thead>
-            <tbody>
-              {(saved?.entries ?? []).map((entry, idx) => (
-                <tr key={idx} className="border-b border-[#F2F4F7]">
-                  <td className="py-2 px-3 text-[#98A2B3]">{idx + 1}</td>
-                  <td className="py-2 px-3">{entry.date ? formatDate(entry.date) : '—'}</td>
-                  <td className="py-2 px-3 font-medium">{entry.bill_number || '—'}</td>
-                  <td className="py-2 px-3 text-right">{fmtMoney(entry.amount)}</td>
-                </tr>
+            {/* Services */}
+            <div className="li-services">
+              {['Dry Cleaning', 'Free Pickup & Delivery', 'Wash & Pressed', 'Wash & Fold', 'Laundered Pressed'].map(s => (
+                <span key={s}><span className="li-service-dot" />{s}</span>
               ))}
-              {saved && (
-                <tr className="border-b border-[#F2F4F7]">
-                  <td colSpan={4} className="py-2 px-3 text-[#98A2B3] italic">
-                    {saved.description || 'Legacy invoice'}
-                  </td>
-                </tr>
-              )}
-            </tbody>
-            <tfoot>
-              <tr className="border-t-2 border-[#101828] font-bold">
-                <td colSpan={3} className="py-3 px-3 text-right">Grand Total</td>
-                <td className="py-3 px-3 text-right text-[14px]">{fmtMoney(saved ? saved.grand_total : grandTotal)}</td>
-              </tr>
-            </tfoot>
-          </table>
+            </div>
 
-          {/* Footer */}
-          <div className="mt-12 pt-4 border-t border-[#E4E7EC] text-center text-[10px] text-[#98A2B3]">
-            <p>{COMPANY.name} · {COMPANY.address.line1}, {COMPANY.address.line2}</p>
-            <p>Tel: {COMPANY.phone.primary} · {COMPANY.email}</p>
+            {/* Contact */}
+            <div className="li-contact">
+              <div>
+                <p style={{ margin: 0 }}>Tel: {COMPANY.phone.primary} / {COMPANY.phone.secondary}</p>
+                <p style={{ margin: 0 }}>Email: {COMPANY.email}</p>
+              </div>
+              <div style={{ textAlign: 'right' }}>
+                <p style={{ margin: 0 }}>{COMPANY.address.line1}, {COMPANY.address.line2}</p>
+                <p style={{ margin: 0 }}>Reg: {COMPANY.registrationNo}</p>
+              </div>
+            </div>
+
+            {/* Bill To */}
+            <div className="li-customer-row">
+              <div className="li-customer-left">
+                <div className="li-detail-line">
+                  <span className="li-detail-label">Name:</span>
+                  <span className="li-detail-value">{saved?.shop_name || shopName}</span>
+                </div>
+                <div className="li-detail-line">
+                  <span className="li-detail-label">Address:</span>
+                  <span className="li-detail-value">{saved?.description || description || ''}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Entries Table */}
+            <table className="li-items-table">
+              <thead>
+                <tr>
+                  <th style={{ width: 40, textAlign: 'center' }}>No.</th>
+                  <th style={{ width: 100 }}>Bill Date</th>
+                  <th>Bill Number</th>
+                  <th style={{ width: 100, textAlign: 'right' }}>Amount (Rs.)</th>
+                  <th style={{ width: 50, textAlign: 'center' }}>CTs.</th>
+                </tr>
+              </thead>
+              <tbody>
+                {printEntries.map((entry, index) => {
+                  const amt = Number(entry.amount) || 0
+                  const whole = amt > 0 ? Math.floor(amt) : ''
+                  const cts = amt > 0 ? Math.round((amt % 1) * 100).toString().padStart(2, '0') : ''
+                  return (
+                    <tr key={index}>
+                      <td style={{ textAlign: 'center' }}>{index + 1}.</td>
+                      <td>{entry.date ? formatDate(entry.date) : ''}</td>
+                      <td>{entry.bill_number || ''}</td>
+                      <td style={{ textAlign: 'right' }}>{whole}</td>
+                      <td style={{ textAlign: 'center' }}>{cts}</td>
+                    </tr>
+                  )
+                })}
+                <tr>
+                  <td colSpan={3} style={{ textAlign: 'right' }}>Grand Total:</td>
+                  <td style={{ textAlign: 'right' }}>{Math.floor(printTotal)}</td>
+                  <td style={{ textAlign: 'center' }}>{Math.round((printTotal % 1) * 100).toString().padStart(2, '0')}</td>
+                </tr>
+              </tbody>
+            </table>
+
+            {/* Conditions */}
+            <div className="li-conditions">
+              <p>CONDITIONS:</p>
+              <ul>
+                <li>Garments will only be returned on production of the bill, in case of loss of the bill National card of the customer should be produced.</li>
+                <li>Garments should be collected within 10 days from the date of delivery, after which the management will not be responsible for any loss or damage.</li>
+                <li>The management is not responsible for any shrinkage or color fading of garments after cleaning.</li>
+                <li>Any complaints regarding the quality of cleaning should be made within 24 hours of delivery.</li>
+                <li>The management reserves the right to change the terms and conditions without prior notice.</li>
+              </ul>
+            </div>
+
+            {/* Signatures */}
+            <div className="li-signatures">
+              <div className="li-sig-box">
+                <div className="li-sig-line">Cashier Signature</div>
+              </div>
+              <div className="li-sig-box">
+                <div className="li-id-line">{previewNumber}</div>
+                <div>Invoice Number</div>
+              </div>
+              <div className="li-sig-box">
+                <div className="li-id-line">{new Date().toLocaleDateString('en-LK')}</div>
+                <div>Date</div>
+              </div>
+              <div className="li-sig-box">
+                <div className="li-sig-line">Customer Signature</div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
