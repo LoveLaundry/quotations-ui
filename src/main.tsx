@@ -13,13 +13,24 @@ import { ErrorBoundary } from './components/ui/error-boundary'
 // clean hard reload so the browser picks up the fresh index.html and new hashes.
 // ---------------------------------------------------------------------------
 const RECOVERY_KEY = 'll_stale_reload'
+// Allow at most this many auto-reloads inside the window; if the fresh deploy
+// is also broken we stop hammering reloads instead of looping forever.
+const MAX_RELOADS = 2
+const RECOVERY_WINDOW_MS = 60_000
+
 const staleReload = (): void => {
-  // Guard against reload loops if the new deploy is also broken.
   try {
-    if (sessionStorage.getItem(RECOVERY_KEY) === '1') return
-    sessionStorage.setItem(RECOVERY_KEY, '1')
+    const now = Date.now()
+    const raw = sessionStorage.getItem(RECOVERY_KEY)
+    const cached = raw ? (JSON.parse(raw) as { t: number; n: number }) : null
+    if (cached && now - cached.t < RECOVERY_WINDOW_MS) {
+      if ((cached.n ?? 0) >= MAX_RELOADS) return
+      sessionStorage.setItem(RECOVERY_KEY, JSON.stringify({ t: now, n: (cached.n ?? 0) + 1 }))
+    } else {
+      sessionStorage.setItem(RECOVERY_KEY, JSON.stringify({ t: now, n: 1 }))
+    }
   } catch {
-    /* sessionStorage unavailable — proceed anyway (single reload still helps) */
+    return
   }
   window.location.replace(window.location.pathname + window.location.search + window.location.hash)
 }
