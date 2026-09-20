@@ -466,13 +466,14 @@ onSuccess: invoice => {
 
               {/* Conditions */}
               <div className="li-conditions">
-                <p>CONDITIONS:</p>
+                <p>PAYMENT CONDITIONS:</p>
                 <ul>
-                  <li>Garments will only be returned on production of the bill, in case of loss of the bill National card of the customer should be produced.</li>
-                  <li>Garments should be collected within 10 days from the date of delivery, after which the management will not be responsible for any loss or damage.</li>
-                  <li>The management is not responsible for any shrinkage or color fading of garments after cleaning.</li>
-                  <li>Any complaints regarding the quality of cleaning should be made within 24 hours of delivery.</li>
-                  <li>The management reserves the right to change the terms and conditions without prior notice.</li>
+                  <li>All bills are payable within 7 days from the date of delivery, unless otherwise agreed.</li>
+                  <li>Payment may be made in cash at the counter or by bank transfer — please quote the invoice number as the reference.</li>
+                  <li>Garments will be released only after full payment is received.</li>
+                  <li>A deposit may be required for large or repeated orders.</li>
+                  <li>Hotel / guest-house accounts are settled on a monthly basis on prior written agreement.</li>
+                  <li>Please keep this invoice as proof of payment until the order is fully settled.</li>
                 </ul>
               </div>
             </div>
