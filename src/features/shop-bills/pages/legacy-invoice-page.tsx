@@ -9,6 +9,7 @@ import { ErrorState } from '../../../components/ui/error-state'
 import { Skeleton } from '../../../components/ui/skeleton'
 import { ConfirmDialog } from '../../../components/ui/confirm-dialog'
 import { SyncStatusBar } from '../../../components/ui/sync-status-bar'
+import { SignatureUploadDialog } from '../../../components/ui/signature-upload-dialog'
 import { useDataGrid } from '../../../hooks/use-data-grid'
 import { COMPANY } from '../../../config/company'
 import {
@@ -72,6 +73,7 @@ const legacyPrintStyles = `
   .li-conditions li { margin-bottom: 1px; }
   .li-footer { display: flex; justify-content: space-between; align-items: flex-end; padding: 8px 20px 12px; }
   .li-sig { width: 150px; text-align: center; font-size: 11px; color: #1F2937; font-weight: 600; }
+  .li-sig-img { display: block; height: 30px; max-width: 140px; margin: 0 auto; object-fit: contain; mix-blend-mode: multiply; }
   .li-sig-line { border-top: 1px solid #1F2937; padding-top: 4px; }
   .li-fill-line { border-bottom: 1px solid #1F2937; padding-bottom: 2px; margin-bottom: 4px; font-weight: 700; color: #111; }
 `
@@ -87,6 +89,8 @@ export default function LegacyInvoicePage() {
   const [saved, setSaved] = useState<LegacyInvoice | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<LegacyInvoice | null>(null)
   const [searchInput, setSearchInput] = useState('')
+  const [signatures, setSignatures] = useState<Record<string, string>>({})
+  const [printDialogOpen, setPrintDialogOpen] = useState(false)
 
   const updateRow = (id: string, field: keyof InvoiceRow, value: string | number) => {
     setRows(prev => prev.map(r => r.id === id ? { ...r, [field]: value } : r))
@@ -120,7 +124,7 @@ export default function LegacyInvoicePage() {
         })),
       },
       {
-        onSuccess: invoice => {
+onSuccess: invoice => {
           setSaved(invoice)
           setShopName('')
           setDescription('')
@@ -135,6 +139,7 @@ export default function LegacyInvoicePage() {
     setShopName('')
     setDescription('')
     setRows([makeRow()])
+    setSignatures({})
   }
 
   const handleLoad = (invoice: LegacyInvoice) => {
@@ -157,6 +162,19 @@ export default function LegacyInvoicePage() {
     contentRef: printRef,
     documentTitle: `Invoice-${saved?.shop_name || shopName || 'Invoice'}`,
   })
+
+  const requestPrint = () => setPrintDialogOpen(true)
+
+  const handlePrintConfirm = (sig: Record<string, string>) => {
+    setSignatures(sig)
+    setPrintDialogOpen(false)
+    setTimeout(() => handlePrint(), 180)
+  }
+
+  const sigSlots = [
+    { id: 'cashier', label: 'Cashier Signature', value: signatures.cashier },
+    { id: 'customer', label: 'Customer Signature', value: signatures.customer },
+  ]
 
   const nowStr = new Date().toISOString().slice(0, 10).replace(/-/g, '')
   const previewNumber = saved?.invoice_number ?? `INV-${nowStr}-LEGACY`
@@ -187,7 +205,7 @@ export default function LegacyInvoicePage() {
           </div>
           <div className="flex flex-col items-start gap-2 sm:items-end">
             <div className="flex flex-wrap items-center gap-2">
-              <Button variant="outline" onClick={handlePrint} disabled={!shopName.trim() && !saved} className="gap-2 cursor-pointer">
+              <Button variant="outline" onClick={requestPrint} disabled={!shopName.trim() && !saved} className="gap-2 cursor-pointer">
                 <Printer size={16} /> Print
               </Button>
               <Button onClick={handleSave} disabled={!canSave} className="gap-2 cursor-pointer">
@@ -214,7 +232,7 @@ export default function LegacyInvoicePage() {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <Button size="sm" variant="outline" onClick={handlePrint} className="gap-1.5 cursor-pointer">
+            <Button size="sm" variant="outline" onClick={requestPrint} className="gap-1.5 cursor-pointer">
               <Printer size={14} /> Print {saved.invoice_number}
             </Button>
             <Button size="sm" variant="outline" onClick={handleNew} className="gap-1.5 cursor-pointer">
@@ -461,14 +479,27 @@ export default function LegacyInvoicePage() {
 
             {/* Footer */}
             <div className="li-footer">
-              <div className="li-sig"><div className="li-sig-line">Cashier Signature</div></div>
+              <div className="li-sig">
+                {signatures.cashier && <img src={signatures.cashier} alt="Cashier signature" className="li-sig-img" />}
+                <div className="li-sig-line">Cashier Signature</div>
+              </div>
               <div className="li-sig"><div className="li-fill-line">{previewNumber}</div>Invoice Number</div>
               <div className="li-sig"><div className="li-fill-line">{new Date().toLocaleDateString('en-LK')}</div>Date</div>
-              <div className="li-sig"><div className="li-sig-line">Customer Signature</div></div>
+              <div className="li-sig">
+                {signatures.customer && <img src={signatures.customer} alt="Customer signature" className="li-sig-img" />}
+                <div className="li-sig-line">Customer Signature</div>
+              </div>
             </div>
           </div>
         </div>
       </div>
+
+      <SignatureUploadDialog
+        open={printDialogOpen}
+        slots={sigSlots}
+        onClose={() => setPrintDialogOpen(false)}
+        onConfirm={handlePrintConfirm}
+      />
 
       <ConfirmDialog
         open={Boolean(deleteTarget)}
