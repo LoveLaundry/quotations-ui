@@ -391,8 +391,10 @@ async function fetchMgmtPayments(date: string): Promise<SourceOutput<PaymentReco
 
 async function fetchShopBills(date: string): Promise<SourceOutput<ShopBillRecord>> {
   try {
-    const res = await billsApi.get('/shop-bills', { params: { limit: 500 } })
-    const rows = arrayRows(res)
+    const rows = await fetchAll(
+      (skip, limit) => billsApi.get('/shop-bills', { params: { skip, limit } }),
+      500
+    )
     const fetched = rows.length
     const records = onDay(rows, date, ['created_at', 'date', 'bill_date', 'issue_date'])
       .map<ShopBillRecord>(r => ({
@@ -411,8 +413,10 @@ async function fetchShopBills(date: string): Promise<SourceOutput<ShopBillRecord
 
 async function fetchLegacyInvoices(date: string): Promise<SourceOutput<LegacyInvoiceRecord>> {
   try {
-    const res = await billsApi.get('/shop-bills/legacy', { params: { limit: 300 } })
-    const rows = arrayRows(res)
+    const rows = await fetchAll(
+      (skip, limit) => billsApi.get('/shop-bills/legacy', { params: { skip, limit } }),
+      200
+    )
     const fetched = rows.length
     const records = onDay(rows, date, ['created_at', 'date', 'issue_date', 'invoice_date'])
       .map<LegacyInvoiceRecord>(r => ({
@@ -515,7 +519,7 @@ async function fetchReturns(date: string): Promise<SourceOutput<ReturnRecord>> {
 
 async function fetchLinenStatus(): Promise<SourceOutput<LinenStatusCount> & { counts: LinenStatusCount | null }> {
   try {
-    const res = await billsApi.get('/linens', { params: { le: 5000 } })
+    const res = await billsApi.get('/linens', { params: { limit: 5000 } })
     const data = (res?.data ?? res) as Record<string, unknown>
     const rows = arrayRows(res)
     const fetched = rows.length
