@@ -37,7 +37,7 @@ function StatusBadge({ status }: { status: string }) {
 }
 
 function GatePassCard({ gp }: { gp: GatePass }) {
-    const totalItems = gp.items.reduce((s, i) => s + i.received_qty, 0)
+    const totalItems = (gp.items ?? []).reduce((s, i) => s + i.received_qty, 0)
     const mismatches = gp.items.filter(i => i.difference !== 0).length
 
     return (
@@ -120,7 +120,7 @@ export default function GatePassesPage() {
         const map = new Map<string, { client: string; gatePasses: GatePass[]; totalPieces: number; latestDate: string }>()
         for (const gp of gatePasses) {
             const client = gp.client_name || 'Unknown'
-            const pieces = gp.items.reduce((s: number, i: GatePassItem) => s + i.received_qty, 0)
+            const pieces = (gp.items ?? []).reduce((s: number, i: GatePassItem) => s + i.received_qty, 0)
             const entry = map.get(client)
             if (entry) {
                 entry.gatePasses.push(gp)

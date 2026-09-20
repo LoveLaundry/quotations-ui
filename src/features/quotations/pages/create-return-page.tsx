@@ -277,7 +277,7 @@ export default function CreateReturnPage() {
                       <span className="text-[#101828]">{gp.client_name}</span>
                     </div>
                     <div className="text-[11px] text-[#98A2B3] mt-0.5">
-                      {gp.items.length} item types · {gp.items.reduce((s, i) => s + i.received_qty, 0)} pcs
+                      {(gp.items ?? []).length} item types · {(gp.items ?? []).reduce((s, i) => s + i.received_qty, 0)} pcs
                     </div>
                   </button>
                 ))}

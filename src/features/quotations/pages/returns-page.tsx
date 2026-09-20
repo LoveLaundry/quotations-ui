@@ -19,10 +19,11 @@ const STATUS_COLORS: Record<string, { bg: string; border: string; text: string }
 }
 
 function ReturnCard({ r, onResent }: { r: Return; onResent: (returnId: string, itemName: string, spec: string) => void }) {
-  const totalReturned = r.items.reduce((s, i) => s + i.returned_qty, 0)
+  const items = r.items ?? []
+  const totalReturned = items.reduce((s, i) => s + i.returned_qty, 0)
   const sc = STATUS_COLORS[r.status] || STATUS_COLORS.PENDING
-  const reasons = [...new Set(r.items.map((i) => i.reason))]
-  const pendingResend = r.items.filter(
+  const reasons = [...new Set(items.map((i) => i.reason))]
+  const pendingResend = items.filter(
     (i) => (i.action === 'RECEIVE_BACK' || i.action === 'RE_WASH') && i.resend_status !== 'SENT'
   )
 

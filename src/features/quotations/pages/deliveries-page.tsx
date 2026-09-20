@@ -21,7 +21,7 @@ function deliveryStatusBadge(d: Delivery) {
 }
 
 function DeliveryCard({ d }: { d: Delivery }) {
-    const totalPieces = d.items.reduce(
+    const totalPieces = (d.items ?? []).reduce(
         (sum, item) => sum + item.quantity,
         0
     )

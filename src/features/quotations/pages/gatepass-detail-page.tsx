@@ -161,11 +161,11 @@ export default function GatePassDetailPage() {
         return <EmptyState title="Gate pass not found" description="It may have been deleted." />
     }
 
-    const totalReceived = gp.items.reduce((s: number, i: any) => s + i.received_qty, 0)
-    const mismatches = gp.items.filter((i: any) => i.difference !== 0)
+    const totalReceived = (gp.items ?? []).reduce((s: number, i: any) => s + i.received_qty, 0)
+    const mismatches = (gp.items ?? []).filter((i: any) => i.difference !== 0)
 
-    const totalDelivered = gp.items.reduce((s: number, i: any) => s + (deliveredMap[`${i.item_name}||${i.specification || ''}`] || 0), 0)
-    const totalReturned = gp.items.reduce((s: number, i: any) => s + (returnedMap[`${i.item_name}||${i.specification || ''}`] || 0), 0)
+    const totalDelivered = (gp.items ?? []).reduce((s: number, i: any) => s + (deliveredMap[`${i.item_name}||${i.specification || ''}`] || 0), 0)
+    const totalReturned = (gp.items ?? []).reduce((s: number, i: any) => s + (returnedMap[`${i.item_name}||${i.specification || ''}`] || 0), 0)
     const totalPending = totalReceived - totalDelivered + totalReturned
 
     const handleAdjust = (itemName: string) => {
@@ -829,7 +829,7 @@ export default function GatePassDetailPage() {
                             <Link key={d.id} to={`/deliveries/${d.id}`} className="flex items-center justify-between gap-3 py-3 hover:opacity-70 transition">
                                 <div>
                                     <p className="text-[13px] font-medium text-[#101828]">
-                                        {d.items.reduce((s: number, i: any) => s + i.quantity, 0)} pieces delivered
+                                        {d.items?.reduce ? d.items.reduce((s: number, i: any) => s + i.quantity, 0) : 0} pieces delivered
                                     </p>
                                     <p className="text-[12px] text-[#98A2B3]">{formatDate(d.delivery_date)} · by {d.delivered_by}</p>
                                 </div>
