@@ -23,3 +23,13 @@ export function formatDate(value?: string) {
     timeStyle: 'short',
   }).format(new Date(value))
 }
+
+export function formatDateOnly(value?: string) {
+  if (!value) {
+    return '—'
+  }
+
+  const hasTime = value.includes('T') || value.includes(' ')
+  const d = hasTime ? new Date(value) : new Date(`${value}T00:00:00`)
+  return new Intl.DateTimeFormat('en-US', { dateStyle: 'medium' }).format(d)
+}

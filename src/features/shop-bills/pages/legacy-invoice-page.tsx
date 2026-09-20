@@ -17,7 +17,7 @@ import {
   useLegacyInvoices,
 } from '../hooks/useLegacyInvoices'
 import type { LegacyInvoice } from '../../../types/shop-bill'
-import { formatDate } from '../../../lib/utils'
+import { formatDateOnly } from '../../../lib/utils'
 
 interface InvoiceRow {
   id: string
@@ -33,43 +33,47 @@ const fmtMoney = (v: number) => `Rs. ${(Number(v) || 0).toLocaleString('en-LK', 
 
 const legacyPrintStyles = `
   @media print {
-    .li-print-sheet { margin: 0; padding: 0; width: 100%; min-height: auto; }
-    @page { size: A4; margin: 0; }
-    @page :first { margin: 0; }
+    .li-print-sheet { margin: 0; padding: 0; }
+    body { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+    @page { size: A4 portrait; margin: 12mm 15mm; }
+    .no-print { display: none !important; }
   }
-  @page { size: A4; margin: 0; }
-  @page :first { margin: 0; }
 
-  .li-print-sheet { font-family: "Spectral", Georgia, serif; color: #000; background: #fff; }
-  .li-sheet { width: 210mm; min-height: 297mm; padding: 12mm; box-sizing: border-box; font-size: 13px; line-height: 1.4; }
-  .li-header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #000; padding-bottom: 8px; margin-bottom: 8px; }
-  .li-logo { width: 80px; height: 80px; object-fit: contain; border: 2px solid #DC2626; border-radius: 50%; padding: 4px; box-sizing: border-box; }
-  .li-company-center { text-align: center; flex: 1; }
-  .li-company-name { font-size: 28px; font-weight: 800; text-transform: uppercase; letter-spacing: 3px; line-height: 1.2; margin: 0; font-family: "Spectral", Georgia, serif; }
-  .li-company-tagline { font-size: 16px; font-weight: 600; margin: 2px 0 0 0; font-family: "Spectral", Georgia, serif; }
-  .li-invoice-box { width: 170px; border: 2px solid #000; font-size: 12px; text-align: center; padding: 4px 6px; }
-  .li-invoice-box .t { font-weight: 700; font-size: 12px; }
-  .li-invoice-box .v { border-bottom: 2px dotted #000; margin: 3px 0; padding: 1px 4px; font-weight: 700; }
-  .li-services { display: flex; justify-content: center; gap: 20px; font-size: 11px; font-weight: 700; border-bottom: 2px solid #000; padding-bottom: 8px; margin-bottom: 8px; flex-wrap: wrap; }
-  .li-service-dot { width: 5px; height: 5px; border-radius: 50%; background: #000; display: inline-block; margin-right: 4px; }
-  .li-contact { display: flex; justify-content: space-between; font-size: 11px; font-weight: 700; margin-bottom: 12px; }
-  .li-customer-row { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 12px; font-weight: 700; }
-  .li-customer-left { width: 55%; }
-  .li-detail-line { display: flex; margin-bottom: 3px; }
-  .li-detail-label { width: 90px; flex-shrink: 0; }
-  .li-detail-value { flex: 1; border-bottom: 1px dotted #000; padding-left: 4px; }
-  .li-items-table { width: 100%; border-collapse: collapse; border: 2px solid #000; font-size: 12px; font-weight: 700; margin-bottom: 6px; }
-  .li-items-table th, .li-items-table td { border: 2px solid #000; padding: 4px 6px; }
-  .li-items-table th { font-weight: 700; text-align: left; }
-  .li-items-table td { height: 22px; }
-  .li-conditions { font-size: 10px; font-weight: 700; line-height: 1.3; margin-top: 14px; }
-  .li-conditions p { margin: 0 0 3px 0; }
-  .li-conditions ul { margin: 0; padding-left: 16px; }
+  .li-print-sheet { font-family: "Spectral", Georgia, serif; color: #111; background: #fff; font-size: 12px; line-height: 1.4; }
+  .li-slip { border: 1.5px solid #E01E31; }
+  .li-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; padding: 12px 20px; border-bottom: 1.5px solid #E01E31; }
+  .li-brand { display: flex; align-items: center; gap: 10px; }
+  .li-logo { width: 44px; height: 44px; object-fit: contain; background: #fff; border: 1.5px solid #E01E31; border-radius: 50%; padding: 5px; box-sizing: border-box; flex-shrink: 0; }
+  .li-brand-name { font-weight: 700; letter-spacing: -0.25px; font-size: 20px; color: #E01E31; line-height: 1.15; }
+  .li-brand-tagline { font-size: 11px; color: #6B7280; margin-top: 1px; }
+  .li-brand-contact { font-size: 10px; color: #9CA3AF; margin-top: 4px; line-height: 1.45; }
+  .li-meta { text-align: right; }
+  .li-title { font-size: 17px; font-weight: 800; letter-spacing: 2.5px; text-transform: uppercase; color: #E01E31; line-height: 1.1; }
+  .li-meta-line { font-size: 12px; color: #374151; margin-top: 3px; font-weight: 600; }
+  .li-body { padding: 10px 20px 14px; }
+  .li-info-grid { display: grid; grid-template-columns: 1fr 1fr; column-gap: 28px; background: #FDF6F7; border: 1px solid #F3C9CE; border-radius: 6px; padding: 7px 12px; }
+  .li-info-row { display: flex; justify-content: space-between; gap: 10px; padding: 2px 0; font-size: 12px; }
+  .li-info-label { color: #6B7280; font-weight: 500; }
+  .li-info-value { font-weight: 700; text-align: right; }
+  .li-section-title { color: #E01E31; border-left: 3px solid #E01E31; padding: 1px 0 1px 8px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin: 8px 0 4px; }
+  .li-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .li-table th { text-align: left; padding: 3px 6px; color: #B71C1C; font-weight: 700; border-bottom: 1.5px solid #E01E31; }
+  .li-table th.right, .li-table td.right { text-align: right; }
+  .li-table th.center, .li-table td.center { text-align: center; }
+  .li-table td { padding: 4px 6px; border-bottom: 1px solid #F7E5E7; }
+  .li-table tr:last-child td { border-bottom: none; }
+  .li-total-row td { border-top: 1.5px solid #E01E31; border-bottom: none; font-weight: 800; color: #B71C1C; padding-top: 6px; }
+  .li-net { display: flex; align-items: center; justify-content: space-between; border: 1.5px solid #E01E31; border-radius: 6px; padding: 9px 16px; margin-top: 10px; }
+  .li-net .label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #B71C1C; }
+  .li-net .amount { font-size: 24px; font-weight: 800; color: #E01E31; }
+  .li-conditions { font-size: 9.5px; color: #4B5563; line-height: 1.35; margin-top: 10px; }
+  .li-conditions p { margin: 0 0 2px 0; font-weight: 700; color: #111; }
+  .li-conditions ul { margin: 0; padding-left: 15px; }
   .li-conditions li { margin-bottom: 1px; }
-  .li-signatures { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 30px; font-size: 12px; font-weight: 700; text-align: center; }
-  .li-sig-box { width: 150px; }
-  .li-sig-line { border-top: 2px dotted #000; padding-top: 4px; }
-  .li-id-line { border-bottom: 2px dotted #000; padding-bottom: 2px; margin-bottom: 4px; padding-left: 10px; padding-right: 10px; }
+  .li-footer { display: flex; justify-content: space-between; align-items: flex-end; padding: 8px 20px 12px; }
+  .li-sig { width: 150px; text-align: center; font-size: 11px; color: #1F2937; font-weight: 600; }
+  .li-sig-line { border-top: 1px solid #1F2937; padding-top: 4px; }
+  .li-fill-line { border-bottom: 1px solid #1F2937; padding-bottom: 2px; margin-bottom: 4px; font-weight: 700; color: #111; }
 `
 
 function makeRow(): InvoiceRow {
@@ -205,7 +209,7 @@ export default function LegacyInvoicePage() {
             <div>
               <p className="text-[13px] font-semibold text-[#15803D]">Invoice {saved.invoice_number} saved</p>
               <p className="text-[11px] text-[#16A34A]/80">
-                {saved.shop_name} · {saved.total_entries} entr{saved.total_entries === 1 ? 'y' : 'ies'} · {fmtMoney(saved.grand_total)} · {formatDate(saved.created_at)}
+                {saved.shop_name} · {saved.total_entries} entr{saved.total_entries === 1 ? 'y' : 'ies'} · {fmtMoney(saved.grand_total)} · {formatDateOnly(saved.created_at)}
               </p>
             </div>
           </div>
@@ -344,7 +348,7 @@ export default function LegacyInvoicePage() {
                     <td className="py-2.5 px-4 text-[#101828] font-medium">{inv.shop_name}</td>
                     <td className="py-2.5 px-4 text-center text-[#6B7280]">{inv.total_entries}</td>
                     <td className="py-2.5 px-4 text-right font-semibold text-[#101828]">{fmtMoney(inv.grand_total)}</td>
-                    <td className="py-2.5 px-4 text-[#98A2B3] whitespace-nowrap">{formatDate(inv.created_at)}</td>
+                    <td className="py-2.5 px-4 text-[#98A2B3] whitespace-nowrap">{formatDateOnly(inv.created_at)}</td>
                     <td className="py-2.5 px-4">
                       <div className="flex items-center justify-end gap-1">
                         <Button size="sm" variant="ghost" onClick={() => handleLoad(inv)} className="gap-1.5 cursor-pointer">
@@ -372,118 +376,95 @@ export default function LegacyInvoicePage() {
       <div ref={printRef} className="hidden print:block">
         <style dangerouslySetInnerHTML={{ __html: legacyPrintStyles }} />
         <div className="li-print-sheet">
-          <div className="li-sheet">
+          <div className="li-slip">
             {/* Header */}
             <div className="li-header">
-              <div>
+              <div className="li-brand">
                 <img src="/icon.png" alt="Love Laundry" className="li-logo" />
-              </div>
-              <div className="li-company-center">
-                <h1 className="li-company-name">Love Laundry</h1>
-                <h2 className="li-company-tagline">and dry cleaning experts</h2>
-              </div>
-              <div className="li-invoice-box">
-                <div className="t">INVOICE</div>
-                <div className="v">{previewNumber}</div>
-                <div>{new Date().toLocaleDateString('en-LK')}</div>
-              </div>
-            </div>
-
-            {/* Services */}
-            <div className="li-services">
-              {['Dry Cleaning', 'Free Pickup & Delivery', 'Wash & Pressed', 'Wash & Fold', 'Laundered Pressed'].map(s => (
-                <span key={s}><span className="li-service-dot" />{s}</span>
-              ))}
-            </div>
-
-            {/* Contact */}
-            <div className="li-contact">
-              <div>
-                <p style={{ margin: 0 }}>Tel: {COMPANY.phone.primary} / {COMPANY.phone.secondary}</p>
-                <p style={{ margin: 0 }}>Email: {COMPANY.email}</p>
-              </div>
-              <div style={{ textAlign: 'right' }}>
-                <p style={{ margin: 0 }}>{COMPANY.address.line1}, {COMPANY.address.line2}</p>
-                <p style={{ margin: 0 }}>Reg: {COMPANY.registrationNo}</p>
-              </div>
-            </div>
-
-            {/* Bill To */}
-            <div className="li-customer-row">
-              <div className="li-customer-left">
-                <div className="li-detail-line">
-                  <span className="li-detail-label">Name:</span>
-                  <span className="li-detail-value">{saved?.shop_name || shopName}</span>
-                </div>
-                <div className="li-detail-line">
-                  <span className="li-detail-label">Address:</span>
-                  <span className="li-detail-value">{saved?.description || description || ''}</span>
+                <div>
+                  <div className="li-brand-name">{COMPANY.name}</div>
+                  <div className="li-brand-tagline">{COMPANY.tagline}</div>
+                  <div className="li-brand-contact">
+                    {COMPANY.address.line1}, {COMPANY.address.line2}<br />
+                    Tel: {COMPANY.phone.primary} | {COMPANY.phone.secondary}
+                  </div>
                 </div>
               </div>
+              <div className="li-meta">
+                <div className="li-title">Invoice</div>
+                <div className="li-meta-line">{previewNumber}</div>
+                <div className="li-meta-line">{new Date().toLocaleDateString('en-LK')}</div>
+              </div>
             </div>
 
-            {/* Entries Table */}
-            <table className="li-items-table">
-              <thead>
-                <tr>
-                  <th style={{ width: 40, textAlign: 'center' }}>No.</th>
-                  <th style={{ width: 100 }}>Bill Date</th>
-                  <th>Bill Number</th>
-                  <th style={{ width: 100, textAlign: 'right' }}>Amount (Rs.)</th>
-                  <th style={{ width: 50, textAlign: 'center' }}>CTs.</th>
-                </tr>
-              </thead>
-              <tbody>
-                {printEntries.map((entry, index) => {
-                  const amt = Number(entry.amount) || 0
-                  const whole = amt > 0 ? Math.floor(amt) : ''
-                  const cts = amt > 0 ? Math.round((amt % 1) * 100).toString().padStart(2, '0') : ''
-                  return (
-                    <tr key={index}>
-                      <td style={{ textAlign: 'center' }}>{index + 1}.</td>
-                      <td>{entry.date ? formatDate(entry.date) : ''}</td>
-                      <td>{entry.bill_number || ''}</td>
-                      <td style={{ textAlign: 'right' }}>{whole}</td>
-                      <td style={{ textAlign: 'center' }}>{cts}</td>
-                    </tr>
-                  )
-                })}
-                <tr>
-                  <td colSpan={3} style={{ textAlign: 'right' }}>Grand Total:</td>
-                  <td style={{ textAlign: 'right' }}>{Math.floor(printTotal)}</td>
-                  <td style={{ textAlign: 'center' }}>{Math.round((printTotal % 1) * 100).toString().padStart(2, '0')}</td>
-                </tr>
-              </tbody>
-            </table>
+            <div className="li-body">
+              {/* Bill To / meta grid */}
+              <div className="li-info-grid">
+                <div className="li-info-row"><span className="li-info-label">Bill To</span><span className="li-info-value">{saved?.shop_name || shopName}</span></div>
+                <div className="li-info-row"><span className="li-info-label">Invoice No</span><span className="li-info-value">{previewNumber}</span></div>
+                <div className="li-info-row"><span className="li-info-label">Description</span><span className="li-info-value">{saved?.description || description || '—'}</span></div>
+                <div className="li-info-row"><span className="li-info-label">Date</span><span className="li-info-value">{new Date().toLocaleDateString('en-LK')}</span></div>
+              </div>
 
-            {/* Conditions */}
-            <div className="li-conditions">
-              <p>CONDITIONS:</p>
-              <ul>
-                <li>Garments will only be returned on production of the bill, in case of loss of the bill National card of the customer should be produced.</li>
-                <li>Garments should be collected within 10 days from the date of delivery, after which the management will not be responsible for any loss or damage.</li>
-                <li>The management is not responsible for any shrinkage or color fading of garments after cleaning.</li>
-                <li>Any complaints regarding the quality of cleaning should be made within 24 hours of delivery.</li>
-                <li>The management reserves the right to change the terms and conditions without prior notice.</li>
-              </ul>
+              {/* Entries Table */}
+              <div className="li-section-title">Bill Entries</div>
+              <table className="li-table">
+                <thead>
+                  <tr>
+                    <th style={{ width: 40 }}>No.</th>
+                    <th>Bill Date</th>
+                    <th>Bill Number</th>
+                    <th className="right" style={{ width: 110 }}>Amount (Rs.)</th>
+                    <th className="center" style={{ width: 50 }}>CTs.</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {printEntries.map((entry, index) => {
+                    const amt = Number(entry.amount) || 0
+                    const whole = amt > 0 ? Math.floor(amt).toLocaleString('en-LK') : ''
+                    const cts = amt > 0 ? Math.round((amt % 1) * 100).toString().padStart(2, '0') : ''
+                    return (
+                      <tr key={index}>
+                        <td>{index + 1}.</td>
+                        <td>{entry.date ? formatDateOnly(entry.date) : ''}</td>
+                        <td>{entry.bill_number || ''}</td>
+                        <td className="right">{whole}</td>
+                        <td className="center">{cts}</td>
+                      </tr>
+                    )
+                  })}
+                  <tr className="li-total-row">
+                    <td colSpan={3} className="right">Grand Total:</td>
+                    <td className="right">{Math.floor(printTotal).toLocaleString('en-LK')}</td>
+                    <td className="center">{Math.round((printTotal % 1) * 100).toString().padStart(2, '0')}</td>
+                  </tr>
+                </tbody>
+              </table>
+
+              <div className="li-net">
+                <span className="label">Grand Total</span>
+                <span className="amount">{fmtMoney(printTotal)}</span>
+              </div>
+
+              {/* Conditions */}
+              <div className="li-conditions">
+                <p>CONDITIONS:</p>
+                <ul>
+                  <li>Garments will only be returned on production of the bill, in case of loss of the bill National card of the customer should be produced.</li>
+                  <li>Garments should be collected within 10 days from the date of delivery, after which the management will not be responsible for any loss or damage.</li>
+                  <li>The management is not responsible for any shrinkage or color fading of garments after cleaning.</li>
+                  <li>Any complaints regarding the quality of cleaning should be made within 24 hours of delivery.</li>
+                  <li>The management reserves the right to change the terms and conditions without prior notice.</li>
+                </ul>
+              </div>
             </div>
 
-            {/* Signatures */}
-            <div className="li-signatures">
-              <div className="li-sig-box">
-                <div className="li-sig-line">Cashier Signature</div>
-              </div>
-              <div className="li-sig-box">
-                <div className="li-id-line">{previewNumber}</div>
-                <div>Invoice Number</div>
-              </div>
-              <div className="li-sig-box">
-                <div className="li-id-line">{new Date().toLocaleDateString('en-LK')}</div>
-                <div>Date</div>
-              </div>
-              <div className="li-sig-box">
-                <div className="li-sig-line">Customer Signature</div>
-              </div>
+            {/* Footer */}
+            <div className="li-footer">
+              <div className="li-sig"><div className="li-sig-line">Cashier Signature</div></div>
+              <div className="li-sig"><div className="li-fill-line">{previewNumber}</div>Invoice Number</div>
+              <div className="li-sig"><div className="li-fill-line">{new Date().toLocaleDateString('en-LK')}</div>Date</div>
+              <div className="li-sig"><div className="li-sig-line">Customer Signature</div></div>
             </div>
           </div>
         </div>

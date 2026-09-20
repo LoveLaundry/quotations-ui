@@ -8,7 +8,7 @@ export const COMPANY = {
   },
   phone: {
     primary: '+94 77 4200 919',
-    secondary: '071-2978922',
+    secondary: '+94 70 243 3566',
   },
   email: 'lovelaundry01@gmail.com',
   whatsapp: 'https://wa.me/94774200919',
