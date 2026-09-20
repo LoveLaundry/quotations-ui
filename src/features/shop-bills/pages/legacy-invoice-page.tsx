@@ -9,7 +9,6 @@ import { ErrorState } from '../../../components/ui/error-state'
 import { Skeleton } from '../../../components/ui/skeleton'
 import { ConfirmDialog } from '../../../components/ui/confirm-dialog'
 import { SyncStatusBar } from '../../../components/ui/sync-status-bar'
-import { SignatureUploadDialog } from '../../../components/ui/signature-upload-dialog'
 import { useDataGrid } from '../../../hooks/use-data-grid'
 import { COMPANY } from '../../../config/company'
 import {
@@ -67,13 +66,8 @@ const legacyPrintStyles = `
   .li-net { display: flex; align-items: center; justify-content: space-between; border: 1.5px solid #E01E31; border-radius: 6px; padding: 9px 16px; margin-top: 10px; }
   .li-net .label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #B71C1C; }
   .li-net .amount { font-size: 24px; font-weight: 800; color: #E01E31; }
-  .li-conditions { font-size: 9.5px; color: #4B5563; line-height: 1.35; margin-top: 10px; }
-  .li-conditions p { margin: 0 0 2px 0; font-weight: 700; color: #111; }
-  .li-conditions ul { margin: 0; padding-left: 15px; }
-  .li-conditions li { margin-bottom: 1px; }
   .li-footer { display: flex; justify-content: space-between; align-items: flex-end; padding: 8px 20px 12px; }
   .li-sig { width: 150px; text-align: center; font-size: 11px; color: #1F2937; font-weight: 600; }
-  .li-sig-img { display: block; height: 30px; max-width: 140px; margin: 0 auto; object-fit: contain; mix-blend-mode: multiply; }
   .li-sig-line { border-top: 1px solid #1F2937; padding-top: 4px; }
   .li-fill-line { border-bottom: 1px solid #1F2937; padding-bottom: 2px; margin-bottom: 4px; font-weight: 700; color: #111; }
 `
@@ -89,8 +83,6 @@ export default function LegacyInvoicePage() {
   const [saved, setSaved] = useState<LegacyInvoice | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<LegacyInvoice | null>(null)
   const [searchInput, setSearchInput] = useState('')
-  const [signatures, setSignatures] = useState<Record<string, string>>({})
-  const [printDialogOpen, setPrintDialogOpen] = useState(false)
 
   const updateRow = (id: string, field: keyof InvoiceRow, value: string | number) => {
     setRows(prev => prev.map(r => r.id === id ? { ...r, [field]: value } : r))
@@ -139,7 +131,6 @@ onSuccess: invoice => {
     setShopName('')
     setDescription('')
     setRows([makeRow()])
-    setSignatures({})
   }
 
   const handleLoad = (invoice: LegacyInvoice) => {
@@ -162,18 +153,6 @@ onSuccess: invoice => {
     contentRef: printRef,
     documentTitle: `Invoice-${saved?.shop_name || shopName || 'Invoice'}`,
   })
-
-  const requestPrint = () => setPrintDialogOpen(true)
-
-  const handlePrintConfirm = (sig: Record<string, string>) => {
-    setSignatures(sig)
-    setPrintDialogOpen(false)
-    setTimeout(() => handlePrint(), 180)
-  }
-
-  const sigSlots = [
-    { id: 'laundry', label: 'Laundry Sign', value: signatures.laundry },
-  ]
 
   const nowStr = new Date().toISOString().slice(0, 10).replace(/-/g, '')
   const previewNumber = saved?.invoice_number ?? `INV-${nowStr}-LEGACY`
@@ -204,7 +183,7 @@ onSuccess: invoice => {
           </div>
           <div className="flex flex-col items-start gap-2 sm:items-end">
             <div className="flex flex-wrap items-center gap-2">
-              <Button variant="outline" onClick={requestPrint} disabled={!shopName.trim() && !saved} className="gap-2 cursor-pointer">
+              <Button variant="outline" onClick={handlePrint} disabled={!shopName.trim() && !saved} className="gap-2 cursor-pointer">
                 <Printer size={16} /> Print
               </Button>
               <Button onClick={handleSave} disabled={!canSave} className="gap-2 cursor-pointer">
@@ -231,7 +210,7 @@ onSuccess: invoice => {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <Button size="sm" variant="outline" onClick={requestPrint} className="gap-1.5 cursor-pointer">
+            <Button size="sm" variant="outline" onClick={handlePrint} className="gap-1.5 cursor-pointer">
               <Printer size={14} /> Print {saved.invoice_number}
             </Button>
             <Button size="sm" variant="outline" onClick={handleNew} className="gap-1.5 cursor-pointer">
@@ -463,39 +442,22 @@ onSuccess: invoice => {
                 <span className="amount">{fmtMoney(printTotal)}</span>
               </div>
 
-              {/* Conditions */}
-              <div className="li-conditions">
-                <p>PAYMENT CONDITIONS:</p>
-                <ul>
-                  <li>All bills are payable within 7 days from the date of delivery, unless otherwise agreed.</li>
-                  <li>Payment may be made in cash at the counter or by bank transfer — please quote the invoice number as the reference.</li>
-                  <li>Garments will be released only after full payment is received.</li>
-                  <li>A deposit may be required for large or repeated orders.</li>
-                  <li>Hotel / guest-house accounts are settled on a monthly basis on prior written agreement.</li>
-                  <li>Please keep this invoice as proof of payment until the order is fully settled.</li>
-                </ul>
+              {/* Customer signature */}
+              <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'flex-end', marginTop: 34 }}>
+                <div className="li-sig">
+                  <div className="li-sig-line">Customer's Signature</div>
+                </div>
               </div>
             </div>
 
             {/* Footer */}
             <div className="li-footer">
-              <div className="li-sig">
-                {signatures.laundry && <img src={signatures.laundry} alt="Laundry sign" className="li-sig-img" />}
-                <div className="li-sig-line">Laundry Sign</div>
-              </div>
               <div className="li-sig"><div className="li-fill-line">{previewNumber}</div>Invoice Number</div>
               <div className="li-sig"><div className="li-fill-line">{new Date().toLocaleDateString('en-LK')}</div>Date</div>
             </div>
           </div>
         </div>
       </div>
-
-      <SignatureUploadDialog
-        open={printDialogOpen}
-        slots={sigSlots}
-        onClose={() => setPrintDialogOpen(false)}
-        onConfirm={handlePrintConfirm}
-      />
 
       <ConfirmDialog
         open={Boolean(deleteTarget)}
