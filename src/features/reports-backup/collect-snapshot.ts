@@ -87,8 +87,39 @@ function arrayRows(response: unknown): Record<string, unknown>[] {
   return []
 }
 
-function currentDayIndex(date: string): { start_date: string; end_date: string } {
-  return { start_date: date, end_date: date }
+/**
+ * Month-wide server query window (start = first of month, end = first of next
+ * month). Backends filter date fields as STRINGS, so an equal start/end range
+ * (startDate === endDate === 'YYYY-MM-DD') wrongly excludes stored datetime
+ * values later that day. Fetching the full month sidesteps that while still
+ * letting us pick the exact day client-side.
+ */
+function monthWindow(date: string): { start_date: string; end_date: string } {
+  const [y, m] = date.split('-').map(Number)
+  return {
+    start_date: `${y}-${pad(m || 1)}-01`,
+    end_date: toDay(new Date(y, m || 1, 1)),
+  }
+}
+
+/** Client-side filter: keep only rows whose date field matches the target day. */
+function onDay(rows: Record<string, unknown>[], date: string, candidates: string[]): Record<string, unknown>[] {
+  return rows.filter(r => dayOf(pick(r, candidates)) === date)
+}
+
+/** Fetches several pages of a list endpoint (bounded). */
+async function fetchAll(
+  fetchPage: (offset: number, limit: number) => Promise<unknown>,
+  pageSize: number,
+  maxPages = 8
+): Promise<Record<string, unknown>[]> {
+  const all: Record<string, unknown>[] = []
+  for (let page = 0; page < maxPages; page++) {
+    const rows = arrayRows(await fetchPage(page * pageSize, pageSize))
+    all.push(...rows)
+    if (rows.length < pageSize) break
+  }
+  return all
 }
 
 interface SourceOutput<T> {
@@ -96,6 +127,8 @@ interface SourceOutput<T> {
   label: string
   ok: boolean
   error?: string
+  /** Raw rows returned by the API before date/day filtering. */
+  fetched: number
   records: T[]
 }
 
@@ -128,6 +161,7 @@ function statusOf(output: SourceOutput<unknown> & { count?: number }) {
     label: output.label,
     ok: output.ok,
     error: output.error,
+    fetched: output.fetched,
     count: output.records.length,
   }
 }
@@ -167,9 +201,13 @@ async function fetchCompany(): Promise<CompanyBrief> {
 
 async function fetchIncome(date: string): Promise<IncomeOutput> {
   try {
-    const res = await transactionsApi.list({ ...currentDayIndex(date), limit: 1000 })
-    const records = arrayRows(res)
-      .filter(r => dayOf(pick(r, ['transaction_date', 'date', 'created_at'])) === date)
+    const { start_date, end_date } = monthWindow(date)
+    const rows = await fetchAll(
+      (offset, limit) => transactionsApi.list({ start_date, end_date, limit, offset }),
+      1000
+    )
+    const fetched = rows.length
+    const records = onDay(rows, date, ['transaction_date', 'date', 'created_at'])
       .map<IncomeRecord>(r => ({
         id: String(pick(r, ['id', '_id', 'transaction_id']) ?? ''),
         date,
@@ -177,16 +215,17 @@ async function fetchIncome(date: string): Promise<IncomeOutput> {
         description: toStringValue(pick(r, ['description', 'particulars', 'notes'])),
         source: toStringValue(pick(r, ['source'])),
         payment_method: toStringValue(pick(r, ['payment_method', 'method'])),
-        amount: toAmount(pick(r, ['amount', 'total', 'value'])),
+        amount: toAmount(pick(r, ['total_amount', 'amount', 'total', 'value'])),
       }))
     const total = records.reduce((sum, r) => sum + r.amount, 0)
-    return { key: 'income', label: 'Income (ledger)', ok: true, records, total }
+    return { key: 'income', label: 'Income (ledger)', ok: true, fetched, records, total }
   } catch (err: unknown) {
     return {
       key: 'income',
       label: 'Income (ledger)',
       ok: false,
       error: errorText(err),
+      fetched: 0,
       records: [],
       total: 0,
     }
@@ -195,9 +234,13 @@ async function fetchIncome(date: string): Promise<IncomeOutput> {
 
 async function fetchExpenses(date: string): Promise<ExpenseOutput> {
   try {
-    const res = await expensesApi.list({ ...currentDayIndex(date), limit: 500 })
-    const records = arrayRows(res)
-      .filter(r => dayOf(pick(r, ['date', 'expense_date', 'created_at', 'paid_date'])) === date)
+    const { start_date, end_date } = monthWindow(date)
+    const rows = await fetchAll(
+      (offset, limit) => expensesApi.list({ start_date, end_date, limit, offset }),
+      500
+    )
+    const fetched = rows.length
+    const records = onDay(rows, date, ['date', 'expense_date', 'created_at', 'paid_date'])
       .map<ExpenseRecord>(r => ({
         id: String(pick(r, ['id', '_id', 'expense_id']) ?? ''),
         date,
@@ -208,13 +251,14 @@ async function fetchExpenses(date: string): Promise<ExpenseOutput> {
         amount: toAmount(pick(r, ['amount', 'total', 'value'])),
       }))
     const total = records.reduce((sum, r) => sum + r.amount, 0)
-    return { key: 'expenses', label: 'Expenses', ok: true, records, total }
+    return { key: 'expenses', label: 'Expenses', ok: true, fetched, records, total }
   } catch (err: unknown) {
     return {
       key: 'expenses',
       label: 'Expenses',
       ok: false,
       error: errorText(err),
+      fetched: 0,
       records: [],
       total: 0,
     }
@@ -240,8 +284,9 @@ async function fetchAttendance(date: string): Promise<SourceOutput<AttendanceRec
   try {
     const employeeNames = await fetchEmployees()
     const res = await attendanceApi.listForDate(date)
-    const records = arrayRows(res)
-      .filter(r => dayOf(pick(r, ['date', 'attendance_date', 'created_at'])) === date)
+    const rows = arrayRows(res)
+    const fetched = rows.length
+    const records = onDay(rows, date, ['date', 'attendance_date', 'created_at'])
       .map<AttendanceRecord>(r => {
         const empId = String(pick(r, ['employee_id', 'employee', 'id', '_id']) ?? '')
         return {
@@ -255,9 +300,9 @@ async function fetchAttendance(date: string): Promise<SourceOutput<AttendanceRec
           overtime_hours: toAmount(pick(r, ['overtime_hours', 'ot_hours'])),
         }
       })
-    return { key: 'attendance', label: 'Attendance', ok: true, records }
+    return { key: 'attendance', label: 'Attendance', ok: true, fetched, records }
   } catch (err: unknown) {
-    return { key: 'attendance', label: 'Attendance', ok: false, error: errorText(err), records: [] }
+    return { key: 'attendance', label: 'Attendance', ok: false, error: errorText(err), fetched: 0, records: [] }
   }
 }
 
@@ -265,66 +310,71 @@ async function fetchSalarySlips(date: string): Promise<SourceOutput<SalarySlipRe
   try {
     const [year, month] = date.split('-').map(Number)
     const res = await salaryApi.listSlips({ year, month, limit: 500 })
-    const records = arrayRows(res)
-      .filter(r => {
-        const onDay = [
-          pick(r, ['paid_date', 'date', 'created_at', 'settled_date']),
-        ].find(v => dayOf(v) === date)
-        return onDay !== undefined
-      })
+    const rows = arrayRows(res)
+    const fetched = rows.length
+    const records = rows
+      .filter(r => dayOf(pick(r, ['paid_date', 'date', 'created_at', 'settled_date'])) === date)
       .map<SalarySlipRecord>(r => ({
         slip_id: String(pick(r, ['id', '_id', 'slip_id']) ?? ''),
         employee_name: toStringValue(pick(r, ['employee_name', 'name', 'full_name'])) ?? 'Unknown',
         period_start: toStringValue(pick(r, ['period_start', 'start_date'])) ?? '',
         period_end: toStringValue(pick(r, ['period_end', 'end_date'])) ?? '',
-        gross: toAmount(pick(r, ['gross', 'gross_salary', 'total_earnings'])),
-        deductions: toAmount(pick(r, ['deductions', 'total_deductions', 'deduction_total'])),
-        net: toAmount(pick(r, ['net', 'net_pay', 'net_salary', 'take_home'])),
+        gross: toAmount(pick(r, ['total_earnings', 'gross', 'gross_salary'])),
+        deductions: toAmount(pick(r, ['total_deductions', 'deductions', 'deduction_total'])),
+        net: toAmount(pick(r, ['net_salary', 'net', 'net_pay', 'take_home'])),
         status: String(pick(r, ['status']) ?? 'FINALIZED').toUpperCase(),
         paid_date: toStringValue(pick(r, ['paid_date'])),
       }))
-    return { key: 'salary', label: 'Salary slips (payments)', ok: true, records }
+    return { key: 'salary', label: 'Salary slips (payments)', ok: true, fetched, records }
   } catch (err: unknown) {
-    return { key: 'salary', label: 'Salary slips (payments)', ok: false, error: errorText(err), records: [] }
+    return { key: 'salary', label: 'Salary slips (payments)', ok: false, error: errorText(err), fetched: 0, records: [] }
   }
 }
 
 async function fetchBills(date: string): Promise<SourceOutput<BillRecord>> {
   try {
+    const { start_date, end_date } = monthWindow(date)
     const res = await billsApi.get('/bills', {
       params: {
-        date_from: `${date}T00:00:00`,
-        date_to: `${date}T23:59:59`,
+        date_from: `${start_date}T00:00:00`,
+        date_to: `${end_date}T00:00:00`,
         limit: 5000,
       },
     })
-    const records = arrayRows(res)
-      .filter(r => dayOf(pick(r, ['date', 'bill_date', 'issue_date', 'created_at'])) === date)
+    const rows = arrayRows(res)
+    const fetched = rows.length
+    const records = onDay(rows, date, ['created_at', 'issue_date', 'bill_date', 'date'])
       .map<BillRecord>(r => {
         const items = pick(r, ['items'])
-        const itemsCount = Array.isArray(items) ? items.length : toAmount(pick(r, ['num_items', 'items_count']))
+        const itemsCount =
+          toAmount(pick(r, ['total_quantity', 'num_items', 'items_count'])) ||
+          (Array.isArray(items) ? items.length : 0)
         return {
           bill_id: String(pick(r, ['id', '_id', 'bill_id', 'quotation_id']) ?? ''),
           client_name: toStringValue(pick(r, ['client_name', 'customer_name', 'client', 'name'])) ?? 'Unknown',
           date,
           gate_pass_id: toStringValue(pick(r, ['gate_pass_id', 'gp_id'])),
           items_count: itemsCount,
-          total: toAmount(pick(r, ['total', 'grand_total', 'amount', 'invoice_total'])),
-          balance: toAmount(pick(r, ['balance', 'balance_due', 'amount_due', 'outstanding'])),
+          total: toAmount(pick(r, ['grand_total', 'total_amount', 'total', 'amount'])),
+          balance: toAmount(pick(r, ['outstanding_amount', 'balance', 'balance_due', 'amount_due'])),
           payment_status: String(pick(r, ['payment_status', 'status']) ?? '').toUpperCase(),
         }
       })
-    return { key: 'bills', label: 'Bills', ok: true, records }
+    return { key: 'bills', label: 'Bills', ok: true, fetched, records }
   } catch (err: unknown) {
-    return { key: 'bills', label: 'Bills', ok: false, error: errorText(err), records: [] }
+    return { key: 'bills', label: 'Bills', ok: false, error: errorText(err), fetched: 0, records: [] }
   }
 }
 
 async function fetchMgmtPayments(date: string): Promise<SourceOutput<PaymentRecord>> {
   try {
-    const res = await mgmtApi.get('/api/payments', { params: { ...currentDayIndex(date), limit: 500 } })
-    const records = arrayRows(res)
-      .filter(r => dayOf(pick(r, ['payment_date', 'date', 'created_at'])) === date)
+    const { start_date, end_date } = monthWindow(date)
+    const rows = await fetchAll(
+      (offset, limit) => mgmtApi.get('/api/payments', { params: { start_date, end_date, limit, offset } }),
+      500
+    )
+    const fetched = rows.length
+    const records = onDay(rows, date, ['payment_date', 'date', 'created_at'])
       .map<PaymentRecord>(r => ({
         id: String(pick(r, ['id', '_id', 'payment_id']) ?? ''),
         customer: toStringValue(pick(r, ['customer_name', 'customer', 'client_name', 'name'])),
@@ -333,46 +383,48 @@ async function fetchMgmtPayments(date: string): Promise<SourceOutput<PaymentReco
         ref: toStringValue(pick(r, ['reference', 'ref_no', 'receipt_no'])),
         amount: toAmount(pick(r, ['amount', 'total', 'value'])),
       }))
-    return { key: 'payments', label: 'Payments received', ok: true, records }
+    return { key: 'payments', label: 'Payments received', ok: true, fetched, records }
   } catch (err: unknown) {
-    return { key: 'payments', label: 'Payments received', ok: false, error: errorText(err), records: [] }
+    return { key: 'payments', label: 'Payments received', ok: false, error: errorText(err), fetched: 0, records: [] }
   }
 }
 
 async function fetchShopBills(date: string): Promise<SourceOutput<ShopBillRecord>> {
   try {
-    const res = await billsApi.get('/shop-bills', { params: { limit: 200 } })
-    const records = arrayRows(res)
-      .filter(r => dayOf(pick(r, ['created_at', 'date', 'bill_date', 'issue_date'])) === date)
+    const res = await billsApi.get('/shop-bills', { params: { limit: 500 } })
+    const rows = arrayRows(res)
+    const fetched = rows.length
+    const records = onDay(rows, date, ['created_at', 'date', 'bill_date', 'issue_date'])
       .map<ShopBillRecord>(r => ({
         bill_id: String(pick(r, ['id', '_id', 'bill_id']) ?? ''),
         client_name: toStringValue(pick(r, ['client_name', 'customer_name', 'name'])) ?? 'Unknown',
         date,
-        total: toAmount(pick(r, ['total', 'grand_total', 'amount'])),
-        balance: toAmount(pick(r, ['balance', 'balance_due', 'amount_due'])),
+        total: toAmount(pick(r, ['grand_total', 'total_amount', 'total', 'amount'])),
+        balance: toAmount(pick(r, ['outstanding_amount', 'balance', 'balance_due', 'amount_due'])),
         status: String(pick(r, ['status', 'payment_status']) ?? '').toUpperCase(),
       }))
-    return { key: 'shop_bills', label: 'Shop bills', ok: true, records }
+    return { key: 'shop_bills', label: 'Shop bills', ok: true, fetched, records }
   } catch (err: unknown) {
-    return { key: 'shop_bills', label: 'Shop bills', ok: false, error: errorText(err), records: [] }
+    return { key: 'shop_bills', label: 'Shop bills', ok: false, error: errorText(err), fetched: 0, records: [] }
   }
 }
 
 async function fetchLegacyInvoices(date: string): Promise<SourceOutput<LegacyInvoiceRecord>> {
   try {
-    const res = await billsApi.get('/shop-bills/legacy', { params: { limit: 200 } })
-    const records = arrayRows(res)
-      .filter(r => dayOf(pick(r, ['date', 'created_at', 'issue_date', 'invoice_date'])) === date)
+    const res = await billsApi.get('/shop-bills/legacy', { params: { limit: 300 } })
+    const rows = arrayRows(res)
+    const fetched = rows.length
+    const records = onDay(rows, date, ['created_at', 'date', 'issue_date', 'invoice_date'])
       .map<LegacyInvoiceRecord>(r => ({
-        invoice_id: String(pick(r, ['id', '_id', 'invoice_id']) ?? ''),
-        client_name: toStringValue(pick(r, ['client_name', 'customer_name', 'name'])) ?? 'Unknown',
+        invoice_id: String(pick(r, ['invoice_number', 'id', '_id', 'invoice_id']) ?? ''),
+        client_name: toStringValue(pick(r, ['shop_name', 'client_name', 'customer_name', 'name'])) ?? 'Unknown',
         date,
-        total: toAmount(pick(r, ['total', 'grand_total', 'amount'])),
+        total: toAmount(pick(r, ['grand_total', 'total_amount', 'total', 'amount'])),
         status: toStringValue(pick(r, ['status', 'payment_status'])),
       }))
-    return { key: 'legacy_invoices', label: 'Legacy invoices', ok: true, records }
+    return { key: 'legacy_invoices', label: 'Legacy invoices', ok: true, fetched, records }
   } catch (err: unknown) {
-    return { key: 'legacy_invoices', label: 'Legacy invoices', ok: false, error: errorText(err), records: [] }
+    return { key: 'legacy_invoices', label: 'Legacy invoices', ok: false, error: errorText(err), fetched: 0, records: [] }
   }
 }
 
@@ -381,7 +433,7 @@ function itemRows(value: unknown): { name: string; quantity: number }[] {
   return value.map((item: Record<string, unknown>) => ({
     name:
       toStringValue(pick(item, ['item_name', 'name', 'linen_type', 'linen_category', 'description'])) ?? '—',
-    quantity: toAmount(pick(item, ['quantity', 'qty', 'count', 'pieces'])),
+    quantity: toAmount(pick(item, ['received_qty', 'quantity', 'qty', 'count', 'pieces'])),
   }))
 }
 
@@ -389,16 +441,23 @@ function totalPieces(items: { name: string; quantity: number }[]): number {
   return items.reduce((sum, i) => sum + i.quantity, 0)
 }
 
+function customerFrom(r: Record<string, unknown>): string {
+  return (
+    toStringValue(pick(r, ['client_name', 'guest_name', 'customer_name', 'customer', 'name', 'guest'])) ?? 'Unknown'
+  )
+}
+
 async function fetchGatePasses(date: string): Promise<SourceOutput<GatePassRecord>> {
   try {
     const res = await billsApi.get('/gatepasses')
-    const records = arrayRows(res)
-      .filter(r => dayOf(pick(r, ['receiving_date', 'date', 'created_at'])) === date)
+    const rows = arrayRows(res)
+    const fetched = rows.length
+    const records = onDay(rows, date, ['receiving_date', 'date', 'created_at'])
       .map<GatePassRecord>(r => {
         const items = itemRows(pick(r, ['items', 'linen']))
         return {
           gp_id: String(pick(r, ['gate_pass_id', 'id', '_id', 'gp_id']) ?? ''),
-          customer: toStringValue(pick(r, ['guest_name', 'customer_name', 'customer', 'name', 'guest'])) ?? 'Unknown',
+          customer: customerFrom(r),
           receiving_date: date,
           delivered: Boolean(pick(r, ['is_delivered', 'delivered'])),
           delivered_date: toStringValue(pick(r, ['delivered_date'])),
@@ -406,57 +465,60 @@ async function fetchGatePasses(date: string): Promise<SourceOutput<GatePassRecor
           items,
         }
       })
-    return { key: 'gatepasses', label: 'Gate passes', ok: true, records }
+    return { key: 'gatepasses', label: 'Gate passes', ok: true, fetched, records }
   } catch (err: unknown) {
-    return { key: 'gatepasses', label: 'Gate passes', ok: false, error: errorText(err), records: [] }
+    return { key: 'gatepasses', label: 'Gate passes', ok: false, error: errorText(err), fetched: 0, records: [] }
   }
 }
 
 async function fetchDeliveries(date: string): Promise<SourceOutput<DeliveryRecord>> {
   try {
     const res = await billsApi.get('/deliveries')
-    const records = arrayRows(res)
-      .filter(r => dayOf(pick(r, ['delivery_date', 'date', 'created_at'])) === date)
+    const rows = arrayRows(res)
+    const fetched = rows.length
+    const records = onDay(rows, date, ['delivery_date', 'date', 'created_at'])
       .map<DeliveryRecord>(r => {
         const items = itemRows(pick(r, ['items', 'linen', 'deliveries']))
         return {
           delivery_id: String(pick(r, ['delivery_id', 'id', '_id']) ?? ''),
           gp_id: toStringValue(pick(r, ['gate_pass_id', 'gp_id'])),
-          customer: toStringValue(pick(r, ['guest_name', 'customer_name', 'customer', 'name', 'guest'])) ?? 'Unknown',
+          customer: customerFrom(r),
           delivery_date: date,
           total_pieces: totalPieces(items),
           items,
         }
       })
-    return { key: 'deliveries', label: 'Deliveries', ok: true, records }
+    return { key: 'deliveries', label: 'Deliveries', ok: true, fetched, records }
   } catch (err: unknown) {
-    return { key: 'deliveries', label: 'Deliveries', ok: false, error: errorText(err), records: [] }
+    return { key: 'deliveries', label: 'Deliveries', ok: false, error: errorText(err), fetched: 0, records: [] }
   }
 }
 
 async function fetchReturns(date: string): Promise<SourceOutput<ReturnRecord>> {
   try {
     const res = await billsApi.get('/returns')
-    const records = arrayRows(res)
-      .filter(r => dayOf(pick(r, ['date', 'return_date', 'created_at'])) === date)
+    const rows = arrayRows(res)
+    const fetched = rows.length
+    const records = onDay(rows, date, ['date', 'return_date', 'created_at'])
       .map<ReturnRecord>(r => ({
         return_id: String(pick(r, ['return_id', 'id', '_id']) ?? ''),
         gp_id: toStringValue(pick(r, ['gate_pass_id', 'gp_id'])),
-        customer: toStringValue(pick(r, ['guest_name', 'customer_name', 'customer', 'name', 'guest'])) ?? 'Unknown',
+        customer: customerFrom(r),
         date,
         items: itemRows(pick(r, ['items', 'linen'])),
       }))
-    return { key: 'returns', label: 'Returns', ok: true, records }
+    return { key: 'returns', label: 'Returns', ok: true, fetched, records }
   } catch (err: unknown) {
-    return { key: 'returns', label: 'Returns', ok: false, error: errorText(err), records: [] }
+    return { key: 'returns', label: 'Returns', ok: false, error: errorText(err), fetched: 0, records: [] }
   }
 }
 
 async function fetchLinenStatus(): Promise<SourceOutput<LinenStatusCount> & { counts: LinenStatusCount | null }> {
   try {
-    const res = await billsApi.get('/linens', { params: { limit: 1000 } })
+    const res = await billsApi.get('/linens', { params: { le: 5000 } })
     const data = (res?.data ?? res) as Record<string, unknown>
     const rows = arrayRows(res)
+    const fetched = rows.length
     const totalFromApi = toAmount(pick(data, ['total']))
     const truncated = totalFromApi > rows.length
     const counts = {
@@ -482,6 +544,7 @@ async function fetchLinenStatus(): Promise<SourceOutput<LinenStatusCount> & { co
       key: 'linen_status',
       label: 'Linen stock status',
       ok: true,
+      fetched,
       records: [counts as unknown as LinenStatusCount],
       counts,
     }
@@ -491,6 +554,7 @@ async function fetchLinenStatus(): Promise<SourceOutput<LinenStatusCount> & { co
       label: 'Linen stock status',
       ok: false,
       error: errorText(err),
+      fetched: 0,
       records: [],
       counts: null,
     }
@@ -544,6 +608,7 @@ export async function collectDaySnapshot(date: string): Promise<DailyReportSnaps
       key: 'company',
       label: 'Company settings',
       ok: true,
+      fetched: 1,
       count: 1,
     },
   ]
@@ -554,6 +619,10 @@ export async function collectDaySnapshot(date: string): Promise<DailyReportSnaps
       report_date: date,
       generated_at: new Date().toISOString(),
       generator: 'Lovelaundry Manager (quotations-ui)',
+      api_bases: {
+        mgmt_api: import.meta.env.VITE_MGMT_API_URL ?? 'http://localhost:8001',
+        bills_api: import.meta.env.VITE_BILLS_API_URL ?? 'http://localhost:8001',
+      },
     },
     company,
     income: income.records,

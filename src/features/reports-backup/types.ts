@@ -3,6 +3,7 @@ export interface SourceStatus {
   label: string
   ok: boolean
   error?: string
+  fetched: number
   count: number
 }
 
@@ -136,6 +137,10 @@ export interface DailyReportSnapshot {
     report_date: string
     generated_at: string
     generator: string
+    api_bases: {
+      mgmt_api: string
+      bills_api: string
+    }
   }
   company: CompanyBrief
   income: IncomeRecord[]

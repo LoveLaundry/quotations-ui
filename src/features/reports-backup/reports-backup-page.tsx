@@ -163,6 +163,12 @@ export default function ReportsBackupPage() {
         `Snapshot ready: ${okCount}/${snapshot.sources.length} sources` +
           (snapshot.sources.some(s => !s.ok) ? ` (unavailable: ${snapshot.sources.filter(s => !s.ok).map(s => s.label).join(', ')})` : '')
       )
+      for (const s of snapshot.sources) {
+        appendLog(
+          `  ${s.ok ? 'ok  ' : 'FAIL'} ${s.label}: fetched ${s.fetched} → kept ${s.count}${s.error ? ` (${s.error})` : ''}`
+        )
+      }
+      appendLog(`API bases → ${snapshot.meta.api_bases.mgmt_api} · ${snapshot.meta.api_bases.bills_api}`)
       appendLog(`Ledger: income ${fmtMoney(snapshot.totals.income)} • expenses ${fmtMoney(snapshot.totals.expenses)} • net ${fmtMoney(snapshot.totals.net)}`)
 
       const files: WrittenFile[] = []
@@ -493,7 +499,7 @@ export default function ReportsBackupPage() {
                       }`}
                     >
                       {s.ok ? <CheckCircle className="h-3 w-3" /> : <WarningCircle className="h-3 w-3" />}
-                      {s.label} {s.ok ? `· ${s.count}` : '· failed'}
+                      {s.label} {s.ok ? `· ${s.fetched}→${s.count}` : '· failed'}
                     </span>
                   ))}
                 </div>
