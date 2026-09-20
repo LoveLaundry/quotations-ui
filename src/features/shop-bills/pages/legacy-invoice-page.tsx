@@ -172,8 +172,7 @@ onSuccess: invoice => {
   }
 
   const sigSlots = [
-    { id: 'cashier', label: 'Cashier Signature', value: signatures.cashier },
-    { id: 'customer', label: 'Customer Signature', value: signatures.customer },
+    { id: 'laundry', label: 'Laundry Sign', value: signatures.laundry },
   ]
 
   const nowStr = new Date().toISOString().slice(0, 10).replace(/-/g, '')
@@ -481,15 +480,11 @@ onSuccess: invoice => {
             {/* Footer */}
             <div className="li-footer">
               <div className="li-sig">
-                {signatures.cashier && <img src={signatures.cashier} alt="Cashier signature" className="li-sig-img" />}
-                <div className="li-sig-line">Cashier Signature</div>
+                {signatures.laundry && <img src={signatures.laundry} alt="Laundry sign" className="li-sig-img" />}
+                <div className="li-sig-line">Laundry Sign</div>
               </div>
               <div className="li-sig"><div className="li-fill-line">{previewNumber}</div>Invoice Number</div>
               <div className="li-sig"><div className="li-fill-line">{new Date().toLocaleDateString('en-LK')}</div>Date</div>
-              <div className="li-sig">
-                {signatures.customer && <img src={signatures.customer} alt="Customer signature" className="li-sig-img" />}
-                <div className="li-sig-line">Customer Signature</div>
-              </div>
             </div>
           </div>
         </div>
