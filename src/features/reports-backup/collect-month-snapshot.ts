@@ -367,7 +367,15 @@ function buildDaily(data: MonthlyData): MonthlyReportSnapshot['daily'] {
   for (const r of data.salary_slips) bump(r.paid_date ?? '', 'salary_paid', r.net)
   for (const r of data.gatepasses) bump(r.receiving_date, 'gatepass_pieces', r.total_pieces)
   for (const r of data.deliveries) bump(r.delivery_date, 'deliveries_pieces', r.total_pieces)
-  for (const r of data.gatepasses) if (r.marked_delivered) bump(r.receiving_date, 'deliveries_pieces', r.total_pieces)
+  // Mark-delivered gate passes count as delivered, but only add the pieces that
+  // were not already recorded against that same gate pass (no double counting).
+  const recordedByGp = new Map<string, number>()
+  for (const d of data.deliveries) recordedByGp.set(d.gp_id ?? '', (recordedByGp.get(d.gp_id ?? '') ?? 0) + d.total_pieces)
+  for (const r of data.gatepasses) {
+    if (!r.marked_delivered) continue
+    const extra = Math.max(0, r.total_pieces - (recordedByGp.get(r.gp_id ?? '') ?? 0))
+    if (extra > 0) bump(r.receiving_date, 'deliveries_pieces', extra)
+  }
   for (const r of data.attendance) {
     bump(r.date, 'present', r.status.includes('PRESENT') || ['HALF_DAY', 'HALFDAY', 'HALF'].includes(r.status) ? 1 : 0)
     bump(r.date, 'leave', r.status.includes('LEAVE') ? 1 : 0)
@@ -440,9 +448,11 @@ export async function collectMonthSnapshot(period: string): Promise<MonthlyRepor
   const paymentsTotal = payments.records.reduce((s, p) => s + p.amount, 0)
   const salaryPaid = salary.total
   const gpPieces = gatepasses.records.reduce((s, g) => s + g.total_pieces, 0)
+  const recordedByGp = new Map<string, number>()
+  for (const d of deliveries.records) recordedByGp.set(d.gp_id ?? '', (recordedByGp.get(d.gp_id ?? '') ?? 0) + d.total_pieces)
   const delPieces =
     deliveries.records.reduce((s, d) => s + d.total_pieces, 0) +
-    gatepasses.records.reduce((s, g) => s + (g.marked_delivered ? g.total_pieces : 0), 0)
+    gatepasses.records.reduce((s, g) => s + (g.marked_delivered ? Math.max(0, g.total_pieces - (recordedByGp.get(g.gp_id ?? '') ?? 0)) : 0), 0)
 
   const sources = [
     statusOf(income),

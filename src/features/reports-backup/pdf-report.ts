@@ -88,9 +88,11 @@ export async function generateReportPdf(snapshot: DailyReportSnapshot): Promise<
   const paymentsTotal = snapshot.payments.reduce((sum, p) => sum + p.amount, 0)
   const salaryTotal = snapshot.salary_slips.reduce((sum, s) => sum + s.net, 0)
   const gpPieces = snapshot.gatepasses.reduce((sum, g) => sum + g.total_pieces, 0)
+  const recordedByGp = new Map<string, number>()
+  for (const d of snapshot.deliveries) recordedByGp.set(d.gp_id ?? '', (recordedByGp.get(d.gp_id ?? '') ?? 0) + d.total_pieces)
   const delPieces =
     snapshot.deliveries.reduce((sum, d) => sum + d.total_pieces, 0) +
-    snapshot.gatepasses.reduce((sum, g) => sum + (g.marked_delivered ? g.total_pieces : 0), 0)
+    snapshot.gatepasses.reduce((sum, g) => sum + (g.marked_delivered ? Math.max(0, g.total_pieces - (recordedByGp.get(g.gp_id ?? '') ?? 0)) : 0), 0)
   const netMargin = pct(totals.net, totals.income)
   const expenseRatio = pct(totals.expenses, totals.income)
   const collectedPct = pct(billsTotal - billsBalance, billsTotal)
@@ -453,7 +455,7 @@ export async function generateReportPdf(snapshot: DailyReportSnapshot): Promise<
         widths: ['*', 85, '*', 60],
         alignments: ['left', 'left', 'left', 'right'],
         body: snapshot.deliveries.map(d => [d.delivery_id || '—', d.gp_id ?? '—', d.customer, String(d.total_pieces)]),
-        totals: totalsRow('Total', '', [String(delPieces), '']),
+        totals: totalsRow('Total', '', [String(snapshot.deliveries.reduce((sum, d) => sum + d.total_pieces, 0)), '']),
       })
     )
   }

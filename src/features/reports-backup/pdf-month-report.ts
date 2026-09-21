@@ -468,7 +468,7 @@ export async function generateMonthReportPdf(snapshot: MonthlyReportSnapshot): P
         widths: [54, '*', 70, '*', 56],
         alignments: ['left', 'left', 'left', 'left', 'right'],
         body: snapshot.deliveries.map(d => [d.delivery_date, d.delivery_id || '—', d.gp_id ?? '—', d.customer, String(d.total_pieces)]),
-        totals: totalsRow('Total', '', [String(totals.deliveries_pieces), '']),
+        totals: totalsRow('Total', '', [String(snapshot.deliveries.reduce((s, d) => s + d.total_pieces, 0)), '']),
       })
     )
   }
