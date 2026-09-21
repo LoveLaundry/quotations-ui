@@ -15,7 +15,7 @@ export const shopBillService = {
     billsApi.patch<ShopBill>(`/shop-bills/${id}`, data).then((r: any) => r.data),
 
   recordPayment: (id: string, data: ShopBillPayment) =>
-    billsApi.post<ShopBill>(`/shop-bills/${id}/payment`, data).then((r: any) => r.data),
+    billsApi.post<ShopBill>(`/shop-bills/${id}/record-payment`, data).then((r: any) => r.data),
 
   delete: (id: string) =>
     billsApi.delete(`/shop-bills/${id}`).then((r: any) => r.data),
@@ -47,11 +47,11 @@ export const shopBillService = {
 
   // Feature 5: Quick Bill
   quickBill: (clientName: string, templateId?: string) =>
-    billsApi.post<ShopBill>('/shop-bills/quick', { client_name: clientName, template_id: templateId }).then((r: any) => r.data),
+    billsApi.post<ShopBill>('/shop-bills/quick-bill', { client_name: clientName, template_id: templateId }).then((r: any) => r.data),
 
   // Feature 5b: Manual Bill
   manualBill: (clientName: string, amount: number, date?: string, notes?: string) =>
-    billsApi.post<ShopBill>('/shop-bills/manual', { client_name: clientName, amount, date, notes }).then((r: any) => r.data),
+    billsApi.post<ShopBill>('/shop-bills/manual-bill', { client_name: clientName, amount, date, notes }).then((r: any) => r.data),
 
   // Legacy invoices (manually-entered, must always be persisted)
   createLegacyInvoice: (data: LegacyInvoiceCreate) =>
@@ -68,11 +68,11 @@ export const shopBillService = {
 
   // Feature 6: Split
   split: (billId: string, itemIndices: number[]) =>
-    billsApi.post<ShopBill>(`/shop-bills/${billId}/split`, { item_indices: itemIndices }).then((r: any) => r.data),
+    billsApi.post<ShopBill>(`/shop-bills/${billId}/split-bill`, { item_indices: itemIndices }).then((r: any) => r.data),
 
-  // Feature 7: Merge
+  // Feature 7: Merge (first id is the base bill; backend route is bill-scoped)
   merge: (billIds: string[]) =>
-    billsApi.post<ShopBill>('/shop-bills/merge', { bill_ids: billIds }).then((r: any) => r.data),
+    billsApi.post<ShopBill>(`/shop-bills/${billIds[0]}/merge-bills`, { bill_ids: billIds }).then((r: any) => r.data),
 
   // Feature 8: Recurring
   makeRecurring: (billId: string, interval: string, endDate?: string) =>
@@ -98,11 +98,11 @@ export const shopBillService = {
 
   // Feature 13: Client Statement
   getClientStatement: (clientName: string) =>
-    billsApi.get(`/shop-bills/client-statement/${encodeURIComponent(clientName)}`).then((r: any) => r.data),
+    billsApi.get(`/shop-bills/clients/${encodeURIComponent(clientName)}/statement`).then((r: any) => r.data),
 
   // Feature 14: Revenue Report
   getRevenueReport: (params?: { start_date?: string; end_date?: string; group_by?: string }) =>
-    billsApi.get('/shop-bills/reports/revenue', { params }).then((r: any) => r.data),
+    billsApi.get('/shop-bills/stats/revenue', { params }).then((r: any) => r.data),
 
   // Feature 15: Tax Report
   getTaxReport: (params?: { start_date?: string; end_date?: string }) =>
@@ -118,11 +118,11 @@ export const shopBillService = {
 
   // Feature 18: Status Counts
   getStatusCounts: () =>
-    billsApi.get('/shop-bills/stats/status-counts').then((r: any) => r.data),
+    billsApi.get('/shop-bills/stats/by-status').then((r: any) => r.data),
 
   // Feature 19: Client Summary
   getClientSummary: (limit: number = 20) =>
-    billsApi.get('/shop-bills/stats/client-summary', { params: { limit } }).then((r: any) => r.data),
+    billsApi.get('/shop-bills/stats/by-client', { params: { limit } }).then((r: any) => r.data),
 
   // Feature 20: Payment Summary
   getPaymentSummary: () =>
@@ -130,7 +130,7 @@ export const shopBillService = {
 
   // Feature 21: Audit Trail
   getAuditTrail: (billId?: string, limit: number = 50) =>
-    billsApi.get('/shop-bills/audit-trail', { params: { bill_id: billId, limit } }).then((r: any) => r.data),
+    billsApi.get(`/shop-bills/audit-trail/${billId ?? ''}`, { params: { limit } }).then((r: any) => r.data),
 
   // Feature 22: Client Search
   searchClients: (q: string) =>
@@ -142,7 +142,7 @@ export const shopBillService = {
 
   // Feature 24: Export Selected
   exportSelected: (billIds: string[]) =>
-    billsApi.post('/shop-bills/export/selected', { bill_ids: billIds }).then((r: any) => r.data),
+    billsApi.post('/shop-bills/export/csv-selected', { bill_ids: billIds }, { responseType: 'blob' }).then((r: any) => r.data),
 
   // Feature 25: Bulk Mark Paid
   bulkMarkPaid: (billIds: string[]) =>
@@ -158,7 +158,7 @@ export const shopBillService = {
 
   // Feature 28: Update Notes
   updateNotes: (billId: string, notes: string) =>
-    billsApi.patch(`/shop-bills/${billId}/notes`, { notes }).then((r: any) => r.data),
+    billsApi.post(`/shop-bills/${billId}/notes`, { notes }).then((r: any) => r.data),
 
   // Feature 29: Recent Activity
   getRecentActivity: (limit: number = 20) =>
@@ -190,7 +190,7 @@ export const shopBillService = {
 
   // Feature 36: Compare
   compare: (billIds: string[]) =>
-    billsApi.post('/shop-bills/compare', { bill_ids: billIds }).then((r: any) => r.data),
+    billsApi.post('/shop-bills/diff', { bill_id_1: billIds[0], bill_id_2: billIds[1] }).then((r: any) => r.data),
 
   // Feature 37: Bulk Delete
   bulkDelete: (billIds: string[]) =>
@@ -198,23 +198,23 @@ export const shopBillService = {
 
   // Feature 38: Mark Delivered
   deliver: (billId: string) =>
-    billsApi.post(`/shop-bills/${billId}/deliver`).then((r: any) => r.data),
+    billsApi.post(`/shop-bills/${billId}/mark-delivered`).then((r: any) => r.data),
 
   // Feature 39: Add Tag
   addTag: (billId: string, tag: string) =>
-    billsApi.post(`/shop-bills/${billId}/tags`, { tag }).then((r: any) => r.data),
+    billsApi.post(`/shop-bills/${billId}/tag`, { tag }).then((r: any) => r.data),
 
   // Feature 40: Remove Tag
   removeTag: (billId: string, tag: string) =>
-    billsApi.delete(`/shop-bills/${billId}/tags/${encodeURIComponent(tag)}`).then((r: any) => r.data),
+    billsApi.delete(`/shop-bills/${billId}/tag/${encodeURIComponent(tag)}`).then((r: any) => r.data),
 
   // Feature 41: Add Item
   addItem: (billId: string, item: any) =>
-    billsApi.post(`/shop-bills/${billId}/items`, item).then((r: any) => r.data),
+    billsApi.post(`/shop-bills/${billId}/item`, item).then((r: any) => r.data),
 
   // Feature 42: Remove Item
   removeItem: (billId: string, itemIndex: number) =>
-    billsApi.delete(`/shop-bills/${billId}/items/${itemIndex}`).then((r: any) => r.data),
+    billsApi.delete(`/shop-bills/${billId}/item/${itemIndex}`).then((r: any) => r.data),
 
   // Feature 43: By Bill Number
   getByNumber: (billNumber: string) =>
