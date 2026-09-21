@@ -9,7 +9,9 @@ import { useAuth } from '../../context/AuthContext'
 import { setUnauthorizedHandler } from '../../api/interceptors'
 
 const pageTitles: Record<string, string> = {
-  '/': 'Dashboard',
+  '/': 'Daily Operations',
+  '/today': 'Daily Operations',
+  '/dashboard': 'Dashboard',
   '/business-dashboard': 'Business Intelligence',
   '/quotations': 'Quotations',
   '/quotations/new': 'New Quotation',

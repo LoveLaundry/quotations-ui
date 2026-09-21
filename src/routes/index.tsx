@@ -13,6 +13,9 @@ import ErrorPage from '../features/quotations/pages/error-page'
 const LoginPage = lazy(() => import('../features/auth/pages/login-page'))
 const GuestQuotationsPage = lazy(() => import('../features/quotations/pages/guest-quotations-page'))
 
+// Daily Operations (landing page)
+const TodayPage = lazy(() => import('../features/today/pages/today-page'))
+
 // Operations pages
 const DashboardPage = lazy(() => import('../features/quotations/pages/dashboard-page'))
 const QuotationsPage = lazy(() => import('../features/quotations/pages/quotations-page'))
@@ -121,7 +124,9 @@ export const router = createBrowserRouter([
         path: '/',
         element: <AppShell />,
         children: [
-          { index: true, element: <DashboardPage /> },
+          { index: true, element: <Navigate to="/today" replace /> },
+          { path: 'today', element: <TodayPage /> },
+          { path: 'dashboard', element: <DashboardPage /> },
           { path: 'business-dashboard', element: <BusinessDashboardPage /> },
           { path: 'notifications', element: <NotificationsPage /> },
 

@@ -8,6 +8,7 @@ import './App.css'
 import LoveLoader from './components/ui/LoveLoader'
 import { ThemeProvider } from './context/ThemeContext'
 import { useAuth } from './context/AuthContext'
+import { DefaultsProvider } from './components/ops/defaults-provider'
 import { sanitizeScope } from './cache/db'
 import { createIndexedDbPersister } from './cache/persister'
 import {
@@ -92,25 +93,27 @@ function App() {
   return (
     <CacheHostProvider>
       <ThemeProvider>
-        {/* Suspense covers route-level lazy chunks: the loader only shows while
-            a page bundle is actually being fetched, removing the old 600ms wait. */}
-        <Suspense fallback={<LoveLoader />}>
-          <RouterProvider router={router} />
-        </Suspense>
-        <Toaster
-          richColors
-          position="top-right"
-          toastOptions={{
-            duration: 4000,
-            className: 'toast-custom',
-            style: {
-              padding: '16px',
-              borderRadius: '12px',
-              fontSize: '14px',
-              fontWeight: '500',
-            },
-          }}
-        />
+        <DefaultsProvider>
+          {/* Suspense covers route-level lazy chunks: the loader only shows while
+              a page bundle is actually being fetched, removing the old 600ms wait. */}
+          <Suspense fallback={<LoveLoader />}>
+            <RouterProvider router={router} />
+          </Suspense>
+          <Toaster
+            richColors
+            position="top-right"
+            toastOptions={{
+              duration: 4000,
+              className: 'toast-custom',
+              style: {
+                padding: '16px',
+                borderRadius: '12px',
+                fontSize: '14px',
+                fontWeight: '500',
+              },
+            }}
+          />
+        </DefaultsProvider>
       </ThemeProvider>
     </CacheHostProvider>
   )

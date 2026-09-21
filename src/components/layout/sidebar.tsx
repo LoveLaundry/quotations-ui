@@ -51,7 +51,8 @@ const navGroups: { label: string; items: NavItem[] }[] = [
   {
     label: 'Overview',
     items: [
-      { to: '/', label: 'Dashboard', icon: House, end: true },
+      { to: '/today', label: 'Today', icon: Lightning, end: false },
+      { to: '/dashboard', label: 'Dashboard', icon: House, end: false },
       { to: '/business-dashboard', label: 'Business Intelligence', icon: ChartBar, end: false },
       { to: '/live-chat', label: 'Live Chat', icon: ChatCircleDots, end: false, roles: ['ADMIN', 'MANAGER'] },
     ],
