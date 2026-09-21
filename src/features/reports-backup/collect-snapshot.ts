@@ -468,12 +468,19 @@ async function fetchGatePasses(date: string): Promise<SourceOutput<GatePassRecor
     const records = onDay(rows, date, ['receiving_date', 'date', 'created_at'])
       .map<GatePassRecord>(r => {
         const items = itemRows(pick(r, ['items', 'linen']))
+        const marked = Boolean(pick(r, ['marked_delivered']))
         return {
           gp_id: String(pick(r, ['gate_pass_id', 'id', '_id', 'gp_id']) ?? ''),
           customer: customerFrom(r),
           receiving_date: date,
-          delivered: Boolean(pick(r, ['is_delivered', 'delivered'])),
-          delivered_date: toStringValue(pick(r, ['delivered_date'])),
+          delivered:
+            Boolean(pick(r, ['is_delivered', 'delivered'])) ||
+            toStringValue(pick(r, ['status'])) === 'DELIVERED' ||
+            marked,
+          delivered_date:
+            toStringValue(pick(r, ['delivered_date'])) ||
+            toStringValue((pick(r, ['marked_delivered']) as { delivered_date?: unknown } | null)?.delivered_date),
+          marked_delivered: marked,
           total_pieces: totalPieces(items),
           items,
         }

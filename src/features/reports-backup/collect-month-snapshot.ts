@@ -250,12 +250,19 @@ async function fetchMonthGatePasses(period: string): Promise<SourceOutput<GatePa
     const fetched = rows.length
     const records = onMonth(rows, period, ['receiving_date', 'date', 'created_at']).map<GatePassRecord>(r => {
       const items = itemRows(pick(r, ['items', 'linen']))
+      const marked = Boolean(pick(r, ['marked_delivered']))
       return {
         gp_id: String(pick(r, ['gate_pass_id', 'id', '_id', 'gp_id']) ?? ''),
         customer: customerFrom(r),
         receiving_date: dayOf(pick(r, ['receiving_date', 'date', 'created_at'])) ?? period,
-        delivered: Boolean(pick(r, ['is_delivered', 'delivered'])),
-        delivered_date: toStringValue(pick(r, ['delivered_date'])),
+        delivered:
+          Boolean(pick(r, ['is_delivered', 'delivered'])) ||
+          toStringValue(pick(r, ['status'])) === 'DELIVERED' ||
+          marked,
+        delivered_date:
+          toStringValue(pick(r, ['delivered_date'])) ||
+          toStringValue((pick(r, ['marked_delivered']) as { delivered_date?: unknown } | null)?.delivered_date),
+        marked_delivered: marked,
         total_pieces: totalPieces(items),
         items,
       }
@@ -360,6 +367,7 @@ function buildDaily(data: MonthlyData): MonthlyReportSnapshot['daily'] {
   for (const r of data.salary_slips) bump(r.paid_date ?? '', 'salary_paid', r.net)
   for (const r of data.gatepasses) bump(r.receiving_date, 'gatepass_pieces', r.total_pieces)
   for (const r of data.deliveries) bump(r.delivery_date, 'deliveries_pieces', r.total_pieces)
+  for (const r of data.gatepasses) if (r.marked_delivered) bump(r.receiving_date, 'deliveries_pieces', r.total_pieces)
   for (const r of data.attendance) {
     bump(r.date, 'present', r.status.includes('PRESENT') || ['HALF_DAY', 'HALFDAY', 'HALF'].includes(r.status) ? 1 : 0)
     bump(r.date, 'leave', r.status.includes('LEAVE') ? 1 : 0)
@@ -432,7 +440,9 @@ export async function collectMonthSnapshot(period: string): Promise<MonthlyRepor
   const paymentsTotal = payments.records.reduce((s, p) => s + p.amount, 0)
   const salaryPaid = salary.total
   const gpPieces = gatepasses.records.reduce((s, g) => s + g.total_pieces, 0)
-  const delPieces = deliveries.records.reduce((s, d) => s + d.total_pieces, 0)
+  const delPieces =
+    deliveries.records.reduce((s, d) => s + d.total_pieces, 0) +
+    gatepasses.records.reduce((s, g) => s + (g.marked_delivered ? g.total_pieces : 0), 0)
 
   const sources = [
     statusOf(income),

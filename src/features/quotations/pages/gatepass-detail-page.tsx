@@ -20,7 +20,7 @@ import { useQuotation } from '../hooks/useQuotations'
 import { returns as returnsApi } from '../services/returns.service'
 import { SearchableSelect } from '../../../components/ui'
 import { toQuotationOptions, type QuotationOption } from './create-gatepass-page'
-import type { ReturnItem } from '../../../types/operations'
+import type { Return, ReturnItem } from '../../../types/operations'
 
 const STATUS_CONFIG: Record<string, { label: string; bg: string; text: string; border: string; dot: string }> = {
     RECEIVED: { label: 'Received', bg: '#EFF6FF', text: '#2563EB', border: '#BFDBFE', dot: '#3B82F6' },
@@ -124,15 +124,23 @@ export default function GatePassDetailPage() {
     }, [deliveries, gp])
 
     const { data: returnsList = [] } = useQuery({
-        queryKey: ['returns'],
-        queryFn: () => returnsApi.list().then((r: any) => Array.isArray(r) ? r : r?.items ?? []),
+        queryKey: ['returns', 'detail', id],
+        queryFn: () =>
+            (id
+                ? returnsApi.list({ gate_pass_id: id })
+                : Promise.resolve({ items: [] as Return[] }))
+                .then((r: any) => (Array.isArray(r) ? r : r?.items ?? [])),
+        enabled: Boolean(id),
         staleTime: 60_000,
     })
 
     const returnedMap = useMemo(() => {
+// Returns carry their own gate_pass_id, so only returns raised on THIS
+        // gate pass count towards its pending balance.
+        const gpId = (gp as { _id?: string } | null)?._id ?? gp?.id
         const map: Record<string, number> = {}
         for (const ret of returnsList) {
-            if (ret.client_name !== gp?.client_name) continue
+            if (String(ret.gate_pass_id ?? '') !== String(gpId ?? '')) continue
             for (const item of (ret.items ?? []) as ReturnItem[]) {
                 if ((item.action === 'RECEIVE_BACK' || item.action === 'RE_WASH') && item.resend_status !== 'SENT') {
                     const key = `${item.item_name}||${item.specification || ''}`
@@ -141,7 +149,7 @@ export default function GatePassDetailPage() {
             }
         }
         return map
-    }, [returnsList, gp?.client_name])
+    }, [returnsList, gp])
 
     if (isLoading) {
         return (

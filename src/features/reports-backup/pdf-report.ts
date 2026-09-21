@@ -88,7 +88,9 @@ export async function generateReportPdf(snapshot: DailyReportSnapshot): Promise<
   const paymentsTotal = snapshot.payments.reduce((sum, p) => sum + p.amount, 0)
   const salaryTotal = snapshot.salary_slips.reduce((sum, s) => sum + s.net, 0)
   const gpPieces = snapshot.gatepasses.reduce((sum, g) => sum + g.total_pieces, 0)
-  const delPieces = snapshot.deliveries.reduce((sum, d) => sum + d.total_pieces, 0)
+  const delPieces =
+    snapshot.deliveries.reduce((sum, d) => sum + d.total_pieces, 0) +
+    snapshot.gatepasses.reduce((sum, g) => sum + (g.marked_delivered ? g.total_pieces : 0), 0)
   const netMargin = pct(totals.net, totals.income)
   const expenseRatio = pct(totals.expenses, totals.income)
   const collectedPct = pct(billsTotal - billsBalance, billsTotal)

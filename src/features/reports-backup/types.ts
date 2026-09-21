@@ -99,6 +99,7 @@ export interface GatePassRecord {
   receiving_date: string
   delivered: boolean
   delivered_date?: string
+  marked_delivered?: boolean
   total_pieces: number
   items: { name: string; quantity: number }[]
 }

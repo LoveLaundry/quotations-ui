@@ -186,7 +186,11 @@ export default function HotelLinenFlowPage() {
       const hotel = pushHotel(gp.client_name)
       const received = pieces(gp.items)
       const deliveries = rawDeliveries.filter(d => d.gate_pass_id === gpKey(gp))
-      const delivered = deliveries.reduce((sum, d) => sum + pieces(d.items), 0)
+      const recorded = deliveries.reduce((sum, d) => sum + pieces(d.items), 0)
+      // A gate pass catch-up marked as delivered counts as fully delivered
+      // even when the dispatch was never recorded, so it must not show pending.
+      const markedDelivered = Boolean((gp as { marked_delivered?: unknown }).marked_delivered)
+      const delivered = markedDelivered ? Math.max(received, recorded) : recorded
       hotel.gatePasses.push({ gp, received, delivered, deliveries })
       hotel.received += received
       hotel.delivered += delivered

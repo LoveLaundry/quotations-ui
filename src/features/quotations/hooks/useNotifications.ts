@@ -26,6 +26,8 @@ export function useNotifications() {
   })
 
   const gatePassPending: GatePassPendingEntry[] = useMemo(() => {
+    const ik = (name?: string, spec?: string) => (spec ? `${name}||${spec}` : name ?? '')
+
     const deliveredByPass = new Map<string, Map<string, number>>()
     for (const d of deliveryList) {
       const key = d.gate_pass_id
@@ -35,23 +37,27 @@ export function useNotifications() {
         deliveredByPass.set(key, m)
       }
       for (const it of d.items ?? []) {
-        m.set(it.item_name, (m.get(it.item_name) ?? 0) + (Number(it.quantity) || 0))
+        const k = ik(it.item_name, it.specification)
+        m.set(k, (m.get(k) ?? 0) + (Number(it.quantity) || 0))
       }
     }
 
-    // Build returned items map: client_name → { item_name → qty }
-    const returnedByClient = new Map<string, Map<string, number>>()
+    // Built returned items map: gate_pass_id → { item||spec → qty }. Returns
+    // carry their own gate_pass_id so they only count for the pass they were
+    // raised on — never another pass of the same client.
+    const returnedByPass = new Map<string, Map<string, number>>()
     for (const ret of returnsList) {
+      const passId = String(ret.gate_pass_id ?? '')
+      if (!passId) continue
+      let m = returnedByPass.get(passId)
+      if (!m) {
+        m = new Map()
+        returnedByPass.set(passId, m)
+      }
       for (const item of (ret.items ?? []) as ReturnItem[]) {
         if ((item.action === 'RECEIVE_BACK' || item.action === 'RE_WASH') && item.resend_status !== 'SENT') {
-          const client = (ret.client_name ?? '').trim()
-          if (!client) continue
-          let m = returnedByClient.get(client)
-          if (!m) {
-            m = new Map()
-            returnedByClient.set(client, m)
-          }
-          m.set(item.item_name, (m.get(item.item_name) ?? 0) + (Number(item.returned_qty) || 0))
+          const k = ik(item.item_name, item.specification)
+          m.set(k, (m.get(k) ?? 0) + (Number(item.returned_qty) || 0))
         }
       }
     }
@@ -71,12 +77,13 @@ export function useNotifications() {
         }
       }
 
-      const clientReturned = returnedByClient.get((gp.client_name ?? '').trim()) ?? new Map()
+      const passReturned = returnedByPass.get(gp.id ?? (gp as { _id?: string })._id ?? '') ?? new Map()
 
       for (const item of gp.items ?? []) {
+        const k = ik(item.item_name, item.specification)
         const received = Number(item.received_qty) || 0
-        const delivered = isMarkedDelivered ? received : Number(delMap?.get(item.item_name) ?? 0)
-        const retQty = Number(clientReturned.get(item.item_name) ?? 0)
+        const delivered = isMarkedDelivered ? received : Number(delMap?.get(k) ?? 0)
+        const retQty = Number(passReturned.get(k) ?? 0)
         const pending = Math.max(0, received - delivered + retQty)
         if (pending > 0) {
           result.push({
