@@ -1,6 +1,29 @@
 import pdfMake from 'pdfmake/build/pdfmake'
 import pdfFonts from 'pdfmake/build/vfs_fonts'
 import iconUrl from '../../assets/icon.png'
+import {
+  money,
+  dataTable,
+  sectionTitle,
+  noData,
+  sourceFailed,
+  statusCell,
+  miniHeading,
+  kpiGrid,
+  groupedBars,
+  segmentedBar,
+  breakdownBars,
+  pct,
+  RED,
+  DARK,
+  GRAY,
+  GREEN,
+  AMBER,
+  BLUE,
+  INDIGO,
+  TEAL,
+  sourceOk,
+} from './pdf-drawing'
 import type { DailyReportSnapshot } from './types'
 
 installVfs()
@@ -14,15 +37,6 @@ function installVfs() {
   const vfs = mod.pdfMake?.vfs ?? mod.vfs
   if (vfs) pdf.vfs = vfs
 }
-
-// ── Brand colours (paysheet / legacy-invoice palette) ────────────────────
-const RED = '#C42127'
-const DARK = '#1F2937'
-const GRAY = '#6B7280'
-const LIGHT = '#F3F4F6'
-const BORDER = '#E5E7EB'
-const GREEN = '#15803D'
-const AMBER = '#B45309'
 
 let loadedLogo: string | null = null
 
@@ -44,77 +58,6 @@ async function loadLogo(): Promise<string | null> {
   }
 }
 
-function money(n: number): string {
-  return `Rs. ${n.toLocaleString('en-LK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-}
-
-interface TableOptions {
-  header: string[]
-  widths: (string | number)[]
-  body: (string | number | { text: string; bold?: boolean; color?: string; alignment?: string })[][]
-  alignments?: string[]
-}
-
-function dataTable(opts: TableOptions) {
-  const body = [
-    opts.header.map(text => ({
-      text,
-      bold: true,
-      fontSize: 7.5,
-      color: '#FFFFFF',
-      margin: [4, 4, 4, 4] as [number, number, number, number],
-    })),
-    ...opts.body.map(row =>
-      row.map((cell, c) => ({
-        text: cell,
-        fontSize: 8,
-        color: DARK,
-        alignment: (opts.alignments?.[c] ?? 'left') as 'left' | 'right' | 'center',
-        margin: [4, 3, 4, 3] as [number, number, number, number],
-      }))
-    ),
-  ]
-  return {
-    layout: {
-      hLineWidth: (i: number) => (i === 0 || i === body.length ? 0.8 : 0.4),
-      vLineWidth: () => 0,
-      hLineColor: () => BORDER,
-      paddingLeft: () => 2,
-      paddingRight: () => 2,
-    },
-    table: {
-      headerRows: 1,
-      widths: opts.widths,
-      body,
-    },
-  }
-}
-
-function sectionTitle(index: number, title: string, subtitle?: string) {
-  return {
-    columns: [
-      { text: [`${index}  `, { text: title.toUpperCase(), bold: true }], fontSize: 11, color: RED, bold: true },
-      ...(subtitle
-        ? [{ text: subtitle, alignment: 'right' as const, fontSize: 8, color: GRAY, margin: [0, 3, 0, 0] }]
-        : []),
-    ],
-    margin: [0, 10, 0, 4] as [number, number, number, number],
-  }
-}
-
-function noData(upper: boolean) {
-  return { text: upper ? 'No records found for this date.' : '—', italic: true, fontSize: 8.5, color: GRAY, margin: [0, 2, 0, 6] }
-}
-
-function sourceFailed(error?: string) {
-  return {
-    text: `Source unavailable — ${error ?? 'request failed'}`,
-    fontSize: 8,
-    color: AMBER,
-    margin: [0, 2, 0, 6] as [number, number, number, number],
-  }
-}
-
 function attendanceCounts(records: DailyReportSnapshot['attendance']) {
   const present = records.filter(r => ['PRESENT', 'HALF_DAY', 'HALFDAY', 'HALF'].includes(r.status)).length
   const leave = records.filter(r => r.status.includes('LEAVE')).length
@@ -129,18 +72,29 @@ function residencyMonths(date: string): string {
   return `${monthName} ${y}`
 }
 
+function totalsRow(label: string, share: string, cells: (string | number)[]): (string | number)[] {
+  return [label, ...cells, share]
+}
+
 export async function generateReportPdf(snapshot: DailyReportSnapshot): Promise<Blob> {
   const logo = await loadLogo()
   const { company, totals, meta } = snapshot
   const date = meta.report_date
   const att = attendanceCounts(snapshot.attendance)
-  const attOk = snapshot.sources.find(s => s.key === 'attendance')?.ok ?? true
-  const incomeSource = snapshot.sources.find(s => s.key === 'income')
-  const expenseSource = snapshot.sources.find(s => s.key === 'expenses')
   const failedSources = snapshot.sources.filter(s => !s.ok)
 
   const billsTotal = snapshot.bills.reduce((sum, b) => sum + b.total, 0)
   const billsBalance = snapshot.bills.reduce((sum, b) => sum + b.balance, 0)
+  const paymentsTotal = snapshot.payments.reduce((sum, p) => sum + p.amount, 0)
+  const salaryTotal = snapshot.salary_slips.reduce((sum, s) => sum + s.net, 0)
+  const gpPieces = snapshot.gatepasses.reduce((sum, g) => sum + g.total_pieces, 0)
+  const delPieces = snapshot.deliveries.reduce((sum, d) => sum + d.total_pieces, 0)
+  const netMargin = pct(totals.net, totals.income)
+  const expenseRatio = pct(totals.expenses, totals.income)
+  const collectedPct = pct(billsTotal - billsBalance, billsTotal)
+  const deliveredPct = pct(delPieces, gpPieces)
+  const attTotal = att.present + att.leave + att.holiday + att.other
+  const attendanceRate = pct(att.present, attTotal)
 
   const content: unknown[] = [
     // ── Header ────────────────────────────────────────────────────────────
@@ -178,7 +132,7 @@ export async function generateReportPdf(snapshot: DailyReportSnapshot): Promise<
                 { text: date, fontSize: 12, bold: true, color: '#FFFFFF', alignment: 'center' },
                 { text: residencyMonths(date), fontSize: 8.5, color: '#FFFFFF', alignment: 'center' },
                 { text: `Generated ${meta.generated_at.slice(0, 19).replace('T', ' ')}`, fontSize: 7.5, color: '#FFFFFF', alignment: 'center' },
-                { text: 'Backup v1', fontSize: 7.5, color: '#FFFFFF', alignment: 'center', margin: [0, 4, 0, 0] },
+                { text: `Backup v${meta.backup_version ?? 2}`, fontSize: 7.5, color: '#FFFFFF', alignment: 'center', margin: [0, 4, 0, 0] },
               ],
               fillColor: RED,
               margin: [0, 0, 0, 0],
@@ -190,42 +144,100 @@ export async function generateReportPdf(snapshot: DailyReportSnapshot): Promise<
       margin: [0, 0, 0, 8],
     },
 
-    // ── Financial summary ─────────────────────────────────────────────────
-    {
-      table: {
-        widths: ['*', '*', '*'],
-        body: [
-          [
-            { text: 'INCOME', bold: true, fontSize: 8, color: GRAY, alignment: 'center', fillColor: LIGHT, margin: [0, 6, 0, 2] },
-            { text: 'EXPENSES', bold: true, fontSize: 8, color: GRAY, alignment: 'center', fillColor: LIGHT, margin: [0, 6, 0, 2] },
-            { text: 'NET', bold: true, fontSize: 8, color: '#FFFFFF', alignment: 'center', fillColor: RED, margin: [0, 6, 0, 2] },
-          ],
-          [
-            { text: money(totals.income), bold: true, fontSize: 13, color: totals.income >= 0 ? GREEN : RED, alignment: 'center', fillColor: LIGHT, margin: [0, 2, 0, 6] },
-            { text: money(totals.expenses), bold: true, fontSize: 13, color: RED, alignment: 'center', fillColor: LIGHT, margin: [0, 2, 0, 6] },
-            { text: money(totals.net), bold: true, fontSize: 13, color: totals.net >= 0 ? '#FFFFFF' : '#FFE4E6', alignment: 'center', fillColor: RED, margin: [0, 2, 0, 6] },
-          ],
-        ],
-      },
-      layout: { hLineWidth: () => 0, vLineWidth: () => 0 },
-      margin: [0, 0, 0, 6],
-    },
+    { text: 'EXECUTIVE SUMMARY', fontSize: 11, bold: true, color: RED, margin: [0, 4, 0, 4] },
+    kpiGrid([
+      { label: 'INCOME', value: money(totals.income), sub: 'Ledger', tone: 'green' },
+      { label: 'EXPENSES', value: money(totals.expenses), sub: 'Ledger', tone: 'red' },
+      { label: 'NET', value: money(totals.net), sub: `${netMargin} margin`, tone: totals.net >= 0 ? 'green' : 'red' },
+      { label: 'SPEND RATE', value: expenseRatio, sub: 'of income', tone: 'amber' },
+    ]),
+    kpiGrid([
+      { label: 'BILLS RAISED', value: money(billsTotal), sub: `${snapshot.bills.length} bill(s)`, tone: 'blue' },
+      { label: 'OUTSTANDING', value: money(billsBalance), sub: `${collectedPct} collected`, tone: 'amber' },
+      { label: 'PAYMENTS IN', value: money(paymentsTotal), sub: `${snapshot.payments.length} payment(s)`, tone: 'green' },
+      { label: 'SALARY PAID', value: money(salaryTotal), sub: `${snapshot.salary_slips.length} slip(s)`, tone: 'indigo' },
+    ]),
+    kpiGrid([
+      { label: 'GP PIECES IN', value: String(gpPieces), sub: `${snapshot.gatepasses.length} gate pass(es)`, tone: 'blue' },
+      { label: 'PIECES OUT', value: String(delPieces), sub: `${deliveredPct} delivered`, tone: 'teal' },
+      { label: 'PRESENT', value: String(att.present), sub: `${attendanceRate} of ${attTotal}`, tone: 'green' },
+      { label: 'LEAVE / HOLIDAY', value: `${att.leave} / ${att.holiday}`, sub: 'staff', tone: 'amber' },
+    ]),
+    { text: 'Net = ledger income − ledger expenses. Bill / payment / salary / linen figures are operational activity and are not added to the accounting net. Percentages are of the daily totals shown.', fontSize: 7, color: GRAY, italics: true, margin: [0, 3, 0, 8] },
 
-    { text: 'Financial summary is derived from ledger income & expenses. Bill / payment / linen figures below are operational activity and are not added to the accounting net.', fontSize: 7, color: GRAY, italics: true, margin: [0, 0, 0, 8] },
+    // ── Charts ─────────────────────────────────────────────────────────────
+    miniHeading('FINANCIAL PERFORMANCE TODAY'),
+    ...(totals.income + totals.expenses > 0
+      ? groupedBars({
+          series: [
+            { name: 'Income', color: GREEN, values: [totals.income] },
+            { name: 'Expenses', color: RED, values: [totals.expenses] },
+            { name: 'Net', color: DARK, values: [totals.net] },
+          ],
+          labels: ['Today'],
+        })
+      : [noData('No ledger activity today.')]),
+
+    ...(billsTotal + paymentsTotal > 0
+      ? [
+          miniHeading('BILLING & COLLECTIONS'),
+          ...groupedBars({
+            series: [
+              { name: 'Bills raised', color: BLUE, values: [billsTotal] },
+              { name: 'Payments received', color: GREEN, values: [paymentsTotal] },
+            ],
+            labels: ['Today'],
+          }),
+          { text: `Collected so far ${collectedPct} of bills raised today (outstanding ${money(billsBalance)}).`, fontSize: 7, color: GRAY, margin: [0, 2, 0, 4] },
+        ]
+      : []),
+
+    ...(gpPieces + delPieces > 0
+      ? [
+          miniHeading('LINEN FLOW'),
+          ...groupedBars({
+            series: [
+              { name: 'Received (gate passes)', color: BLUE, values: [gpPieces] },
+              { name: 'Delivered', color: TEAL, values: [delPieces] },
+            ],
+            labels: ['Today'],
+          }),
+          { text: `Delivery completion ${deliveredPct} of received pieces.`, fontSize: 7, color: GRAY, margin: [0, 2, 0, 4] },
+        ]
+      : []),
+
+    ...(attTotal > 0
+      ? [
+          miniHeading('STAFF PRESENCE'),
+          ...segmentedBar([
+            { name: 'Present', value: att.present, color: GREEN },
+            { name: 'Leave', value: att.leave, color: AMBER },
+            { name: 'Holiday', value: att.holiday, color: GRAY },
+            ...(att.other > 0 ? [{ name: 'Other', value: att.other, color: RED }] : []),
+          ]),
+        ]
+      : []),
   ]
 
   // ── Income ───────────────────────────────────────────────────────────────
-  content.push(sectionTitle(1, 'Income (Ledger)'))
-  if (!incomeSource?.ok) {
+  content.push(sectionTitle(2, 'Income (Ledger)', `${snapshot.income.length} entries • ${money(totals.income)}`))
+  const incomeSource = snapshot.sources.find(s => s.key === 'income')
+  if (!sourceOk(snapshot, 'income')) {
     content.push(sourceFailed(incomeSource?.error))
   } else if (snapshot.income.length === 0) {
-    content.push(noData(true))
+    content.push(noData('No income recorded for this date.'))
   } else {
+    const byMethod = new Map<string, number>()
+    const bySourceIn = new Map<string, number>()
+    for (const r of snapshot.income) {
+      byMethod.set(r.payment_method ?? 'Other', (byMethod.get(r.payment_method ?? 'Other') ?? 0) + r.amount)
+      bySourceIn.set(r.source ?? 'Other', (bySourceIn.get(r.source ?? 'Other') ?? 0) + r.amount)
+    }
     content.push(
       dataTable({
-        header: ['No', 'Customer', 'Description', 'Source', 'Method', 'Amount'],
-        widths: [24, '*', '*', 70, 70, 70],
-        alignments: ['left', 'left', 'left', 'left', 'left', 'right'],
+        header: ['No', 'Customer', 'Description', 'Source', 'Method', 'Amount', '% of income'],
+        widths: [22, '*', '*', 52, 52, 66, 44],
+        alignments: ['left', 'left', 'left', 'left', 'left', 'right', 'right'],
         body: snapshot.income.map((r, i) => [
           String(i + 1),
           r.customer ?? '—',
@@ -233,24 +245,30 @@ export async function generateReportPdf(snapshot: DailyReportSnapshot): Promise<
           r.source ?? '—',
           r.payment_method ?? '—',
           money(r.amount),
+          pct(r.amount, totals.income),
         ]),
+        totals: totalsRow('Total', '100%', ['', '', '', '', money(totals.income)]),
       }),
-      { text: `${snapshot.income.length} income entry(ies)`, fontSize: 7.5, color: GRAY, margin: [0, 4, 0, 0] }
+      breakdownBars('By source', [...bySourceIn.entries()].map(([label, value]) => ({ label, value, color: BLUE })), { maxBars: 6 }),
+      breakdownBars('By method', [...byMethod.entries()].map(([label, value]) => ({ label, value, color: INDIGO })), { maxBars: 6 })
     )
   }
 
   // ── Expenses ─────────────────────────────────────────────────────────────
-  content.push(sectionTitle(2, 'Expenses'))
-  if (!expenseSource?.ok) {
+  content.push(sectionTitle(3, 'Expenses', `${snapshot.expenses.length} entries • ${money(totals.expenses)}`))
+  const expenseSource = snapshot.sources.find(s => s.key === 'expenses')
+  if (!sourceOk(snapshot, 'expenses')) {
     content.push(sourceFailed(expenseSource?.error))
   } else if (snapshot.expenses.length === 0) {
-    content.push(noData(true))
+    content.push(noData('No expenses recorded for this date.'))
   } else {
+    const byCat = new Map<string, number>()
+    for (const r of snapshot.expenses) byCat.set(r.category ?? 'Other', (byCat.get(r.category ?? 'Other') ?? 0) + r.amount)
     content.push(
       dataTable({
-        header: ['No', 'Category', 'Description', 'Payee', 'Method', 'Amount'],
-        widths: [24, '*', '*', 110, 70, 70],
-        alignments: ['left', 'left', 'left', 'left', 'left', 'right'],
+        header: ['No', 'Category', 'Description', 'Payee', 'Method', 'Amount', '% of expenses'],
+        widths: [22, 70, '*', 66, 52, 66, 44],
+        alignments: ['left', 'left', 'left', 'left', 'left', 'right', 'right'],
         body: snapshot.expenses.map((r, i) => [
           String(i + 1),
           r.category ?? '—',
@@ -258,39 +276,34 @@ export async function generateReportPdf(snapshot: DailyReportSnapshot): Promise<
           r.payee ?? '—',
           r.payment_method ?? '—',
           money(r.amount),
+          pct(r.amount, totals.expenses),
         ]),
+        totals: totalsRow('Total', '100%', ['', '', '', '', money(totals.expenses)]),
       }),
-      { text: `${snapshot.expenses.length} expense(s)   •   Total ${money(totals.expenses)}`, fontSize: 7.5, color: GRAY, margin: [0, 4, 0, 0] }
+      breakdownBars('By category', [...byCat.entries()].map(([label, value]) => ({ label, value, color: RED })), { maxBars: 8 })
     )
   }
 
   // ── Attendance ───────────────────────────────────────────────────────────
-  content.push(sectionTitle(3, 'Attendance'))
-  if (!attOk) {
+  content.push(sectionTitle(4, 'Attendance', `${attTotal} record(s) • ${attendanceRate} present`))
+  if (!sourceOk(snapshot, 'attendance')) {
     content.push(sourceFailed(snapshot.sources.find(s => s.key === 'attendance')?.error))
   } else if (snapshot.attendance.length === 0) {
-    content.push(noData(true))
+    content.push(noData('No attendance recorded for this date.'))
   } else {
-    const box = (num: number, labelText: string, color: string) => ({
-      stack: [
-        { text: String(num), bold: true, fontSize: 14, color, alignment: 'center' },
-        { text: labelText, fontSize: 7.5, color: GRAY, alignment: 'center', bold: true, characterSpacing: 1 },
-      ],
-      fillColor: LIGHT,
-      margin: [0, 6, 0, 6],
-    })
     content.push(
-      {
-        table: {
-          widths: ['*', '*', '*', '*'],
-          body: [[box(att.present, 'PRESENT', GREEN), box(att.leave, 'LEAVE', AMBER), box(att.holiday, 'HOLIDAY', GRAY), box(att.other, 'OTHER', RED)]],
-        },
-        layout: { hLineWidth: () => 0, vLineWidth: () => 0 },
-        margin: [0, 0, 0, 6],
-      },
+      segmentedBar(
+        [
+          { name: 'Present', value: att.present, color: GREEN },
+          { name: 'Leave', value: att.leave, color: AMBER },
+          { name: 'Holiday', value: att.holiday, color: GRAY },
+          ...(att.other > 0 ? [{ name: 'Other', value: att.other, color: RED }] : []),
+        ],
+        'Today'
+      ),
       dataTable({
         header: ['#', 'Employee', 'Status', 'OT (hrs)'],
-        widths: [24, '*', 120, 70],
+        widths: [24, '*', 130, 70],
         alignments: ['left', 'left', 'center', 'right'],
         body: snapshot.attendance.map((r, i) => [String(i + 1), r.employee_name, r.status, r.overtime_hours ? String(r.overtime_hours) : '—']),
       })
@@ -298,18 +311,18 @@ export async function generateReportPdf(snapshot: DailyReportSnapshot): Promise<
   }
 
   // ── Payroll ──────────────────────────────────────────────────────────────
-  content.push(sectionTitle(4, 'Payroll — salary slips paid / raised'))
-  const payOk = snapshot.sources.find(s => s.key === 'salary')?.ok ?? true
-  if (!payOk) {
+  content.push(sectionTitle(5, 'Payroll — salary slips paid / raised', `${snapshot.salary_slips.length} slip(s) • ${money(salaryTotal)}`))
+  if (!sourceOk(snapshot, 'salary')) {
     content.push(sourceFailed(snapshot.sources.find(s => s.key === 'salary')?.error))
   } else if (snapshot.salary_slips.length === 0) {
-    content.push(noData(true))
+    content.push(noData('No salary slips for this date.'))
   } else {
-    const payTotal = snapshot.salary_slips.reduce((sum, s) => sum + s.net, 0)
+    const grossSum = snapshot.salary_slips.reduce((sum, s) => sum + s.gross, 0)
+    const dedSum = snapshot.salary_slips.reduce((sum, s) => sum + s.deductions, 0)
     content.push(
       dataTable({
         header: ['No', 'Employee', 'Period', 'Gross', 'Deductions', 'Net', 'Status'],
-        widths: [24, '*', 140, 70, 70, 70, 80],
+        widths: [22, '*', 130, 64, 64, 64, 70],
         alignments: ['left', 'left', 'left', 'right', 'right', 'right', 'center'],
         body: snapshot.salary_slips.map((r, i) => [
           String(i + 1),
@@ -320,162 +333,163 @@ export async function generateReportPdf(snapshot: DailyReportSnapshot): Promise<
           money(r.net),
           r.status,
         ]),
-      }),
-      { text: `${snapshot.salary_slips.length} slip(s)   •   Net paid ${money(payTotal)}`, fontSize: 7.5, color: GRAY, margin: [0, 4, 0, 0] }
+        totals: totalsRow('Total', '', ['', money(grossSum), money(dedSum), money(salaryTotal), '']),
+      })
     )
   }
 
   // ── Bills ────────────────────────────────────────────────────────────────
-  content.push(sectionTitle(5, 'Bills'))
-  const billsOk = snapshot.sources.find(s => s.key === 'bills')?.ok ?? true
-  if (!billsOk) {
+  content.push(sectionTitle(6, 'Bills', `${snapshot.bills.length} bill(s) • ${money(billsTotal)} • ${collectedPct} collected`))
+  if (!sourceOk(snapshot, 'bills')) {
     content.push(sourceFailed(snapshot.sources.find(s => s.key === 'bills')?.error))
   } else if (snapshot.bills.length === 0) {
-    content.push(noData(true))
+    content.push(noData('No bills raised for this date.'))
   } else {
+    const itemsTotal = snapshot.bills.reduce((sum, b) => sum + b.items_count, 0)
+    const byClient = new Map<string, number>()
+    for (const b of snapshot.bills) byClient.set(b.client_name, (byClient.get(b.client_name) ?? 0) + b.balance)
     content.push(
       dataTable({
         header: ['Bill No', 'Client', 'Items', 'Total', 'Balance', 'Status'],
-        widths: ['*', '*', 40, 70, 70, 80],
+        widths: ['*', '*', 40, 66, 66, 78],
         alignments: ['left', 'left', 'right', 'right', 'right', 'center'],
-        body: snapshot.bills.map(b => [b.bill_id || '—', b.client_name, String(b.items_count), money(b.total), money(b.balance), b.payment_status || '—']),
+        body: snapshot.bills.map(b => [b.bill_id || '—', b.client_name, String(b.items_count), money(b.total), money(b.balance), statusCell(b.payment_status || '—')]),
+        totals: totalsRow('Total', `${collectedPct} collected`, [String(itemsTotal), money(billsTotal), money(billsBalance), '']),
       }),
-      {
-        columns: [
-          { text: `${snapshot.bills.length} bill(s)   •   Raised ${money(billsTotal)}`, fontSize: 7.5, color: GRAY, margin: [0, 4, 0, 0] },
-          { text: `Balance outstanding ${money(billsBalance)}`, fontSize: 7.5, color: AMBER, bold: true, alignment: 'right', margin: [0, 4, 0, 0] },
-        ],
-      }
+      breakdownBars('Outstanding by client', [...byClient.entries()].filter(([, v]) => v > 0).map(([label, value]) => ({ label, value, color: AMBER })), { maxBars: 8 })
     )
   }
 
   // ── Payments received (mgmt) ─────────────────────────────────────────────
-  content.push(sectionTitle(6, 'Payments Received'))
-  const payRecOk = snapshot.sources.find(s => s.key === 'payments')?.ok ?? true
-  if (!payRecOk) {
+  content.push(sectionTitle(7, 'Payments Received', `${snapshot.payments.length} payment(s) • ${money(paymentsTotal)}`))
+  if (!sourceOk(snapshot, 'payments')) {
     content.push(sourceFailed(snapshot.sources.find(s => s.key === 'payments')?.error))
   } else if (snapshot.payments.length === 0) {
-    content.push(noData(true))
+    content.push(noData('No payments received for this date.'))
   } else {
-    const payRecTotal = snapshot.payments.reduce((sum, p) => sum + p.amount, 0)
+    const byMethod = new Map<string, number>()
+    for (const p of snapshot.payments) byMethod.set(p.method ?? 'Other', (byMethod.get(p.method ?? 'Other') ?? 0) + p.amount)
     content.push(
       dataTable({
-        header: ['No', 'Customer', 'Method', 'Reference', 'Amount'],
-        widths: [24, '*', 100, 120, 80],
-        alignments: ['left', 'left', 'left', 'left', 'right'],
-        body: snapshot.payments.map((p, i) => [String(i + 1), p.customer ?? '—', p.method ?? '—', p.ref ?? '—', money(p.amount)]),
+        header: ['No', 'Customer', 'Method', 'Reference', 'Amount', '% of payments'],
+        widths: [22, '*', 70, 90, 66, 44],
+        alignments: ['left', 'left', 'left', 'left', 'right', 'right'],
+        body: snapshot.payments.map((p, i) => [String(i + 1), p.customer ?? '—', p.method ?? '—', p.ref ?? '—', money(p.amount), pct(p.amount, paymentsTotal)]),
+        totals: totalsRow('Total', '100%', ['', '', money(paymentsTotal)]),
       }),
-      { text: `${snapshot.payments.length} payment(s)   •   Total ${money(payRecTotal)}`, fontSize: 7.5, color: GRAY, margin: [0, 4, 0, 0] }
+      breakdownBars('By method', [...byMethod.entries()].map(([label, value]) => ({ label, value, color: TEAL })), { maxBars: 6 })
     )
   }
 
   // ── Shop bills ───────────────────────────────────────────────────────────
-  content.push(sectionTitle(7, 'Shop Bills'))
-  const shopOk = snapshot.sources.find(s => s.key === 'shop_bills')?.ok ?? true
-  if (!shopOk) {
+  content.push(sectionTitle(8, 'Shop Bills', `${snapshot.shop_bills.length} bill(s)`))
+  if (!sourceOk(snapshot, 'shop_bills')) {
     content.push(sourceFailed(snapshot.sources.find(s => s.key === 'shop_bills')?.error))
   } else if (snapshot.shop_bills.length === 0) {
-    content.push(noData(true))
+    content.push(noData('No shop bills for this date.'))
   } else {
     const shopTotal = snapshot.shop_bills.reduce((sum, b) => sum + b.total, 0)
+    const shopBal = snapshot.shop_bills.reduce((sum, b) => sum + b.balance, 0)
     content.push(
       dataTable({
         header: ['Bill No', 'Client', 'Total', 'Balance', 'Status'],
-        widths: ['*', '*', 70, 70, 90],
+        widths: ['*', '*', 66, 66, 74],
         alignments: ['left', 'left', 'right', 'right', 'center'],
-        body: snapshot.shop_bills.map(b => [b.bill_id || '—', b.client_name, money(b.total), money(b.balance), b.status || '—']),
-      }),
-      { text: `${snapshot.shop_bills.length} shop bill(s)   •   Total ${money(shopTotal)}`, fontSize: 7.5, color: GRAY, margin: [0, 4, 0, 0] }
+        body: snapshot.shop_bills.map(b => [b.bill_id || '—', b.client_name, money(b.total), money(b.balance), statusCell(b.status || '—')]),
+        totals: totalsRow('Total', '', ['', money(shopTotal), money(shopBal), '']),
+      })
     )
   }
 
   // ── Legacy invoices ──────────────────────────────────────────────────────
-  content.push(sectionTitle(8, 'Legacy Invoices'))
-  const legacyOk = snapshot.sources.find(s => s.key === 'legacy_invoices')?.ok ?? true
-  if (!legacyOk) {
+  content.push(sectionTitle(9, 'Legacy Invoices', `${snapshot.legacy_invoices.length} invoice(s)`))
+  if (!sourceOk(snapshot, 'legacy_invoices')) {
     content.push(sourceFailed(snapshot.sources.find(s => s.key === 'legacy_invoices')?.error))
   } else if (snapshot.legacy_invoices.length === 0) {
-    content.push(noData(true))
+    content.push(noData('No legacy invoices for this date.'))
   } else {
     const legacyTotal = snapshot.legacy_invoices.reduce((sum, b) => sum + b.total, 0)
     content.push(
       dataTable({
         header: ['Invoice No', 'Client', 'Total', 'Status'],
-        widths: ['*', '*', 80, 90],
+        widths: ['*', '*', 70, 80],
         alignments: ['left', 'left', 'right', 'center'],
         body: snapshot.legacy_invoices.map(b => [b.invoice_id || '—', b.client_name, money(b.total), b.status ?? '—']),
-      }),
-      { text: `${snapshot.legacy_invoices.length} legacy invoice(s)   •   Total ${money(legacyTotal)}`, fontSize: 7.5, color: GRAY, margin: [0, 4, 0, 0] }
+        totals: totalsRow('Total', '', ['', money(legacyTotal), '']),
+      })
     )
   }
 
   // ── Linen activity ───────────────────────────────────────────────────────
-  content.push(sectionTitle(9, 'Linen Activity'))
-  const gpOk = snapshot.sources.find(s => s.key === 'gatepasses')?.ok ?? true
-  content.push({ text: 'Gate Passes Received', bold: true, fontSize: 9, color: DARK, characterSpacing: 1, margin: [0, 2, 0, 4] })
-  if (!gpOk) {
+  content.push(sectionTitle(10, 'Linen Activity', `${gpPieces} received • ${delPieces} delivered • ${deliveredPct} completion`))
+  content.push(miniHeading('GATE PASSES RECEIVED'))
+  if (!sourceOk(snapshot, 'gatepasses')) {
     content.push(sourceFailed(snapshot.sources.find(s => s.key === 'gatepasses')?.error))
   } else if (snapshot.gatepasses.length === 0) {
-    content.push(noData(false))
+    content.push(noData('—'))
   } else {
-    const gpPieces = snapshot.gatepasses.reduce((sum, g) => sum + g.total_pieces, 0)
     content.push(
       dataTable({
         header: ['GP No', 'Customer', 'Pieces', 'Delivered'],
-        widths: ['*', '*', 60, 90],
+        widths: ['*', '*', 60, 80],
         alignments: ['left', 'left', 'right', 'center'],
         body: snapshot.gatepasses.map(g => [g.gp_id || '—', g.customer, String(g.total_pieces), g.delivered ? 'Yes' : 'No']),
-      }),
-      { text: `${snapshot.gatepasses.length} gate pass(es)   •   ${gpPieces} pieces received`, fontSize: 7.5, color: GRAY, margin: [0, 4, 0, 0] }
+        totals: totalsRow('Total', '', [String(gpPieces), '']),
+      })
     )
   }
 
-  content.push({ text: 'Deliveries', bold: true, fontSize: 9, color: DARK, characterSpacing: 1, margin: [0, 10, 0, 4] })
-  const delOk = snapshot.sources.find(s => s.key === 'deliveries')?.ok ?? true
-  if (!delOk) {
+  content.push(miniHeading('DELIVERIES'))
+  if (!sourceOk(snapshot, 'deliveries')) {
     content.push(sourceFailed(snapshot.sources.find(s => s.key === 'deliveries')?.error))
   } else if (snapshot.deliveries.length === 0) {
-    content.push(noData(false))
+    content.push(noData('—'))
   } else {
-    const delPieces = snapshot.deliveries.reduce((sum, d) => sum + d.total_pieces, 0)
     content.push(
       dataTable({
         header: ['Delivery No', 'Gate Pass', 'Customer', 'Pieces'],
-        widths: ['*', 90, '*', 60],
+        widths: ['*', 85, '*', 60],
         alignments: ['left', 'left', 'left', 'right'],
         body: snapshot.deliveries.map(d => [d.delivery_id || '—', d.gp_id ?? '—', d.customer, String(d.total_pieces)]),
-      }),
-      { text: `${snapshot.deliveries.length} delivery(ies)   •   ${delPieces} pieces delivered`, fontSize: 7.5, color: GRAY, margin: [0, 4, 0, 0] }
+        totals: totalsRow('Total', '', [String(delPieces), '']),
+      })
     )
   }
 
-  content.push({ text: 'Returns', bold: true, fontSize: 9, color: DARK, characterSpacing: 1, margin: [0, 10, 0, 4] })
-  const retOk = snapshot.sources.find(s => s.key === 'returns')?.ok ?? true
-  if (!retOk) {
+  content.push(miniHeading('RETURNS'))
+  if (!sourceOk(snapshot, 'returns')) {
     content.push(sourceFailed(snapshot.sources.find(s => s.key === 'returns')?.error))
   } else if (snapshot.returns.length === 0) {
-    content.push(noData(false))
+    content.push(noData('—'))
   } else {
+    const retItems = snapshot.returns.reduce((sum, r) => sum + r.items.reduce((s, i) => s + i.quantity, 0), 0)
     content.push(
       dataTable({
         header: ['Return No', 'Gate Pass', 'Customer', 'Items'],
-        widths: ['*', 90, '*', '*'],
+        widths: ['*', 85, '*', '*'],
         alignments: ['left', 'left', 'left', 'left'],
         body: snapshot.returns.map(r => [r.return_id || '—', r.gp_id ?? '—', r.customer, r.items.map(i => `${i.name} ×${i.quantity}`).join(', ') || '—']),
+        totals: totalsRow('Total', '', [String(retItems), '']),
       })
     )
   }
 
   // ── Linen status ─────────────────────────────────────────────────────────
-  content.push(sectionTitle(10, 'Linen Stock Status'))
-  const linenOk = snapshot.sources.find(s => s.key === 'linen_status')?.ok ?? true
-  if (!linenOk) {
+  content.push(sectionTitle(11, 'Linen Stock Status'))
+  if (!sourceOk(snapshot, 'linen_status')) {
     content.push(sourceFailed(snapshot.sources.find(s => s.key === 'linen_status')?.error))
   } else if (!snapshot.linen_status) {
-    content.push(noData(false))
+    content.push(noData('—'))
   } else {
     const ls = snapshot.linen_status
     content.push(
+      segmentedBar([
+        { name: 'In stock', value: ls.in_stock, color: GREEN },
+        { name: 'In use', value: ls.in_use, color: BLUE },
+        { name: 'In wash', value: ls.in_wash, color: TEAL },
+        { name: 'Retired', value: ls.retired, color: GRAY },
+        ...(ls.lost > 0 ? [{ name: 'Lost', value: ls.lost, color: RED }] : []),
+      ]),
       dataTable({
         header: ['In Stock', 'In Use', 'In Wash', 'Retired', 'Lost', 'Total'],
         widths: ['*', '*', '*', '*', '*', '*'],
@@ -483,14 +497,14 @@ export async function generateReportPdf(snapshot: DailyReportSnapshot): Promise<
         body: [[String(ls.in_stock), String(ls.in_use), String(ls.in_wash), String(ls.retired), String(ls.lost), String(ls.total)]],
       }),
       ls.truncated
-        ? { text: 'Snapshot limited to the first 1,000 linen records.', fontSize: 7, color: AMBER, margin: [0, 3, 0, 0] }
+        ? { text: 'Snapshot limited to the first 5,000 linen records.', fontSize: 7, color: AMBER, margin: [0, 3, 0, 0] }
         : {}
     )
   }
 
   // ── Source health ────────────────────────────────────────────────────────
   if (failedSources.length > 0) {
-    content.push(sectionTitle(11, 'Data Sources With Issues'))
+    content.push(sectionTitle(12, 'Data Sources With Issues'))
     content.push(
       {
         text: failedSources.map(s => `• ${s.label}: ${s.error ?? 'failed'}`).join('\n'),
@@ -535,5 +549,3 @@ export async function generateReportPdf(snapshot: DailyReportSnapshot): Promise<
     })
   })
 }
-
-export { money, dataTable }

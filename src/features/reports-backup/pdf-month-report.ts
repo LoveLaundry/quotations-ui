@@ -1,7 +1,30 @@
 import pdfMake from 'pdfmake/build/pdfmake'
 import pdfFonts from 'pdfmake/build/vfs_fonts'
 import iconUrl from '../../assets/icon.png'
-import { dataTable, money } from './pdf-report'
+import {
+  money,
+  dataTable,
+  sectionTitle,
+  noData,
+  sourceFailed,
+  statusCell,
+  miniHeading,
+  kpiGrid,
+  groupedBars,
+  segmentedBar,
+  breakdownBars,
+  weekBuckets,
+  pct,
+  RED,
+  DARK,
+  GRAY,
+  GREEN,
+  AMBER,
+  BLUE,
+  INDIGO,
+  TEAL,
+  sourceOk,
+} from './pdf-drawing'
 import type { MonthlyReportSnapshot } from './types'
 
 installVfs()
@@ -15,13 +38,6 @@ function installVfs() {
   const vfs = mod.pdfMake?.vfs ?? mod.vfs
   if (vfs) pdf.vfs = vfs
 }
-
-const RED = '#C42127'
-const DARK = '#1F2937'
-const GRAY = '#6B7280'
-const LIGHT = '#F3F4F6'
-const GREEN = '#15803D'
-const AMBER = '#B45309'
 
 let loadedLogo: string | null = null
 
@@ -43,33 +59,16 @@ async function loadLogo(): Promise<string | null> {
   }
 }
 
-function sectionTitle(index: number, title: string, subtitle?: string) {
-  return {
-    columns: [
-      { text: [`${index}  `, { text: title.toUpperCase(), bold: true }], fontSize: 11, color: RED, bold: true },
-      ...(subtitle
-        ? [{ text: subtitle, alignment: 'right' as const, fontSize: 8, color: GRAY, margin: [0, 3, 0, 0] }]
-        : []),
-    ],
-    margin: [0, 10, 0, 4] as [number, number, number, number],
-  }
+function attendanceCounts(records: MonthlyReportSnapshot['attendance']) {
+  const present = records.filter(r => ['PRESENT', 'HALF_DAY', 'HALFDAY', 'HALF'].includes(r.status)).length
+  const leave = records.filter(r => r.status.includes('LEAVE')).length
+  const holiday = records.filter(r => r.status === 'HOLIDAY').length
+  const other = Math.max(0, records.length - present - leave - holiday)
+  return { present, leave, holiday, other }
 }
 
-function noData(text: string) {
-  return { text, italic: true, fontSize: 8.5, color: GRAY, margin: [0, 2, 0, 6] }
-}
-
-function sourceFailed(error?: string) {
-  return {
-    text: `Source unavailable — ${error ?? 'request failed'}`,
-    fontSize: 8,
-    color: AMBER,
-    margin: [0, 2, 0, 6] as [number, number, number, number],
-  }
-}
-
-function statusCell(value: string | number) {
-  return { text: String(value), alignment: 'center' as const }
+function totalsRow(label: string, share: string, cells: (string | number)[]): (string | number)[] {
+  return [label, ...cells, share]
 }
 
 export async function generateMonthReportPdf(snapshot: MonthlyReportSnapshot): Promise<Blob> {
@@ -77,6 +76,28 @@ export async function generateMonthReportPdf(snapshot: MonthlyReportSnapshot): P
   const { company, totals, meta, daily } = snapshot
   const period = meta.period
   const failedSources = snapshot.sources.filter(s => !s.ok)
+  const att = attendanceCounts(snapshot.attendance)
+  const attTotal = att.present + att.leave + att.holiday + att.other
+  const attRate = pct(att.present, attTotal)
+
+  const workDays = totals.work_days || daily.length || 0
+  const avgIncome = workDays > 0 ? totals.income / workDays : 0
+  const avgNet = workDays > 0 ? totals.net / workDays : 0
+  const netMargin = pct(totals.net, totals.income)
+  const expenseRatio = pct(totals.expenses, totals.income)
+  const collectedPct = pct(totals.bills - totals.bill_balance, totals.bills)
+  const deliveredPct = pct(totals.deliveries_pieces, totals.gatepass_pieces)
+  const salaryTotal = snapshot.salary_slips.reduce((sum, s) => sum + s.net, 0)
+  const paymentsTotal = snapshot.payments.reduce((sum, p) => sum + p.amount, 0)
+
+  const finWeek = weekBuckets(daily, d => d.income)
+  const expWeek = weekBuckets(daily, d => d.expenses)
+  const netWeek = weekBuckets(daily, d => d.income - d.expenses)
+  const weekLabels = finWeek.labels
+  const billWeek = weekBuckets(daily, d => d.bills)
+  const payWeek = weekBuckets(daily, d => d.payments)
+  const gpWeek = weekBuckets(daily, d => d.gatepass_pieces)
+  const delWeek = weekBuckets(daily, d => d.deliveries_pieces)
 
   const content: unknown[] = [
     // ── Header ────────────────────────────────────────────────────────────
@@ -109,7 +130,7 @@ export async function generateMonthReportPdf(snapshot: MonthlyReportSnapshot): P
                 { text: meta.month_name.toUpperCase(), fontSize: 11, bold: true, color: '#FFFFFF', alignment: 'center' },
                 { text: period, fontSize: 12, bold: true, color: '#FFFFFF', alignment: 'center' },
                 { text: `Generated ${meta.generated_at.slice(0, 19).replace('T', ' ')}`, fontSize: 7.5, color: '#FFFFFF', alignment: 'center' },
-                { text: 'Backup v1', fontSize: 7.5, color: '#FFFFFF', alignment: 'center', margin: [0, 4, 0, 0] },
+                { text: `Backup v${meta.backup_version ?? 2}`, fontSize: 7.5, color: '#FFFFFF', alignment: 'center', margin: [0, 4, 0, 0] },
               ],
               fillColor: RED,
             },
@@ -120,55 +141,69 @@ export async function generateMonthReportPdf(snapshot: MonthlyReportSnapshot): P
       margin: [0, 0, 0, 8],
     },
 
-    // ── Financial summary ─────────────────────────────────────────────────
-    {
-      table: {
-        widths: ['*', '*', '*'],
-        body: [
-          [
-            { text: 'INCOME', bold: true, fontSize: 8, color: GRAY, alignment: 'center', fillColor: LIGHT, margin: [0, 6, 0, 2] },
-            { text: 'EXPENSES', bold: true, fontSize: 8, color: GRAY, alignment: 'center', fillColor: LIGHT, margin: [0, 6, 0, 2] },
-            { text: 'NET', bold: true, fontSize: 8, color: '#FFFFFF', alignment: 'center', fillColor: RED, margin: [0, 6, 0, 2] },
-          ],
-          [
-            { text: money(totals.income), bold: true, fontSize: 13, color: totals.income >= 0 ? GREEN : RED, alignment: 'center', fillColor: LIGHT, margin: [0, 2, 0, 6] },
-            { text: money(totals.expenses), bold: true, fontSize: 13, color: RED, alignment: 'center', fillColor: LIGHT, margin: [0, 2, 0, 6] },
-            { text: money(totals.net), bold: true, fontSize: 13, color: totals.net >= 0 ? '#FFFFFF' : '#FFE4E6', alignment: 'center', fillColor: RED, margin: [0, 2, 0, 6] },
-          ],
-        ],
-      },
-      layout: { hLineWidth: () => 0, vLineWidth: () => 0 },
-      margin: [0, 0, 0, 6],
-    },
+    { text: 'EXECUTIVE SUMMARY', fontSize: 11, bold: true, color: RED, margin: [0, 4, 0, 4] },
+    kpiGrid([
+      { label: 'INCOME', value: money(totals.income), sub: `${workDays} active day(s)`, tone: 'green' },
+      { label: 'EXPENSES', value: money(totals.expenses), sub: `${expenseRatio} of income`, tone: 'red' },
+      { label: 'NET', value: money(totals.net), sub: `${netMargin} margin`, tone: totals.net >= 0 ? 'green' : 'red' },
+      { label: 'AVG / DAY', value: money(avgIncome), sub: `net ${money(avgNet)}/day`, tone: 'blue' },
+    ]),
+    kpiGrid([
+      { label: 'BILLS RAISED', value: money(totals.bills), sub: `${snapshot.bills.length} bill(s)`, tone: 'blue' },
+      { label: 'OUTSTANDING', value: money(totals.bill_balance), sub: `${collectedPct} collected`, tone: 'amber' },
+      { label: 'PAYMENTS IN', value: money(paymentsTotal), sub: `totals ${money(totals.payments)}`, tone: 'green' },
+      { label: 'SALARY PAID', value: money(salaryTotal), sub: `${snapshot.salary_slips.length} slip(s)`, tone: 'indigo' },
+    ]),
+    kpiGrid([
+      { label: 'GP PIECES IN', value: String(totals.gatepass_pieces), sub: `${snapshot.gatepasses.length} gate pass(es)`, tone: 'blue' },
+      { label: 'PIECES OUT', value: String(totals.deliveries_pieces), sub: `${deliveredPct} delivered`, tone: 'teal' },
+      { label: 'PRESENT', value: String(att.present), sub: `${attRate} of ${attTotal}`, tone: 'green' },
+      { label: 'LEAVE / HOLIDAY', value: `${att.leave} / ${att.holiday}`, sub: 'staff days', tone: 'amber' },
+    ]),
+    { text: 'Net = ledger income − ledger expenses. Bill / payment / salary / linen figures are operational activity and are not added to the accounting net. Percentages are of the month totals shown; weekly charts sum the per-day aggregates.', fontSize: 7, color: GRAY, italics: true, margin: [0, 3, 0, 8] },
 
-    {
-      table: {
-        widths: ['*', '*', '*', '*'],
-        body: [
-          [
-            { text: `Bills raised\n${money(totals.bills)}`, alignment: 'center', fontSize: 8.5, fillColor: LIGHT, margin: [0, 5, 0, 5] },
-            { text: `Unpaid balance\n${money(totals.bill_balance)}`, alignment: 'center', fontSize: 8.5, fillColor: LIGHT, margin: [0, 5, 0, 5] },
-            { text: `Payments received\n${money(totals.payments)}`, alignment: 'center', fontSize: 8.5, fillColor: LIGHT, margin: [0, 5, 0, 5] },
-            { text: `Salary paid\n${money(totals.salary_paid)}`, alignment: 'center', fontSize: 8.5, fillColor: LIGHT, margin: [0, 5, 0, 5] },
-          ],
-        ],
-      },
-      layout: { hLineWidth: () => 0, vLineWidth: () => 0 },
-      margin: [0, 0, 0, 8],
-    },
+    // ── Charts ─────────────────────────────────────────────────────────────
+    miniHeading('FINANCIAL TREND BY WEEK'),
+    groupedBars({
+      series: [
+        { name: 'Income', color: GREEN, values: finWeek.values },
+        { name: 'Expenses', color: RED, values: expWeek.values },
+        { name: 'Net', color: DARK, values: netWeek.values },
+      ],
+      labels: weekLabels,
+    }),
 
-    { text: 'Financial summary is derived from ledger income & expenses. Bill / payment / salary / linen figures are operational activity and are not added to the accounting net.', fontSize: 7, color: GRAY, italics: true, margin: [0, 0, 0, 8] },
+    miniHeading('BILLING & COLLECTIONS BY WEEK'),
+    groupedBars({
+      series: [
+        { name: 'Bills raised', color: BLUE, values: billWeek.values },
+        { name: 'Payments received', color: GREEN, values: payWeek.values },
+      ],
+      labels: weekLabels,
+    }),
+    { text: `Collected ${collectedPct} of bills raised in the month (outstanding ${money(totals.bill_balance)}).`, fontSize: 7, color: GRAY, margin: [0, 2, 0, 4] },
+
+    miniHeading('LINEN FLOW BY WEEK'),
+    groupedBars({
+      series: [
+        { name: 'Received (gate passes)', color: BLUE, values: gpWeek.values },
+        { name: 'Delivered', color: TEAL, values: delWeek.values },
+      ],
+      labels: weekLabels,
+    }),
+    { text: `Delivery completion ${deliveredPct} of received pieces for the month.`, fontSize: 7, color: GRAY, margin: [0, 2, 0, 4] },
   ]
 
-  // ── Daily activity ──────────────────────────────────────────────────────
-  content.push(sectionTitle(1, 'Day-by-Day Activity', `${daily.length} active day(s)`))
+  // ── Day-by-day ───────────────────────────────────────────────────────────
+  content.push(sectionTitle(2, 'Day-by-Day Activity', `${daily.length} active day(s) • ${money(totals.income)} income`))
   if (daily.length === 0) {
     content.push(noData('No activity recorded for this month.'))
   } else {
+    const sumOf = (k: keyof (typeof daily)[number]) => daily.reduce((s, d) => s + (Number(d[k]) || 0), 0)
     content.push(
       dataTable({
         header: ['Date', 'Income', 'Expenses', 'Net', 'Bills', 'Payments', 'GP Pcs', 'Del Pcs', 'Present'],
-        widths: [62, 62, 62, 62, 62, 62, 52, 52, 46],
+        widths: [58, 60, 60, 58, 60, 60, 50, 50, 44],
         alignments: ['left', 'right', 'right', 'right', 'right', 'right', 'right', 'right', 'center'],
         body: daily.map(d => [
           d.date,
@@ -181,23 +216,40 @@ export async function generateMonthReportPdf(snapshot: MonthlyReportSnapshot): P
           String(d.deliveries_pieces),
           String(d.present),
         ]),
-      })
+        totals: [
+          'Total',
+          money(sumOf('income')),
+          money(sumOf('expenses')),
+          money(sumOf('income') - sumOf('expenses')),
+          money(sumOf('bills')),
+          money(sumOf('payments')),
+          String(sumOf('gatepass_pieces')),
+          String(sumOf('deliveries_pieces')),
+          String(sumOf('present')),
+        ],
+      }),
+      { text: `Month totals track the ledger & operational activity above. Peak income day ${String(daily.reduce((a, b) => (b.income > a.income ? b : a)).date)}.`, fontSize: 7, color: GRAY, margin: [0, 4, 0, 0] }
     )
   }
 
   // ── Income ──────────────────────────────────────────────────────────────
-  content.push(sectionTitle(2, 'Income (Ledger)', `${snapshot.income.length} entries • ${money(totals.income)}`))
-  const incomeOk = snapshot.sources.find(s => s.key === 'income')?.ok ?? true
-  if (!incomeOk) {
+  content.push(sectionTitle(3, 'Income (Ledger)', `${snapshot.income.length} entries • ${money(totals.income)}`))
+  if (!sourceOk(snapshot, 'income')) {
     content.push(sourceFailed(snapshot.sources.find(s => s.key === 'income')?.error))
   } else if (snapshot.income.length === 0) {
     content.push(noData('No income recorded this month.'))
   } else {
+    const byCustomer = new Map<string, number>()
+    const bySource = new Map<string, number>()
+    for (const r of snapshot.income) {
+      byCustomer.set(r.customer ?? 'Other', (byCustomer.get(r.customer ?? 'Other') ?? 0) + r.amount)
+      bySource.set(r.source ?? 'Other', (bySource.get(r.source ?? 'Other') ?? 0) + r.amount)
+    }
     content.push(
       dataTable({
-        header: ['No', 'Date', 'Customer', 'Description', 'Source', 'Amount'],
-        widths: [24, 62, '*', '*', 60, 70],
-        alignments: ['left', 'left', 'left', 'left', 'left', 'right'],
+        header: ['No', 'Date', 'Customer', 'Description', 'Source', 'Amount', '% of income'],
+        widths: [22, 52, '*', '*', 50, 64, 42],
+        alignments: ['left', 'left', 'left', 'left', 'left', 'right', 'right'],
         body: snapshot.income.map((r, i) => [
           String(i + 1),
           r.date,
@@ -205,24 +257,29 @@ export async function generateMonthReportPdf(snapshot: MonthlyReportSnapshot): P
           r.description ?? '—',
           r.source ?? '—',
           money(r.amount),
+          pct(r.amount, totals.income),
         ]),
-      })
+        totals: totalsRow('Total', '100%', ['', '', '', '', money(totals.income)]),
+      }),
+      breakdownBars('By customer', [...byCustomer.entries()].map(([label, value]) => ({ label, value, color: BLUE })), { maxBars: 8 }),
+      breakdownBars('By source', [...bySource.entries()].map(([label, value]) => ({ label, value, color: INDIGO })), { maxBars: 6 })
     )
   }
 
   // ── Expenses ────────────────────────────────────────────────────────────
-  content.push(sectionTitle(3, 'Expenses', `${snapshot.expenses.length} entries • ${money(totals.expenses)}`))
-  const expenseOk = snapshot.sources.find(s => s.key === 'expenses')?.ok ?? true
-  if (!expenseOk) {
+  content.push(sectionTitle(4, 'Expenses', `${snapshot.expenses.length} entries • ${money(totals.expenses)}`))
+  if (!sourceOk(snapshot, 'expenses')) {
     content.push(sourceFailed(snapshot.sources.find(s => s.key === 'expenses')?.error))
   } else if (snapshot.expenses.length === 0) {
     content.push(noData('No expenses recorded this month.'))
   } else {
+    const byCat = new Map<string, number>()
+    for (const r of snapshot.expenses) byCat.set(r.category ?? 'Other', (byCat.get(r.category ?? 'Other') ?? 0) + r.amount)
     content.push(
       dataTable({
-        header: ['No', 'Date', 'Category', 'Description', 'Payee', 'Amount'],
-        widths: [24, 62, '*', '*', 90, 70],
-        alignments: ['left', 'left', 'left', 'left', 'left', 'right'],
+        header: ['No', 'Date', 'Category', 'Description', 'Payee', 'Amount', '% of expenses'],
+        widths: [22, 52, 70, '*', 58, 64, 42],
+        alignments: ['left', 'left', 'left', 'left', 'left', 'right', 'right'],
         body: snapshot.expenses.map((r, i) => [
           String(i + 1),
           r.date,
@@ -230,26 +287,34 @@ export async function generateMonthReportPdf(snapshot: MonthlyReportSnapshot): P
           r.description ?? '—',
           r.payee ?? '—',
           money(r.amount),
+          pct(r.amount, totals.expenses),
         ]),
-      })
+        totals: totalsRow('Total', '100%', ['', '', '', '', money(totals.expenses)]),
+      }),
+      breakdownBars('By category', [...byCat.entries()].map(([label, value]) => ({ label, value, color: RED })), { maxBars: 8 })
     )
   }
 
-  // ── Attendance ──────────────────────────────────────────────────────────
-  content.push(sectionTitle(4, 'Attendance', `${snapshot.attendance.length} record(s)`))
-  const attOk = snapshot.sources.find(s => s.key === 'attendance')?.ok ?? true
-  if (!attOk) {
+  // ── Attendance ───────────────────────────────────────────────────────────
+  content.push(sectionTitle(5, 'Attendance', `${attTotal} record(s) • ${attRate} present`))
+  if (!sourceOk(snapshot, 'attendance')) {
     content.push(sourceFailed(snapshot.sources.find(s => s.key === 'attendance')?.error))
   } else if (snapshot.attendance.length === 0) {
     content.push(noData('No attendance recorded this month.'))
   } else {
-    const present = snapshot.attendance.filter(r => r.status.includes('PRESENT') || ['HALF_DAY', 'HALFDAY', 'HALF'].includes(r.status)).length
-    const leave = snapshot.attendance.filter(r => r.status.includes('LEAVE')).length
-    const holiday = snapshot.attendance.filter(r => r.status === 'HOLIDAY').length
     content.push(
+      segmentedBar(
+        [
+          { name: 'Present', value: att.present, color: GREEN },
+          { name: 'Leave', value: att.leave, color: AMBER },
+          { name: 'Holiday', value: att.holiday, color: GRAY },
+          ...(att.other > 0 ? [{ name: 'Other', value: att.other, color: RED }] : []),
+        ],
+        'Month'
+      ),
       dataTable({
         header: ['Date', 'Employee', 'Status', 'OT (hrs)'],
-        widths: [62, '*', 110, 60],
+        widths: [58, '*', 120, 56],
         alignments: ['left', 'left', 'center', 'right'],
         body: snapshot.attendance.map(r => [
           r.date,
@@ -257,23 +322,23 @@ export async function generateMonthReportPdf(snapshot: MonthlyReportSnapshot): P
           r.status,
           r.overtime_hours ? String(r.overtime_hours) : '—',
         ]),
-      }),
-      { text: `Present ${present}   •   Leave ${leave}   •   Holiday ${holiday}`, fontSize: 7.5, color: GRAY, margin: [0, 4, 0, 0] }
+      })
     )
   }
 
   // ── Payroll ─────────────────────────────────────────────────────────────
-  content.push(sectionTitle(5, 'Payroll — salary slips paid in month', `${snapshot.salary_slips.length} slip(s) • ${money(totals.salary_paid)}`))
-  const payOk = snapshot.sources.find(s => s.key === 'salary')?.ok ?? true
-  if (!payOk) {
+  content.push(sectionTitle(6, 'Payroll — salary slips paid in month', `${snapshot.salary_slips.length} slip(s) • ${money(salaryTotal)}`))
+  if (!sourceOk(snapshot, 'salary')) {
     content.push(sourceFailed(snapshot.sources.find(s => s.key === 'salary')?.error))
   } else if (snapshot.salary_slips.length === 0) {
     content.push(noData('No salary slips paid in this month.'))
   } else {
+    const grossSum = snapshot.salary_slips.reduce((sum, s) => sum + s.gross, 0)
+    const dedSum = snapshot.salary_slips.reduce((sum, s) => sum + s.deductions, 0)
     content.push(
       dataTable({
         header: ['No', 'Employee', 'Period', 'Gross', 'Deductions', 'Net', 'Paid'],
-        widths: [24, '*', 130, 60, 60, 60, 62],
+        widths: [22, '*', 120, 56, 56, 56, 60],
         alignments: ['left', 'left', 'left', 'right', 'right', 'right', 'left'],
         body: snapshot.salary_slips.map((r, i) => [
           String(i + 1),
@@ -284,71 +349,78 @@ export async function generateMonthReportPdf(snapshot: MonthlyReportSnapshot): P
           money(r.net),
           r.paid_date ?? '—',
         ]),
+        totals: totalsRow('Total', '', ['', money(grossSum), money(dedSum), money(salaryTotal), '']),
       })
     )
   }
 
-  // ── Bills ───────────────────────────────────────────────────────────────
-  content.push(sectionTitle(6, 'Bills', `${snapshot.bills.length} bill(s) • ${money(totals.bills)}`))
-  const billsOk = snapshot.sources.find(s => s.key === 'bills')?.ok ?? true
-  if (!billsOk) {
+  // ── Bills ────────────────────────────────────────────────────────────────
+  content.push(sectionTitle(7, 'Bills', `${snapshot.bills.length} bill(s) • ${money(totals.bills)} • ${collectedPct} collected`))
+  if (!sourceOk(snapshot, 'bills')) {
     content.push(sourceFailed(snapshot.sources.find(s => s.key === 'bills')?.error))
   } else if (snapshot.bills.length === 0) {
     content.push(noData('No bills raised this month.'))
   } else {
+    const itemsTotal = snapshot.bills.reduce((sum, b) => sum + b.items_count, 0)
+    const byClient = new Map<string, number>()
+    for (const b of snapshot.bills) byClient.set(b.client_name, (byClient.get(b.client_name) ?? 0) + b.balance)
     content.push(
       dataTable({
         header: ['Date', 'Bill No', 'Client', 'Items', 'Total', 'Balance', 'Status'],
-        widths: [62, '*', '*', 36, 60, 60, 64],
+        widths: [54, '*', '*', 34, 56, 56, 62],
         alignments: ['left', 'left', 'left', 'right', 'right', 'right', 'center'],
         body: snapshot.bills.map(b => [b.date, b.bill_id || '—', b.client_name, String(b.items_count), money(b.total), money(b.balance), statusCell(b.payment_status || '—')]),
+        totals: totalsRow('Total', `${collectedPct} collected`, [String(itemsTotal), money(totals.bills), money(totals.bill_balance), '']),
       }),
-      { text: `Outstanding balance ${money(totals.bill_balance)}`, fontSize: 7.5, color: AMBER, bold: true, margin: [0, 4, 0, 0] }
+      breakdownBars('Outstanding by client', [...byClient.entries()].filter(([, v]) => v > 0).map(([label, value]) => ({ label, value, color: AMBER })), { maxBars: 8 })
     )
   }
 
   // ── Payments received ───────────────────────────────────────────────────
-  content.push(sectionTitle(7, 'Payments Received', `${snapshot.payments.length} payment(s) • ${money(totals.payments)}`))
-  const payRecOk = snapshot.sources.find(s => s.key === 'payments')?.ok ?? true
-  if (!payRecOk) {
+  content.push(sectionTitle(8, 'Payments Received', `${snapshot.payments.length} payment(s) • ${money(paymentsTotal)}`))
+  if (!sourceOk(snapshot, 'payments')) {
     content.push(sourceFailed(snapshot.sources.find(s => s.key === 'payments')?.error))
   } else if (snapshot.payments.length === 0) {
     content.push(noData('No payments received this month.'))
   } else {
+    const byMethod = new Map<string, number>()
+    for (const p of snapshot.payments) byMethod.set(p.method ?? 'Other', (byMethod.get(p.method ?? 'Other') ?? 0) + p.amount)
     content.push(
       dataTable({
-        header: ['Date', 'Customer', 'Method', 'Reference', 'Amount'],
-        widths: [62, '*', 90, 120, 70],
-        alignments: ['left', 'left', 'left', 'left', 'right'],
-        body: snapshot.payments.map(p => [p.date, p.customer ?? '—', p.method ?? '—', p.ref ?? '—', money(p.amount)]),
-      })
+        header: ['Date', 'Customer', 'Method', 'Reference', 'Amount', '% of payments'],
+        widths: [54, '*', 64, 90, 60, 42],
+        alignments: ['left', 'left', 'left', 'left', 'right', 'right'],
+        body: snapshot.payments.map(p => [p.date, p.customer ?? '—', p.method ?? '—', p.ref ?? '—', money(p.amount), pct(p.amount, paymentsTotal)]),
+        totals: totalsRow('Total', '100%', ['', '', money(paymentsTotal)]),
+      }),
+      breakdownBars('By method', [...byMethod.entries()].map(([label, value]) => ({ label, value, color: TEAL })), { maxBars: 6 })
     )
   }
 
   // ── Shop bills ──────────────────────────────────────────────────────────
-  content.push(sectionTitle(8, 'Shop Bills', `${snapshot.shop_bills.length} bill(s)`))
-  const shopOk = snapshot.sources.find(s => s.key === 'shop_bills')?.ok ?? true
-  if (!shopOk) {
+  content.push(sectionTitle(9, 'Shop Bills', `${snapshot.shop_bills.length} bill(s)`))
+  if (!sourceOk(snapshot, 'shop_bills')) {
     content.push(sourceFailed(snapshot.sources.find(s => s.key === 'shop_bills')?.error))
   } else if (snapshot.shop_bills.length === 0) {
     content.push(noData('No shop bills this month.'))
   } else {
     const shopTotal = snapshot.shop_bills.reduce((s, b) => s + b.total, 0)
+    const shopBal = snapshot.shop_bills.reduce((s, b) => s + b.balance, 0)
+    const shopCol = pct(shopTotal - shopBal, shopTotal)
     content.push(
       dataTable({
         header: ['Date', 'Bill No', 'Client', 'Total', 'Balance', 'Status'],
-        widths: [62, '*', '*', 60, 60, 74],
+        widths: [54, '*', '*', 56, 56, 66],
         alignments: ['left', 'left', 'left', 'right', 'right', 'center'],
         body: snapshot.shop_bills.map(b => [b.date, b.bill_id || '—', b.client_name, money(b.total), money(b.balance), statusCell(b.status || '—')]),
-      }),
-      { text: `${snapshot.shop_bills.length} shop bill(s)   •   Total ${money(shopTotal)}`, fontSize: 7.5, color: GRAY, margin: [0, 4, 0, 0] }
+        totals: totalsRow('Total', `${shopCol} collected`, ['', money(shopTotal), money(shopBal), '']),
+      })
     )
   }
 
   // ── Legacy invoices ─────────────────────────────────────────────────────
-  content.push(sectionTitle(9, 'Legacy Invoices', `${snapshot.legacy_invoices.length} invoice(s)`))
-  const legacyOk = snapshot.sources.find(s => s.key === 'legacy_invoices')?.ok ?? true
-  if (!legacyOk) {
+  content.push(sectionTitle(10, 'Legacy Invoices', `${snapshot.legacy_invoices.length} invoice(s)`))
+  if (!sourceOk(snapshot, 'legacy_invoices')) {
     content.push(sourceFailed(snapshot.sources.find(s => s.key === 'legacy_invoices')?.error))
   } else if (snapshot.legacy_invoices.length === 0) {
     content.push(noData('No legacy invoices this month.'))
@@ -357,19 +429,18 @@ export async function generateMonthReportPdf(snapshot: MonthlyReportSnapshot): P
     content.push(
       dataTable({
         header: ['Date', 'Invoice No', 'Shop', 'Total', 'Status'],
-        widths: [62, '*', '*', 70, 70],
+        widths: [54, '*', '*', 62, 62],
         alignments: ['left', 'left', 'left', 'right', 'center'],
         body: snapshot.legacy_invoices.map(b => [b.date, b.invoice_id || '—', b.client_name, money(b.total), b.status ?? '—']),
-      }),
-      { text: `${snapshot.legacy_invoices.length} legacy invoice(s)   •   Total ${money(legacyTotal)}`, fontSize: 7.5, color: GRAY, margin: [0, 4, 0, 0] }
+        totals: totalsRow('Total', '', ['', money(legacyTotal), '']),
+      })
     )
   }
 
   // ── Linen activity ──────────────────────────────────────────────────────
-  content.push(sectionTitle(10, 'Linen Activity'))
-  const gpOk = snapshot.sources.find(s => s.key === 'gatepasses')?.ok ?? true
-  content.push({ text: `Gate Passes Received • ${totals.gatepass_pieces} pieces`, bold: true, fontSize: 9, color: DARK, characterSpacing: 1, margin: [0, 2, 0, 4] })
-  if (!gpOk) {
+  content.push(sectionTitle(11, 'Linen Activity', `${totals.gatepass_pieces} received • ${totals.deliveries_pieces} delivered • ${deliveredPct} completion`))
+  content.push(miniHeading('GATE PASSES RECEIVED'))
+  if (!sourceOk(snapshot, 'gatepasses')) {
     content.push(sourceFailed(snapshot.sources.find(s => s.key === 'gatepasses')?.error))
   } else if (snapshot.gatepasses.length === 0) {
     content.push(noData('—'))
@@ -377,16 +448,16 @@ export async function generateMonthReportPdf(snapshot: MonthlyReportSnapshot): P
     content.push(
       dataTable({
         header: ['Date', 'GP No', 'Customer', 'Pieces', 'Delivered'],
-        widths: [62, '*', '*', 60, 70],
+        widths: [54, '*', '*', 56, 60],
         alignments: ['left', 'left', 'left', 'right', 'center'],
         body: snapshot.gatepasses.map(g => [g.receiving_date, g.gp_id || '—', g.customer, String(g.total_pieces), g.delivered ? 'Yes' : 'No']),
+        totals: totalsRow('Total', '', [String(totals.gatepass_pieces), '']),
       })
     )
   }
 
-  content.push({ text: `Deliveries • ${totals.deliveries_pieces} pieces`, bold: true, fontSize: 9, color: DARK, characterSpacing: 1, margin: [0, 10, 0, 4] })
-  const delOk = snapshot.sources.find(s => s.key === 'deliveries')?.ok ?? true
-  if (!delOk) {
+  content.push(miniHeading('DELIVERIES'))
+  if (!sourceOk(snapshot, 'deliveries')) {
     content.push(sourceFailed(snapshot.sources.find(s => s.key === 'deliveries')?.error))
   } else if (snapshot.deliveries.length === 0) {
     content.push(noData('—'))
@@ -394,40 +465,48 @@ export async function generateMonthReportPdf(snapshot: MonthlyReportSnapshot): P
     content.push(
       dataTable({
         header: ['Date', 'Delivery No', 'Gate Pass', 'Customer', 'Pieces'],
-        widths: [62, '*', 90, '*', 60],
+        widths: [54, '*', 70, '*', 56],
         alignments: ['left', 'left', 'left', 'left', 'right'],
         body: snapshot.deliveries.map(d => [d.delivery_date, d.delivery_id || '—', d.gp_id ?? '—', d.customer, String(d.total_pieces)]),
+        totals: totalsRow('Total', '', [String(totals.deliveries_pieces), '']),
       })
     )
   }
 
-  content.push({ text: 'Returns', bold: true, fontSize: 9, color: DARK, characterSpacing: 1, margin: [0, 10, 0, 4] })
-  const retOk = snapshot.sources.find(s => s.key === 'returns')?.ok ?? true
-  if (!retOk) {
+  content.push(miniHeading('RETURNS'))
+  if (!sourceOk(snapshot, 'returns')) {
     content.push(sourceFailed(snapshot.sources.find(s => s.key === 'returns')?.error))
   } else if (snapshot.returns.length === 0) {
     content.push(noData('—'))
   } else {
+    const retItems = snapshot.returns.reduce((sum, r) => sum + r.items.reduce((s, i) => s + i.quantity, 0), 0)
     content.push(
       dataTable({
         header: ['Date', 'Return No', 'Gate Pass', 'Customer', 'Items'],
-        widths: [62, '*', 90, '*', '*'],
+        widths: [54, '*', 70, '*', '*'],
         alignments: ['left', 'left', 'left', 'left', 'left'],
         body: snapshot.returns.map(r => [r.date, r.return_id || '—', r.gp_id ?? '—', r.customer, r.items.map(i => `${i.name} ×${i.quantity}`).join(', ') || '—']),
+        totals: totalsRow('Total', '', [String(retItems), '']),
       })
     )
   }
 
   // ── Linen status ────────────────────────────────────────────────────────
-  content.push(sectionTitle(11, 'Linen Stock Status'))
-  const linenOk = snapshot.sources.find(s => s.key === 'linen_status')?.ok ?? true
-  if (!linenOk) {
+  content.push(sectionTitle(12, 'Linen Stock Status'))
+  if (!sourceOk(snapshot, 'linen_status')) {
     content.push(sourceFailed(snapshot.sources.find(s => s.key === 'linen_status')?.error))
   } else if (!snapshot.linen_status) {
     content.push(noData('—'))
   } else {
     const ls = snapshot.linen_status
     content.push(
+      segmentedBar([
+        { name: 'In stock', value: ls.in_stock, color: GREEN },
+        { name: 'In use', value: ls.in_use, color: BLUE },
+        { name: 'In wash', value: ls.in_wash, color: TEAL },
+        { name: 'Retired', value: ls.retired, color: GRAY },
+        ...(ls.lost > 0 ? [{ name: 'Lost', value: ls.lost, color: RED }] : []),
+      ]),
       dataTable({
         header: ['In Stock', 'In Use', 'In Wash', 'Retired', 'Lost', 'Total'],
         widths: ['*', '*', '*', '*', '*', '*'],
@@ -442,7 +521,7 @@ export async function generateMonthReportPdf(snapshot: MonthlyReportSnapshot): P
 
   // ── Source health ───────────────────────────────────────────────────────
   if (failedSources.length > 0) {
-    content.push(sectionTitle(12, 'Data Sources With Issues'))
+    content.push(sectionTitle(13, 'Data Sources With Issues'))
     content.push({
       text: failedSources.map(s => `• ${s.label}: ${s.error ?? 'failed'}`).join('\n'),
       fontSize: 8,
