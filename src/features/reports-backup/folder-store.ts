@@ -9,6 +9,7 @@ interface ReportsKvRow {
 
 export interface LastBackupMeta {
   report_date: string
+  period_kind?: 'day' | 'month'
   started_at: string
   finished_at: string
   folder_name: string

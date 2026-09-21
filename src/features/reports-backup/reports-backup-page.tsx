@@ -20,18 +20,20 @@ import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/ca
 import { Breadcrumb } from '../../components/ui/breadcrumb'
 import { Button } from '../../components/ui/button'
 import { collectDaySnapshot, REPORT_SOURCES } from './collect-snapshot'
-import {
-  buildVerifiedJsonBackup,
-  supportsGzip,
-} from './json-backup'
+import { collectMonthSnapshot } from './collect-month-snapshot'
+import { buildVerifiedJsonBackup, supportsGzip } from './json-backup'
 import { generateReportPdf } from './pdf-report'
+import { generateMonthReportPdf } from './pdf-month-report'
 import {
   checkExisting,
+  checkExistingMonth,
   folderStructure,
   isFileSystemAccessSupported,
+  monthFolderStructure,
   pickFolder,
   verifyFolder,
   writeDailyFiles,
+  writeMonthFiles,
   type FolderCheck,
 } from './folder'
 import {
@@ -45,12 +47,21 @@ import {
   saveLastBackup,
   type LastBackupMeta,
 } from './folder-store'
-import type { DailyReportSnapshot, WrittenFile } from './types'
+import type { DailyReportSnapshot, MonthlyReportSnapshot, WrittenFile } from './types'
 
 function todayStr(): string {
   const d = new Date()
   const pad = (n: number) => String(n).padStart(2, '0')
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
+}
+
+function currentMonth(): string {
+  return todayStr().slice(0, 7)
+}
+
+function monthLabel(period: string): string {
+  const [y, m] = period.split('-').map(Number)
+  return new Date(y, (m || 1) - 1, 1).toLocaleString('en-GB', { month: 'long', year: 'numeric' })
 }
 
 function fmtDate(value: string): string {
@@ -69,7 +80,8 @@ function logLinesKey(finished: boolean) {
 }
 
 interface RunResult {
-  snapshot: DailyReportSnapshot
+  periodKind: 'day' | 'month'
+  snapshot: DailyReportSnapshot | MonthlyReportSnapshot
   files: WrittenFile[]
   modes: ('pdf' | 'json')[]
   finishedAt: string
@@ -81,7 +93,9 @@ export default function ReportsBackupPage() {
 
   const [folder, setFolder] = useState<{ name: string; configuredAt?: number } | null>(null)
   const [folderCheck, setFolderCheck] = useState<FolderCheck | null>(null)
+  const [periodKind, setPeriodKind] = useState<'day' | 'month'>('day')
   const [date, setDate] = useState(todayStr())
+  const [month, setMonth] = useState(currentMonth())
   const [busy, setBusy] = useState(false)
   const [log, setLog] = useState<string[]>([])
   const [existing, setExisting] = useState<string[]>([])
@@ -102,7 +116,10 @@ export default function ReportsBackupPage() {
     })()
   }, [])
 
-  const structure = useMemo(() => folderStructure(date), [date])
+  const structure = useMemo(
+    () => (periodKind === 'day' ? folderStructure(date) : monthFolderStructure(month)),
+    [periodKind, date, month]
+  )
   const gzipSupported = supportsGzip()
 
   const appendLog = (line: string) => setLog(prev => [...prev, line])
@@ -140,9 +157,9 @@ export default function ReportsBackupPage() {
       toast.error('No folder selected yet')
       return
     }
-    const found = await checkExisting(handle, date)
+    const found = periodKind === 'day' ? await checkExisting(handle, date) : await checkExistingMonth(handle, month)
     setExisting(found)
-    if (found.length === 0) toast.success('No files yet for this date')
+    if (found.length === 0) toast.success('No files yet for this period')
   }
 
   async function run(mode: 'pdf' | 'json' | 'both') {
@@ -154,10 +171,11 @@ export default function ReportsBackupPage() {
     const startedAtText = startedAt.replace('T', ' ').slice(0, 19)
     try {
       appendLog(`Started at ${startedAtText} (UTC)`)
-      appendLog(`Generating daily report for ${date} —${mode === 'both' ? ' PDF + JSON' : mode === 'pdf' ? ' PDF' : ' JSON'}`)
+      const isMonth = periodKind === 'month'
+      appendLog(`Generating ${isMonth ? 'MONTHLY' : 'daily'} report for ${isMonth ? month : date} —${mode === 'both' ? ' PDF + JSON' : mode === 'pdf' ? ' PDF' : ' JSON'}`)
 
-      appendLog('Collecting daily snapshot…')
-      const snapshot = await collectDaySnapshot(date)
+      appendLog(`Collecting ${isMonth ? 'monthly' : 'daily'} snapshot…`)
+      const snapshot = isMonth ? await collectMonthSnapshot(month) : await collectDaySnapshot(date)
       const okCount = snapshot.sources.filter(s => s.ok).length
       appendLog(
         `Snapshot ready: ${okCount}/${snapshot.sources.length} sources` +
@@ -171,6 +189,7 @@ export default function ReportsBackupPage() {
       appendLog(`API bases → ${snapshot.meta.api_bases.mgmt_api} · ${snapshot.meta.api_bases.bills_api}`)
       appendLog(`Ledger: income ${fmtMoney(snapshot.totals.income)} • expenses ${fmtMoney(snapshot.totals.expenses)} • net ${fmtMoney(snapshot.totals.net)}`)
 
+      const filePrefix = isMonth ? month : date
       const files: WrittenFile[] = []
       const modesUsed: ('pdf' | 'json')[] = []
       let pdfBlob: Blob | undefined
@@ -178,9 +197,11 @@ export default function ReportsBackupPage() {
 
       if (mode === 'pdf' || mode === 'both') {
         appendLog('Building PDF (pdfmake)…')
-        pdfBlob = await generateReportPdf(snapshot)
+        pdfBlob = isMonth
+          ? await generateMonthReportPdf(snapshot as MonthlyReportSnapshot)
+          : await generateReportPdf(snapshot as DailyReportSnapshot)
         appendLog(`PDF ready: ${fmtBytes(pdfBlob.size)}`)
-        files.push({ name: `${date}.pdf`, size: pdfBlob.size, overwritten: false })
+        files.push({ name: `${filePrefix}.pdf`, size: pdfBlob.size, overwritten: false })
         modesUsed.push('pdf')
       }
 
@@ -194,28 +215,36 @@ export default function ReportsBackupPage() {
         }
         if (jsonBack.gz) {
           appendLog(`JSON.gz ready: ${fmtBytes(jsonBack.gz.size)} (round-trip verified)`)
-          files.push({ name: `${date}.json.gz`, size: jsonBack.gz.size, overwritten: false })
+          files.push({ name: `${filePrefix}.json.gz`, size: jsonBack.gz.size, overwritten: false })
         } else {
           appendLog(`JSON ready: ${fmtBytes(jsonBack.jsonBlob.size)} (plain .json)`)
-          files.push({ name: `${date}.json`, size: jsonBack.jsonBlob.size, overwritten: false })
+          files.push({ name: `${filePrefix}.json`, size: jsonBack.jsonBlob.size, overwritten: false })
         }
         modesUsed.push('json')
       }
 
       const folderHandle = await getFolderHandle()
-      const existingFor = existing.length > 0 ? existing : await (folderHandle ? checkExisting(folderHandle, date) : [])
+      const existingFor =
+        existing.length > 0
+          ? existing
+          : await (folderHandle
+              ? isMonth
+                ? checkExistingMonth(folderHandle, month)
+                : checkExisting(folderHandle, date)
+              : [])
 
       if (!folderHandle) {
         if (pdfBlob) {
-          downloadBlob(pdfBlob, `${date}.pdf`)
-          appendLog(`Downloaded ${date}.pdf (no folder selected)`)
+          downloadBlob(pdfBlob, `${filePrefix}.pdf`)
+          appendLog(`Downloaded ${filePrefix}.pdf (no folder selected)`)
         }
         if (jsonBack) {
-          downloadBlob(jsonBack.gz ?? jsonBack.jsonBlob, jsonBack.gz ? `${date}.json.gz` : `${date}.json`)
-          appendLog(`Downloaded ${jsonBack.gz ? `${date}.json.gz` : `${date}.json`}`)     
+          downloadBlob(jsonBack.gz ?? jsonBack.jsonBlob, jsonBack.gz ? `${filePrefix}.json.gz` : `${filePrefix}.json`)
+          appendLog(`Downloaded ${jsonBack.gz ? `${filePrefix}.json.gz` : `${filePrefix}.json`}`)
         }
         appendLog('No backup folder — files were downloaded instead')
         setResult({
+          periodKind,
           snapshot,
           files,
           modes: modesUsed,
@@ -231,19 +260,27 @@ export default function ReportsBackupPage() {
       }
       appendLog(`Writing into ${folder?.name ?? ''}/${structure.year}/${structure.monthDir}…`)
 
-      const writtenFiles = await writeDailyFiles(folderHandle, {
-        date,
-        pdf: pdfBlob,
-        jsonGz: jsonBack?.gz ?? undefined,
-        jsonPlain: jsonBack && !jsonBack.gz ? jsonBack.jsonBlob : undefined,
-      })
+      const writtenFiles = isMonth
+        ? await writeMonthFiles(folderHandle, {
+            period: month,
+            pdf: pdfBlob,
+            jsonGz: jsonBack?.gz ?? undefined,
+            jsonPlain: jsonBack && !jsonBack.gz ? jsonBack.jsonBlob : undefined,
+          })
+        : await writeDailyFiles(folderHandle, {
+            date,
+            pdf: pdfBlob,
+            jsonGz: jsonBack?.gz ?? undefined,
+            jsonPlain: jsonBack && !jsonBack.gz ? jsonBack.jsonBlob : undefined,
+          })
 
       const finishedAt = new Date().toISOString()
       appendLog(`Done at ${finishedAt.replace('T', ' ').slice(0, 19)} (UTC)`)
-      setResult({ snapshot, files: writtenFiles, modes: modesUsed, finishedAt, downloadOnly: false })
+      setResult({ periodKind, snapshot, files: writtenFiles, modes: modesUsed, finishedAt, downloadOnly: false })
 
       const meta: LastBackupMeta = {
-        report_date: date,
+        report_date: filePrefix,
+        period_kind: periodKind,
         started_at: startedAt,
         finished_at: finishedAt,
         folder_name: folder?.name ?? '',
@@ -259,7 +296,7 @@ export default function ReportsBackupPage() {
       }
       setLastBackup(meta)
       await saveLastBackup(meta)
-      toast.success(`Daily report saved (${files.map(f => f.name).join(', ')})`)
+      toast.success(`${isMonth ? 'Monthly' : 'Daily'} report saved (${files.map(f => f.name).join(', ')})`)
     } catch (err: unknown) {
       appendLog(`Error: ${err instanceof Error ? err.message : 'Unknown failure'}`)
       toast.error(err instanceof Error ? err.message : 'Report generation failed')
@@ -277,12 +314,12 @@ export default function ReportsBackupPage() {
           <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#EFF6FF] border border-[#BFDBFE]">
             <Database className="h-4 w-4 text-[#2563EB]" />
           </div>
-          <h1 className="text-dashboard-title">Daily Report &amp; Backup</h1>
+          <h1 className="text-dashboard-title">Reports &amp; Backup</h1>
         </div>
         <p className="text-[13px] mt-0.5 text-[#98A2B3]">
-          Generate a human-readable daily PDF report and a machine-readable JSON backup of every business area, filed
-          under <span className="font-medium text-[#475467]">{structure.year}/{structure.monthDir}/</span> in your chosen
-          folder.
+          Generate a daily PDF report (with a full month view too) and a machine-readable JSON backup of every business
+          area, filed under <span className="font-medium text-[#475467]">{structure.year}/{structure.monthDir}/</span> in
+          your chosen folder.
         </p>
       </div>
 
@@ -340,9 +377,9 @@ export default function ReportsBackupPage() {
                 <div className="flex items-start gap-2 rounded-lg border border-[#E5E7EB] bg-[#F9FAFB] p-3">
                   <MagnifyingGlass className="h-4 w-4 text-[#6B7280] mt-0.5 shrink-0" />
                   <p className="text-[12px] text-[#374151]">
-                    Pick the folder that should hold your daily reports, e.g.{' '}
+                    Pick the folder that should hold your reports, e.g.{' '}
                     <span className="font-medium">D:\LoveLaundry\Data\Reports</span>. Reports are filed as
-                    YYYY/MM-Month/YYYY-MM-DD.pdf and .json.gz underneath it.
+                    YYYY/MM-Month/YYYY-MM-DD.pdf + .json.gz (daily) and YYYY-MM.pdf + .json.gz (monthly) underneath it.
                   </p>
                 </div>
                 <Button size="sm" onClick={chooseFolder} disabled={!fsSupported}>
@@ -362,20 +399,59 @@ export default function ReportsBackupPage() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div>
-              <label className="mb-1 flex items-center gap-1.5 text-[12px] font-medium text-[#475467]">
-                <CalendarBlank className="h-3.5 w-3.5" /> Report date
-              </label>
-              <input
-                type="date"
-                value={date}
-                max={todayStr()}
-                onChange={e => {
-                  setDate(e.target.value || todayStr())
+            <div className="grid grid-cols-2 gap-1 rounded-lg border border-[#E5E7EB] bg-[#F9FAFB] p-1">
+              <button
+                type="button"
+                onClick={() => {
+                  setPeriodKind('day')
                   setExisting([])
                 }}
-                className="h-9 w-full rounded-lg border border-[#E5E7EB] bg-white px-3 text-[13px] text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/30"
-              />
+                className={`h-7 rounded-md text-[12px] font-medium transition-colors ${
+                  periodKind === 'day' ? 'bg-white shadow-sm text-[#111827]' : 'text-[#98A2B3]'
+                }`}
+              >
+                Day
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setPeriodKind('month')
+                  setExisting([])
+                }}
+                className={`h-7 rounded-md text-[12px] font-medium transition-colors ${
+                  periodKind === 'month' ? 'bg-white shadow-sm text-[#111827]' : 'text-[#98A2B3]'
+                }`}
+              >
+                Month
+              </button>
+            </div>
+            <div>
+              <label className="mb-1 flex items-center gap-1.5 text-[12px] font-medium text-[#475467]">
+                <CalendarBlank className="h-3.5 w-3.5" /> Report {periodKind === 'day' ? 'date' : 'month'}
+              </label>
+              {periodKind === 'day' ? (
+                <input
+                  type="date"
+                  value={date}
+                  max={todayStr()}
+                  onChange={e => {
+                    setDate(e.target.value || todayStr())
+                    setExisting([])
+                  }}
+                  className="h-9 w-full rounded-lg border border-[#E5E7EB] bg-white px-3 text-[13px] text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/30"
+                />
+              ) : (
+                <input
+                  type="month"
+                  value={month}
+                  max={currentMonth()}
+                  onChange={e => {
+                    setMonth(e.target.value || currentMonth())
+                    setExisting([])
+                  }}
+                  className="h-9 w-full rounded-lg border border-[#E5E7EB] bg-white px-3 text-[13px] text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/30"
+                />
+              )}
             </div>
 
             <div className="flex flex-wrap gap-2">
@@ -447,7 +523,11 @@ export default function ReportsBackupPage() {
             {lastBackup ? (
               <div className="space-y-2 text-[13px]">
                 <p className="text-[#111827]">
-                  <span className="font-medium">{fmtDate(lastBackup.report_date)}</span>{' '}
+                  <span className="font-medium">
+                    {lastBackup.period_kind === 'month'
+                      ? monthLabel(lastBackup.report_date)
+                      : fmtDate(lastBackup.report_date)}
+                  </span>{' '}
                   <span className="text-[#98A2B3]"> · {lastBackup.finished_at.replace('T', ' ').slice(11, 19)} UTC</span>
                 </p>
                 <p className="text-[#475467]">

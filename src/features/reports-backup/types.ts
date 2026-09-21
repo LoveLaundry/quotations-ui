@@ -169,6 +169,62 @@ export interface WrittenFile {
   overwritten: boolean
 }
 
+export interface MonthDayAggregate {
+  date: string
+  income: number
+  expenses: number
+  bills: number
+  bill_balance: number
+  payments: number
+  salary_paid: number
+  gatepass_pieces: number
+  deliveries_pieces: number
+  present: number
+  leave: number
+}
+
+export interface MonthlyReportSnapshot {
+  meta: {
+    backup_version: number
+    report_type: 'monthly'
+    period: string
+    month_name: string
+    generated_at: string
+    generator: string
+    api_bases: {
+      mgmt_api: string
+      bills_api: string
+    }
+  }
+  company: CompanyBrief
+  income: IncomeRecord[]
+  expenses: ExpenseRecord[]
+  attendance: AttendanceRecord[]
+  salary_slips: SalarySlipRecord[]
+  bills: BillRecord[]
+  payments: PaymentRecord[]
+  shop_bills: ShopBillRecord[]
+  legacy_invoices: LegacyInvoiceRecord[]
+  gatepasses: GatePassRecord[]
+  deliveries: DeliveryRecord[]
+  returns: ReturnRecord[]
+  linen_status?: LinenStatusCount
+  daily: MonthDayAggregate[]
+  sources: SourceStatus[]
+  totals: {
+    income: number
+    expenses: number
+    net: number
+    bills: number
+    bill_balance: number
+    payments: number
+    salary_paid: number
+    gatepass_pieces: number
+    deliveries_pieces: number
+    work_days: number
+  }
+}
+
 export interface BackupResult {
   report_date: string
   started_at: string

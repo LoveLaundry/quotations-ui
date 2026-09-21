@@ -30,12 +30,12 @@ function pad(n: number): string {
   return String(n).padStart(2, '0')
 }
 
-function toDay(d: Date): string {
+export function toDay(d: Date): string {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
 }
 
 /** Extracts a local date (YYYY-MM-DD) from a string / Date / timestamp, or undefined. */
-function dayOf(value: unknown): string | undefined {
+export function dayOf(value: unknown): string | undefined {
   if (value == null) return undefined
   if (value instanceof Date) {
     return Number.isNaN(value.getTime()) ? undefined : toDay(value)
@@ -54,20 +54,21 @@ function dayOf(value: unknown): string | undefined {
   return undefined
 }
 
-function toAmount(value: unknown): number {
+export function toAmount(value: unknown): number {
   const n = Number(value)
   return Number.isFinite(n) ? n : 0
 }
 
-function toStringValue(value: unknown): string | undefined {
+export function toStringValue(value: unknown): string | undefined {
   if (value == null) return undefined
   if (typeof value === 'string') return value.trim() || undefined
   if (typeof value === 'number') return String(value)
+  if (value instanceof Date) return value.toISOString()
   return undefined
 }
 
 /** Picks the first defined candidate field from a record. */
-function pick(record: Record<string, unknown>, candidates: string[]): unknown {
+export function pick(record: Record<string, unknown>, candidates: string[]): unknown {
   for (const key of candidates) {
     const value = record[key]
     if (value !== undefined && value !== null && value !== '') return value
@@ -75,7 +76,7 @@ function pick(record: Record<string, unknown>, candidates: string[]): unknown {
   return undefined
 }
 
-function arrayRows(response: unknown): Record<string, unknown>[] {
+export function arrayRows(response: unknown): Record<string, unknown>[] {
   const data = (response as { data?: unknown } | undefined)?.data ?? response
   if (Array.isArray(data)) return data as Record<string, unknown>[]
   if (data && typeof data === 'object') {
@@ -94,7 +95,7 @@ function arrayRows(response: unknown): Record<string, unknown>[] {
  * values later that day. Fetching the full month sidesteps that while still
  * letting us pick the exact day client-side.
  */
-function monthWindow(date: string): { start_date: string; end_date: string } {
+export function monthWindow(date: string): { start_date: string; end_date: string } {
   const [y, m] = date.split('-').map(Number)
   return {
     start_date: `${y}-${pad(m || 1)}-01`,
@@ -103,12 +104,20 @@ function monthWindow(date: string): { start_date: string; end_date: string } {
 }
 
 /** Client-side filter: keep only rows whose date field matches the target day. */
-function onDay(rows: Record<string, unknown>[], date: string, candidates: string[]): Record<string, unknown>[] {
+export function onDay(rows: Record<string, unknown>[], date: string, candidates: string[]): Record<string, unknown>[] {
   return rows.filter(r => dayOf(pick(r, candidates)) === date)
 }
 
+/** Client-side filter: keep only rows whose date field falls inside the month. */
+export function onMonth(rows: Record<string, unknown>[], period: string, candidates: string[]): Record<string, unknown>[] {
+  return rows.filter(r => {
+    const day = dayOf(pick(r, candidates))
+    return !!day && day.startsWith(period)
+  })
+}
+
 /** Fetches several pages of a list endpoint (bounded). */
-async function fetchAll(
+export async function fetchAll(
   fetchPage: (offset: number, limit: number) => Promise<unknown>,
   pageSize: number,
   maxPages = 8
@@ -122,7 +131,7 @@ async function fetchAll(
   return all
 }
 
-interface SourceOutput<T> {
+export interface SourceOutput<T> {
   key: string
   label: string
   ok: boolean
@@ -132,10 +141,10 @@ interface SourceOutput<T> {
   records: T[]
 }
 
-interface IncomeOutput extends SourceOutput<IncomeRecord> {
+export interface IncomeOutput extends SourceOutput<IncomeRecord> {
   total: number
 }
-interface ExpenseOutput extends SourceOutput<ExpenseRecord> {
+export interface ExpenseOutput extends SourceOutput<ExpenseRecord> {
   total: number
 }
 
@@ -155,7 +164,7 @@ export const REPORT_SOURCES: { key: string; label: string }[] = [
   { key: 'linen_status', label: 'Linen stock status' },
 ]
 
-function statusOf(output: SourceOutput<unknown> & { count?: number }) {
+export function statusOf(output: SourceOutput<unknown> & { count?: number }) {
   return {
     key: output.key,
     label: output.label,
@@ -166,7 +175,7 @@ function statusOf(output: SourceOutput<unknown> & { count?: number }) {
   }
 }
 
-async function fetchCompany(): Promise<CompanyBrief> {
+export async function fetchCompany(): Promise<CompanyBrief> {
   const fallback = {
     name: COMPANY.name,
     tagline: `${COMPANY.tagline}`,
@@ -432,7 +441,7 @@ async function fetchLegacyInvoices(date: string): Promise<SourceOutput<LegacyInv
   }
 }
 
-function itemRows(value: unknown): { name: string; quantity: number }[] {
+export function itemRows(value: unknown): { name: string; quantity: number }[] {
   if (!Array.isArray(value)) return []
   return value.map((item: Record<string, unknown>) => ({
     name:
@@ -441,11 +450,11 @@ function itemRows(value: unknown): { name: string; quantity: number }[] {
   }))
 }
 
-function totalPieces(items: { name: string; quantity: number }[]): number {
+export function totalPieces(items: { name: string; quantity: number }[]): number {
   return items.reduce((sum, i) => sum + i.quantity, 0)
 }
 
-function customerFrom(r: Record<string, unknown>): string {
+export function customerFrom(r: Record<string, unknown>): string {
   return (
     toStringValue(pick(r, ['client_name', 'guest_name', 'customer_name', 'customer', 'name', 'guest'])) ?? 'Unknown'
   )
@@ -565,7 +574,7 @@ async function fetchLinenStatus(): Promise<SourceOutput<LinenStatusCount> & { co
   }
 }
 
-function errorText(err: unknown): string {
+export function errorText(err: unknown): string {
   const response = (err as { response?: { data?: { detail?: unknown } } })?.response?.data?.detail
   const message = typeof response === 'string' ? response : undefined
   return message ?? (err instanceof Error ? err.message : 'Request failed')

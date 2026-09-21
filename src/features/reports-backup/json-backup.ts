@@ -1,5 +1,3 @@
-import type { DailyReportSnapshot } from './types'
-
 export function supportsGzip(): boolean {
   return (
     typeof CompressionStream !== 'undefined' &&
@@ -16,7 +14,7 @@ export interface JsonBackupOutput {
   error?: string
 }
 
-export function snapshotToJson(snapshot: DailyReportSnapshot): JsonBackupOutput {
+export function snapshotToJson(snapshot: unknown): JsonBackupOutput {
   const json = JSON.stringify(snapshot, null, 2)
   const jsonBlob = new Blob([json], { type: 'application/json;charset=utf-8' })
   return { json, jsonBlob, gz: null, gzip: false, ok: true }
@@ -54,7 +52,7 @@ export async function verifyGzipBlob(
  * Builds the JSON backup, gzip-compresses it (when supported) and verifies the
  * gzip round-trip before the compressed blob may be written to disk.
  */
-export async function buildVerifiedJsonBackup(snapshot: DailyReportSnapshot): Promise<JsonBackupOutput> {
+export async function buildVerifiedJsonBackup(snapshot: unknown): Promise<JsonBackupOutput> {
   const out = snapshotToJson(snapshot)
 
   if (!supportsGzip()) {

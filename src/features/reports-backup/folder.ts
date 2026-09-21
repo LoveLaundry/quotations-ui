@@ -34,6 +34,16 @@ export function folderStructure(date: string) {
   return { year: String(y), monthDir, datePrefix: date }
 }
 
+/**
+ * Same layout for a monthly report: YYYY / MM-MonthName / YYYY-MM.{pdf|json.gz|json}
+ */
+export function monthFolderStructure(period: string) {
+  const [y, m] = period.split('-').map(Number)
+  const monthName = MONTHS[(m || 1) - 1] ?? 'Unknown'
+  const monthDir = `${String(m).padStart(2, '0')}-${monthName}`
+  return { year: String(y), monthDir, period }
+}
+
 export async function pickFolder(): Promise<{ handle: FileSystemDirectoryHandle; name: string } | null> {
   const w = window as WindowWithPicker
   if (!isFileSystemAccessSupported() || !w.showDirectoryPicker) return null
@@ -111,6 +121,15 @@ export async function checkExisting(handle: FileSystemDirectoryHandle, date: str
   return found
 }
 
+export async function checkExistingMonth(handle: FileSystemDirectoryHandle, period: string): Promise<string[]> {
+  const names = [`${period}.pdf`, `${period}.json.gz`, `${period}.json`]
+  const found: string[] = []
+  for (const name of names) {
+    if (await fileExists(handle, `${period}-01`, name)) found.push(name)
+  }
+  return found
+}
+
 async function writeBlob(
   monthDir: FileSystemDirectoryHandle,
   name: string,
@@ -148,5 +167,31 @@ export async function writeDailyFiles(
   if (input.pdf) written.push(await writeBlob(month, `${input.date}.pdf`, input.pdf, true))
   if (input.jsonGz) written.push(await writeBlob(month, `${input.date}.json.gz`, input.jsonGz, true))
   if (input.jsonPlain) written.push(await writeBlob(month, `${input.date}.json`, input.jsonPlain, true))
+  return written
+}
+
+export interface WriteMonthFilesInput {
+  period: string
+  pdf?: Blob
+  jsonGz?: Blob
+  jsonPlain?: Blob
+}
+
+/**
+ * Writes the monthly files under <handle>/<year>/<monthDir>/ with the naming
+ * YYYY-MM.{pdf|json.gz|json}.
+ */
+export async function writeMonthFiles(
+  handle: FileSystemDirectoryHandle,
+  input: WriteMonthFilesInput
+): Promise<WrittenFile[]> {
+  const { year, monthDir } = monthFolderStructure(input.period)
+  const yearDir = await handle.getDirectoryHandle(year, { create: true })
+  const month = await yearDir.getDirectoryHandle(monthDir, { create: true })
+
+  const written: WrittenFile[] = []
+  if (input.pdf) written.push(await writeBlob(month, `${input.period}.pdf`, input.pdf, true))
+  if (input.jsonGz) written.push(await writeBlob(month, `${input.period}.json.gz`, input.jsonGz, true))
+  if (input.jsonPlain) written.push(await writeBlob(month, `${input.period}.json`, input.jsonPlain, true))
   return written
 }

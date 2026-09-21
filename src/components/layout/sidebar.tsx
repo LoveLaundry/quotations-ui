@@ -222,7 +222,7 @@ function SidebarContent({
     ...(isAdmin ? [
       { to: '/users', label: 'Users', icon: Users, end: false },
       { to: '/database-sync', label: 'Database Sync', icon: Database, end: false },
-      { to: '/reports-backup', label: 'Daily Report & Backup', icon: CloudArrowDown, end: false },
+      { to: '/reports-backup', label: 'Reports & Backup', icon: CloudArrowDown, end: false },
     ] : []),
   ]
 
