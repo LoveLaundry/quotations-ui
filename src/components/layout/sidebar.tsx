@@ -28,6 +28,7 @@ import {
   Lightning,
   Brain,
   CloudArrowDown,
+  FlowArrow,
 } from '@phosphor-icons/react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Logo } from '../brand/logo'
@@ -62,6 +63,7 @@ const navGroups: { label: string; items: NavItem[] }[] = [
       { to: '/deliveries', label: 'Deliveries', icon: Truck, end: false, permission: 'view_deliveries', children: [
         { to: '/dispatch', label: 'Dispatch', icon: Truck, end: false },
       ]},
+      { to: '/hotel-linen-flow', label: 'Hotel Linen Flow', icon: FlowArrow, end: false },
       { to: '/returns', label: 'Returns', icon: Truck, end: false, permission: 'view_gate_passes' },
       { to: '/workers', label: 'Staff Management', icon: Users, end: true, children: [
         { to: '/workers/daily-tasks', label: 'Daily Tasks', icon: UsersThree, end: false },

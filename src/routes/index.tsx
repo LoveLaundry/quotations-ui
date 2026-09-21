@@ -33,6 +33,7 @@ const DeliveriesPage = lazy(() => import('../features/quotations/pages/deliverie
 const CreateDeliveryPage = lazy(() => import('../features/quotations/pages/create-delivery-page'))
 const DispatchPage = lazy(() => import('../features/quotations/pages/dispatch-page'))
 const DeliveryDetailPage = lazy(() => import('../features/quotations/pages/delivery-detail-page'))
+const HotelLinenFlowPage = lazy(() => import('../features/quotations/pages/hotel-linen-flow-page'))
 const ReportsPage = lazy(() => import('../features/quotations/pages/reports-page'))
 const BusinessDashboardPage = lazy(() => import('../features/quotations/pages/business-dashboard-page'))
 const LiveChatPage = lazy(() => import('../features/quotations/pages/live-chat-page'))
@@ -146,6 +147,7 @@ export const router = createBrowserRouter([
           { path: 'deliveries', element: <DeliveriesPage /> },
           { path: 'deliveries/new', element: <CreateDeliveryPage /> },
           { path: 'deliveries/:id', element: <DeliveryDetailPage /> },
+          { path: 'hotel-linen-flow', element: <HotelLinenFlowPage /> },
 
           // Dispatch (pickup / delivery scheduling)
           { path: 'dispatch', element: <DispatchPage /> },

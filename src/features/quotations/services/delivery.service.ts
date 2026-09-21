@@ -29,8 +29,8 @@ export interface PendingGatePass {
 }
 
 export const deliveries = {
-    list: (params?: { client_name?: string; gate_pass_id?: string }) =>
-        billsApi.get<Delivery[]>('/deliveries', { params }).then((r: any) => r.data),
+    list: (params?: { client_name?: string; gate_pass_id?: string }): Promise<Delivery[]> =>
+        billsApi.get<Delivery[]>('/deliveries', { params }).then(r => r.data),
 
     get: (id: string) =>
         billsApi.get<Delivery>(`/deliveries/${id}`).then((r: any) => r.data),

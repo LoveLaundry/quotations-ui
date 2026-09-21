@@ -7,8 +7,8 @@ function toISODatetime(dateStr: string): string {
 }
 
 export const gatepasses = {
-    list: (params?: { client_name?: string; status?: string }) =>
-        billsApi.get<GatePass[]>('/gatepasses', { params }).then((r: any) => r.data),
+    list: (params?: { client_name?: string; status?: string }): Promise<GatePass[]> =>
+        billsApi.get<GatePass[]>('/gatepasses', { params }).then(r => r.data),
 
     get: (id: string) =>
         billsApi.get<GatePass>(`/gatepasses/${id}`).then((r: any) => r.data),
