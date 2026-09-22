@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import {
-  ArrowRight, FileText, Landmark, RotateCcw, Search, Truck, X,
+  ArrowRight, Download, FileText, Landmark, RotateCcw, Search, Truck, X,
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card'
 import { Button } from '../../../components/ui/button'
@@ -48,6 +48,36 @@ function dayOnly(ts?: string): string {
 
 function fmtMoney(n: number): string {
   return '₹' + Number(n || 0).toLocaleString('en-IN', { maximumFractionDigits: 2 })
+}
+
+function toCSV(rows: Row[]): string {
+  const header = ['date', 'type', 'client', 'description', 'quantity', 'amount']
+  const lines = rows.map((r) => {
+    if (r.kind === 'bill') {
+      return [r.at, 'BILL', r.bill.client_name, `Bill ${r.bill.id}`, String(r.bill.items?.reduce((s, it) => s + it.quantity, 0) ?? 0), String(r.bill.grand_total ?? r.bill.total_amount ?? 0)]
+    }
+    if (r.kind === 'payment') {
+      return [r.at, 'PAYMENT', r.payment.client_name, `${r.payment.payment_method}${r.payment.reference ? ` (${r.payment.reference})` : ''}`, '', String(r.payment.amount)]
+    }
+    if (r.kind === 'delivery') {
+      return [r.at, 'DELIVERY', r.delivery.client_name, r.delivery.items?.map(it => `${it.item_name} x${it.quantity}`).join('; ') ?? '', String(r.delivery.items?.reduce((s, it) => s + it.quantity, 0) ?? 0), '']
+    }
+    return [r.at, 'RETURN', r.ret.client_name, `Return ${r.ret.return_id}: ${r.ret.items?.map(it => `${it.item_name} x${it.returned_qty}`).join('; ') ?? ''}`, String(r.ret.items?.reduce((s, it) => s + it.returned_qty, 0) ?? 0), '']
+  })
+  const esc = (v: string) => `"${String(v ?? '').replace(/"/g, '""')}"`
+  return [header, ...lines].map(row => row.map(esc).join(',')).join('\n')
+}
+
+function downloadCSV(rows: Row[], clientName: string): void {
+  const blob = new Blob([`\uFEFF${toCSV(rows)}`], { type: 'text/csv;charset=utf-8;' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `statement-${clientName.replace(/[^\w]+/g, '-')}-${new Date().toISOString().slice(0, 10)}.csv`
+  document.body.appendChild(a)
+  a.click()
+  document.body.removeChild(a)
+  URL.revokeObjectURL(url)
 }
 
 export default function StatementPage() {
@@ -186,7 +216,18 @@ export default function StatementPage() {
 
           <Card>
             <CardHeader className="border-b border-[var(--border)] pb-3">
-              <CardTitle className="text-[14px]">Movements</CardTitle>
+              <div className="flex items-center justify-between gap-2">
+                <CardTitle className="text-[14px]">Movements</CardTitle>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  className="h-8 gap-1.5 text-[12px]"
+                  onClick={() => downloadCSV(rows, clientName)}
+                >
+                  <Download className="h-3.5 w-3.5" />
+                  Export CSV
+                </Button>
+              </div>
             </CardHeader>
             <CardContent className="p-0">
               <div className="divide-y divide-[var(--border)]">
