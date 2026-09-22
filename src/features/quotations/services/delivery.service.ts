@@ -1,4 +1,5 @@
 import billsApi from '../../../api/bills-api'
+import { idempotencyKey } from '../../../lib/idempotency'
 import type { Delivery, DeliveryCreate } from '../../../types/operations'
 
 function toISODatetime(dateStr: string): string {
@@ -35,12 +36,15 @@ export const deliveries = {
     get: (id: string) =>
         billsApi.get<Delivery>(`/deliveries/${id}`).then((r: any) => r.data),
 
-    create: (data: DeliveryCreate) => {
+    create: async (data: DeliveryCreate) => {
         const payload = {
             ...data,
             delivery_date: toISODatetime(data.delivery_date),
         }
-        return billsApi.post<Delivery>('/deliveries', payload).then((r: any) => r.data)
+        const key = await idempotencyKey(payload)
+        return billsApi.post<Delivery>('/deliveries', payload, {
+            headers: { 'X-Idempotency-Key': key },
+        }).then((r: any) => r.data)
     },
 
     pendingGatePasses: (clientName?: string) =>

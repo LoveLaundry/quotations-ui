@@ -1,4 +1,5 @@
 import billsApi from '../../../api/bills-api'
+import { idempotencyKey } from '../../../lib/idempotency'
 import type { Payment, PaymentCreate } from '../../../types/operations'
 import type { ClientSummary } from '../../../types/operations'
 
@@ -58,6 +59,10 @@ export const payments = {
     listForBill: (billId: string) =>
         billsApi.get<Payment[]>(`/bills/${billId}/payments`).then((r: any) => r.data),
 
-    create: (billId: string, data: PaymentCreate) =>
-        billsApi.post<Payment>(`/bills/${billId}/payments`, data).then((r: any) => r.data),
+    create: async (billId: string, data: PaymentCreate) => {
+        const key = await idempotencyKey({ bill_id: billId, ...data })
+        return billsApi.post<Payment>(`/bills/${billId}/payments`, data, {
+            headers: { 'X-Idempotency-Key': key },
+        }).then((r: any) => r.data)
+    },
 }

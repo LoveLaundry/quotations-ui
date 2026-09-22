@@ -1,8 +1,12 @@
 import billsApi from '../../../api/bills-api'
+import { idempotencyKey } from '../../../lib/idempotency'
 import type { Bill, BillPayload, BillListParams, BillListResponse } from '../../../types/bill'
 
 async function createBill(payload: BillPayload): Promise<Bill> {
-  const response = await billsApi.post<Bill>('/bills', payload)
+  const key = await idempotencyKey(payload)
+  const response = await billsApi.post<Bill>('/bills', payload, {
+    headers: { 'X-Idempotency-Key': key },
+  })
   return response.data
 }
 
