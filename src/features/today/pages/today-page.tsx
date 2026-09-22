@@ -21,7 +21,7 @@ import type { ReturnCreate, ReturnItem } from '../../../types/operations'
 import {
   useAdjustments, useApproveAdjustment, useRejectAdjustment,
   useCloseDay, useDayClose, useDayExpenses, useDayMoney, useEvents,
-  usePendingGatePasses, useReconciliationIssues,
+  usePendingGatePasses, usePendingResend, useReconciliationIssues,
 } from '../hooks/useDailyOps'
 import { opsKeys } from '../hooks/useDailyOps'
 import type { Adjustment, DayCloseTotals } from '../services/ops.service'
@@ -348,6 +348,66 @@ function MoneyTile({ label, value, accent }: { label: string; value: number; acc
       </p>
     </div>
   )
+}
+
+function ReturnsOwedCard() {
+  const { data: pending, isLoading } = usePendingResend()
+
+  const records = (pending ?? []) as Array<{ return_id: string; client_name: string; items: Array<{ item_name: string; returned_qty: number }>; created_at: string }>
+  const owedPieces = records.reduce(
+    (sum, r) => sum + (Array.isArray(r.items) ? r.items.reduce((t, i) => t + (i.returned_qty || 0), 0) : 0),
+    0,
+  )
+
+  return (
+    <Card>
+      <CardHeader className="border-b border-[var(--border)] pb-3">
+        <CardTitle className="flex items-center gap-2 text-[14px]">
+          <RotateCcw className="h-4 w-4" style={{ color: outstandingColor(owedPieces) }} />
+          Returns owed to clients
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="pt-4">
+        {isLoading ? (
+          <div className="space-y-2">
+            <Skeleton className="h-8 w-full" />
+            <Skeleton className="h-10 w-full" />
+          </div>
+        ) : records.length === 0 ? (
+          <div className="flex items-center gap-2 py-4 text-[13px]" style={{ color: 'var(--text-tertiary)' }}>
+            <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+            No pending resends — all return items are settled.
+          </div>
+        ) : (
+          <div className="space-y-3">
+            <p className="text-[13px]" style={{ color: 'var(--text-tertiary)' }}>
+              <span className="text-[18px] font-bold" style={{ color: 'var(--text-primary)' }}>{owedPieces}</span>
+              {' '}piece{owedPieces !== 1 ? 's' : ''} still owed across {records.length} return{records.length !== 1 ? 's' : ''}
+            </p>
+            <div className="space-y-1.5">
+              {records.slice(0, 4).map((r) => (
+                <div key={r.return_id} className="flex items-center justify-between gap-2 text-[12px]">
+                  <span className="truncate font-medium" style={{ color: 'var(--text-primary)' }}>{r.client_name}</span>
+                  <span className="shrink-0 tabular-nums" style={{ color: 'var(--text-tertiary)' }}>
+                    {Array.isArray(r.items) ? r.items.reduce((t, i) => t + (i.returned_qty || 0), 0) : 0} pcs
+                  </span>
+                </div>
+              ))}
+            </div>
+            <div>
+              <Link to="/returns" className="inline-flex items-center gap-1 text-[12px] font-semibold text-[#D97706] hover:text-[#B45309] transition-colors">
+                Review returns <ArrowRight className="h-3 w-3" />
+              </Link>
+            </div>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  )
+}
+
+function outstandingColor(n: number): string {
+  return n > 0 ? '#D97706' : 'var(--text-tertiary)'
 }
 
 function TodayMoney({ date }: { date: string }) {
@@ -1005,6 +1065,9 @@ export default function TodayPage() {
 
       {/* Money */}
       <TodayMoney date={date} />
+
+      {/* Returns owed */}
+      <ReturnsOwedCard />
 
       {/* Attention + Pending */}
       <div className="grid gap-4 lg:grid-cols-2">

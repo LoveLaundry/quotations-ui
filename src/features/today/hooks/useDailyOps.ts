@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { ops, dayCloseApi, moneyApi, type DayCloseTotals } from '../services/ops.service'
 import { deliveries, type PendingGatePass } from '../../quotations/services/delivery.service'
+import { returns as returnsApi } from '../../quotations/services/returns.service'
 import { invalidateDeliveryData } from '../../quotations/hooks/useGatePasses'
 import { expensesApi } from '../../management/api/management-api'
 
@@ -13,6 +14,7 @@ export const opsKeys = {
   dayClose: (date?: string) => [...opsKeys.all, 'day-close', date ?? 'ALL'] as const,
   dayMoney: (date?: string) => [...opsKeys.all, 'day-money', date ?? 'ALL'] as const,
   expenses: (date?: string) => [...opsKeys.all, 'expenses', date ?? 'ALL'] as const,
+  pendingResend: () => [...opsKeys.all, 'pending-resend'] as const,
 }
 
 export function useAdjustments(status?: string) {
@@ -92,6 +94,14 @@ export function useDayExpenses(date: string) {
     queryKey: opsKeys.expenses(date),
     queryFn: () => expensesApi.summary({ start_date: date, end_date: date }).then(r => r.data),
     enabled: Boolean(date) && Boolean(import.meta.env.VITE_MGMT_API_URL),
+    retry: 1,
+  })
+}
+
+export function usePendingResend() {
+  return useQuery({
+    queryKey: opsKeys.pendingResend(),
+    queryFn: () => returnsApi.pendingResent(),
     retry: 1,
   })
 }
