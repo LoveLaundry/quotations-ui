@@ -8,6 +8,7 @@ import { ConfirmDialog } from '../../../components/ui/confirm-dialog'
 import { useEnterFlow } from '../../../hooks/use-enter-flow'
 import { useEscape } from '../../../hooks/use-escape'
 import { todayISO } from '../../../lib/date'
+import { useDefaults } from '../../../components/ops'
 
 const METHODS = ['CASH', 'BANK_TRANSFER', 'CHEQUE', 'CARD', 'ONLINE']
 const PAGE_SIZE = 20
@@ -15,6 +16,7 @@ const LIST_LIMIT = 500
 
 export default function ManagementPayments() {
   const qc = useQueryClient()
+  const defaults = useDefaults()
   const [showForm, setShowForm] = useState(false)
   const [deleteTarget, setDeleteTarget] = useState<any>(null)
   const [customerId, setCustomerId] = useState('')
@@ -44,7 +46,13 @@ export default function ManagementPayments() {
 
   const createMut = useMutation({
     mutationFn: (data: any) => paymentsApi.create(data),
-    onSuccess: () => { toast.success('Payment recorded'); qc.invalidateQueries({ queryKey: ['mgmt-payments'] }); setShowForm(false) },
+    onSuccess: (_r: any, data: any) => {
+      toast.success('Payment recorded')
+      defaults.set('pay_customer', data.customer_id ?? '')
+      defaults.set('pay_method', data.payment_method ?? 'CASH')
+      qc.invalidateQueries({ queryKey: ['mgmt-payments'] })
+      setShowForm(false)
+    },
     onError: (e: any) => toast.error(e.response?.data?.detail || 'Failed'),
   })
 
@@ -124,13 +132,13 @@ export default function ManagementPayments() {
               data.amount = String(parseFloat(data.amount as string) || 0)
               createMut.mutate(data)
             }} ref={flow.ref} onKeyDown={flow.handleKeyDown} className="space-y-3">
-              <select name="customer_id" required autoFocus className="w-full px-3 py-2 border rounded-lg text-sm">
+              <select name="customer_id" defaultValue={defaults.get('pay_customer') || ''} required autoFocus className="w-full px-3 py-2 border rounded-lg text-sm">
                 <option value="">Select Customer *</option>
                 {customers.map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
               <input name="amount" type="number" step="0.01" placeholder="Amount *" required className="w-full px-3 py-2 border rounded-lg text-sm" />
               <div className="grid grid-cols-2 gap-3">
-                <select name="payment_method" className="px-3 py-2 border rounded-lg text-sm">
+                <select name="payment_method" defaultValue={defaults.get('pay_method') || 'CASH'} className="px-3 py-2 border rounded-lg text-sm">
                   {METHODS.map(m => <option key={m} value={m}>{m.replace('_', ' ')}</option>)}
                 </select>
                 <input name="payment_date" type="date" defaultValue={todayISO()} required className="px-3 py-2 border rounded-lg text-sm" />
