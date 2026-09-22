@@ -70,6 +70,7 @@ const navGroups: { label: string; items: NavItem[] }[] = [
         { to: '/workers/daily-tasks', label: 'Daily Tasks', icon: UsersThree, end: false },
       ]},
       { to: '/bills', label: 'Bills', icon: CurrencyCircleDollar, end: false, permission: 'view_bills' },
+      { to: '/statements', label: 'Client Statement', icon: Wallet, end: false, permission: 'view_bills' },
       { to: '/shop-bills', label: 'Shop Bills', icon: CurrencyCircleDollar, end: false, permission: 'view_bills' },
       { to: '/legacy-invoice', label: 'Legacy Invoice', icon: FileText, end: false, permission: 'view_bills' },
       { to: '/invoices/new', label: 'Invoices', icon: FileText, end: false, permission: 'view_bills' },

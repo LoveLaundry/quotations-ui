@@ -13,6 +13,7 @@ const NAV_ITEMS: { label: string; keywords: string; path: string }[] = [
   { label: 'New Quotation', keywords: 'quote new quotation create', path: '/quotations/new' },
   { label: 'Quotations', keywords: 'quotations quotes list price', path: '/quotations' },
   { label: 'Bills', keywords: 'bills invoices list', path: '/bills' },
+  { label: 'Client Statement', keywords: 'statement client ledger history balance', path: '/statements' },
   { label: 'New Bill', keywords: 'bill create bill invoice', path: '/bills/new' },
   { label: 'Gate Passes', keywords: 'gate passes receiving received', path: '/gate-passes' },
   { label: 'New Gate Pass', keywords: 'gate pass new receive', path: '/gate-passes/new' },

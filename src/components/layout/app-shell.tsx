@@ -20,6 +20,7 @@ const pageTitles: Record<string, string> = {
   '/profile': 'My Profile',
   '/bills': 'Bills',
   '/bills/new': 'Create Bill',
+  '/statements': 'Client Statement',
   '/invoices/new': 'Consolidated Invoice',
   '/gate-passes': 'Gate Passes',
   '/gate-passes/new': 'New Gate Pass',
