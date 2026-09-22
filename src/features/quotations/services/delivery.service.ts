@@ -36,6 +36,9 @@ export const deliveries = {
     get: (id: string) =>
         billsApi.get<Delivery>(`/deliveries/${id}`).then((r: any) => r.data),
 
+    updateDate: (id: string, delivery_date: string, reason?: string) =>
+        billsApi.patch<Delivery>(`/deliveries/${id}/date`, { delivery_date: toISODatetime(delivery_date), reason }).then((r: any) => r.data),
+
     create: async (data: DeliveryCreate) => {
         const payload = {
             ...data,

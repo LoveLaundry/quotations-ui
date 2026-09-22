@@ -15,8 +15,9 @@ import { ErrorState } from '../../../components/ui/error-state'
 import { Skeleton } from '../../../components/ui/skeleton'
 import { Breadcrumb } from '../../../components/ui/breadcrumb'
 import { formatDate } from '../../../lib/utils'
+import { DATE_CORRECTION_REASONS } from '../../../lib/date-corrections'
 import { useGatePass, useUpdateGatePassStatus, useAdjustGatePass, useUpdateGatePassDate, useCreateBillFromGatePass, useUpdateGatePass, useMarkGatePassDelivered, useReopenLegacyGatePass } from '../hooks/useGatePasses'
-import { useDeliveries } from '../hooks/useDeliveries'
+import { useDeliveries, useUpdateDeliveryDate } from '../hooks/useDeliveries'
 import { useQuotation } from '../hooks/useQuotations'
 import { returns as returnsApi } from '../services/returns.service'
 import { SearchableSelect } from '../../../components/ui'
@@ -55,6 +56,7 @@ const EVENT_THEME: Record<string, { icon: typeof History; label: string; bg: str
     RECEIVING_DATE_CHANGED: { icon: Calendar, label: 'Receiving date changed', bg: '#F9FAFB', text: '#374151', border: '#E4E7EC' },
     STATUS_CHANGED: { icon: RefreshCw, label: 'Status changed', bg: '#F9FAFB', text: '#374151', border: '#E4E7EC' },
     DELIVERY_CREATED: { icon: Truck, label: 'Delivery recorded', bg: '#F0FDF4', text: '#16A34A', border: '#BBF7D0' },
+    DELIVERY_DATE_CHANGED: { icon: Calendar, label: 'Delivery date changed', bg: '#F9FAFB', text: '#374151', border: '#E4E7EC' },
     CATCH_UP_DELIVERY: { icon: CheckCircle2, label: 'Completed as delivered by note', bg: '#F0FDF4', text: '#16A34A', border: '#BBF7D0' },
     ADJUSTMENT_REQUESTED: { icon: Settings2, label: 'Quantity adjustment requested', bg: '#FFFBEB', text: '#D97706', border: '#FDE68A' },
     ADJUSTMENT_APPROVED: { icon: Check, label: 'Adjustment approved', bg: '#F0FDF4', text: '#16A34A', border: '#BBF7D0' },
@@ -159,6 +161,11 @@ export default function GatePassDetailPage() {
     const [editingDate, setEditingDate] = useState(false)
     const [dateValue, setDateValue] = useState('')
     const [dateReason, setDateReason] = useState('')
+
+    const updateDeliveryDate = useUpdateDeliveryDate()
+    const [deliveryDateEditId, setDeliveryDateEditId] = useState<string | null>(null)
+    const [deliveryDateValue, setDeliveryDateValue] = useState('')
+    const [deliveryDateReason, setDeliveryDateReason] = useState('')
 
     const createBill = useCreateBillFromGatePass()
     const [billingOpen, setBillingOpen] = useState(false)
@@ -308,6 +315,20 @@ export default function GatePassDetailPage() {
         updateDate.mutate(
             { id, receiving_date: dateValue, reason: dateReason },
             { onSuccess: () => setEditingDate(false) },
+        )
+    }
+
+    const startDeliveryDateEdit = (d: { id: string; delivery_date: string }) => {
+        setDeliveryDateValue((d.delivery_date || '').slice(0, 10))
+        setDeliveryDateReason('')
+        setDeliveryDateEditId(d.id)
+    }
+
+    const submitDeliveryDate = (deliveryId: string) => {
+        if (!deliveryId || !deliveryDateValue) return
+        updateDeliveryDate.mutate(
+            { id: deliveryId, delivery_date: deliveryDateValue, reason: deliveryDateReason },
+            { onSuccess: () => setDeliveryDateEditId(null) },
         )
     }
 
@@ -533,7 +554,7 @@ export default function GatePassDetailPage() {
                             <Calendar className="h-3.5 w-3.5 text-[#98A2B3]" />
                             <p className="text-[11px] text-[#98A2B3] font-medium uppercase tracking-wide">Received</p>
                         </div>
-                        {!editingDate && !['DELIVERED', 'CANCELLED'].includes(gp.status) && (
+                        {!editingDate && (
                             <button
                                 onClick={startEditDate}
                                 className="text-[#6B7280] hover:text-[#2563EB] transition"
@@ -551,18 +572,21 @@ export default function GatePassDetailPage() {
                                 onChange={e => setDateValue(e.target.value)}
                                 className="h-9 w-full rounded-lg border border-[#BFDBFE] bg-white px-3 text-[13px] outline-none focus:border-[#2563EB]"
                             />
-                            <input
-                                type="text"
+                            <select
                                 value={dateReason}
                                 onChange={e => setDateReason(e.target.value)}
-                                placeholder="Reason (optional)"
-                                className="h-9 w-full rounded-lg border border-[#BFDBFE] bg-white px-3 text-[12px] outline-none focus:border-[#2563EB]"
-                            />
+                                className="h-9 w-full cursor-pointer rounded-lg border border-[#BFDBFE] bg-white px-3 text-[12px] outline-none focus:border-[#2563EB]"
+                            >
+                                <option value="">Reason required…</option>
+                                {DATE_CORRECTION_REASONS.map(r => (
+                                    <option key={r} value={r}>{r.replace(/_/g, ' ')}</option>
+                                ))}
+                            </select>
                             <div className="flex gap-2">
                                 <Button
                                     size="sm"
                                     onClick={submitDate}
-                                    disabled={!dateValue || updateDate.isPending}
+                                    disabled={!dateValue || !dateReason || updateDate.isPending}
                                     className="bg-[#2563EB] hover:bg-[#1D4ED8] text-white"
                                 >
                                     <Check className="h-3.5 w-3.5" /> Save
@@ -967,17 +991,69 @@ export default function GatePassDetailPage() {
                     </CardHeader>
                     <CardContent className="pt-3 divide-y divide-[#F9FAFB]">
                         {deliveries.map((d: any) => (
-                            <Link key={d.id} to={`/deliveries/${d.id}`} className="flex items-center justify-between gap-3 py-3 hover:opacity-70 transition">
-                                <div>
-                                    <p className="text-[13px] font-medium text-[#101828]">
-                                        {d.items?.reduce ? d.items.reduce((s: number, i: any) => s + i.quantity, 0) : 0} pieces delivered
-                                    </p>
-                                    <p className="text-[12px] text-[#98A2B3]">{formatDate(d.delivery_date)} · by {d.delivered_by}</p>
+                            <div key={d.id}>
+                                <div className="flex items-center justify-between gap-3 py-3">
+                                    <Link to={`/deliveries/${d.id}`} className="flex flex-1 items-center justify-between gap-3 hover:opacity-70 transition">
+                                        <div>
+                                            <p className="text-[13px] font-medium text-[#101828]">
+                                                {d.items?.reduce ? d.items.reduce((s: number, i: any) => s + i.quantity, 0) : 0} pieces delivered
+                                            </p>
+                                            <p className="text-[12px] text-[#98A2B3]">{formatDate(d.delivery_date)} · by {d.delivered_by}</p>
+                                        </div>
+                                        <div className="flex items-center gap-1.5 text-[#16A34A] text-[12px] font-medium">
+                                            <CheckCircle2 className="h-4 w-4" /> Delivered
+                                        </div>
+                                    </Link>
+                                    <button
+                                        onClick={() => startDeliveryDateEdit(d)}
+                                        className="shrink-0 text-[#6B7280] hover:text-[#2563EB] transition"
+                                        title="Correct delivery date"
+                                    >
+                                        <Pencil className="h-3.5 w-3.5" />
+                                    </button>
                                 </div>
-                                <div className="flex items-center gap-1.5 text-[#16A34A] text-[12px] font-medium">
-                                    <CheckCircle2 className="h-4 w-4" /> Delivered
-                                </div>
-                            </Link>
+                                {deliveryDateEditId === d.id && (
+                                    <div className="mb-3 rounded-lg border border-[#BFDBFE] bg-[#EFF6FF] p-3">
+                                        <div className="flex flex-col gap-2 sm:flex-row sm:items-end">
+                                            <div>
+                                                <label className="block text-[11px] font-semibold text-[#374151] mb-1">Delivered Date</label>
+                                                <input
+                                                    type="date"
+                                                    value={deliveryDateValue}
+                                                    onChange={e => setDeliveryDateValue(e.target.value)}
+                                                    className="h-9 rounded-lg border border-[#BFDBFE] bg-white px-3 text-[13px] outline-none focus:border-[#2563EB]"
+                                                />
+                                            </div>
+                                            <div className="flex-1">
+                                                <label className="block text-[11px] font-semibold text-[#374151] mb-1">Reason</label>
+                                                <select
+                                                    value={deliveryDateReason}
+                                                    onChange={e => setDeliveryDateReason(e.target.value)}
+                                                    className="h-9 w-full cursor-pointer rounded-lg border border-[#BFDBFE] bg-white px-3 text-[12px] outline-none focus:border-[#2563EB]"
+                                                >
+                                                    <option value="">Reason required…</option>
+                                                    {DATE_CORRECTION_REASONS.map(r => (
+                                                        <option key={r} value={r}>{r.replace(/_/g, ' ')}</option>
+                                                    ))}
+                                                </select>
+                                            </div>
+                                            <div className="flex gap-2">
+                                                <Button
+                                                    size="sm"
+                                                    onClick={() => submitDeliveryDate(d.id)}
+                                                    disabled={!deliveryDateValue || !deliveryDateReason || updateDeliveryDate.isPending}
+                                                    className="bg-[#2563EB] hover:bg-[#1D4ED8] text-white"
+                                                >
+                                                    <Check className="h-3.5 w-3.5" /> Save
+                                                </Button>
+                                                <Button size="sm" variant="ghost" onClick={() => setDeliveryDateEditId(null)}>
+                                                    <X className="h-3.5 w-3.5" /> Cancel
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
                         ))}
                     </CardContent>
                 </Card>

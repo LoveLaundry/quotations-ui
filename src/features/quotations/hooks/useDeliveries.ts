@@ -36,3 +36,16 @@ export function useCreateDelivery() {
         onError: (e: Error) => toast.error(e.message || 'Failed to record delivery'),
     })
 }
+
+export function useUpdateDeliveryDate() {
+    const qc = useQueryClient()
+    return useMutation({
+        mutationFn: ({ id, delivery_date, reason }: { id: string; delivery_date: string; reason?: string }) =>
+            deliveries.updateDate(id, delivery_date, reason),
+        onSuccess: () => {
+            invalidateDeliveryData(qc)
+            toast.success('Delivery date updated')
+        },
+        onError: (e: Error) => toast.error(e.message || 'Failed to update delivery date'),
+    })
+}
