@@ -1,8 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
-import { ops, dayCloseApi, type DayCloseTotals } from '../services/ops.service'
+import { ops, dayCloseApi, moneyApi, type DayCloseTotals } from '../services/ops.service'
 import { deliveries, type PendingGatePass } from '../../quotations/services/delivery.service'
 import { invalidateDeliveryData } from '../../quotations/hooks/useGatePasses'
+import { expensesApi } from '../../management/api/management-api'
 
 export const opsKeys = {
   all: ['ops'] as const,
@@ -10,6 +11,8 @@ export const opsKeys = {
   reconciliation: (status?: string) => [...opsKeys.all, 'reconciliation', status ?? 'ALL'] as const,
   events: (date?: string) => [...opsKeys.all, 'events', date ?? 'ALL'] as const,
   dayClose: (date?: string) => [...opsKeys.all, 'day-close', date ?? 'ALL'] as const,
+  dayMoney: (date?: string) => [...opsKeys.all, 'day-money', date ?? 'ALL'] as const,
+  expenses: (date?: string) => [...opsKeys.all, 'expenses', date ?? 'ALL'] as const,
 }
 
 export function useAdjustments(status?: string) {
@@ -73,6 +76,23 @@ export function useDayClose(date?: string) {
     queryKey: opsKeys.dayClose(date),
     queryFn: () => (date ? dayCloseApi.get(date) : Promise.resolve(null)),
     enabled: Boolean(date),
+  })
+}
+
+export function useDayMoney(date: string) {
+  return useQuery({
+    queryKey: opsKeys.dayMoney(date),
+    queryFn: () => moneyApi.get(date),
+    enabled: Boolean(date),
+  })
+}
+
+export function useDayExpenses(date: string) {
+  return useQuery({
+    queryKey: opsKeys.expenses(date),
+    queryFn: () => expensesApi.summary({ start_date: date, end_date: date }).then(r => r.data),
+    enabled: Boolean(date) && Boolean(import.meta.env.VITE_MGMT_API_URL),
+    retry: 1,
   })
 }
 

@@ -111,6 +111,10 @@ export interface DayCloseTotals {
   pieces_outstanding: number
   pending_adjustments: number
   reconciliation_issues: number
+  billed_amount: number
+  collected_amount: number
+  expenses_amount: number
+  outstanding_amount: number
 }
 
 export interface DayCloseSnapshot extends TransactionEvent {
@@ -123,4 +127,21 @@ export const dayCloseApi = {
     billsApi.get<DayCloseSnapshot>('/day-close', { params: { date } }).then(r => r.data ?? null),
   create: (body: { date: string; totals: DayCloseTotals; note?: string }): Promise<DayCloseSnapshot> =>
     billsApi.post<DayCloseSnapshot>('/day-close', body).then(r => r.data),
+}
+
+// ── Day money (income/collected/outstanding for one day) ──────────────────────
+export interface DayMoney {
+  date: string
+  bills_created: number
+  billed_amount: number
+  billed_paid_amount: number
+  payments_count: number
+  collected_amount: number
+  open_bills_count: number
+  outstanding_amount: number
+}
+
+export const moneyApi = {
+  get: (date: string): Promise<DayMoney> =>
+    billsApi.get<DayMoney>('/day-money', { params: { date } }).then(r => r.data),
 }

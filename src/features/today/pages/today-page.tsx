@@ -4,7 +4,7 @@ import { motion } from 'framer-motion'
 import {
   Activity, AlertTriangle, ArrowRight, CalendarCheck, CheckCircle2,
   ChevronLeft, ChevronRight, ClipboardList, Clock, FileText, Flag,
-  Package, Plus, Receipt, ShieldAlert, Truck, Undo2, XCircle,
+  Package, Plus, Receipt, ShieldAlert, Truck, Undo2, Wallet, XCircle,
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card'
 import { Button } from '../../../components/ui/button'
@@ -16,7 +16,8 @@ import { useGatePasses, useReopenLegacyBatch } from '../../quotations/hooks/useG
 import { useDeliveries } from '../../quotations/hooks/useDeliveries'
 import {
   useAdjustments, useApproveAdjustment, useRejectAdjustment,
-  useCloseDay, useDayClose, useEvents, usePendingGatePasses, useReconciliationIssues,
+  useCloseDay, useDayClose, useDayExpenses, useDayMoney, useEvents,
+  usePendingGatePasses, useReconciliationIssues,
 } from '../hooks/useDailyOps'
 import type { Adjustment, DayCloseTotals } from '../services/ops.service'
 
@@ -51,6 +52,10 @@ function fmtTime(ts?: string): string {
   const dt = new Date(ts)
   if (Number.isNaN(dt.getTime())) return ''
   return dt.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })
+}
+
+function fmtMoney(n: number): string {
+  return '₹' + Number(n || 0).toLocaleString('en-IN', { maximumFractionDigits: 2 })
 }
 
 const EVENT_LABEL: Record<string, string> = {
@@ -321,6 +326,71 @@ function PendingDeliveries() {
   )
 }
 
+// ── Day money ─────────────────────────────────────────────────────────────────
+
+function MoneyTile({ label, value, accent }: { label: string; value: number; accent?: 'green' | 'amber' | 'red' }) {
+  const color =
+    accent === 'green' ? '#16A34A' : accent === 'amber' ? '#D97706' : accent === 'red' ? '#DC2626' : undefined
+  return (
+    <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 py-2.5">
+      <p className="text-[11px]" style={{ color: 'var(--text-tertiary)' }}>{label}</p>
+      <p
+        className="mt-0.5 text-[18px] font-bold tabular-nums"
+        style={color ? { color } : { color: 'var(--text-primary)' }}
+      >
+        {fmtMoney(value)}
+      </p>
+    </div>
+  )
+}
+
+function TodayMoney({ date }: { date: string }) {
+  const { data: money, isLoading } = useDayMoney(date)
+  const { data: expenseRows } = useDayExpenses(date)
+  const expenses = ((expenseRows ?? []) as any[]).reduce((sum, item) => sum + (item.total || 0), 0)
+  const outstanding = money?.outstanding_amount ?? 0
+  const net = (money?.collected_amount ?? 0) - expenses
+
+  return (
+    <Card>
+      <CardHeader className="border-b border-[var(--border)] pb-3">
+        <CardTitle className="flex items-center gap-2 text-[14px]">
+          <Wallet className="h-4 w-4" style={{ color: 'var(--text-tertiary)' }} />
+          Today's Money
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="pt-4">
+        {isLoading ? (
+          <div className="space-y-2">
+            <Skeleton className="h-14 w-full" />
+            <Skeleton className="h-8 w-full" />
+          </div>
+        ) : (
+          <div className="space-y-3">
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+              <MoneyTile label="Billed today" value={money?.billed_amount ?? 0} />
+              <MoneyTile label="Collected today" value={money?.collected_amount ?? 0} accent="green" />
+              <MoneyTile label="Expenses today" value={expenses} accent="red" />
+              <MoneyTile label="Net for day" value={net} accent={net < 0 ? 'amber' : undefined} />
+            </div>
+            <div className="flex flex-wrap items-center gap-x-5 gap-y-1 text-[12px]" style={{ color: 'var(--text-tertiary)' }}>
+              <span>
+                Outstanding receivable: <span className="font-semibold tabular-nums" style={{ color: outstanding > 0 ? '#D97706' : 'var(--text-primary)' }}>{fmtMoney(outstanding)}</span>
+                {' '}across {money?.open_bills_count ?? 0} open bills
+              </span>
+              {money && (
+                <span className="hidden sm:inline">
+                  {money.bills_created} bill{money.bills_created !== 1 ? 's' : ''} created · {money.payments_count} payment{money.payments_count !== 1 ? 's' : ''} recorded
+                </span>
+              )}
+            </div>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  )
+}
+
 // ── Daily timeline ────────────────────────────────────────────────────────────
 
 function DailyTimeline({ date }: { date: string }) {
@@ -392,6 +462,8 @@ function useDayTotals(date: string) {
   const { data: deliveries } = useDeliveries()
   const { data: adjustments } = useAdjustments('REQUESTED')
   const { data: recon } = useReconciliationIssues()
+  const { data: money } = useDayMoney(date)
+  const { data: expenseRows } = useDayExpenses(date)
 
   return useMemo<DayCloseTotals>(() => {
     const gps = (gatepasses ?? []).filter(
@@ -430,6 +502,7 @@ function useDayTotals(date: string) {
         }, 0),
       0,
     )
+    const expenses = ((expenseRows ?? []) as any[]).reduce((sum, item) => sum + (item.total || 0), 0)
     return {
       gate_pass_count: gps.length,
       pieces_received: piecesReceived,
@@ -438,8 +511,12 @@ function useDayTotals(date: string) {
       pieces_outstanding: piecesOutstanding,
       pending_adjustments: (adjustments ?? []).length,
       reconciliation_issues: (recon?.items ?? []).length,
+      billed_amount: money?.billed_amount ?? 0,
+      collected_amount: money?.collected_amount ?? 0,
+      expenses_amount: expenses,
+      outstanding_amount: money?.outstanding_amount ?? 0,
     }
-  }, [gatepasses, deliveries, adjustments, recon, date])
+  }, [gatepasses, deliveries, adjustments, recon, date, money, expenseRows])
 }
 
 const DAY_TOTAL_ROWS: { key: keyof DayCloseTotals; label: string; flag?: 'ok' | 'warn' }[] = [
@@ -448,6 +525,12 @@ const DAY_TOTAL_ROWS: { key: keyof DayCloseTotals; label: string; flag?: 'ok' | 
   { key: 'delivery_count', label: 'Deliveries recorded' },
   { key: 'pieces_delivered', label: 'Pieces delivered' },
   { key: 'pieces_outstanding', label: 'Pieces outstanding', flag: 'warn' },
+]
+
+const DAY_MONEY_ROWS: { key: keyof DayCloseTotals; label: string; accent?: 'green' | 'amber' | 'red' }[] = [
+  { key: 'billed_amount', label: 'Billed' },
+  { key: 'collected_amount', label: 'Collected', accent: 'green' },
+  { key: 'expenses_amount', label: 'Expenses', accent: 'red' },
 ]
 
 function CloseDayCard({ date }: { date: string }) {
@@ -463,6 +546,11 @@ function CloseDayCard({ date }: { date: string }) {
     : ''
 
   const summaryRows = DAY_TOTAL_ROWS.map(row => ({ ...row, value: totals[row.key] }))
+  const netForDay = totals.collected_amount - totals.expenses_amount
+  const moneyTiles = [
+    ...DAY_MONEY_ROWS.map(row => ({ ...row, value: totals[row.key] as number })),
+    { key: 'net', label: 'Net for day', accent: (netForDay < 0 ? 'amber' : 'green') as 'amber' | 'green', value: netForDay },
+  ]
 
   return (
     <Card>
@@ -499,6 +587,17 @@ function CloseDayCard({ date }: { date: string }) {
                   </p>
                 </div>
               ))}
+            </div>
+
+            <div>
+              <p className="mb-2 text-[11px] font-semibold uppercase tracking-wide" style={{ color: 'var(--text-tertiary)' }}>
+                Money for the day
+              </p>
+              <div className="grid grid-cols-2 gap-x-3 gap-y-2 sm:grid-cols-4">
+                {moneyTiles.map(tile => (
+                  <MoneyTile key={tile.key} label={tile.label} value={tile.value} accent={tile.accent} />
+                ))}
+              </div>
             </div>
 
             {openFlags > 0 && (
@@ -550,6 +649,7 @@ function CloseDayCard({ date }: { date: string }) {
         message="This writes an end-of-day snapshot into the journal; the numbers below are frozen at this moment."
         changes={[
           ...summaryRows.map(row => ({ label: row.label, from: row.value, to: row.value })),
+          ...moneyTiles.map(tile => ({ label: tile.label, from: fmtMoney(tile.value), to: fmtMoney(tile.value) })),
           ...(openFlags > 0
             ? [{ label: 'Open items needing attention', from: openFlags, to: openFlags }]
             : []),
@@ -650,6 +750,9 @@ export default function TodayPage() {
         <StatCard label="Pending Adjustments" value={kpis.pendingAdjustments} icon={<AlertTriangle size={20} />} color="amber" className="p-4" />
         <StatCard label="Reconciliation" value={kpis.reconIssues} icon={<ShieldAlert size={20} />} color={kpis.reconIssues > 0 ? 'red' : 'gray'} className="p-4" />
       </div>
+
+      {/* Money */}
+      <TodayMoney date={date} />
 
       {/* Attention + Pending */}
       <div className="grid gap-4 lg:grid-cols-2">
