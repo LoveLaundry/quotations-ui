@@ -26,7 +26,7 @@ export default defineConfig({
     watch: {
       usePolling: true,
       interval: 1000,
-      ignored: ['**/node_modules/**', '**/src/assets/icon.png'],
+      ignored: ['**/node_modules/**', '**/public/icon.png'],
     },
   },
 })

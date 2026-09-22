@@ -1,5 +1,4 @@
 import { COMPANY } from '../../../config/company'
-import iconPng from '../../../assets/icon.png'
 
 interface SalarySlipProps {
   slip: any
@@ -199,7 +198,7 @@ export function SalarySlipPrint({ slip, lang = 'EN' }: SalarySlipProps) {
       <div className="slip-container">
         <div className="slip-header">
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <img className="brand-logo" src={iconPng} alt="Love Laundry" />
+            <img className="brand-logo" src="/icon.png" alt="Love Laundry" />
             <div>
               <div className="brand-name">{COMPANY.name}</div>
               <div className="brand-tagline">{COMPANY.tagline}</div>

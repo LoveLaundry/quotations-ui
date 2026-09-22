@@ -1,6 +1,5 @@
 import pdfMake from 'pdfmake/build/pdfmake'
 import pdfFonts from 'pdfmake/build/vfs_fonts'
-import iconUrl from '../../assets/icon.png'
 import {
   money,
   dataTable,
@@ -43,7 +42,7 @@ let loadedLogo: string | null = null
 async function loadLogo(): Promise<string | null> {
   if (loadedLogo) return loadedLogo
   try {
-    const res = await fetch(iconUrl)
+    const res = await fetch('/icon.png')
     const blob = await res.blob()
     const dataUrl = await new Promise<string>((resolve, reject) => {
       const reader = new FileReader()

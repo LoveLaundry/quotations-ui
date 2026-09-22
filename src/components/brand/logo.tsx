@@ -1,5 +1,5 @@
 import { cn } from '../../lib/utils'
-import iconPng from '../../assets/icon.png'
+
 
 interface LogoProps {
   size?: 'sm' | 'md' | 'lg'
@@ -15,7 +15,7 @@ export function Logo({ size = 'md', showText = true, className }: LogoProps) {
   return (
     <div className={cn('flex items-center gap-3 select-none', className)}>
       <img
-        src={iconPng}
+        src="/icon.png"
         alt="Love Laundry"
         width={px}
         height={px}
