@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query'
 import {
     ArrowLeft, ClipboardList, Calendar, User, AlertCircle,
     ChevronDown, Truck, CheckCircle2, Pencil, X, Check, Receipt,
-    Plus, Save, Trash2
+    Plus, Save, Trash2, History, RefreshCw, Undo2, Settings2, Flag
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from '../../../components/ui/button'
@@ -21,6 +21,7 @@ import { returns as returnsApi } from '../services/returns.service'
 import { SearchableSelect } from '../../../components/ui'
 import { toQuotationOptions, type QuotationOption } from './create-gatepass-page'
 import type { Return, ReturnItem } from '../../../types/operations'
+import { ops, type TransactionEvent } from '../../today/services/ops.service'
 
 const STATUS_CONFIG: Record<string, { label: string; bg: string; text: string; border: string; dot: string }> = {
     RECEIVED: { label: 'Received', bg: '#EFF6FF', text: '#2563EB', border: '#BFDBFE', dot: '#3B82F6' },
@@ -44,6 +45,94 @@ function StatusBadge({ status }: { status: string }) {
             {cfg.label}
         </span>
     )
+}
+
+// ── Activity timeline ─────────────────────────────────────────────────────────
+const EVENT_THEME: Record<string, { icon: typeof History; label: string; bg: string; text: string; border: string }> = {
+    GATE_PASS_CREATED: { icon: ClipboardList, label: 'Gate pass received', bg: '#EFF6FF', text: '#2563EB', border: '#BFDBFE' },
+    RECEIVING_EDITED: { icon: Pencil, label: 'Items edited', bg: '#F9FAFB', text: '#374151', border: '#E4E7EC' },
+    RECEIVING_DATE_CHANGED: { icon: Calendar, label: 'Receiving date changed', bg: '#F9FAFB', text: '#374151', border: '#E4E7EC' },
+    STATUS_CHANGED: { icon: RefreshCw, label: 'Status changed', bg: '#F9FAFB', text: '#374151', border: '#E4E7EC' },
+    DELIVERY_CREATED: { icon: Truck, label: 'Delivery recorded', bg: '#F0FDF4', text: '#16A34A', border: '#BBF7D0' },
+    CATCH_UP_DELIVERY: { icon: CheckCircle2, label: 'Completed as delivered by note', bg: '#F0FDF4', text: '#16A34A', border: '#BBF7D0' },
+    ADJUSTMENT_REQUESTED: { icon: Settings2, label: 'Quantity adjustment requested', bg: '#FFFBEB', text: '#D97706', border: '#FDE68A' },
+    ADJUSTMENT_APPROVED: { icon: Check, label: 'Adjustment approved', bg: '#F0FDF4', text: '#16A34A', border: '#BBF7D0' },
+    ADJUSTMENT_REJECTED: { icon: X, label: 'Adjustment rejected', bg: '#FFF1F1', text: '#DC2626', border: '#FECACA' },
+    RETURN_CREATED: { icon: Undo2, label: 'Return recorded', bg: '#EFF6FF', text: '#2563EB', border: '#BFDBFE' },
+    RETURN_UPDATED: { icon: Undo2, label: 'Return updated', bg: '#EFF6FF', text: '#2563EB', border: '#BFDBFE' },
+    RETURN_RESENT: { icon: Undo2, label: 'Return re-sent', bg: '#EFF6FF', text: '#2563EB', border: '#BFDBFE' },
+    BILL_CREATED: { icon: Receipt, label: 'Bill created', bg: '#F0FDF4', text: '#16A34A', border: '#BBF7D0' },
+    LEGACY_FLAG: { icon: Flag, label: 'Legacy flag applied', bg: '#F9FAFB', text: '#6B7280', border: '#E4E7EC' },
+    LEGACY_NOTE_CLOSURE: { icon: Flag, label: 'Legacy note closure', bg: '#F9FAFB', text: '#6B7280', border: '#E4E7EC' },
+}
+
+function deltaText(delta: number | undefined): string | null {
+    if (delta == null || delta === 0) return null
+    const prefix = delta > 0 ? '+' : ''
+    return prefix + delta
+}
+
+function parseInstant(value: string | number | Date | undefined): Date | null {
+    if (!value) return null
+    const d = new Date(value)
+    return Number.isNaN(d.getTime()) ? null : d
+}
+
+function fmtWhen(value?: string): string {
+    const d = parseInstant(value)
+    if (!d) return ''
+    const diffMin = Math.round((Date.now() - d.getTime()) / 60_000)
+    if (diffMin < 1) return 'just now'
+    if (diffMin < 60) return `${diffMin}m ago`
+    if (diffMin < 1440) return `${Math.floor(diffMin / 60)}h ago`
+    const datePart = formatDate(d.toISOString())
+    const timePart = d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })
+    return `${datePart} · ${timePart}`
+}
+
+function eventDetail(e: TransactionEvent): React.ReactNode {
+    const bits: React.ReactNode[] = []
+
+    if (e.item_deltas && e.item_deltas.length > 0) {
+        bits.push(
+            <div key="deltas" className="flex flex-wrap gap-1.5">
+                {e.item_deltas.map((it, i) => {
+                    const d = deltaText(it.qty_delta ?? it.delta)
+                    return (
+                        <span key={i} className="inline-flex items-center gap-1 rounded-md bg-white border border-[#E4E7EC] px-2 py-0.5 text-[11px] text-[#374151]">
+                            {it.item_name}
+                            {it.specification && <span className="text-[#98A2B3]">{it.specification}</span>}
+                            {d && <span className="font-semibold text-[#2563EB]">×{d}</span>}
+                        </span>
+                    )
+                })}
+            </div>,
+        )
+    }
+
+    if (e.prev_status && e.new_status && e.prev_status !== e.new_status) {
+        bits.push(
+            <p key="status" className="text-[12px] text-[#6B7280]">
+                <span className="capitalize">{(STATUS_CONFIG[e.prev_status]?.label ?? e.prev_status).toLowerCase()}</span>
+                {' → '}
+                <span className="font-medium capitalize">{STATUS_CONFIG[e.new_status]?.label ?? e.new_status}</span>
+            </p>,
+        )
+    }
+
+    if (e.reason) {
+        bits.push(
+            <p key="reason" className="text-[12px] text-[#6B7280]">Reason: {e.reason}</p>,
+        )
+    }
+
+    if (e.meta && typeof e.meta === 'object' && 'note' in e.meta && (e.meta.note as string)?.trim()) {
+        bits.push(
+            <p key="note" className="text-[12px] text-[#6B7280]">Note: {String(e.meta.note)}</p>,
+        )
+    }
+
+    return bits.length > 0 ? <div className="mt-1 flex flex-col gap-1">{bits}</div> : null
 }
 
 export default function GatePassDetailPage() {
@@ -150,6 +239,19 @@ export default function GatePassDetailPage() {
         }
         return map
     }, [returnsList, gp])
+
+    // ── Activity journal (append-only timeline from the event service) ───────
+    const { data: journal = [] } = useQuery({
+        queryKey: ['events', 'gate-pass', id],
+        queryFn: () => ops.events.list({ gate_pass_id: id, limit: 200 }),
+        enabled: Boolean(id),
+        staleTime: 30_000,
+    })
+
+    const timeline = useMemo<TransactionEvent[]>(
+        () => [...journal].sort((a, b) => String(a.occurred_at).localeCompare(String(b.occurred_at))).reverse(),
+        [journal],
+    )
 
     if (isLoading) {
         return (
@@ -849,6 +951,58 @@ export default function GatePassDetailPage() {
                     </CardContent>
                 </Card>
             )}
+
+            {/* Activity Timeline (from the immutable event journal) */}
+            <Card>
+                <CardHeader className="border-b border-[#F2F4F7] pb-3">
+                    <div className="flex items-center gap-2">
+                        <History className="h-4 w-4 text-[#6B7280]" />
+                        <CardTitle>Activity</CardTitle>
+                        {timeline.length > 0 && (
+                            <span className="text-[11px] font-medium text-[#98A2B3]">{timeline.length} event{timeline.length !== 1 ? 's' : ''}</span>
+                        )}
+                    </div>
+                </CardHeader>
+                <CardContent className="pt-4">
+                    {timeline.length === 0 ? (
+                        <div className="py-6 text-center">
+                            <History className="mx-auto h-6 w-6 text-[#D0D5DD]" />
+                            <p className="text-[12px] text-[#98A2B3] mt-2">No activity recorded for this gate pass yet.</p>
+                        </div>
+                    ) : (
+                        <ol className="relative space-y-4 before:absolute before:left-[11px] before:top-1 before:bottom-1 before:w-px before:bg-[#E4E7EC]">
+                            {timeline.map(ev => {
+                                const theme = EVENT_THEME[ev.event_type] ?? { icon: History, label: ev.event_type.replace(/_/g, ' ').toLowerCase(), bg: '#F9FAFB', text: '#374151', border: '#E4E7EC' }
+                                const Icon = theme.icon
+                                return (
+                                    <li key={ev.id} className="relative flex items-start gap-3">
+                                        <span
+                                            className="relative z-10 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border"
+                                            style={{ background: theme.bg, borderColor: theme.border, color: theme.text }}
+                                        >
+                                            <Icon className="h-3 w-3" />
+                                        </span>
+                                        <div className="min-w-0 flex-1 pt-0.5">
+                                            <div className="flex items-baseline justify-between gap-3">
+                                                <p className="text-[13px] font-medium text-[#101828]" style={{ color: theme.text }}>
+                                                    {theme.label}
+                                                </p>
+                                                <span className="shrink-0 text-[11px] text-[#98A2B3]">{fmtWhen(ev.occurred_at)}</span>
+                                            </div>
+                                            {eventDetail(ev)}
+                                            {(ev.user_name || (ev.meta && typeof ev.meta === 'object' && 'user_name' in ev.meta)) && (
+                                                <p className="text-[11px] text-[#98A2B3]">
+                                                    by {ev.user_name || String((ev.meta as Record<string, unknown>).user_name)}
+                                                </p>
+                                            )}
+                                        </div>
+                                    </li>
+                                )
+                            })}
+                        </ol>
+                    )}
+                </CardContent>
+            </Card>
 
             {/* Mark Delivered (catch-up) modal */}
             {markOpen && (

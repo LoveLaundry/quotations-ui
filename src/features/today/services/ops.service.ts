@@ -53,6 +53,10 @@ export interface ItemDelta {
   before?: number
   after?: number
   delta?: number
+  /** Backend naming used by journal entries written by the services. */
+  qty_before?: number
+  qty_after?: number
+  qty_delta?: number
 }
 
 export interface TransactionEvent {
@@ -66,6 +70,8 @@ export interface TransactionEvent {
   reason?: string
   item_deltas?: ItemDelta[]
   meta?: Record<string, unknown>
+  prev_status?: string
+  new_status?: string
   occurred_at: string
 }
 

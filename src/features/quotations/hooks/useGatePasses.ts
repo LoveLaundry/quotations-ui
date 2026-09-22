@@ -22,6 +22,7 @@ export const DELIVERY_DEPENDENT_KEYS = [
     ['notifications'],
     ['pending-gatepasses'],
     ['client-summary'],
+    ['events'],
 ] as const
 
 export function invalidateDeliveryData(qc: QueryClient) {
