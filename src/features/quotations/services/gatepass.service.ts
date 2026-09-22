@@ -30,6 +30,9 @@ export const gatepasses = {
     reopenLegacy: (id: string) =>
         billsApi.post<GatePass>(`/gatepasses/${id}/reopen`).then((r: any) => r.data),
 
+    reopenLegacyBatch: () =>
+        billsApi.post<{ reopened: Array<Record<string, unknown>>; skipped: Array<Record<string, unknown>> }>('/gatepasses/reopen-legacy').then((r: any) => r.data),
+
     adjust: (id: string, item_name: string, corrected_qty: number, reason: string) =>
         billsApi.post<GatePass>(`/gatepasses/${id}/adjust`, { item_name, corrected_qty, reason }).then((r: any) => r.data),
 

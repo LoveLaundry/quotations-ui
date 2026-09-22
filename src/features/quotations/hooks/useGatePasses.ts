@@ -96,6 +96,23 @@ export function useReopenLegacyGatePass() {
     })
 }
 
+export function useReopenLegacyBatch() {
+    const qc = useQueryClient()
+    return useMutation({
+        mutationFn: () => gatepasses.reopenLegacyBatch(),
+        onSuccess: (res) => {
+            invalidateDeliveryData(qc)
+            const n = res?.reopened?.length ?? 0
+            toast.success(
+                n > 0
+                    ? `${n} legacy gate pass${n !== 1 ? 'es' : ''} reopened — pending delivery again`
+                    : 'Nothing to migrate — no eligible legacy note closures',
+            )
+        },
+        onError: (e: any) => toast.error(e?.response?.data?.detail || e?.message || 'Failed to run legacy migration'),
+    })
+}
+
 export function useAdjustGatePass() {
     const qc = useQueryClient()
     return useMutation({

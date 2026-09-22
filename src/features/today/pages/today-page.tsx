@@ -4,7 +4,7 @@ import { motion } from 'framer-motion'
 import {
   Activity, AlertTriangle, ArrowRight, CalendarCheck, CheckCircle2,
   ChevronLeft, ChevronRight, ClipboardList, Clock, FileText, Flag,
-  Package, Plus, Receipt, ShieldAlert, Truck, XCircle,
+  Package, Plus, Receipt, ShieldAlert, Truck, Undo2, XCircle,
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card'
 import { Button } from '../../../components/ui/button'
@@ -12,7 +12,7 @@ import { Skeleton } from '../../../components/ui/skeleton'
 import { StatCard } from '../../../components/ui/stat-card'
 import { EmptyState } from '../../../components/ui/empty-state'
 import { SmartConfirm } from '../../../components/ops/smart-confirm'
-import { useGatePasses } from '../../quotations/hooks/useGatePasses'
+import { useGatePasses, useReopenLegacyBatch } from '../../quotations/hooks/useGatePasses'
 import { useDeliveries } from '../../quotations/hooks/useDeliveries'
 import {
   useAdjustments, useApproveAdjustment, useRejectAdjustment,
@@ -105,10 +105,13 @@ function AttentionQueue() {
   const { data: recon, isLoading: loadingRecon } = useReconciliationIssues()
   const approve = useApproveAdjustment()
   const reject = useRejectAdjustment()
+  const batchReopen = useReopenLegacyBatch()
   const [confirm, setConfirm] = useState<{ adjustment: Adjustment; action: 'approve' | 'reject' } | null>(null)
+  const [batchConfirm, setBatchConfirm] = useState(false)
 
   const pendingAdj = adjustments ?? []
   const issues = recon?.items ?? []
+  const legacyCount = issues.filter(i => i.legacy_marked).length
   const clear = pendingAdj.length === 0 && issues.length === 0
 
   return (
@@ -177,9 +180,24 @@ function AttentionQueue() {
 
             {issues.length > 0 && (
               <div>
-                <p className="mb-2 text-[11px] font-semibold uppercase tracking-wide" style={{ color: 'var(--text-tertiary)' }}>
-                  Reconciliation issues
-                </p>
+                <div className="mb-2 flex items-center justify-between">
+                  <p className="text-[11px] font-semibold uppercase tracking-wide" style={{ color: 'var(--text-tertiary)' }}>
+                    Reconciliation issues
+                  </p>
+                  {legacyCount > 0 && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-7 px-2 text-[12px]"
+                      onClick={() => setBatchConfirm(true)}
+                      disabled={batchReopen.isPending}
+                      title="Reopen every pass closed by the old note flow with no delivery records"
+                    >
+                      <Undo2 className="h-3.5 w-3.5" />
+                      {batchReopen.isPending ? 'Reopening…' : `Reopen ${legacyCount} legacy`}
+                    </Button>
+                  )}
+                </div>
                 <div className="divide-y divide-[var(--border)] rounded-lg border border-[var(--border)]">
                   {issues.slice(0, 8).map(row => (
                     <Link key={row.id} to={`/gate-passes/${row.id}`} className="flex items-center gap-3 px-3 py-2.5 hover:bg-[var(--surface-hover)] transition">
@@ -225,6 +243,19 @@ function AttentionQueue() {
           if (confirm.action === 'approve') approve.mutate(confirm.adjustment.id, { onSuccess: done, onError: done })
           else reject.mutate(confirm.adjustment.id, { onSuccess: done, onError: done })
         }        }
+      />
+
+      <SmartConfirm
+        open={batchConfirm}
+        title={legacyCount > 0 ? `Reopen ${legacyCount} legacy gate pass${legacyCount !== 1 ? 'es' : ''}?` : 'Reopen legacy gate passes?'}
+        message="These passes were closed by the old note flow with no delivery records — their balances are hidden and they do not appear in Pending to Deliver. Reopening flags each legacy closure in the journal (LEGACY_CLOSED_WITHOUT_DELIVERY) and moves them back to Received. No quantities are fabricated."
+        confirmLabel="Reopen all eligible"
+        loading={batchReopen.isPending}
+        onCancel={() => setBatchConfirm(false)}
+        onConfirm={() => {
+          setBatchConfirm(false)
+          batchReopen.mutate()
+        }}
       />
     </Card>
   )
