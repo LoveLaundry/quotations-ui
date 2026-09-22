@@ -1,6 +1,8 @@
-import { useState, useMemo } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { ClipboardList, Plus, Trash2, AlertCircle, ArrowLeft, Link2, X, Sparkles } from 'lucide-react'
+import { useState, useMemo, useEffect } from 'react'
+import { useNavigate, Link } from 'react-router-dom'
+import {
+  ClipboardList, Plus, Trash2, AlertCircle, ArrowLeft, Link2, X, Sparkles, History, FileClock, RotateCcw,
+} from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from '../../../components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card'
@@ -8,11 +10,11 @@ import { Breadcrumb } from '../../../components/ui/breadcrumb'
 import { SearchableSelect, type SearchableOption } from '../../../components/ui'
 import { useDataGrid, mergeRefs } from '../../../hooks/use-data-grid'
 import { useEnterFlow } from '../../../hooks/use-enter-flow'
-import { useCreateGatePass } from '../hooks/useGatePasses'
+import { useCreateGatePass, useGatePasses } from '../hooks/useGatePasses'
 import { useQuotations } from '../hooks/useQuotations'
+import { useDefaults, useDraft, hasDraft } from '../../../components/ops'
 import type { GatePassItem } from '../../../types/operations'
 import type { Quotation } from '../../../types/quotation'
-import { Link } from 'react-router-dom'
 import { quotationService } from '../services/quotation.service'
 
 const EMPTY_ITEM: GatePassItem = {
@@ -33,6 +35,24 @@ const MISMATCH_REASONS = [
     'COUNTING_ERROR',
     'OTHER',
 ]
+
+// Keep existing-data helpers at the shared module level — the duplication check
+// and repeat-last both need the same shape.
+interface LastItemSeed {
+    item_name: string
+    category?: string
+    specification?: string
+}
+
+function todayLocal(): string {
+    const now = new Date()
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
+}
+
+function genGatePassNumber(): string {
+    const now = new Date()
+    return `GP-${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}-${String(Math.floor(Math.random() * 9000) + 1000)}`
+}
 
 // ─── Item Name Autocomplete ───────────────────────────────────────────────────
 export interface ExpandedQuotationItem {
@@ -88,25 +108,50 @@ export function toQuotationOptions(items: QuotationItemSource[]): QuotationOptio
     }))
 }
 
+interface GatePassDraft {
+    gate_pass_number: string
+    client_name: string
+    receiving_date: string
+    received_by: string
+    notes: string
+    items: GatePassItem[]
+    quotation_id?: string
+}
+
 export default function CreateGatePassPage() {
     const navigate = useNavigate()
     const createGatePass = useCreateGatePass()
+    const { data: gatepasses = [] } = useGatePasses()
     const { data: quotations = [], isLoading: quotationsLoading } = useQuotations()
+    const defaults = useDefaults()
 
-    const [gatePassNumber, setGatePassNumber] = useState(() => {
-        const now = new Date()
-        return `GP-${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}-${String(Math.floor(Math.random() * 9000) + 1000)}`
+    const { value: form, set: setForm, clear: clearDraft, dirty } = useDraft<GatePassDraft>('gate-pass-create', {
+        gate_pass_number: genGatePassNumber(),
+        client_name: defaults.get('gp_client') ?? '',
+        receiving_date: todayLocal(),
+        received_by: defaults.get('gp_received_by') ?? '',
+        notes: '',
+        items: [{ ...EMPTY_ITEM }],
     })
-    const [clientName, setClientName] = useState('')
-    const [receivingDate, setReceivingDate] = useState(() => new Date().toISOString().split('T')[0])
-    const [receivedBy, setReceivedBy] = useState('')
-    const [notes, setNotes] = useState('')
-    const [items, setItems] = useState<GatePassItem[]>([{ ...EMPTY_ITEM }])
+    const [restoredDraft] = useState(() => hasDraft('gate-pass-create'))
 
-    // Quotation linking
     const [selectedQuotation, setSelectedQuotation] = useState<Quotation | null>(null)
     const [quotationSearch, setQuotationSearch] = useState('')
     const [showQuotationPicker, setShowQuotationPicker] = useState(false)
+
+    // Link a quotation once it finishes loading if a draft carried its id.
+    useEffect(() => {
+        const quotaId = form.quotation_id
+        if (!quotaId || selectedQuotation) return
+        const match = quotations.find(q => String(q.id ?? '') === String(quotaId))
+        if (match) {
+            setSelectedQuotation(match)
+            setForm(prev => {
+                const { quotation_id: _drop, ...rest } = prev
+                return rest
+            })
+        }
+    }, [quotations, form.quotation_id, selectedQuotation, setForm])
 
     const filteredQuotations = quotations.filter(q => {
         const term = quotationSearch.trim().toLowerCase()
@@ -119,9 +164,18 @@ export default function CreateGatePassPage() {
     // Selecting a quotation: only link it + set client name — do NOT populate items
     const handleSelectQuotation = (q: Quotation) => {
         setSelectedQuotation(q)
-        setClientName(q.client_name)
+        setForm(p => ({ ...p, client_name: q.client_name, quotation_id: String(q.id ?? '') }))
         setShowQuotationPicker(false)
         setQuotationSearch('')
+    }
+
+    const removeQuotationLink = () => {
+        setSelectedQuotation(null)
+        setForm(prev => {
+            const { quotation_id: _drop, ...rest } = prev
+            return rest
+        })
+        setShowQuotationPicker(false)
     }
 
     // Quotation item names for autocomplete & custom detection
@@ -135,11 +189,73 @@ export default function CreateGatePassPage() {
     const isCustomItem = (item_name: string) =>
         !!selectedQuotation && item_name.trim() !== '' && !quotationItemNames.has(item_name.trim().toLowerCase())
 
-    const customItemCount = items.filter(it => isCustomItem(it.item_name)).length
+    const customItemCount = form.items.filter(it => isCustomItem(it.item_name)).length
+
+    // ── Duplicate identity guard ──────────────────────────────────────────────
+    const duplicatePass = useMemo(() => {
+        const number = form.gate_pass_number.trim().toLowerCase()
+        if (!number) return null
+        return gatepasses.find(
+            gp => gp.status !== 'CANCELLED' && gp.gate_pass_number.trim().toLowerCase() === number,
+        ) ?? null
+    }, [gatepasses, form.gate_pass_number])
+
+    // ── Repeat-last helpers ────────────────────────────────────────────────────
+    const lastItems = useMemo<LastItemSeed[]>(() => {
+        const raw = defaults.get('gp_last_items')
+        if (!raw) return []
+        try {
+            const parsed = JSON.parse(raw) as unknown
+            return Array.isArray(parsed) ? (parsed as LastItemSeed[]) : []
+        } catch {
+            return []
+        }
+    }, [defaults])
+
+    const seedRow = (seed: LastItemSeed): GatePassItem => ({
+        ...EMPTY_ITEM,
+        item_name: seed.item_name ?? '',
+        category: seed.category ?? '',
+        specification: seed.specification ?? '',
+    })
+
+    /** Append one row per distinct seed item (keeps a repeated pass's rows). */
+    const applyLastItems = () => {
+        setForm(prev => {
+            const merged = [...prev.items]
+            for (const seed of lastItems) {
+                if (!seed.item_name) continue
+                merged.push(seedRow(seed))
+            }
+            return {
+                ...prev,
+                client_name: prev.client_name || defaults.get('gp_client') || '',
+                received_by: prev.received_by || defaults.get('gp_received_by') || '',
+                items: merged,
+            }
+        })
+    }
+
+    /** Copy the current last row as a new row — fastest way to enter a long stack. */
+    const repeatLastRow = () => {
+        setForm(prev => {
+            const last = prev.items[prev.items.length - 1]
+            if (!last) return prev
+            return {
+                ...prev,
+                items: [...prev.items, {
+                    ...EMPTY_ITEM,
+                    item_name: last.item_name,
+                    category: last.category,
+                    specification: last.specification,
+                }],
+            }
+        })
+    }
 
     const updateItem = (index: number, field: keyof GatePassItem, value: string | number) => {
-        setItems(prev => {
-            const updated = [...prev]
+        setForm(prev => {
+            const updated = [...prev.items]
             const item = { ...updated[index], [field]: value } as GatePassItem
             if (field === 'client_qty' || field === 'received_qty') {
                 const cq = field === 'client_qty' ? Number(value) : item.client_qty
@@ -147,54 +263,49 @@ export default function CreateGatePassPage() {
                 item.difference = rq - cq
             }
             updated[index] = item
-            return updated
+            return { ...prev, items: updated }
         })
     }
 
     const updateItemName = (index: number, name: string, category?: string, specification?: string) => {
-        setItems(prev => {
-            const updated = [...prev]
+        setForm(prev => {
+            const updated = [...prev.items]
             const item = { ...updated[index], item_name: name }
             if (category !== undefined) item.category = category
             if (specification !== undefined) (item as any).specification = specification
             updated[index] = item
-            return updated
+            return { ...prev, items: updated }
         })
     }
 
-    const addItem = () => setItems(prev => [...prev, { ...EMPTY_ITEM }])
+    const addItem = () => setForm(prev => ({ ...prev, items: [...prev.items, { ...EMPTY_ITEM }] }))
 
     const removeItem = (index: number) =>
-        setItems(prev => prev.filter((_, i) => i !== index))
+        setForm(prev => ({ ...prev, items: prev.items.filter((_, i) => i !== index) }))
 
     // ── Grid: Item(0) → ClientQty(1) → ReceivedQty(2) → (mismatch) Reason(3) → Notes(4) ──
-    // Reason/Notes (cols 3–4) only exist when a row has a mismatch; for clean rows the
-    // received qty cell is also registered under cols 3–4 so Enter keeps flowing to the
-    // next row instead of getting stuck.
     const grid = useDataGrid({
         columns: 5,
-        rows: items.length,
+        rows: form.items.length,
         onAppendRow: addItem,
     })
 
-    // Header fields flow (gate pass no → client → date → received by → notes)
     const flow = useEnterFlow<HTMLDivElement>()
 
     const isValid =
-        gatePassNumber.trim() &&
-        clientName.trim() &&
-        receivingDate &&
-        receivedBy.trim() &&
-        items.length > 0 &&
-        items.every(it => it.item_name.trim() && it.received_qty >= 0)
+        form.gate_pass_number.trim() &&
+        form.client_name.trim() &&
+        form.receiving_date &&
+        form.received_by.trim() &&
+        form.items.length > 0 &&
+        form.items.every(it => it.item_name.trim() && it.received_qty >= 0)
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         if (!isValid) return
 
-        // Auto-add custom items (not in quotation) to the linked quotation
         if (selectedQuotation && customItemCount > 0) {
-            const newItems = items.filter(it => isCustomItem(it.item_name))
+            const newItems = form.items.filter(it => isCustomItem(it.item_name))
             try {
                 const payload = {
                     client_name: selectedQuotation.client_name,
@@ -217,16 +328,31 @@ export default function CreateGatePassPage() {
 
         createGatePass.mutate(
             {
-                gate_pass_number: gatePassNumber.trim(),
-                client_name: clientName.trim(),
-                receiving_date: new Date(receivingDate).toISOString(),
-                received_by: receivedBy.trim(),
-                notes: notes.trim() || undefined,
-                items,
+                gate_pass_number: form.gate_pass_number.trim(),
+                client_name: form.client_name.trim(),
+                receiving_date: new Date(form.receiving_date).toISOString(),
+                received_by: form.received_by.trim(),
+                notes: form.notes.trim() || undefined,
+                items: form.items,
                 ...(selectedQuotation ? { quotation_id: String(selectedQuotation.id) } : {}),
             },
             {
                 onSuccess: record => {
+                    defaults.set('gp_received_by', form.received_by.trim())
+                    defaults.set('gp_client', form.client_name.trim())
+                    defaults.set(
+                        'gp_last_items',
+                        JSON.stringify(
+                            form.items
+                                .filter(it => it.item_name.trim())
+                                .map(it => ({
+                                    item_name: it.item_name,
+                                    category: it.category ?? '',
+                                    specification: it.specification ?? '',
+                                })),
+                        ),
+                    )
+                    clearDraft()
                     const recordId = record && record.id != null ? String(record.id) : ''
                     navigate(recordId ? `/gate-passes/${recordId}` : '/gate-passes')
                 },
@@ -249,7 +375,7 @@ export default function CreateGatePassPage() {
                 <div className="flex-1">
                     <Breadcrumb
                         items={[
-                            { label: 'Dashboard', href: '/' },
+                            { label: 'Today', href: '/today' },
                             { label: 'Gate Passes', href: '/gate-passes' },
                             { label: 'New Gate Pass' },
                         ]}
@@ -259,7 +385,36 @@ export default function CreateGatePassPage() {
                         Record laundry items received from a hotel client
                     </p>
                 </div>
+                <div className="flex items-center gap-2 shrink-0">
+                    {dirty && (
+                        <span className="inline-flex items-center gap-1.5 rounded-full border border-[#E4E7EC] bg-white px-2.5 py-1 text-[11px] font-medium text-[#6B7280]">
+                            <FileClock className="h-3 w-3" /> Autosaved draft
+                        </span>
+                    )}
+                    {restoredDraft && (
+                        <Button variant="outline" size="sm" onClick={clearDraft} type="button">
+                            <RotateCcw className="h-3.5 w-3.5" /> Discard draft
+                        </Button>
+                    )}
+                </div>
             </div>
+
+            {duplicatePass && (
+                <div className="flex items-start gap-3 rounded-xl border border-[#FECACA] bg-[#FFF1F1] px-4 py-3">
+                    <AlertCircle className="h-5 w-5 shrink-0 text-[#DC2626] mt-0.5" />
+                    <div className="flex-1">
+                        <p className="text-[13px] font-semibold text-[#991B1B]">
+                            This gate pass number already exists
+                        </p>
+                        <p className="text-[12px] text-[#B91C1C]">
+                            #{duplicatePass.gate_pass_number} · {duplicatePass.client_name}
+                        </p>
+                    </div>
+                    <Link to={`/gate-passes/${duplicatePass.id}`}>
+                        <Button size="sm" variant="outline" className="text-[#DC2626]">View existing</Button>
+                    </Link>
+                </div>
+            )}
 
             <form onSubmit={handleSubmit} className="space-y-4">
                 {/* Quotation Linking Card */}
@@ -284,7 +439,7 @@ export default function CreateGatePassPage() {
                                 </div>
                                 <button
                                     type="button"
-                                    onClick={() => { setSelectedQuotation(null); setShowQuotationPicker(false) }}
+                                    onClick={removeQuotationLink}
                                     className="flex h-7 w-7 items-center justify-center rounded-lg text-[#EA580C] hover:bg-[#FED7AA] transition-colors cursor-pointer"
                                 >
                                     <X className="h-3.5 w-3.5" />
@@ -359,8 +514,8 @@ export default function CreateGatePassPage() {
                                 <label className={labelClass}>Gate Pass No.</label>
                                 <input
                                     type="text"
-                                    value={gatePassNumber}
-                                    onChange={e => setGatePassNumber(e.target.value)}
+                                    value={form.gate_pass_number}
+                                    onChange={e => setForm({ gate_pass_number: e.target.value })}
                                     className={inputClass}
                                     required
                                 />
@@ -369,8 +524,8 @@ export default function CreateGatePassPage() {
                                 <label className={labelClass}>Client / Hotel Name</label>
                                 <input
                                     type="text"
-                                    value={clientName}
-                                    onChange={e => setClientName(e.target.value)}
+                                    value={form.client_name}
+                                    onChange={e => setForm({ client_name: e.target.value })}
                                     placeholder="e.g. Hilton Colombo"
                                     className={inputClass}
                                     required
@@ -380,8 +535,8 @@ export default function CreateGatePassPage() {
                                 <label className={labelClass}>Receiving Date</label>
                                 <input
                                     type="date"
-                                    value={receivingDate}
-                                    onChange={e => setReceivingDate(e.target.value)}
+                                    value={form.receiving_date}
+                                    onChange={e => setForm({ receiving_date: e.target.value })}
                                     className={inputClass}
                                     required
                                 />
@@ -390,8 +545,8 @@ export default function CreateGatePassPage() {
                                 <label className={labelClass}>Received By</label>
                                 <input
                                     type="text"
-                                    value={receivedBy}
-                                    onChange={e => setReceivedBy(e.target.value)}
+                                    value={form.received_by}
+                                    onChange={e => setForm({ received_by: e.target.value })}
                                     placeholder="Staff name"
                                     className={inputClass}
                                     required
@@ -401,8 +556,8 @@ export default function CreateGatePassPage() {
                                 <label className={labelClass}>Notes (optional)</label>
                                 <input
                                     type="text"
-                                    value={notes}
-                                    onChange={e => setNotes(e.target.value)}
+                                    value={form.notes}
+                                    onChange={e => setForm({ notes: e.target.value })}
                                     placeholder="Any additional remarks…"
                                     className={inputClass}
                                 />
@@ -417,25 +572,45 @@ export default function CreateGatePassPage() {
                         <div className="flex items-center justify-between">
                             <div>
                                 <CardTitle>Linen Items</CardTitle>
-                                {selectedQuotation && (
+                                {selectedQuotation ? (
                                     <p className="text-[11px] text-[#98A2B3] mt-0.5">
                                         Select from <span className="font-semibold text-[#EA580C]">{selectedQuotation.client_name}</span>'s quotation, or type a new one
                                     </p>
-                                )}
+                                ) : lastItems.length > 0 ? (
+                                    <p className="text-[11px] text-[#98A2B3] mt-0.5">
+                                        Last gate pass had {lastItems.length} item type{lastItems.length !== 1 ? 's' : ''} — repeat them below.
+                                    </p>
+                                ) : null}
                             </div>
-                            <Button
-                                type="button"
-                                variant="secondary"
-                                size="sm"
-                                onClick={addItem}
-                            >
-                                <Plus className="h-3.5 w-3.5" /> Add Item
-                            </Button>
+                            <div className="flex items-center gap-2">
+                                {lastItems.length > 0 && (
+                                    <Button
+                                        type="button"
+                                        variant="secondary"
+                                        size="sm"
+                                        onClick={applyLastItems}
+                                        title="Bring forward the items from the last gate pass for this client"
+                                    >
+                                        <History className="h-3.5 w-3.5" /> Repeat last
+                                    </Button>
+                                )}
+                                <Button type="button" variant="ghost" size="sm" onClick={repeatLastRow}>
+                                    <Plus className="h-3.5 w-3.5" /> Repeat last row
+                                </Button>
+                                <Button
+                                    type="button"
+                                    variant="secondary"
+                                    size="sm"
+                                    onClick={addItem}
+                                >
+                                    <Plus className="h-3.5 w-3.5" /> Add Item
+                                </Button>
+                            </div>
                         </div>
                     </CardHeader>
                     <CardContent className="pt-4 space-y-3" onKeyDown={grid.handleKeyDown}>
                         <AnimatePresence initial={false}>
-                            {items.map((item, idx) => (
+                            {form.items.map((item, idx) => (
                                 <motion.div
                                     key={idx}
                                     initial={{ opacity: 0, y: -8 }}
@@ -486,8 +661,8 @@ export default function CreateGatePassPage() {
                                             <label className={labelClass}>Spec</label>
                                             <input
                                                 type="text"
-                                                value={(item as any).specification ?? ''}
-                                                onChange={e => (updateItem as any)(idx, 'specification', e.target.value)}
+                                                value={item.specification ?? ''}
+                                                onChange={e => updateItem(idx, 'specification', e.target.value)}
                                                 placeholder="e.g. Red, XL"
                                                 className={inputClass}
                                             />
@@ -562,7 +737,7 @@ export default function CreateGatePassPage() {
                                             </div>
                                         )}
 
-                                        {items.length > 1 && (
+                                        {form.items.length > 1 && (
                                             <button
                                                 type="button"
                                                 onClick={() => removeItem(idx)}
@@ -591,13 +766,13 @@ export default function CreateGatePassPage() {
                     <CardContent className="pt-4">
                         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                             <div className="text-[13px] text-[#6B7280] flex flex-wrap items-center gap-x-2 gap-y-1">
-                                <span><span className="font-semibold text-[#101828]">{items.length}</span> item type{items.length !== 1 ? 's' : ''}</span>
+                                <span><span className="font-semibold text-[#101828]">{form.items.length}</span> item type{form.items.length !== 1 ? 's' : ''}</span>
                                 <span className="text-[#E4E7EC]">·</span>
-                                <span><span className="font-semibold text-[#101828]">{items.reduce((s, i) => s + i.received_qty, 0)}</span> pieces total</span>
-                                {items.some(i => i.difference !== 0) && (
+                                <span><span className="font-semibold text-[#101828]">{form.items.reduce((s, i) => s + i.received_qty, 0)}</span> pieces total</span>
+                                {form.items.some(i => i.difference !== 0) && (
                                     <span className="inline-flex items-center gap-1 text-[#D97706]">
                                         <AlertCircle className="h-3.5 w-3.5" />
-                                        {items.filter(i => i.difference !== 0).length} mismatch{items.filter(i => i.difference !== 0).length > 1 ? 'es' : ''}
+                                        {form.items.filter(i => i.difference !== 0).length} mismatch{form.items.filter(i => i.difference !== 0).length > 1 ? 'es' : ''}
                                     </span>
                                 )}
                                 {selectedQuotation && (
