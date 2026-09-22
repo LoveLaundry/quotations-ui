@@ -49,6 +49,24 @@ window.addEventListener('unhandledrejection', (event) => {
   }
 })
 
+// ---------------------------------------------------------------------------
+// Scroll-lock fallback: the body:has(.fixed.inset-0) CSS rule needs :has().
+// On browsers without support, watch the DOM and lock scrolling while any
+// overlay (fixed inset-0) is mounted, and unlock as soon as it is removed.
+// ---------------------------------------------------------------------------
+if (typeof CSS !== 'undefined' && CSS.supports && !CSS.supports('selector(:has(*))')) {
+  const applyLock = () => {
+    try {
+      document.body.style.overflow = document.querySelector('.fixed.inset-0') ? 'hidden' : ''
+    } catch {
+      document.body.style.overflow = ''
+    }
+  }
+  const observer = new MutationObserver(applyLock)
+  observer.observe(document.body, { childList: true, subtree: true })
+  applyLock()
+}
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <ErrorBoundary>

@@ -833,3 +833,20 @@
   --font-spectral: "Spectral", serif;
   --animate-slideIn: slide-in 0.5s ease-in-out;
 }
+
+/* ────────────────────────────────────────────────────────────────────────────
+   Popup behavior: blur the backdrop and lock the page scroll for as long as
+   any modal / popup / overlay is open. Overlays only mount while open, so an
+   element being present in the DOM == the popup is open. Unlayered rules win
+   over Tailwind utilities, so this also normalizes blur-sm/4px discrepancies.
+   ──────────────────────────────────────────────────────────────────────────── */
+.bg-black\/20:not(.rounded-full),
+.bg-black\/40:not(.rounded-full),
+.bg-black\/50:not(.rounded-full) {
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+}
+
+body:has(.fixed.inset-0) {
+  overflow: hidden;
+}
