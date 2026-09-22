@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { employeesApi, salaryApi, salaryPackagesApi } from '../api/management-api'
+import { employeesApi, salaryApi, salaryPackagesApi, holidaysApi } from '../api/management-api'
+import { buildSalaryForecast } from '../utils/salary-forecast'
 import { toast } from 'sonner'
 import { Eye, Printer, Trash2, XCircle, CheckCircle, Wallet, PlayCircle, Settings2 } from 'lucide-react'
 import { useReactToPrint } from 'react-to-print'
@@ -54,6 +55,11 @@ export default function SalaryHistoryPage() {
   const { data: employees = [] } = useQuery({
     queryKey: ['mgmt-employees'],
     queryFn: () => employeesApi.list('').then(r => r.data),
+  })
+
+  const { data: holidaysData = [] } = useQuery({
+    queryKey: ['mgmt-holidays', payYear],
+    queryFn: () => holidaysApi.list(payYear).then(r => r.data),
   })
 
   const { data: slipsData = { items: [], total: 0 }, isLoading } = useQuery({
@@ -163,6 +169,9 @@ export default function SalaryHistoryPage() {
     })
   }
 
+  const projectRow = (row: any) =>
+    buildSalaryForecast(row, row.overtime_hours || 0, { year: payYear, month: payMonth, holidays: holidaysData })
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -247,6 +256,7 @@ export default function SalaryHistoryPage() {
                     <th className="px-3 py-2 font-medium">Attendance</th>
                     <th className="px-3 py-2 font-medium text-right">Base (Period)</th>
                     <th className="px-3 py-2 font-medium text-right">Net</th>
+                    <th className="px-3 py-2 font-medium text-right">Month if all attend</th>
                     <th className="px-3 py-2 font-medium">Existing Slip</th>
                     <th className="px-3 py-2 font-medium"></th>
                   </tr>
@@ -260,6 +270,20 @@ export default function SalaryHistoryPage() {
                       <td className="px-3 py-2">{row.attendance_required !== false ? 'Required' : <span className="text-amber-600 font-medium">Not required (fixed)</span>}</td>
                       <td className="px-3 py-2 text-right">Rs. {(row.base_salary_for_period || 0).toLocaleString()}</td>
                       <td className="px-3 py-2 text-right font-semibold">Rs. {(row.net_salary || 0).toLocaleString()}</td>
+                      <td className="px-3 py-2 text-right" title={`Projection if all remaining working days are attended (base + allowance + OT so far − EPF)`}>
+                        {(() => {
+                          const f = projectRow(row)
+                          const extra = f.projected - (row.net_salary || 0)
+                          return (
+                            <>
+                              <span className="font-semibold text-indigo-700 dark:text-indigo-300 tabular-nums">Rs. {f.projected.toLocaleString()}</span>
+                              {extra > 0 && (
+                                <span className="block text-[10px] text-green-600 dark:text-green-400">+ Rs. {extra.toLocaleString()} if all attend</span>
+                              )}
+                            </>
+                          )
+                        })()}
+                      </td>
                       <td className="px-3 py-2 text-xs">{row.existing_slip_status ? <span className="text-green-600">{row.existing_slip_status}</span> : <span className="text-gray-400">—</span>}</td>
                       <td className="px-3 py-2 text-right">
                         <button
