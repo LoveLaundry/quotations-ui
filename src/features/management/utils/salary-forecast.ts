@@ -67,3 +67,55 @@ export function buildSalaryForecast(
 
   return { projected, base, allowance, epf, overtime, working_days: workingDays, method }
 }
+
+export interface RemainingForecast {
+  remaining_working_days: number
+  remaining_amount: number
+}
+
+/**
+ * What an employee can still earn for the rest of the month (from `today`
+ * through month-end) if they attend every remaining working day. Fixed /
+ * contract arrangements where attendance does not affect pay yield 0.
+ */
+export function buildRemainingForecast(
+  emp: any,
+  info: SalaryForecastInput & { today?: string },
+): RemainingForecast {
+  const daysInMonth = new Date(info.year, info.month, 0).getDate()
+  const today = info.today || new Date().toISOString().slice(0, 10)
+  const holidaySet = buildHolidaySet(info.holidays || [])
+  const pad = (n: number) => String(n).padStart(2, '0')
+  let totalWorking = 0
+  let remainingWorking = 0
+  for (let d = 1; d <= daysInMonth; d++) {
+    const iso = `${info.year}-${pad(info.month)}-${pad(d)}`
+    const dow = new Date(info.year, info.month - 1, d).getDay()
+    if (dow === 0 || dow === 6 || holidaySet.has(iso)) continue
+    totalWorking += 1
+    if (iso >= today) remainingWorking += 1
+  }
+
+  const salaryType = emp.salary_type || 'MONTHLY'
+  const attendanceBased = emp.attendance_required !== false
+  const basic = Number(emp.basic_salary) || 0
+  const dailyRate = Number(emp.daily_rate) || 0
+  const weeklyRate = Number(emp.weekly_rate) || dailyRate * 6
+  const allowance = Number(emp.allowance) || 0
+  const divisor = totalWorking || 1
+
+  let remainingAmount = 0
+  if (salaryType === 'DAILY') {
+    remainingAmount = Math.round(dailyRate * remainingWorking)
+  } else if (salaryType === 'WEEKLY') {
+    if (attendanceBased) remainingAmount = Math.round(weeklyRate * (remainingWorking / 6))
+  } else if (salaryType === 'CONTRACT') {
+    remainingAmount = 0
+  } else if (attendanceBased) {
+    const allowanceType = emp.allowance_type || 'FIXED'
+    const allowancePart = allowanceType === 'FIXED' ? 0 : Math.round(allowance * (remainingWorking / divisor))
+    remainingAmount = Math.round(basic * (remainingWorking / divisor)) + allowancePart
+  }
+
+  return { remaining_working_days: remainingWorking, remaining_amount: Math.max(0, remainingAmount) }
+}

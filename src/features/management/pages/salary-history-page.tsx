@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { employeesApi, salaryApi, salaryPackagesApi, holidaysApi } from '../api/management-api'
-import { buildSalaryForecast } from '../utils/salary-forecast'
+import { buildSalaryForecast, buildRemainingForecast } from '../utils/salary-forecast'
 import { toast } from 'sonner'
 import { Eye, Printer, Trash2, XCircle, CheckCircle, Wallet, PlayCircle, Settings2 } from 'lucide-react'
 import { useReactToPrint } from 'react-to-print'
@@ -172,6 +172,9 @@ export default function SalaryHistoryPage() {
   const projectRow = (row: any) =>
     buildSalaryForecast(row, row.overtime_hours || 0, { year: payYear, month: payMonth, holidays: holidaysData })
 
+  const remainingRow = (row: any) =>
+    buildRemainingForecast(row, { year: payYear, month: payMonth, holidays: holidaysData })
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -257,6 +260,7 @@ export default function SalaryHistoryPage() {
                     <th className="px-3 py-2 font-medium text-right">Base (Period)</th>
                     <th className="px-3 py-2 font-medium text-right">Net</th>
                     <th className="px-3 py-2 font-medium text-right">Month if all attend</th>
+                    <th className="px-3 py-2 font-medium text-right">Remaining days if attend</th>
                     <th className="px-3 py-2 font-medium">Existing Slip</th>
                     <th className="px-3 py-2 font-medium"></th>
                   </tr>
@@ -280,6 +284,19 @@ export default function SalaryHistoryPage() {
                               {extra > 0 && (
                                 <span className="block text-[10px] text-green-600 dark:text-green-400">+ Rs. {extra.toLocaleString()} if all attend</span>
                               )}
+                            </>
+                          )
+                        })()}
+                      </td>
+                      <td
+                        className="px-3 py-2 text-right"
+                        title={`Working days left in the month: ${remainingRow(row).remaining_working_days} — extra the employee can earn if they attend them all (base + allowance pro-rata; OT not assumed)`}>
+                        {(() => {
+                          const r = remainingRow(row)
+                          return (
+                            <>
+                              <span className="font-semibold text-emerald-700 dark:text-emerald-300 tabular-nums">+ Rs. {r.remaining_amount.toLocaleString()}</span>
+                              <span className="block text-[10px] text-gray-400">{r.remaining_working_days} working days left</span>
                             </>
                           )
                         })()}
