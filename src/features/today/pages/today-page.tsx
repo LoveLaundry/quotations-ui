@@ -3,8 +3,8 @@ import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import {
   Activity, AlertTriangle, ArrowRight, CalendarCheck, CheckCircle2,
-  ChevronLeft, ChevronRight, ClipboardList, Clock, FileText, Package,
-  Plus, Receipt, ShieldAlert, Truck, XCircle,
+  ChevronLeft, ChevronRight, ClipboardList, Clock, FileText, Flag,
+  Package, Plus, Receipt, ShieldAlert, Truck, XCircle,
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card'
 import { Button } from '../../../components/ui/button'
@@ -16,9 +16,9 @@ import { useGatePasses } from '../../quotations/hooks/useGatePasses'
 import { useDeliveries } from '../../quotations/hooks/useDeliveries'
 import {
   useAdjustments, useApproveAdjustment, useRejectAdjustment,
-  useEvents, usePendingGatePasses, useReconciliationIssues,
+  useCloseDay, useDayClose, useEvents, usePendingGatePasses, useReconciliationIssues,
 } from '../hooks/useDailyOps'
-import type { Adjustment } from '../services/ops.service'
+import type { Adjustment, DayCloseTotals } from '../services/ops.service'
 
 // ── Date helpers (local calendar day, no timezone drift) ──────────────────────
 
@@ -63,6 +63,7 @@ const EVENT_LABEL: Record<string, string> = {
   ADJUSTMENT_APPROVED: 'Adjustment approved',
   ADJUSTMENT_REJECTED: 'Adjustment rejected',
   RETURN_RECORDED: 'Return recorded',
+  DAY_CLOSED: 'Day closed',
 }
 
 function eventLabel(type: string): string {
@@ -353,6 +354,187 @@ function DailyTimeline({ date }: { date: string }) {
   )
 }
 
+// ── Close day ─────────────────────────────────────────────────────────────────
+
+function useDayTotals(date: string) {
+  const { data: gatepasses } = useGatePasses()
+  const { data: deliveries } = useDeliveries()
+  const { data: adjustments } = useAdjustments('REQUESTED')
+  const { data: recon } = useReconciliationIssues()
+
+  return useMemo<DayCloseTotals>(() => {
+    const gps = (gatepasses ?? []).filter(
+      gp => dayOf(gp.receiving_date) === date && gp.status !== 'CANCELLED',
+    )
+    const piecesReceived = gps.reduce(
+      (sum, gp) => sum + (gp.items ?? []).reduce((s, it) => s + (it.received_qty || 0), 0),
+      0,
+    )
+    const dels = (deliveries ?? []).filter(
+      d => dayOf(d.delivery_date) === date && d.status !== 'CANCELLED',
+    )
+    const piecesDelivered = dels.reduce(
+      (sum, d) => sum + (d.items ?? []).reduce((s, it) => s + (it.quantity || 0), 0),
+      0,
+    )
+    const deliveredByGP = new Map<string, Map<string, number>>()
+    for (const d of deliveries ?? []) {
+      if (d.status === 'CANCELLED') continue
+      let byItem = deliveredByGP.get(d.gate_pass_id)
+      if (!byItem) {
+        byItem = new Map<string, number>()
+        deliveredByGP.set(d.gate_pass_id, byItem)
+      }
+      for (const it of d.items ?? []) {
+        const key = `${it.item_name}||${it.specification ?? ''}`
+        byItem.set(key, (byItem.get(key) ?? 0) + (it.quantity || 0))
+      }
+    }
+    const piecesOutstanding = gps.reduce(
+      (sum, gp) =>
+        sum + (gp.items ?? []).reduce((s, it) => {
+          const key = `${it.item_name}||${it.specification ?? ''}`
+          const delivered = deliveredByGP.get(gp.id)?.get(key) ?? 0
+          return s + Math.max(0, (it.received_qty || 0) - delivered)
+        }, 0),
+      0,
+    )
+    return {
+      gate_pass_count: gps.length,
+      pieces_received: piecesReceived,
+      delivery_count: dels.length,
+      pieces_delivered: piecesDelivered,
+      pieces_outstanding: piecesOutstanding,
+      pending_adjustments: (adjustments ?? []).length,
+      reconciliation_issues: (recon?.items ?? []).length,
+    }
+  }, [gatepasses, deliveries, adjustments, recon, date])
+}
+
+const DAY_TOTAL_ROWS: { key: keyof DayCloseTotals; label: string; flag?: 'ok' | 'warn' }[] = [
+  { key: 'gate_pass_count', label: 'Gate passes received' },
+  { key: 'pieces_received', label: 'Pieces received' },
+  { key: 'delivery_count', label: 'Deliveries recorded' },
+  { key: 'pieces_delivered', label: 'Pieces delivered' },
+  { key: 'pieces_outstanding', label: 'Pieces outstanding', flag: 'warn' },
+]
+
+function CloseDayCard({ date }: { date: string }) {
+  const totals = useDayTotals(date)
+  const { data: closed, isLoading: loadingClosed } = useDayClose(date)
+  const close = useCloseDay()
+  const [note, setNote] = useState('')
+  const [confirm, setConfirm] = useState(false)
+
+  const openFlags = totals.pending_adjustments + totals.reconciliation_issues
+  const closedAt = closed && typeof closed.meta === 'object' && closed.meta
+    ? String((closed.meta as { closed_at?: string }).closed_at ?? '')
+    : ''
+
+  const summaryRows = DAY_TOTAL_ROWS.map(row => ({ ...row, value: totals[row.key] }))
+
+  return (
+    <Card>
+      <CardHeader className="border-b border-[var(--border)] pb-3">
+        <div className="flex items-center justify-between">
+          <CardTitle className="flex items-center gap-2 text-[14px]">
+            <Flag className="h-4 w-4" style={{ color: 'var(--text-tertiary)' }} />
+            Close Day
+          </CardTitle>
+          {closed && (
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 text-[12px] font-bold text-emerald-700">
+              <CheckCircle2 className="h-3.5 w-3.5" />
+              Closed{closedAt ? ` · ${fmtTime(closedAt)}` : ''}
+            </span>
+          )}
+        </div>
+      </CardHeader>
+      <CardContent className="pt-4 space-y-4">
+        {loadingClosed ? (
+          <div className="space-y-2">
+            {[0, 1, 2].map(i => <Skeleton key={i} className="h-10 w-full" />)}
+          </div>
+        ) : (
+          <>
+            <div className="grid grid-cols-2 gap-x-3 gap-y-2 sm:grid-cols-3 lg:grid-cols-5">
+              {summaryRows.map(row => (
+                <div key={row.key} className="rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 py-2.5">
+                  <p className="text-[11px]" style={{ color: 'var(--text-tertiary)' }}>{row.label}</p>
+                  <p
+                    className="mt-0.5 text-[18px] font-bold tabular-nums"
+                    style={row.flag === 'warn' && row.value > 0 ? { color: '#D97706' } : { color: 'var(--text-primary)' }}
+                  >
+                    {row.value}
+                  </p>
+                </div>
+              ))}
+            </div>
+
+            {openFlags > 0 && (
+              <div className="flex items-center gap-2.5 rounded-lg border border-amber-200 bg-amber-50 px-3.5 py-2.5 text-[12px] text-amber-800">
+                <AlertTriangle className="h-4 w-4 shrink-0" />
+                <span>
+                  {totals.pending_adjustments} pending adjustment{totals.pending_adjustments !== 1 ? 's' : ''}
+                  {totals.pending_adjustments > 0 && totals.reconciliation_issues > 0 ? ' and ' : ''}
+                  {totals.reconciliation_issues > 0 ? `${totals.reconciliation_issues} reconciliation issue${totals.reconciliation_issues !== 1 ? 's' : ''}` : ''}
+                  {' '}still open. Resolve them in Needs Attention before closing.
+                </span>
+              </div>
+            )}
+
+            {closed && (
+              <div className="flex items-start gap-2.5 rounded-lg border border-emerald-200 bg-emerald-50 px-3.5 py-2.5 text-[12px] text-emerald-800">
+                <CheckCircle2 className="h-4 w-4 shrink-0" />
+                <span>
+                  Day already closed. Re-close to record a fresh snapshot of the current numbers.
+                  {closed.reason ? ` Note: “${closed.reason}”` : ''}
+                </span>
+              </div>
+            )}
+
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+              <input
+                value={note}
+                onChange={e => setNote(e.target.value)}
+                placeholder="Optional note for this day's close (e.g. late deliveries due, staff note)"
+                className="h-9 flex-1 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 text-[13px]"
+                style={{ color: 'var(--text-primary)' }}
+              />
+              <Button
+                className="h-9 bg-[#DC2626] hover:bg-[#B91C1C] text-white"
+                disabled={close.isPending}
+                onClick={() => setConfirm(true)}
+              >
+                <Flag className="h-3.5 w-3.5" />
+                {closed ? 'Re-close day' : 'Close day'}
+              </Button>
+            </div>
+          </>
+        )}
+      </CardContent>
+
+      <SmartConfirm
+        open={confirm}
+        title={closed ? 'Re-close the day?' : 'Close the day?'}
+        message="This writes an end-of-day snapshot into the journal; the numbers below are frozen at this moment."
+        changes={[
+          ...summaryRows.map(row => ({ label: row.label, from: row.value, to: row.value })),
+          ...(openFlags > 0
+            ? [{ label: 'Open items needing attention', from: openFlags, to: openFlags }]
+            : []),
+        ]}
+        confirmLabel={closed ? 'Re-close day' : 'Close day'}
+        loading={close.isPending}
+        onCancel={() => setConfirm(false)}
+        onConfirm={() => {
+          setConfirm(false)
+          close.mutate({ date, totals, note: note.trim() || undefined })
+        }}
+      />
+    </Card>
+  )
+}
+
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function TodayPage() {
@@ -445,6 +627,8 @@ export default function TodayPage() {
       </div>
 
       <DailyTimeline date={date} />
+
+      <CloseDayCard date={date} />
 
       <div className="flex items-center justify-end">
         <Button asChild variant="ghost" size="sm">

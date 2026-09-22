@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
-import { ops } from '../services/ops.service'
+import { ops, dayCloseApi, type DayCloseTotals } from '../services/ops.service'
 import { deliveries, type PendingGatePass } from '../../quotations/services/delivery.service'
 import { invalidateDeliveryData } from '../../quotations/hooks/useGatePasses'
 
@@ -9,6 +9,7 @@ export const opsKeys = {
   adjustments: (status?: string) => [...opsKeys.all, 'adjustments', status ?? 'ALL'] as const,
   reconciliation: (status?: string) => [...opsKeys.all, 'reconciliation', status ?? 'ALL'] as const,
   events: (date?: string) => [...opsKeys.all, 'events', date ?? 'ALL'] as const,
+  dayClose: (date?: string) => [...opsKeys.all, 'day-close', date ?? 'ALL'] as const,
 }
 
 export function useAdjustments(status?: string) {
@@ -64,5 +65,27 @@ export function usePendingGatePasses() {
   return useQuery<PendingGatePass[]>({
     queryKey: [...opsKeys.all, 'pending-gatepasses'],
     queryFn: () => deliveries.pendingGatePasses(),
+  })
+}
+
+export function useDayClose(date?: string) {
+  return useQuery({
+    queryKey: opsKeys.dayClose(date),
+    queryFn: () => (date ? dayCloseApi.get(date) : Promise.resolve(null)),
+    enabled: Boolean(date),
+  })
+}
+
+export function useCloseDay() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (body: { date: string; totals: DayCloseTotals; note?: string }) => dayCloseApi.create(body),
+    onSuccess: (data) => {
+      qc.invalidateQueries({ queryKey: opsKeys.all })
+      invalidateDeliveryData(qc)
+      toast.success(`Day closed for ${data.entity_id}`)
+    },
+    onError: (e: any) =>
+      toast.error(e?.response?.data?.detail || e?.message || 'Failed to close the day'),
   })
 }

@@ -101,3 +101,26 @@ export const ops = {
       billsApi.get<TransactionEvent[]>('/events', { params }).then(r => r.data),
   },
 }
+
+// ── Day close (append-only end-of-day snapshot) ───────────────────────────────
+export interface DayCloseTotals {
+  gate_pass_count: number
+  pieces_received: number
+  delivery_count: number
+  pieces_delivered: number
+  pieces_outstanding: number
+  pending_adjustments: number
+  reconciliation_issues: number
+}
+
+export interface DayCloseSnapshot extends TransactionEvent {
+  reason?: string
+  meta?: { totals?: DayCloseTotals; closed_at?: string }
+}
+
+export const dayCloseApi = {
+  get: (date: string): Promise<DayCloseSnapshot | null> =>
+    billsApi.get<DayCloseSnapshot>('/day-close', { params: { date } }).then(r => r.data ?? null),
+  create: (body: { date: string; totals: DayCloseTotals; note?: string }): Promise<DayCloseSnapshot> =>
+    billsApi.post<DayCloseSnapshot>('/day-close', body).then(r => r.data),
+}
