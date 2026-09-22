@@ -783,6 +783,7 @@ function CloseDayCard({ date }: { date: string }) {
   const [note, setNote] = useState('')
   const [confirm, setConfirm] = useState(false)
 
+  const isFuture = date > localISO()
   const openFlags = totals.pending_adjustments + totals.reconciliation_issues
   const closedAt = closed && typeof closed.meta === 'object' && closed.meta
     ? String((closed.meta as { closed_at?: string }).closed_at ?? '')
@@ -875,13 +876,21 @@ function CloseDayCard({ date }: { date: string }) {
               />
               <Button
                 className="h-9 bg-[#DC2626] hover:bg-[#B91C1C] text-white"
-                disabled={close.isPending}
+                disabled={close.isPending || isFuture}
+                title={isFuture ? 'Can close past or today’s day — not a future day' : undefined}
                 onClick={() => setConfirm(true)}
               >
                 <Flag className="h-3.5 w-3.5" />
                 {closed ? 'Re-close day' : 'Close day'}
               </Button>
             </div>
+
+            {isFuture && (
+              <div className="flex items-center gap-2.5 rounded-lg border border-gray-200 bg-gray-50 px-3.5 py-2.5 text-[12px]" style={{ color: 'var(--text-tertiary)' }}>
+                <CalendarCheck className="h-4 w-4 shrink-0" />
+                This is a future day — pick today or an earlier day to close.
+              </div>
+            )}
           </>
         )}
       </CardContent>
