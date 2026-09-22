@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect, useCallback, type FormEvent } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { Truck, ArrowLeft, Search, X, AlertCircle, Check, Package, Wand2, Hand } from 'lucide-react'
+import { Truck, ArrowLeft, Search, X, AlertCircle, Check, Package, Wand2, Hand, FileClock, RotateCcw } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
 import { Button } from '../../../components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card'
@@ -11,6 +11,7 @@ import { deliveries } from '../services/delivery.service'
 import { useCreateDelivery } from '../hooks/useDeliveries'
 import { useDataGrid } from '../../../hooks/use-data-grid'
 import { useEnterFlow } from '../../../hooks/use-enter-flow'
+import { useDefaults, useDraft, hasDraft } from '../../../components/ops'
 import type { PendingGatePass } from '../services/delivery.service'
 
 interface SelectedItem {
@@ -34,6 +35,29 @@ interface AutoItemTotal {
     total_qty: number
 }
 
+/** Per-row quantity key: one GP + one item type = one row in manual mode. */
+function rowKey(gpId: string, name: string, spec: string) {
+    return `${gpId}||${name}||${spec}`
+}
+
+// ── Draft shape (refresh-safe, auto-saved) ───────────────────────────────────
+interface DeliveryDraft {
+    step: 'select' | 'fill'
+    selectedIds: string[]
+    deliveryDate: string
+    deliveredBy: string
+    receivedBy: string
+    notes: string
+    fillMode: 'manual' | 'auto'
+    autoTotals: Record<string, number>
+    manualQty: Record<string, number>
+}
+
+function todayLocal(): string {
+    const now = new Date()
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
+}
+
 const inputClass =
     'h-10 w-full rounded-lg border border-[#E4E7EC] bg-white px-3 text-[13px] text-[#101828] outline-none focus:border-[#16A34A] focus:ring-2 focus:ring-[#16A34A]/10 shadow-sm transition'
 const labelClass = 'block text-[11px] font-semibold uppercase tracking-wide text-[#6B7280] mb-1.5'
@@ -45,16 +69,24 @@ function itemKey(name: string, spec: string) {
 export default function CreateDeliveryPage() {
     const navigate = useNavigate()
     const createDelivery = useCreateDelivery()
+    const defaults = useDefaults()
 
     const [search, setSearch] = useState('')
     const [debouncedSearch, setDebouncedSearch] = useState('')
-    const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
-    const [deliveryDate, setDeliveryDate] = useState(() => new Date().toISOString().split('T')[0])
-    const [deliveredBy, setDeliveredBy] = useState('')
-    const [receivedBy, setReceivedBy] = useState('')
-    const [notes, setNotes] = useState('')
-    const [step, setStep] = useState<'select' | 'fill'>('select')
-    const [fillMode, setFillMode] = useState<'manual' | 'auto'>('manual')
+
+    // ── Draft is the single source of truth (restores on refresh) ────────────
+    const { value: form, set: setForm, clear: clearDraft, dirty } = useDraft<DeliveryDraft>('delivery-create', {
+        step: 'select',
+        selectedIds: [],
+        deliveryDate: todayLocal(),
+        deliveredBy: defaults.get('gp_delivered_by') ?? '',
+        receivedBy: defaults.get('gp_received_by') ?? '',
+        notes: '',
+        fillMode: 'manual',
+        autoTotals: {},
+        manualQty: {},
+    })
+    const [restoredDraft] = useState(() => hasDraft('delivery-create'))
 
     useEffect(() => {
         const t = setTimeout(() => setDebouncedSearch(search.trim()), 300)
@@ -66,6 +98,8 @@ export default function CreateDeliveryPage() {
         queryFn: () => deliveries.pendingGatePasses(debouncedSearch || undefined),
         staleTime: 30_000,
     })
+
+    const selectedIds = useMemo(() => new Set(form.selectedIds), [form.selectedIds])
 
     const selectedGPs = useMemo(
         () => pendingGPs.filter(gp => selectedIds.has(gp.gate_pass_id)),
@@ -116,37 +150,23 @@ export default function CreateDeliveryPage() {
         return Array.from(map.values()).sort((a, b) => a.item_name.localeCompare(b.item_name))
     }, [allItems])
 
-    const [autoTotals, setAutoTotals] = useState<Map<string, number>>(new Map())
-
-    // Reset auto totals when selection changes
-    useEffect(() => {
-        setAutoTotals(new Map())
-    }, [selectedIds])
-
-    // ── Manual mode state ─────────────────────────────────────────────────────
-    const [items, setItems] = useState<SelectedItem[]>([])
-
-    useEffect(() => {
-        setItems(prev => {
-            const prevMap = new Map<string, number>()
-            for (const p of prev) {
-                prevMap.set(itemKey(p.item_name, p.specification), p.quantity)
-            }
-            return allItems.map(item => ({
-                ...item,
-                quantity: prevMap.get(itemKey(item.item_name, item.specification)) ?? 0,
-            }))
-        })
-    }, [allItems])
+    // ── Manual quantities (derived from the draft so they survive refresh) ────
+    const items: SelectedItem[] = useMemo(
+        () => allItems.map(it => ({
+            ...it,
+            quantity: form.manualQty[rowKey(it.gate_pass_id, it.item_name, it.specification)] ?? 0,
+        })),
+        [allItems, form.manualQty],
+    )
 
     // ── Auto-fill distribution (FIFO: oldest GP first) ───────────────────────
     const autoDistributed = useMemo(() => {
-        if (fillMode !== 'auto') return []
+        if (form.fillMode !== 'auto') return []
         // Start with all items at 0
         const distributed = allItems.map(i => ({ ...i, quantity: 0 }))
         // For each item type, distribute from oldest GP to newest
         for (const total of autoItemTotals) {
-            let remaining = autoTotals.get(total.item_key) ?? 0
+            let remaining = form.autoTotals[total.item_key] ?? 0
             for (const item of distributed) {
                 if (itemKey(item.item_name, item.specification) !== total.item_key) continue
                 if (remaining <= 0) break
@@ -156,81 +176,96 @@ export default function CreateDeliveryPage() {
             }
         }
         return distributed
-    }, [fillMode, allItems, autoItemTotals, autoTotals])
+    }, [form.fillMode, form.autoTotals, allItems, autoItemTotals])
 
     // Effective items based on mode
-    const effectiveItems = fillMode === 'auto' ? autoDistributed : items
+    const effectiveItems = form.fillMode === 'auto' ? autoDistributed : items
     const activeItems = effectiveItems.filter(i => i.quantity > 0)
     const totalPieces = activeItems.reduce((s, i) => s + i.quantity, 0)
     const itemCount = activeItems.length
 
     // ── Handlers ──────────────────────────────────────────────────────────────
     const toggleGP = useCallback((gpId: string) => {
-        setSelectedIds(prev => {
-            const next = new Set(prev)
+        setForm(prev => {
+            const next = new Set(prev.selectedIds)
             if (next.has(gpId)) next.delete(gpId)
             else next.add(gpId)
-            return next
+            return { ...prev, selectedIds: Array.from(next) }
         })
-    }, [])
+    }, [setForm])
 
     const toggleAll = useCallback(() => {
-        if (selectedIds.size === pendingGPs.length) {
-            setSelectedIds(new Set())
-        } else {
-            setSelectedIds(new Set(pendingGPs.map(gp => gp.gate_pass_id)))
-        }
-    }, [pendingGPs, selectedIds.size])
+        setForm(prev => {
+            const all = prev.selectedIds.length === pendingGPs.length && pendingGPs.length > 0
+            return {
+                ...prev,
+                selectedIds: all ? [] : pendingGPs.map(gp => gp.gate_pass_id),
+            }
+        })
+    }, [pendingGPs, setForm])
 
     const updateItem = (idx: number, qty: number) => {
-        setItems(prev => {
-            const updated = [...prev]
-            updated[idx] = { ...updated[idx], quantity: Math.max(0, qty) }
-            return updated
+        const it = items[idx]
+        if (!it) return
+        const safe = Math.max(0, qty)
+        setForm(prev => {
+            const m = { ...prev.manualQty }
+            const key = rowKey(it.gate_pass_id, it.item_name, it.specification)
+            if (safe <= 0) delete m[key]
+            else m[key] = safe
+            return { ...prev, manualQty: m }
         })
     }
 
     const setMax = (idx: number) => {
-        setItems(prev => {
-            const updated = [...prev]
-            updated[idx] = { ...updated[idx], quantity: updated[idx].pending_qty }
-            return updated
-        })
+        const it = items[idx]
+        if (!it) return
+        setForm(prev => ({
+            ...prev,
+            manualQty: { ...prev.manualQty, [rowKey(it.gate_pass_id, it.item_name, it.specification)]: it.pending_qty },
+        }))
     }
 
     const setMaxAll = (gpId: string) => {
-        setItems(prev => prev.map(item =>
-            item.gate_pass_id === gpId ? { ...item, quantity: item.pending_qty } : item
-        ))
-    }
-
-    const updateAutoTotal = (itemKey: string, qty: number) => {
-        setAutoTotals(prev => {
-            const next = new Map(prev)
-            if (qty <= 0) next.delete(itemKey)
-            else next.set(itemKey, qty)
-            return next
+        setForm(prev => {
+            const m = { ...prev.manualQty }
+            for (const item of allItems) {
+                if (item.gate_pass_id !== gpId) continue
+                m[rowKey(item.gate_pass_id, item.item_name, item.specification)] = item.pending_qty
+            }
+            return { ...prev, manualQty: m }
         })
     }
 
-    const setAutoMax = (itemKey: string, totalPending: number) => {
-        setAutoTotals(prev => {
-            const next = new Map(prev)
-            next.set(itemKey, totalPending)
-            return next
+    const updateAutoTotal = (itemKeyValue: string, qty: number) => {
+        setForm(prev => {
+            const t = { ...prev.autoTotals }
+            if (qty <= 0) delete t[itemKeyValue]
+            else t[itemKeyValue] = qty
+            return { ...prev, autoTotals: t }
         })
+    }
+
+    const setAutoMax = (itemKeyValue: string, totalPending: number) => {
+        setForm(prev => ({
+            ...prev,
+            autoTotals: { ...prev.autoTotals, [itemKeyValue]: totalPending },
+        }))
     }
 
     const setAutoMaxAll = () => {
-        setAutoTotals(new Map(autoItemTotals.map(t => [t.item_key, t.total_pending])))
+        setForm(prev => ({
+            ...prev,
+            autoTotals: Object.fromEntries(autoItemTotals.map(t => [t.item_key, t.total_pending])),
+        }))
     }
 
     // ── Validation ────────────────────────────────────────────────────────────
     const isValid =
-        selectedIds.size > 0 &&
-        deliveryDate &&
-        deliveredBy.trim() &&
-        receivedBy.trim() &&
+        form.selectedIds.length > 0 &&
+        form.deliveryDate &&
+        form.deliveredBy.trim() &&
+        form.receivedBy.trim() &&
         activeItems.length > 0 &&
         activeItems.every(i => i.quantity <= i.pending_qty)
 
@@ -255,10 +290,10 @@ export default function CreateDeliveryPage() {
                 createDelivery.mutateAsync({
                     gate_pass_id: gpId,
                     client_name: data.client_name,
-                    delivery_date: new Date(deliveryDate).toISOString(),
-                    delivered_by: deliveredBy.trim(),
-                    received_by: receivedBy.trim(),
-                    notes: notes.trim() || undefined,
+                    delivery_date: new Date(form.deliveryDate).toISOString(),
+                    delivered_by: form.deliveredBy.trim(),
+                    received_by: form.receivedBy.trim(),
+                    notes: form.notes.trim() || undefined,
                     items: data.items.map(i => ({
                         item_name: i.item_name,
                         specification: i.specification || undefined,
@@ -268,17 +303,24 @@ export default function CreateDeliveryPage() {
             )
         }
 
-        const created = await Promise.all(promises)
-        const createdIds = created
-            .map((r: any) => (r && r.id != null ? String(r.id) : ''))
-            .filter(Boolean)
-        if (createdIds.length === 1) navigate(`/deliveries/${createdIds[0]}`)
-        else navigate('/deliveries')
+        try {
+            const created = await Promise.all(promises)
+            defaults.set('gp_delivered_by', form.deliveredBy.trim())
+            defaults.set('gp_received_by', form.receivedBy.trim())
+            clearDraft()
+            const createdIds = created
+                .map((r: any) => (r && r.id != null ? String(r.id) : ''))
+                .filter(Boolean)
+            if (createdIds.length === 1) navigate(`/deliveries/${createdIds[0]}`)
+            else navigate('/deliveries')
+        } catch (err) {
+            console.error('Delivery creation failed', err)
+        }
     }
 
     // ── Items grouped by gate pass for manual display ─────────────────────────
     const itemsByGP = useMemo(() => {
-        const source = fillMode === 'auto' ? autoDistributed : items
+        const source = form.fillMode === 'auto' ? autoDistributed : items
         const map = new Map<string, { client_name: string; gate_pass_number: string; items: SelectedItem[] }>()
         for (const item of source) {
             if (item.quantity <= 0) continue
@@ -294,7 +336,7 @@ export default function CreateDeliveryPage() {
             }
         }
         return Array.from(map.entries())
-    }, [fillMode, autoDistributed, items])
+    }, [form.fillMode, autoDistributed, items])
 
     // ── Keyboard data-entry grids ─────────────────────────────────────────────
     // Manual mode: one qty input per rendered item row (row index = flat order).
@@ -325,33 +367,46 @@ export default function CreateDeliveryPage() {
                 <div className="flex-1">
                     <Breadcrumb
                         items={[
-                            { label: 'Dashboard', href: '/' },
+                            { label: 'Today', href: '/today' },
                             { label: 'Deliveries', href: '/deliveries' },
                             { label: 'Record Delivery' },
                         ]}
                     />
                     <h1 className="text-dashboard-title mt-1">Record Delivery</h1>
                     <p className="text-[13px] text-[#98A2B3] mt-0.5">
-                        {step === 'select'
+                        {form.step === 'select'
                             ? 'Select gate passes with pending items to deliver'
-                            : `Delivering ${totalPieces} pieces across ${itemCount} item${itemCount !== 1 ? 's' : ''} from ${selectedIds.size} gate pass${selectedIds.size !== 1 ? 'es' : ''} · ${fillMode === 'auto' ? 'Auto-fill (FIFO)' : 'Manual'}`
+                            : `Delivering ${totalPieces} pieces across ${itemCount} item${itemCount !== 1 ? 's' : ''} from ${form.selectedIds.length} gate pass${form.selectedIds.length !== 1 ? 'es' : ''} · ${form.fillMode === 'auto' ? 'Auto-fill (FIFO)' : 'Manual'}`
                         }
                     </p>
                 </div>
-                {step === 'select' && selectedIds.size > 0 && (
-                    <Button onClick={() => setStep('fill')} className="bg-[#16A34A] hover:bg-[#15803D] text-white gap-2 cursor-pointer">
-                        <Package size={16} /> Continue ({selectedIds.size} GP{selectedIds.size !== 1 ? 's' : ''})
+                {form.step === 'select' && form.selectedIds.length > 0 && (
+                    <Button onClick={() => setForm(prev => ({ ...prev, step: 'fill' }))} className="bg-[#16A34A] hover:bg-[#15803D] text-white gap-2 cursor-pointer">
+                        <Package size={16} /> Continue ({form.selectedIds.length} GP{form.selectedIds.length !== 1 ? 's' : ''})
                     </Button>
                 )}
-                {step === 'fill' && (
-                    <Button variant="ghost" size="sm" onClick={() => setStep('select')} className="cursor-pointer">
+                {form.step === 'fill' && (
+                    <Button variant="ghost" size="sm" onClick={() => setForm(prev => ({ ...prev, step: 'select' }))} className="cursor-pointer">
                         ← Change Selection
                     </Button>
                 )}
             </div>
 
+            <div className="flex items-center gap-2">
+                {dirty && (
+                    <span className="inline-flex items-center gap-1.5 rounded-full border border-[#E4E7EC] bg-white px-2.5 py-1 text-[11px] font-medium text-[#6B7280]">
+                        <FileClock className="h-3 w-3" /> Autosaved draft
+                    </span>
+                )}
+                {restoredDraft && (
+                    <Button variant="outline" size="sm" onClick={clearDraft} type="button">
+                        <RotateCcw className="h-3.5 w-3.5" /> Discard draft
+                    </Button>
+                )}
+            </div>
+
             {/* Step 1: Select Gate Passes */}
-            {step === 'select' && (
+            {form.step === 'select' && (
                 <div className="space-y-4">
                     <Card>
                         <CardHeader className="border-b border-[#F2F4F7] pb-3">
@@ -362,7 +417,7 @@ export default function CreateDeliveryPage() {
                                         onClick={toggleAll}
                                         className="text-[12px] text-[#16A34A] hover:text-[#15803D] font-medium cursor-pointer"
                                     >
-                                        {selectedIds.size === pendingGPs.length ? 'Deselect All' : 'Select All'}
+                                        {form.selectedIds.length === pendingGPs.length ? 'Deselect All' : 'Select All'}
                                     </button>
                                 )}
                             </div>
@@ -435,7 +490,7 @@ export default function CreateDeliveryPage() {
             )}
 
             {/* Step 2: Fill Delivery */}
-            {step === 'fill' && (
+            {form.step === 'fill' && (
                 <form onSubmit={handleSubmit} className="space-y-4">
                     {/* Selected GP Summary */}
                     <Card className="border-[#BBF7D0] bg-[#F0FDF4]">
@@ -466,19 +521,19 @@ export default function CreateDeliveryPage() {
                             <div ref={flow.ref} onKeyDown={flow.handleKeyDown} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                                 <div>
                                     <label className={labelClass}>Delivery Date</label>
-                                    <input type="date" value={deliveryDate} onChange={e => setDeliveryDate(e.target.value)} className={inputClass} required />
+                                    <input type="date" value={form.deliveryDate} onChange={e => setForm(p => ({ ...p, deliveryDate: e.target.value }))} className={inputClass} required />
                                 </div>
                                 <div>
                                     <label className={labelClass}>Delivered By</label>
-                                    <input type="text" value={deliveredBy} onChange={e => setDeliveredBy(e.target.value)} placeholder="Staff name" className={inputClass} required />
+                                    <input type="text" value={form.deliveredBy} onChange={e => setForm(p => ({ ...p, deliveredBy: e.target.value }))} placeholder="Staff name" className={inputClass} required />
                                 </div>
                                 <div>
                                     <label className={labelClass}>Received By</label>
-                                    <input type="text" value={receivedBy} onChange={e => setReceivedBy(e.target.value)} placeholder="Hotel / shop staff name" className={inputClass} required />
+                                    <input type="text" value={form.receivedBy} onChange={e => setForm(p => ({ ...p, receivedBy: e.target.value }))} placeholder="Hotel / shop staff name" className={inputClass} required />
                                 </div>
                                 <div>
                                     <label className={labelClass}>Notes</label>
-                                    <input type="text" value={notes} onChange={e => setNotes(e.target.value)} placeholder="Optional…" className={inputClass} />
+                                    <input type="text" value={form.notes} onChange={e => setForm(p => ({ ...p, notes: e.target.value }))} placeholder="Optional…" className={inputClass} />
                                 </div>
                             </div>
                         </CardContent>
@@ -492,9 +547,9 @@ export default function CreateDeliveryPage() {
                                 <div className="flex rounded-lg border border-[#E4E7EC] overflow-hidden">
                                     <button
                                         type="button"
-                                        onClick={() => setFillMode('manual')}
+                                        onClick={() => setForm(p => ({ ...p, fillMode: 'manual' }))}
                                         className={`flex items-center gap-1.5 px-4 py-2 text-[13px] font-medium transition cursor-pointer ${
-                                            fillMode === 'manual'
+                                            form.fillMode === 'manual'
                                                 ? 'bg-[#16A34A] text-white'
                                                 : 'bg-white text-[#6B7280] hover:bg-[#F9FAFB]'
                                         }`}
@@ -503,9 +558,9 @@ export default function CreateDeliveryPage() {
                                     </button>
                                     <button
                                         type="button"
-                                        onClick={() => setFillMode('auto')}
+                                        onClick={() => setForm(p => ({ ...p, fillMode: 'auto' }))}
                                         className={`flex items-center gap-1.5 px-4 py-2 text-[13px] font-medium transition cursor-pointer ${
-                                            fillMode === 'auto'
+                                            form.fillMode === 'auto'
                                                 ? 'bg-[#16A34A] text-white'
                                                 : 'bg-white text-[#6B7280] hover:bg-[#F9FAFB]'
                                         }`}
@@ -514,7 +569,7 @@ export default function CreateDeliveryPage() {
                                     </button>
                                 </div>
                                 <p className="text-[11px] text-[#98A2B3]">
-                                    {fillMode === 'auto'
+                                    {form.fillMode === 'auto'
                                         ? 'Enter totals per item — system fills from oldest gate pass first'
                                         : 'Fill quantities manually for each gate pass item'
                                     }
@@ -524,7 +579,7 @@ export default function CreateDeliveryPage() {
                     </Card>
 
                     {/* ── AUTO MODE: Item totals ──────────────────────────────── */}
-                    {fillMode === 'auto' && (
+                    {form.fillMode === 'auto' && (
                         <Card>
                             <CardHeader className="border-b border-[#F2F4F7] pb-3">
                                 <div className="flex items-center justify-between">
@@ -545,7 +600,7 @@ export default function CreateDeliveryPage() {
                             </CardHeader>
                             <CardContent className="pt-4 space-y-2" onKeyDown={autoGrid.handleKeyDown}>
                                 {autoItemTotals.map((total, ti) => {
-                                    const entered = autoTotals.get(total.item_key) ?? 0
+                                    const entered = form.autoTotals[total.item_key] ?? 0
                                     const over = entered > total.total_pending
                                     return (
                                         <div key={total.item_key} className="flex items-center gap-3 rounded-lg border border-[#E4E7EC] px-4 py-3">
@@ -590,7 +645,7 @@ export default function CreateDeliveryPage() {
                     )}
 
                     {/* ── AUTO MODE: Live distribution preview ────────────────── */}
-                    {fillMode === 'auto' && activeItems.length > 0 && (
+                    {form.fillMode === 'auto' && activeItems.length > 0 && (
                         <Card className="border-[#BFDBFE] bg-[#EFF6FF]">
                             <CardHeader className="border-b border-[#BFDBFE] pb-3">
                                 <CardTitle className="text-[14px] text-[#1E40AF]">Live Distribution Preview</CardTitle>
@@ -635,7 +690,7 @@ export default function CreateDeliveryPage() {
                     )}
 
                     {/* ── MANUAL MODE: Items per GP ──────────────────────────── */}
-                    {fillMode === 'manual' && (
+                    {form.fillMode === 'manual' && (
                         <Card>
                             <CardHeader className="border-b border-[#F2F4F7] pb-3">
                                 <div className="flex items-center justify-between">
@@ -668,10 +723,10 @@ export default function CreateDeliveryPage() {
                                             <div className="divide-y divide-[#F2F4F7]">
                                                 {group.items.map(item => {
                                                     const globalIdx = items.findIndex(i => i.gate_pass_id === item.gate_pass_id && i.item_name === item.item_name && i.specification === item.specification)
-                                                    const rowKey = `${item.gate_pass_id}||${item.item_name}||${item.specification}`
-                                                    const rIdx = manualRowIndex.get(rowKey) ?? 0
+                                                    const rowKeyStr = `${item.gate_pass_id}||${item.item_name}||${item.specification}`
+                                                    const rIdx = manualRowIndex.get(rowKeyStr) ?? 0
                                                     return (
-                                                        <div key={rowKey} className="flex items-center gap-3 px-4 py-3">
+                                                        <div key={rowKeyStr} className="flex items-center gap-3 px-4 py-3">
                                                             <div className="flex-1 min-w-0">
                                                                 <p className="text-[13px] font-medium text-[#101828] truncate">
                                                                     {item.item_name}
@@ -725,8 +780,8 @@ export default function CreateDeliveryPage() {
                                     pieces across{' '}
                                     <span className="font-semibold text-[#101828]">{itemCount}</span>{' '}
                                     item{itemCount !== 1 ? 's' : ''} from{' '}
-                                    <span className="font-semibold text-[#101828]">{selectedIds.size}</span>{' '}
-                                    gate pass{selectedIds.size !== 1 ? 'es' : ''}
+                                    <span className="font-semibold text-[#101828]">{form.selectedIds.length}</span>{' '}
+                                    gate pass{form.selectedIds.length !== 1 ? 'es' : ''}
                                 </div>
                                 <div className="flex gap-2 w-full sm:w-auto">
                                     <Link to="/deliveries" className="flex-1 sm:flex-none">
@@ -737,7 +792,7 @@ export default function CreateDeliveryPage() {
                                         disabled={!isValid || createDelivery.isPending}
                                         className="flex-1 sm:flex-none bg-[#16A34A] hover:bg-[#15803D] text-white disabled:opacity-40 cursor-pointer"
                                     >
-                                        {createDelivery.isPending ? 'Saving…' : `Record Delivery (${selectedIds.size} GP${selectedIds.size !== 1 ? 's' : ''})`}
+                                        {createDelivery.isPending ? 'Saving…' : `Record Delivery (${form.selectedIds.length} GP${form.selectedIds.length !== 1 ? 's' : ''})`}
                                     </Button>
                                 </div>
                             </div>
