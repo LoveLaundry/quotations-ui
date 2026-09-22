@@ -1,7 +1,8 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
-import { employeesApi } from '../api/management-api'
+import { employeesApi, attendanceApi } from '../api/management-api'
+import { buildStaffSummary } from '../utils/attendance-summary'
 import { toast } from 'sonner'
 import { Plus, Pencil, Trash2, X, DollarSign, UserCheck, Filter, FileText, Users } from 'lucide-react'
 import { PageHeader } from '../../../components/ui/page-header'
@@ -107,6 +108,18 @@ export default function ManagementEmployees() {
   })
 
   const totalSalary = employees.reduce((s: number, e: any) => s + (e.basic_salary || 0), 0)
+
+  const attYear = now.getFullYear()
+  const attMonth = now.getMonth() + 1
+  const monthStart = `${attYear}-${String(attMonth).padStart(2, '0')}-01`
+  const monthEnd = `${attYear}-${String(attMonth).padStart(2, '0')}-${String(new Date(attYear, attMonth, 0).getDate()).padStart(2, '0')}`
+
+  const { data: monthAtt = [] } = useQuery({
+    queryKey: ['mgmt-attendance-month', monthStart],
+    queryFn: () => attendanceApi.listRange(monthStart, monthEnd).then(r => r.data),
+  })
+
+  const attSummary = useMemo(() => buildStaffSummary(monthAtt), [monthAtt])
 
   return (
     <div className="space-y-4">
@@ -247,6 +260,21 @@ export default function ManagementEmployees() {
                     <p className="text-gray-400">Leaving Date</p>
                     <p className="font-medium text-red-500">{emp.leaving_date}</p>
                   </div>
+                )}
+              </div>
+
+              <div className="rounded-lg bg-gray-50 dark:bg-gray-900/40 px-3 py-2">
+                {attendanceReq ? (
+                  <div className="text-[11px] text-gray-500 flex flex-wrap gap-x-3 gap-y-0.5" title={`Attendance for ${now.toLocaleString('default', { month: 'long' })} ${attYear}`}>
+                    <span className="w-full text-gray-400 text-[10px] uppercase tracking-wide">Attendance · {now.toLocaleString('default', { month: 'long' })}</span>
+                    <span className="text-green-600 font-bold">{attSummary[emp.id]?.worked_days ?? 0} P</span>
+                    <span className="text-amber-600 font-bold">{attSummary[emp.id]?.half_days ?? 0} H</span>
+                    <span className="text-blue-600 font-bold">{attSummary[emp.id]?.paid_leave_days ?? 0} L</span>
+                    <span className="text-red-600 font-bold">{attSummary[emp.id]?.unpaid_days ?? 0} A</span>
+                    <span className="text-indigo-600 font-bold">{attSummary[emp.id]?.overtime_hours ?? 0} OT</span>
+                  </div>
+                ) : (
+                  <p className="text-[11px] text-gray-400">Attendance not tracked (fixed arrangement)</p>
                 )}
               </div>
 

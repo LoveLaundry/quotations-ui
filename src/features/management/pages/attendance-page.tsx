@@ -2,11 +2,12 @@ import { useMemo, useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { employeesApi, attendanceApi, holidaysApi } from '../api/management-api'
 import { toast } from 'sonner'
-import { CalendarDays, Check, ChevronDown, ChevronLeft, ChevronRight, Trash2, X, Pencil, Plus } from 'lucide-react'
+import { CalendarDays, Check, ChevronDown, ChevronLeft, ChevronRight, Trash2, X, Pencil, Plus, Table2 } from 'lucide-react'
 import { useDataGrid } from '../../../hooks/use-data-grid'
 import { useEnterFlow } from '../../../hooks/use-enter-flow'
 import { useEscape } from '../../../hooks/use-escape'
 import { ConfirmDialog } from '../../../components/ui/confirm-dialog'
+import { buildStaffSummary, type AttendanceRecord } from '../utils/attendance-summary'
 
 const STATUSES = ['PRESENT', 'HALF_DAY', 'PAID_LEAVE', 'UNPAID_LEAVE', 'ABSENT'] as const
 const STATUS_LABEL: Record<string, string> = {
@@ -20,6 +21,17 @@ const STATUS_STYLE: Record<string, string> = {
   ON_LEAVE: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300',
   UNPAID_LEAVE: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300',
   ABSENT: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300',
+}
+const CELL_STYLE: Record<string, string> = {
+  PRESENT: 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300',
+  HALF_DAY: 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300',
+  PAID_LEAVE: 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300',
+  ON_LEAVE: 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300',
+  UNPAID_LEAVE: 'bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300',
+  ABSENT: 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300',
+}
+const CELL_CODE: Record<string, string> = {
+  PRESENT: 'P', HALF_DAY: 'H', PAID_LEAVE: 'L', ON_LEAVE: 'L', UNPAID_LEAVE: 'U', ABSENT: 'A',
 }
 
 const DAY_NAMES = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa']
@@ -38,6 +50,7 @@ export default function AttendancePage() {
   const qc = useQueryClient()
   const now = new Date()
   const [selectedEmp, setSelectedEmp] = useState('')
+  const [viewMode, setViewMode] = useState<'single' | 'all'>('single')
   const [year, setYear] = useState(now.getFullYear())
   const [month, setMonth] = useState(now.getMonth() + 1)
   const [pickedDates, setPickedDates] = useState<Set<string>>(new Set())
@@ -105,12 +118,41 @@ export default function AttendancePage() {
     return map
   }, [attendance])
 
+  const { data: allRecords = [] } = useQuery({
+    queryKey: ['attendance-all', year, month],
+    queryFn: () => attendanceApi.listRange(startDate, endDate).then(r => r.data as AttendanceRecord[]),
+    enabled: viewMode === 'all',
+  })
+
+  const allByEmp = useMemo(
+    () => buildStaffSummary(allRecords, holidaysData),
+    [allRecords, holidaysData],
+  )
+
+  const activeStaff = useMemo(
+    () => (employees as any[]).filter(e => e.is_active !== false && e.attendance_required !== false),
+    [employees],
+  )
+
+  const empDayMap = useMemo(() => {
+    const map: Record<string, Record<string, any>> = {}
+    for (const rec of allRecords) {
+      const empId = rec.employee_id
+      const day = rec.date || rec.day
+      if (!empId || !day) continue
+      map[empId] ??= {}
+      map[empId][day] = rec
+    }
+    return map
+  }, [allRecords])
+
   const createMut = useMutation({
     mutationFn: (data: any) => attendanceApi.create(selectedEmp, data),
     onSuccess: () => {
       toast.success('Attendance saved')
       qc.invalidateQueries({ queryKey: ['attendance', selectedEmp] })
       qc.invalidateQueries({ queryKey: ['attendance-summary', selectedEmp] })
+      qc.invalidateQueries({ queryKey: ['attendance-all'] })
     },
     onError: (e: any) => toast.error(e.response?.data?.detail || 'Failed to save attendance'),
   })
@@ -122,6 +164,7 @@ export default function AttendancePage() {
       setEditDate(null)
       qc.invalidateQueries({ queryKey: ['attendance', selectedEmp] })
       qc.invalidateQueries({ queryKey: ['attendance-summary', selectedEmp] })
+      qc.invalidateQueries({ queryKey: ['attendance-all'] })
     },
     onError: (e: any) => toast.error(e.response?.data?.detail || 'Failed to update attendance'),
   })
@@ -134,6 +177,7 @@ export default function AttendancePage() {
       setDeleteTarget(null)
       qc.invalidateQueries({ queryKey: ['attendance', selectedEmp] })
       qc.invalidateQueries({ queryKey: ['attendance-summary', selectedEmp] })
+      qc.invalidateQueries({ queryKey: ['attendance-all'] })
     },
     onError: (e: any) => toast.error(e.response?.data?.detail || 'Failed to delete record'),
   })
@@ -145,6 +189,7 @@ export default function AttendancePage() {
       setPickedDates(new Set())
       qc.invalidateQueries({ queryKey: ['attendance', selectedEmp] })
       qc.invalidateQueries({ queryKey: ['attendance-summary', selectedEmp] })
+      qc.invalidateQueries({ queryKey: ['attendance-all'] })
     },
     onError: (e: any) => toast.error(e.response?.data?.detail || 'Bulk save failed'),
   })
@@ -227,6 +272,18 @@ export default function AttendancePage() {
             <CalendarDays size={20} /> Monthly Attendance
           </h2>
           <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-1 border rounded-lg p-0.5">
+              <button
+                onClick={() => setViewMode('single')}
+                className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${viewMode === 'single' ? 'bg-indigo-600 text-white' : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700'}`}>
+                Single
+              </button>
+              <button
+                onClick={() => setViewMode('all')}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${viewMode === 'all' ? 'bg-indigo-600 text-white' : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700'}`}>
+                <Table2 size={14} /> All Staff
+              </button>
+            </div>
             <button onClick={goPrev} className="p-2 border rounded-lg text-sm hover:bg-gray-50 dark:hover:bg-gray-700" title="Previous month">
               <ChevronLeft size={16} />
             </button>
@@ -240,16 +297,18 @@ export default function AttendancePage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
-            <label className="text-sm font-medium text-gray-600 dark:text-gray-400">Employee</label>
-            <select value={selectedEmp} onChange={e => { setSelectedEmp(e.target.value); setPickedDates(new Set()) }}
-              className="w-full mt-1 px-3 py-2 border rounded-lg text-sm">
-              <option value="">Select Employee</option>
-              {employees.filter((e: any) => e.is_active && e.attendance_required !== false).map((e: any) => (
-                <option key={e.id} value={e.id}>{e.name} ({e.salary_type || 'MONTHLY'})</option>
-              ))}
-            </select>
-          </div>
+          {viewMode === 'single' && (
+            <div>
+              <label className="text-sm font-medium text-gray-600 dark:text-gray-400">Employee</label>
+              <select value={selectedEmp} onChange={e => { setSelectedEmp(e.target.value); setPickedDates(new Set()) }}
+                className="w-full mt-1 px-3 py-2 border rounded-lg text-sm">
+                <option value="">Select Employee</option>
+                {employees.filter((e: any) => e.is_active && e.attendance_required !== false).map((e: any) => (
+                  <option key={e.id} value={e.id}>{e.name} ({e.salary_type || 'MONTHLY'})</option>
+                ))}
+              </select>
+            </div>
+          )}
           <div>
             <label className="text-sm font-medium text-gray-600 dark:text-gray-400">Year</label>
             <input type="number" value={year}
@@ -268,6 +327,7 @@ export default function AttendancePage() {
           </div>
         </div>
 
+        {viewMode === 'single' ? (<>
         <div className="overflow-x-auto rounded-xl border">
           <div onKeyDown={grid.handleKeyDown} className="grid grid-cols-7 gap-px bg-gray-200 dark:bg-gray-700 min-w-[560px]">
             {DAY_NAMES.map(dn => (
@@ -357,6 +417,108 @@ export default function AttendancePage() {
             <span key={i} className={`px-1.5 py-0.5 rounded ${STATUS_STYLE[s]}`}>{STATUS_LABEL[s]}</span>
           ))}
         </div>
+        </>) : (
+        <div className="space-y-5">
+          {activeStaff.length === 0 ? (
+            <p className="text-sm text-gray-400">No attendance-based active employees found.</p>
+          ) : (
+            <>
+              {/* Month summary per employee */}
+              <div className="overflow-x-auto rounded-xl border">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="text-left text-gray-500 border-b">
+                      <th className="px-4 py-2.5 font-medium">Employee</th>
+                      <th className="px-3 py-2.5 font-medium text-center">Worked</th>
+                      <th className="px-3 py-2.5 font-medium text-center">Half Days</th>
+                      <th className="px-3 py-2.5 font-medium text-center">Paid Leave</th>
+                      <th className="px-3 py-2.5 font-medium text-center">Unpaid/Absent</th>
+                      <th className="px-3 py-2.5 font-medium text-center">OT hrs</th>
+                      <th className="px-3 py-2.5 font-medium text-center">Holidays</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {activeStaff.map((e: any) => {
+                      const s = allByEmp[e.id] || { worked_days: 0, half_days: 0, paid_leave_days: 0, unpaid_days: 0, overtime_hours: 0, holiday_count: 0 }
+                      return (
+                        <tr key={e.id} className="border-b last:border-0 hover:bg-gray-50 dark:hover:bg-gray-700/40">
+                          <td className="px-4 py-2">
+                            <p className="font-medium leading-tight">{e.name}</p>
+                            <p className="text-xs text-gray-400">{e.employee_code ? `#${e.employee_code}` : ''} {e.department || ''}</p>
+                          </td>
+                          <td className="px-3 py-2 text-center font-semibold text-green-700 dark:text-green-400">{s.worked_days}</td>
+                          <td className="px-3 py-2 text-center text-amber-700 dark:text-amber-400">{s.half_days}</td>
+                          <td className="px-3 py-2 text-center text-blue-700 dark:text-blue-400">{s.paid_leave_days}</td>
+                          <td className="px-3 py-2 text-center text-red-700 dark:text-red-400">{s.unpaid_days}</td>
+                          <td className="px-3 py-2 text-center text-indigo-700 dark:text-indigo-400">{s.overtime_hours || 0}</td>
+                          <td className="px-3 py-2 text-center text-purple-700 dark:text-purple-400">{s.holiday_count}</td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Monthly matrix: each employee × each day */}
+              <div className="overflow-x-auto rounded-xl border">
+                <div className="min-w-fit">
+                  <div className="grid" style={{ gridTemplateColumns: `150px repeat(${days.length}, 34px)` }}>
+                    <div className="sticky left-0 top-0 z-10 bg-gray-50 dark:bg-gray-800 px-3 py-1.5 text-xs font-semibold text-gray-500 uppercase border-b border-r">Employee</div>
+                    {days.map((d: string) => {
+                      const dow = new Date(d + 'T00:00:00').getDay()
+                      const isHoliday = holidaySet.has(d)
+                      const isWeekend = dow === 0 || dow === 6
+                      const isToday = d === todayStr
+                      return (
+                        <div key={d} className={`border-b border-r text-center text-[11px] font-medium py-1.5 ${isToday ? 'bg-red-50 text-red-600 font-bold dark:bg-red-900/20' : isHoliday ? 'bg-purple-50 text-purple-600 dark:bg-purple-900/20' : isWeekend ? 'bg-slate-50 text-slate-400 dark:bg-slate-800/50' : 'bg-gray-50 text-gray-500 dark:bg-gray-800'}`}>
+                          {Number(d.slice(8))}{isHoliday ? '·H' : ''}
+                        </div>
+                      )
+                    })}
+                  </div>
+                  {activeStaff.map((e: any) => {
+                    const dayMap = empDayMap[e.id] || {}
+                    return (
+                      <div key={e.id} className="grid" style={{ gridTemplateColumns: `150px repeat(${days.length}, 34px)` }}>
+                        <div className="sticky left-0 z-10 flex items-center gap-2 border-b border-r px-3 py-1.5 bg-white dark:bg-gray-800">
+                          <span className="truncate text-[12px] font-medium">{e.name}</span>
+                        </div>
+                        {days.map((d: string) => {
+                          const rec = dayMap[d]
+                          const dow = new Date(d + 'T00:00:00').getDay()
+                          const isHoliday = holidaySet.has(d)
+                          const isWeekend = dow === 0 || dow === 6
+                          const bg = isHoliday ? 'bg-purple-50 dark:bg-purple-900/10' : isWeekend ? 'bg-slate-50 dark:bg-slate-800/40' : ''
+                          return (
+                            <div key={d} title={rec ? `${e.name} · ${d} · ${STATUS_LABEL[rec.status] || rec.status}${rec.overtime_hours > 0 ? ` · OT ${rec.overtime_hours}h` : ''}` : `${e.name} · ${d}`}
+                              className={`relative border-b border-r flex items-center justify-center text-[11px] font-bold py-1 ${rec ? (CELL_STYLE[rec.status] || '') : bg}`}>
+                              {rec ? (<>
+                                {CELL_CODE[rec.status] || rec.status}
+                                {rec.overtime_hours > 0 && <span className="absolute bottom-0 left-1/2 -translate-x-1/2 h-1 w-1 rounded-full bg-indigo-500" />}
+                              </>) : <span className="text-gray-300 dark:text-gray-600">·</span>}
+                            </div>
+                          )
+                        })}
+                      </div>
+                    )
+                  })}
+                </div>
+                <div className="flex flex-wrap gap-x-4 gap-y-1 px-3 py-2 border-t text-[11px] text-gray-400">
+                  {STATUSES.map(s => (
+                    <span key={s} className="inline-flex items-center gap-1">
+                      <span className={`inline-block h-3.5 w-3.5 rounded text-center text-[9px] font-bold leading-[14px] ${CELL_STYLE[s]}`}>{CELL_CODE[s]}</span>
+                      {STATUS_LABEL[s]}
+                    </span>
+                  ))}
+                  <span className="text-purple-500">H</span> = Holiday
+                  <span className="text-slate-400">■</span> = Weekend
+                  <span className="text-indigo-500">●</span> = OT
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+        )}
       </div>
 
       {/* Edit modal */}
