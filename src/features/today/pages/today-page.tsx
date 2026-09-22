@@ -1,10 +1,12 @@
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { toast } from 'sonner'
 import {
   Activity, AlertTriangle, ArrowRight, CalendarCheck, CheckCircle2,
   ChevronLeft, ChevronRight, ClipboardList, Clock, FileText, Flag,
-  Package, Plus, Receipt, ShieldAlert, Truck, Undo2, Wallet, XCircle,
+  Package, Plus, Receipt, RotateCcw, ShieldAlert, Truck, Undo2, Wallet, XCircle,
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card'
 import { Button } from '../../../components/ui/button'
@@ -12,13 +14,16 @@ import { Skeleton } from '../../../components/ui/skeleton'
 import { StatCard } from '../../../components/ui/stat-card'
 import { EmptyState } from '../../../components/ui/empty-state'
 import { SmartConfirm } from '../../../components/ops/smart-confirm'
-import { useGatePasses, useReopenLegacyBatch } from '../../quotations/hooks/useGatePasses'
+import { useGatePasses, useReopenLegacyBatch, invalidateDeliveryData } from '../../quotations/hooks/useGatePasses'
 import { useDeliveries } from '../../quotations/hooks/useDeliveries'
+import { returns as returnsApi } from '../../quotations/services/returns.service'
+import type { ReturnCreate, ReturnItem } from '../../../types/operations'
 import {
   useAdjustments, useApproveAdjustment, useRejectAdjustment,
   useCloseDay, useDayClose, useDayExpenses, useDayMoney, useEvents,
   usePendingGatePasses, useReconciliationIssues,
 } from '../hooks/useDailyOps'
+import { opsKeys } from '../hooks/useDailyOps'
 import type { Adjustment, DayCloseTotals } from '../services/ops.service'
 
 // ── Date helpers (local calendar day, no timezone drift) ──────────────────────
@@ -82,6 +87,7 @@ function QuickActions() {
     { to: '/gate-passes/new', label: 'Receive', hint: 'New gate pass', icon: ClipboardList, cls: 'bg-[#DC2626] hover:bg-[#B91C1C] text-white border-transparent' },
     { to: '/deliveries/new', label: 'Deliver', hint: 'Record delivery', icon: Truck, cls: 'bg-[#16A34A] hover:bg-[#15803D] text-white border-transparent' },
     { to: '/bills/new', label: 'Bill', hint: 'Create bill', icon: FileText, cls: 'bg-white hover:bg-[var(--surface-hover)] text-[var(--text-primary)]' },
+    { to: '/returns/new', label: 'Return', hint: 'Record return', icon: RotateCcw, cls: 'bg-white hover:bg-[var(--surface-hover)] text-[var(--text-primary)]' },
     { to: '/management/expenses', label: 'Expense', hint: 'Record expense', icon: Receipt, cls: 'bg-white hover:bg-[var(--surface-hover)] text-[var(--text-primary)]' },
     { to: '/management/attendance-log', label: 'Attendance', hint: 'Log staff', icon: CalendarCheck, cls: 'bg-white hover:bg-[var(--surface-hover)] text-[var(--text-primary)]' },
   ]
@@ -387,6 +393,243 @@ function TodayMoney({ date }: { date: string }) {
           </div>
         )}
       </CardContent>
+    </Card>
+  )
+}
+
+// ── Fast return entry ─────────────────────────────────────────────────────────
+
+const RETURN_ACTIONS_FAST = [
+  { value: 'RECEIVE_BACK', label: 'Receive Back' },
+  { value: 'RE_WASH', label: 'Re-wash' },
+  { value: 'DISCARD', label: 'Discard' },
+  { value: 'COMPENSATE', label: 'Compensate' },
+]
+
+const RETURN_REASONS_FAST = [
+  { value: 'WRONG_ITEM', label: 'Wrong item' },
+  { value: 'DAMAGED', label: 'Damaged' },
+  { value: 'MISSING', label: 'Missing' },
+  { value: 'OTHER', label: 'Other' },
+]
+
+interface ReturnLine {
+  qty: number
+  action: string
+  reason: string
+}
+
+const gpItemKey = (name: string, spec?: string) => `${name}||${spec ?? ''}`
+
+function FastReturnCard() {
+  const qc = useQueryClient()
+  const { data: gatepasses } = useGatePasses()
+  const [open, setOpen] = useState(false)
+  const [search, setSearch] = useState('')
+  const [gpId, setGpId] = useState<string>('')
+  const [lines, setLines] = useState<Record<string, ReturnLine>>({})
+
+  const create = useMutation({
+    mutationFn: (body: ReturnCreate) => returnsApi.create(body),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: opsKeys.all })
+      invalidateDeliveryData(qc)
+      toast.success('Return recorded')
+      setGpId('')
+      setLines({})
+      setSearch('')
+    },
+    onError: (e: any) =>
+      toast.error(e?.response?.data?.detail || e?.message || 'Failed to record return'),
+  })
+
+  const gp = (gatepasses ?? []).find(g => g.id === gpId) || null
+
+  const matches = (gatepasses ?? [])
+    .filter(g => g.status && g.status !== 'CANCELLED')
+    .filter(g => {
+      if (!search.trim()) return true
+      const q = search.toLowerCase()
+      return (
+        String(g.gate_pass_number ?? '').toLowerCase().includes(q) ||
+        String(g.client_name ?? '').toLowerCase().includes(q)
+      )
+    })
+    .slice(0, 8)
+
+  const totalQty = Object.values(lines).reduce((s, l) => s + l.qty, 0)
+
+  const updateLine = (key: string, patch: Partial<ReturnLine>) =>
+    setLines(prev => {
+      const base = prev[key] ?? { qty: 0, action: 'RECEIVE_BACK', reason: 'OTHER' }
+      return { ...prev, [key]: { ...base, ...patch } }
+    })
+
+  const submit = () => {
+    if (!gp) return
+    const items: ReturnItem[] = Object.entries(lines)
+      .filter(([, l]) => l.qty > 0)
+      .map(([key, l]) => {
+        const [name, spec] = key.split('||')
+        const pendingResend = l.action === 'RECEIVE_BACK' || l.action === 'RE_WASH'
+        return {
+          item_name: name,
+          specification: spec || undefined,
+          returned_qty: l.qty,
+          action: l.action as any,
+          reason: l.reason as any,
+          condition: 'GOOD' as any,
+          resend_status: pendingResend ? ('PENDING' as const) : undefined,
+        }
+      })
+    if (items.length === 0) {
+      toast.error('Enter a quantity for at least one item')
+      return
+    }
+    create.mutate({
+      gate_pass_id: gp.id!,
+      client_name: gp.client_name,
+      items: items as any,
+    })
+  }
+
+  return (
+    <Card>
+      <CardHeader className="border-b border-[var(--border)] pb-3">
+        <div className="flex items-center justify-between">
+          <CardTitle className="flex items-center gap-2 text-[14px]">
+            <RotateCcw className="h-4 w-4" style={{ color: 'var(--text-tertiary)' }} />
+            Returns
+          </CardTitle>
+          <Button size="sm" variant="outline" className="h-8" onClick={() => setOpen(o => !o)}>
+            {open ? 'Close' : 'Quick return'}
+            <Plus className="h-3.5 w-3.5" />
+          </Button>
+        </div>
+      </CardHeader>
+      {open && (
+        <CardContent className="pt-4 space-y-4">
+          {!gp ? (
+            <div>
+              <input
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                placeholder="Search gate pass number or client…"
+                className="h-9 w-full rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 text-[13px]"
+                style={{ color: 'var(--text-primary)' }}
+              />
+              <div className="mt-2 max-h-52 overflow-y-auto divide-y divide-[var(--border)] rounded-lg border border-[var(--border)]">
+                {matches.map(g => (
+                  <button
+                    key={g.id}
+                    type="button"
+                    onClick={() => setGpId(g.id!)}
+                    className="flex w-full items-center justify-between px-3 py-2.5 text-left hover:bg-[var(--surface-hover)] transition"
+                    style={{ color: 'var(--text-primary)' }}
+                  >
+                    <span>
+                      <span className="font-mono text-[12px]" style={{ color: 'var(--text-tertiary)' }}>#{g.gate_pass_number}</span>
+                      <span className="ml-2 text-[13px] font-medium">{g.client_name}</span>
+                    </span>
+                    <span className="text-[11px] tabular-nums" style={{ color: 'var(--text-tertiary)' }}>
+                      {(g.items ?? []).reduce((s, i) => s + (i.received_qty || 0), 0)} pcs
+                    </span>
+                  </button>
+                ))}
+                {matches.length === 0 && (
+                  <p className="px-3 py-4 text-center text-[12px]" style={{ color: 'var(--text-tertiary)' }}>
+                    No gate passes match
+                  </p>
+                )}
+              </div>
+            </div>
+          ) : (
+            <>
+              <div className="flex items-center justify-between rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 py-2.5">
+                <div className="min-w-0">
+                  <p className="truncate text-[13px] font-medium" style={{ color: 'var(--text-primary)' }}>
+                    #{gp.gate_pass_number} · {gp.client_name}
+                  </p>
+                  <p className="text-[11px] tabular-nums" style={{ color: 'var(--text-tertiary)' }}>
+                    {(gp.items ?? []).reduce((s, i) => s + (i.received_qty || 0), 0)} pcs received
+                  </p>
+                </div>
+                <Button size="sm" variant="ghost" className="h-7 text-[12px]" onClick={() => setGpId('')}>
+                  Clear
+                </Button>
+              </div>
+
+              <div className="divide-y divide-[var(--border)] rounded-lg border border-[var(--border)]">
+                {(gp.items ?? []).filter(i => (i.received_qty || 0) > 0).map(it => {
+                  const key = gpItemKey(it.item_name, it.specification)
+                  const line = lines[key] ?? { qty: 0, action: 'RECEIVE_BACK', reason: 'OTHER' }
+                  const max = it.received_qty || 0
+                  return (
+                    <div key={key} className="grid gap-2 px-3 py-2.5 sm:grid-cols-[1fr_auto] sm:items-center">
+                      <div className="min-w-0">
+                        <p className="truncate text-[13px] font-medium" style={{ color: 'var(--text-primary)' }}>
+                          {it.item_name}
+                          {it.specification && <span className="ml-1.5 text-[11px]" style={{ color: 'var(--text-tertiary)' }}>{it.specification}</span>}
+                        </p>
+                        <p className="text-[11px] tabular-nums" style={{ color: 'var(--text-tertiary)' }}>
+                          {max} received
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <input
+                          type="number"
+                          min={0}
+                          max={max}
+                          value={line.qty}
+                          onChange={e => updateLine(key, { qty: Math.min(max, parseInt(e.target.value) || 0) })}
+                          className="h-8 w-16 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-2 text-right text-[13px] tabular-nums"
+                          style={{ color: 'var(--text-primary)' }}
+                        />
+                        <select
+                          value={line.action}
+                          onChange={e => updateLine(key, { action: e.target.value })}
+                          className="h-8 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-1.5 text-[12px]"
+                          style={{ color: 'var(--text-primary)' }}
+                        >
+                          {RETURN_ACTIONS_FAST.map(a => (
+                            <option key={a.value} value={a.value}>{a.label}</option>
+                          ))}
+                        </select>
+                        <select
+                          value={line.reason}
+                          onChange={e => updateLine(key, { reason: e.target.value })}
+                          className="hidden h-8 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-1.5 text-[12px] sm:block"
+                          style={{ color: 'var(--text-primary)' }}
+                          title="Reason"
+                        >
+                          {RETURN_REASONS_FAST.map(r => (
+                            <option key={r.value} value={r.value}>{r.label}</option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+
+              <div className="flex items-center justify-between">
+                <p className="text-[12px] tabular-nums" style={{ color: 'var(--text-tertiary)' }}>
+                  {totalQty} piece{totalQty !== 1 ? 's' : ''} to return
+                </p>
+                <Button
+                  className="h-9 text-white"
+                  style={{ backgroundColor: '#D97706' }}
+                  disabled={create.isPending || totalQty === 0}
+                  onClick={submit}
+                >
+                  <RotateCcw className="h-3.5 w-3.5" />
+                  {create.isPending ? 'Recording…' : 'Record return'}
+                </Button>
+              </div>
+            </>
+          )}
+        </CardContent>
+      )}
     </Card>
   )
 }
@@ -759,6 +1002,9 @@ export default function TodayPage() {
         <AttentionQueue />
         <PendingDeliveries />
       </div>
+
+      {/* Fast return entry */}
+      <FastReturnCard />
 
       <DailyTimeline date={date} />
 
