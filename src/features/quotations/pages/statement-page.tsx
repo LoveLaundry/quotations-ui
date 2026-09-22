@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import {
   ArrowRight, Download, FileText, Landmark, RotateCcw, Search, Truck, X,
@@ -104,6 +105,9 @@ export default function StatementPage() {
   rows.sort((a, b) => String(b.at).localeCompare(String(a.at)))
 
   const activeBills = (data?.bills ?? []).filter(b => b.payment_status !== 'CANCELLED')
+  const openBills = activeBills
+    .filter(b => (b.payment_status ?? '') !== 'PAID')
+    .sort((a, b) => (b.outstanding_amount ?? 0) - (a.outstanding_amount ?? 0))
   const billed = activeBills.reduce((s, b) => s + (b.grand_total ?? b.total_amount ?? 0), 0)
   const collected = (data?.bills ?? []).reduce(
     (s, b) => s + (data?.paymentsByBill[b.id] ?? []).reduce((t, p) => t + (p.amount || 0), 0),
@@ -213,6 +217,43 @@ export default function StatementPage() {
               </p>
             </Card>
           </div>
+
+          {openBills.length > 0 && (
+            <Card>
+              <CardHeader className="border-b border-[var(--border)] pb-3">
+                <CardTitle className="text-[14px]">Collect outstanding</CardTitle>
+              </CardHeader>
+              <CardContent className="p-0">
+                <div className="divide-y divide-[var(--border)]">
+                  {openBills.map((b) => {
+                    const due = b.outstanding_amount ?? (b.grand_total ?? b.total_amount ?? 0) - (b.paid_amount ?? 0)
+                    const collectedHere = (data?.paymentsByBill[b.id] ?? []).reduce((t, p) => t + (p.amount || 0), 0)
+                    return (
+                      <div key={b.id} className="flex items-center gap-3 px-4 py-2.5">
+                        <div className="min-w-0 flex-1">
+                          <p className="text-[13px] font-medium">
+                            Bill <span className="tabular-nums">{b.id}</span> · {b.payment_status}
+                          </p>
+                          <p className="text-[11px] text-[#98A2B3] tabular-nums">
+                            Billed {fmtMoney(b.grand_total ?? b.total_amount ?? 0)} · Paid {fmtMoney(collectedHere)}
+                          </p>
+                        </div>
+                        <span className="text-[13px] font-bold tabular-nums" style={{ color: due > 0 ? '#D97706' : 'var(--text-primary)' }}>
+                          {fmtMoney(due)}
+                        </span>
+                        <Link
+                          to={`/bills/${b.id}`}
+                          className="inline-flex shrink-0 items-center gap-1 rounded-lg border border-[#E4E7EC] bg-white px-2.5 py-1.5 text-[12px] font-semibold text-[#374151] hover:border-[#D97706] hover:text-[#B45309] transition-colors"
+                        >
+                          Record payment <ArrowRight className="h-3 w-3" />
+                        </Link>
+                      </div>
+                    )
+                  })}
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           <Card>
             <CardHeader className="border-b border-[var(--border)] pb-3">
