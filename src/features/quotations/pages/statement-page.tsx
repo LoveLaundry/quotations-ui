@@ -48,7 +48,7 @@ function dayOnly(ts?: string): string {
 }
 
 function fmtMoney(n: number): string {
-  return '₹' + Number(n || 0).toLocaleString('en-IN', { maximumFractionDigits: 2 })
+  return 'LKR ' + Number(n || 0).toLocaleString('en-LK', { maximumFractionDigits: 2 })
 }
 
 function toCSV(rows: Row[]): string {
