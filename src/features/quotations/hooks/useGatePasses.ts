@@ -84,6 +84,18 @@ export function useMarkGatePassDelivered() {
     })
 }
 
+export function useReopenLegacyGatePass() {
+    const qc = useQueryClient()
+    return useMutation({
+        mutationFn: (id: string) => gatepasses.reopenLegacy(id),
+        onSuccess: () => {
+            invalidateDeliveryData(qc)
+            toast.success('Gate pass reopened — it is pending delivery again')
+        },
+        onError: (e: any) => toast.error(e?.response?.data?.detail || e?.message || 'Failed to reopen gate pass'),
+    })
+}
+
 export function useAdjustGatePass() {
     const qc = useQueryClient()
     return useMutation({

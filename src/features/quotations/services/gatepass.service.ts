@@ -27,6 +27,9 @@ export const gatepasses = {
     markDelivered: (id: string, data: GatePassMarkDelivered) =>
         billsApi.post<GatePass>(`/gatepasses/${id}/mark-delivered`, data).then((r: any) => r.data),
 
+    reopenLegacy: (id: string) =>
+        billsApi.post<GatePass>(`/gatepasses/${id}/reopen`).then((r: any) => r.data),
+
     adjust: (id: string, item_name: string, corrected_qty: number, reason: string) =>
         billsApi.post<GatePass>(`/gatepasses/${id}/adjust`, { item_name, corrected_qty, reason }).then((r: any) => r.data),
 

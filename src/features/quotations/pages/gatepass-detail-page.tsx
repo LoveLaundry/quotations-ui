@@ -2,19 +2,20 @@ import { useState, useMemo, Fragment } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import {
-    ArrowLeft, ClipboardList, Calendar, User, AlertCircle,
+    ArrowLeft, ClipboardList, Calendar, User, AlertCircle, AlertTriangle,
     ChevronDown, Truck, CheckCircle2, Pencil, X, Check, Receipt,
     Plus, Save, Trash2, History, RefreshCw, Undo2, Settings2, Flag
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from '../../../components/ui/button'
+import { SmartConfirm } from '../../../components/ops/smart-confirm'
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card'
 import { EmptyState } from '../../../components/ui/empty-state'
 import { ErrorState } from '../../../components/ui/error-state'
 import { Skeleton } from '../../../components/ui/skeleton'
 import { Breadcrumb } from '../../../components/ui/breadcrumb'
 import { formatDate } from '../../../lib/utils'
-import { useGatePass, useUpdateGatePassStatus, useAdjustGatePass, useUpdateGatePassDate, useCreateBillFromGatePass, useUpdateGatePass, useMarkGatePassDelivered } from '../hooks/useGatePasses'
+import { useGatePass, useUpdateGatePassStatus, useAdjustGatePass, useUpdateGatePassDate, useCreateBillFromGatePass, useUpdateGatePass, useMarkGatePassDelivered, useReopenLegacyGatePass } from '../hooks/useGatePasses'
 import { useDeliveries } from '../hooks/useDeliveries'
 import { useQuotation } from '../hooks/useQuotations'
 import { returns as returnsApi } from '../services/returns.service'
@@ -143,9 +144,11 @@ export default function GatePassDetailPage() {
     const updateStatus = useUpdateGatePassStatus()
     const adjust = useAdjustGatePass()
     const markDelivered = useMarkGatePassDelivered()
+    const reopenLegacy = useReopenLegacyGatePass()
 
     const [statusOpen, setStatusOpen] = useState(false)
     const [markOpen, setMarkOpen] = useState(false)
+    const [reopenConfirm, setReopenConfirm] = useState(false)
     const [markNote, setMarkNote] = useState('')
     const [markDate, setMarkDate] = useState(() => new Date().toISOString().split('T')[0])
     const [adjustingItem, setAdjustingItem] = useState<string | null>(null)
@@ -593,22 +596,50 @@ export default function GatePassDetailPage() {
 
             {/* Completed by note (delivery was never recorded) */}
             {gp.marked_delivered && (
-                <Card className="border-[#BBF7D0] bg-[#F0FDF4] p-4">
-                    <div className="flex items-start gap-2.5">
-                        <CheckCircle2 className="h-4 w-4 text-[#16A34A] mt-0.5 shrink-0" />
-                        <div>
-                            <p className="text-[13px] font-semibold text-[#15803D]">
-                                Completed as delivered by note
-                                {(gp.marked_delivered as any)?.delivered_date && (
-                                    <span className="font-normal text-[#6B7280]">
-                                        {' '}· {formatDate(String((gp.marked_delivered as any).delivered_date))}
-                                    </span>
-                                )}
-                            </p>
-                            <p className="text-[12px] text-[#374151] mt-0.5">{(gp.marked_delivered as any)?.note}</p>
+                deliveries.some(d => d.status !== 'CANCELLED') ? (
+                    <Card className="border-[#BBF7D0] bg-[#F0FDF4] p-4">
+                        <div className="flex items-start gap-2.5">
+                            <CheckCircle2 className="h-4 w-4 text-[#16A34A] mt-0.5 shrink-0" />
+                            <div>
+                                <p className="text-[13px] font-semibold text-[#15803D]">
+                                    Completed as delivered by note
+                                    {(gp.marked_delivered as any)?.delivered_date && (
+                                        <span className="font-normal text-[#6B7280]">
+                                            {' '}· {formatDate(String((gp.marked_delivered as any).delivered_date))}
+                                        </span>
+                                    )}
+                                </p>
+                                <p className="text-[12px] text-[#374151] mt-0.5">{(gp.marked_delivered as any)?.note}</p>
+                            </div>
                         </div>
-                    </div>
-                </Card>
+                    </Card>
+                ) : (
+                    <Card className="border-[#FDE68A] bg-[#FFFBEB] p-4">
+                        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                            <div className="flex items-start gap-2.5">
+                                <AlertTriangle className="h-4 w-4 text-[#D97706] mt-0.5 shrink-0" />
+                                <div>
+                                    <p className="text-[13px] font-semibold text-[#B45309]">
+                                        Closed by a legacy note, no delivery records
+                                    </p>
+                                    <p className="text-[12px] text-[#92400E] mt-0.5">
+                                        This pass was completed by the old mark-delivered note, which never recorded a real
+                                        dispatch — its balance is hidden, and nothing appears in pending deliveries.
+                                        Reopen it to record the delivery properly (quantities are not fabricated).
+                                    </p>
+                                </div>
+                            </div>
+                            <Button
+                                size="sm"
+                                className="shrink-0 bg-[#D97706] hover:bg-[#B45309] text-white"
+                                onClick={() => setReopenConfirm(true)}
+                                disabled={reopenLegacy.isPending}
+                            >
+                                <Undo2 className="h-3.5 w-3.5" /> Reopen for delivery
+                            </Button>
+                        </div>
+                    </Card>
+                )
             )}
 
             {/* Create Bill from Gate Pass */}
@@ -1068,6 +1099,21 @@ export default function GatePassDetailPage() {
                     </div>
                 </div>
             )}
+
+            {/* Reopen legacy closure modal */}
+            <SmartConfirm
+                open={reopenConfirm}
+                title="Reopen this legacy gate pass?"
+                message="The old mark-delivered note closed this pass without any recorded dispatch. Reopening flags the legacy closure in the journal (LEGACY_CLOSED_WITHOUT_DELIVERY) and moves it back to Received so it reappears in Pending to Deliver. No quantities are invented."
+                changes={[{ label: 'Status', from: gp.status, to: 'RECEIVED' }]}
+                confirmLabel="Reopen for delivery"
+                loading={reopenLegacy.isPending}
+                onCancel={() => setReopenConfirm(false)}
+                onConfirm={() => {
+                    setReopenConfirm(false)
+                    if (id) reopenLegacy.mutate(id)
+                }}
+            />
         </div>
     )
 }
