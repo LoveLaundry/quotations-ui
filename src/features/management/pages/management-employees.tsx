@@ -1,8 +1,9 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
-import { employeesApi, attendanceApi } from '../api/management-api'
+import { employeesApi, attendanceApi, holidaysApi } from '../api/management-api'
 import { buildStaffSummary } from '../utils/attendance-summary'
+import { buildSalaryForecast } from '../utils/salary-forecast'
 import { toast } from 'sonner'
 import { Plus, Pencil, Trash2, X, DollarSign, UserCheck, Filter, FileText, Users } from 'lucide-react'
 import { PageHeader } from '../../../components/ui/page-header'
@@ -120,6 +121,11 @@ export default function ManagementEmployees() {
   })
 
   const attSummary = useMemo(() => buildStaffSummary(monthAtt), [monthAtt])
+
+  const { data: holidaysData = [] } = useQuery({
+    queryKey: ['mgmt-holidays', attYear],
+    queryFn: () => holidaysApi.list(attYear).then(r => r.data),
+  })
 
   return (
     <div className="space-y-4">
@@ -276,6 +282,18 @@ export default function ManagementEmployees() {
                 ) : (
                   <p className="text-[11px] text-gray-400">Attendance not tracked (fixed arrangement)</p>
                 )}
+                {(() => {
+                  const s = attSummary[emp.id]
+                  const f = buildSalaryForecast(emp, s?.overtime_hours ?? 0, { year: attYear, month: attMonth, holidays: holidaysData })
+                  return (
+                    <p className="mt-1.5 border-t border-gray-100 dark:border-gray-800 pt-1.5 text-[11px] text-gray-500 flex items-center justify-between gap-2">
+                      <span title={`Base Rs.${f.base.toLocaleString()} + allowance Rs.${f.allowance.toLocaleString()} + OT Rs.${f.overtime.toLocaleString()} − EPF Rs.${f.epf.toLocaleString()} (${f.method})`}>
+                        Month earning if all days attend
+                      </span>
+                      <span className="font-bold tabular-nums text-red-700 dark:text-red-400">Rs. {f.projected.toLocaleString()}</span>
+                    </p>
+                  )
+                })()}
               </div>
 
               <div className="flex gap-2">

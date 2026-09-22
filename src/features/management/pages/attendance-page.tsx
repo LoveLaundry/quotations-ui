@@ -8,6 +8,7 @@ import { useEnterFlow } from '../../../hooks/use-enter-flow'
 import { useEscape } from '../../../hooks/use-escape'
 import { ConfirmDialog } from '../../../components/ui/confirm-dialog'
 import { buildStaffSummary, type AttendanceRecord } from '../utils/attendance-summary'
+import { buildSalaryForecast } from '../utils/salary-forecast'
 
 const STATUSES = ['PRESENT', 'HALF_DAY', 'PAID_LEAVE', 'UNPAID_LEAVE', 'ABSENT'] as const
 const STATUS_LABEL: Record<string, string> = {
@@ -434,12 +435,13 @@ export default function AttendancePage() {
                       <th className="px-3 py-2.5 font-medium text-center">Paid Leave</th>
                       <th className="px-3 py-2.5 font-medium text-center">Unpaid/Absent</th>
                       <th className="px-3 py-2.5 font-medium text-center">OT hrs</th>
-                      <th className="px-3 py-2.5 font-medium text-center">Holidays</th>
+                      <th className="px-3 py-2.5 font-medium text-center">Forecast (month)</th>
                     </tr>
                   </thead>
                   <tbody>
                     {activeStaff.map((e: any) => {
                       const s = allByEmp[e.id] || { worked_days: 0, half_days: 0, paid_leave_days: 0, unpaid_days: 0, overtime_hours: 0, holiday_count: 0 }
+                      const forecast = buildSalaryForecast(e, s.overtime_hours, { year, month, holidays: holidaysData })
                       return (
                         <tr key={e.id} className="border-b last:border-0 hover:bg-gray-50 dark:hover:bg-gray-700/40">
                           <td className="px-4 py-2">
@@ -451,7 +453,12 @@ export default function AttendancePage() {
                           <td className="px-3 py-2 text-center text-blue-700 dark:text-blue-400">{s.paid_leave_days}</td>
                           <td className="px-3 py-2 text-center text-red-700 dark:text-red-400">{s.unpaid_days}</td>
                           <td className="px-3 py-2 text-center text-indigo-700 dark:text-indigo-400">{s.overtime_hours || 0}</td>
-                          <td className="px-3 py-2 text-center text-purple-700 dark:text-purple-400">{s.holiday_count}</td>
+                          <td className="px-3 py-2 text-center">
+                            <span className="font-bold tabular-nums">Rs. {forecast.projected.toLocaleString()}</span>
+                            <span className="block text-[10px] text-gray-400" title={`Base ${forecast.base.toLocaleString()} + allowance ${forecast.allowance.toLocaleString()} + OT ${forecast.overtime.toLocaleString()} − EPF ${forecast.epf.toLocaleString()} (${forecast.method})`}>
+                              if all remaining days attended
+                            </span>
+                          </td>
                         </tr>
                       )
                     })}
