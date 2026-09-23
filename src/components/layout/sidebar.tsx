@@ -61,9 +61,8 @@ const navGroups: { label: string; items: NavItem[] }[] = [
     label: 'Operations',
     items: [
       { to: '/gate-passes', label: 'Gate Passes', icon: ClipboardText, end: false, permission: 'view_gate_passes' },
-      { to: '/deliveries', label: 'Deliveries', icon: Truck, end: false, permission: 'view_deliveries', children: [
-        { to: '/dispatch', label: 'Dispatch', icon: Truck, end: false },
-      ]},
+      { to: '/deliveries', label: 'Deliveries', icon: Truck, end: false, permission: 'view_deliveries' },
+      { to: '/dispatch', label: 'Dispatch', icon: Truck, end: false, permission: 'view_deliveries' },
       { to: '/hotel-linen-flow', label: 'Hotel Linen Flow', icon: FlowArrow, end: false },
       { to: '/returns', label: 'Returns', icon: Truck, end: false, permission: 'view_gate_passes' },
       { to: '/workers', label: 'Staff Management', icon: Users, end: true, children: [
