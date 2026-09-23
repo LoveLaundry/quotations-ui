@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { installOfflineAdapter } from '../../../cache/offline-adapter'
 
 export interface Paginated<T> {
   items: T[]
@@ -18,6 +19,8 @@ mgmtApi.interceptors.request.use((config) => {
   if (token) config.headers.Authorization = `Bearer ${token}`
   return config
 })
+
+installOfflineAdapter(mgmtApi, 'management')
 
 // ── Customers ─────────────────────────────────────────────────────────────
 export const customersApi = {

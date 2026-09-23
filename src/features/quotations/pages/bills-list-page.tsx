@@ -12,6 +12,7 @@ import { Skeleton } from '../../../components/ui/skeleton'
 import { Breadcrumb } from '../../../components/ui/breadcrumb'
 import { SyncStatusBar } from '../../../components/ui/sync-status-bar'
 import { VerificationStatus } from '../../../components/ui/verification-status'
+import { PendingSyncBadge, OfflineChangesChip } from '../../../components/ui/pending-sync-indicators'
 import { Pagination } from '../../../components/ui/pagination'
 import { formatDate } from '../../../lib/utils'
 import { useBills } from '../hooks/useBills'
@@ -90,6 +91,7 @@ export default function BillsListPage() {
             {data ? `${data.total} bill${data.total === 1 ? '' : 's'}` : 'Saved bills'}
           </p>
           <SyncStatusBar queryKey={['bills']} label="Bills" className="mt-2" />
+                  <OfflineChangesChip service="bills" resource="bills" className="mt-2 ml-2" />
         </div>
         <div className="flex gap-2">
           <Button variant="secondary" onClick={handleExportExcel} disabled={!bills.length}>
@@ -222,6 +224,7 @@ export default function BillsListPage() {
                   </div>
                   <div className="flex flex-col items-end gap-1.5">
                     <BillStatusBadge status={bill.payment_status} />
+                    <PendingSyncBadge service="bills" entityId={bill.id} />
                     <div className="flex items-center gap-1.5">
                       <VerificationStatus status={bill.verification?.status} showLabel={false} />
                       <Badge variant="secondary">{bill.total_quantity} items</Badge>

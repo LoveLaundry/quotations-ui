@@ -9,6 +9,7 @@ import { Skeleton } from '../../../components/ui/skeleton'
 import { Breadcrumb } from '../../../components/ui/breadcrumb'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogBody, DialogFooter } from '../../../components/ui/dialog'
 import { ConfirmDialog } from '../../../components/ui/confirm-dialog'
+import { OfflineChangesChip, PendingSyncBadge } from '../../../components/ui/pending-sync-indicators'
 import { useShopBills, useBulkUpdateShopBillStatus, useShopBillTemplates, useCreateBillTemplate, useDeleteBillTemplate, useQuickBill } from '../hooks/useShopBills'
 import { formatCurrency } from '../../../lib/utils'
 
@@ -124,6 +125,7 @@ export default function ShopBillsListPage() {
           <Breadcrumb items={[{ label: 'Dashboard', href: '/' }, { label: 'Shop Bills' }]} />
           <h1 className="text-dashboard-title mt-1">Shop Bills</h1>
           <p className="text-[13px] text-[#98A2B3] mt-0.5">{data ? `${data.total} bill${data.total === 1 ? '' : 's'}` : 'Shop bills'}</p>
+          <OfflineChangesChip service="bills" resource="shop-bills" className="mt-2" />
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" onClick={() => setShowTemplates(true)} className="gap-1.5 cursor-pointer"><LayoutTemplate size={14} /> Templates</Button>
@@ -195,6 +197,7 @@ export default function ShopBillsListPage() {
                       {bill.is_recurring && <span className="text-[10px] bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded">RECURRING</span>}
                       <span className={`inline-flex items-center rounded-md px-2 py-0.5 text-[11px] font-medium ${STATUS_COLORS[bill.status] ?? 'bg-gray-100 text-gray-500'}`}>{bill.status}</span>
                       <span className={`inline-flex items-center rounded-md px-2 py-0.5 text-[11px] font-medium ${PAYMENT_COLORS[bill.payment_status] ?? 'bg-gray-100 text-gray-500'}`}>{bill.payment_status.replaceAll('_', ' ')}</span>
+                        <PendingSyncBadge service="bills" entityId={bill.id} />
                     </div>
                     <p className="text-[12px] text-[#6B7280] mt-0.5 truncate">{bill.client_name} &middot; {bill.items.length} item{bill.items.length === 1 ? '' : 's'}</p>
                   </div>

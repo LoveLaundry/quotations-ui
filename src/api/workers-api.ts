@@ -1,5 +1,6 @@
 import axios from 'axios'
 import { attachResponseInterceptor } from './interceptors'
+import { installOfflineAdapter } from '../cache/offline-adapter'
 
 function normalizeBaseUrl(url: string): string {
   // Vercel redirects http -> https; preflight requests cannot follow
@@ -23,5 +24,6 @@ workersApi.interceptors.request.use((config) => {
 })
 
 attachResponseInterceptor(workersApi)
+installOfflineAdapter(workersApi, 'workers')
 
 export default workersApi

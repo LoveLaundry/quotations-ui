@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { Sidebar } from './sidebar'
 import { TopBar } from './top-bar'
 import { CommandSearch } from '../ui/command-search'
+import { OfflineSyncBar } from '../ui/offline-sync-bar'
 import { cn } from '../../lib/utils'
 import { useAuth } from '../../context/AuthContext'
 import { setUnauthorizedHandler } from '../../api/interceptors'
@@ -129,6 +130,8 @@ export function AppShell() {
       />
 
       <CommandSearch open={cmdOpen} onClose={() => setCmdOpen(false)} />
+
+      <OfflineSyncBar />
 
       <main className={cn(
         'min-h-screen pt-16 transition-[padding-left] duration-200',

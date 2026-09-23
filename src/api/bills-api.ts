@@ -1,5 +1,6 @@
 import axios from 'axios'
 import { attachResponseInterceptor } from './interceptors'
+import { installOfflineAdapter } from '../cache/offline-adapter'
 
 const billsApi = axios.create({
   baseURL: import.meta.env.VITE_BILLS_API_URL ?? 'http://localhost:8001',
@@ -14,5 +15,6 @@ billsApi.interceptors.request.use((config) => {
 })
 
 attachResponseInterceptor(billsApi)
+installOfflineAdapter(billsApi, 'bills')
 
 export default billsApi

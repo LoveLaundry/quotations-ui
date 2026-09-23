@@ -2,7 +2,7 @@ import { QueryClient, type QueryClientConfig } from '@tanstack/react-query'
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client'
 import { RouterProvider } from 'react-router-dom'
 import { Suspense, useEffect, useMemo, useRef, type ReactNode } from 'react'
-import { Toaster } from 'sonner'
+import { Toaster, toast } from 'sonner'
 import { router } from './routes'
 import './App.css'
 import LoveLoader from './components/ui/LoveLoader'
@@ -11,8 +11,16 @@ import { useAuth } from './context/AuthContext'
 import { DefaultsProvider } from './components/ops/defaults-provider'
 import { sanitizeScope } from './cache/db'
 import { createIndexedDbPersister } from './cache/persister'
+import { PendingSyncProvider } from './cache/pending-sync'
+import { setCacheScope } from './cache/scope'
+import {
+  isSyncEngineStarted,
+  registerSyncNotifiers,
+  startSyncEngine,
+} from './cache/sync-engine'
 import {
   CACHE_MAX_AGE_MS,
+  CACHE_RESOURCES,
   CACHE_VERSION,
   configureQueryDefaults,
   shouldPersistQuery,
@@ -64,6 +72,29 @@ function CacheHostProvider({ children }: { children: ReactNode }) {
   const persister = useMemo(() => createIndexedDbPersister(scope), [scope])
   const prevScope = useRef(scope)
 
+  // Point the offline outbox at this user's cache and start the sync engine
+  // once (idempotent). The engine replays queued writes and refreshes cache.
+  useEffect(() => {
+    setCacheScope(scope)
+    if (!isSyncEngineStarted()) {
+      registerSyncNotifiers({
+        invalidate: (resource?: string) => {
+          if (resource && CACHE_RESOURCES.has(resource)) {
+            void queryClient.invalidateQueries({ queryKey: [resource] })
+          } else {
+            void queryClient.invalidateQueries()
+          }
+        },
+        notify: (message: string, type?: 'success' | 'error' | 'info') => {
+          if (type === 'error') toast.error(message)
+          else if (type === 'success') toast.success(message)
+          else toast.info(message)
+        },
+      })
+      startSyncEngine()
+    }
+  }, [scope])
+
   // On login/logout (scope change) drop whatever another user's session left
   // in the shared in-memory client before the new user's snapshot hydrates.
   useEffect(() => {
@@ -92,8 +123,9 @@ function CacheHostProvider({ children }: { children: ReactNode }) {
 function App() {
   return (
     <CacheHostProvider>
-      <ThemeProvider>
-        <DefaultsProvider>
+      <PendingSyncProvider>
+        <ThemeProvider>
+          <DefaultsProvider>
           {/* Suspense covers route-level lazy chunks: the loader only shows while
               a page bundle is actually being fetched, removing the old 600ms wait. */}
           <Suspense fallback={<LoveLoader />}>
@@ -113,8 +145,9 @@ function App() {
               },
             }}
           />
-        </DefaultsProvider>
-      </ThemeProvider>
+          </DefaultsProvider>
+        </ThemeProvider>
+      </PendingSyncProvider>
     </CacheHostProvider>
   )
 }
