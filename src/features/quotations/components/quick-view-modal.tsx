@@ -11,7 +11,7 @@ import { Button } from '../../../components/ui/button'
 import { GatePassStatusPill, DeliveryStatusPill, type DeliveryStatus } from './operations-status'
 import { BillStatusBadge } from '../../../components/ui/bill-status-badge'
 import { formatDate, formatDateOnly } from '../../../lib/utils'
-import { ArrowUpRight, ClipboardList, Truck, Receipt, AlertTriangle } from 'lucide-react'
+import { ArrowUpRight, ClipboardList, Truck, Receipt, AlertTriangle, RotateCw } from 'lucide-react'
 import type { GatePass, Delivery } from '../../../types/operations'
 import type { Bill } from '../../../types/bill'
 
@@ -111,6 +111,8 @@ export function QuickViewModal({ open, onOpenChange, type, entity, deliveryStatu
 function GatePassQuickView({ gp }: { gp: GatePass }) {
     const total = (gp.items ?? []).reduce((sum, item) => sum + (item.received_qty || 0), 0)
     const mismatches = (gp.items ?? []).filter(item => (item.difference ?? 0) !== 0)
+    const rewashed = (gp.items ?? []).filter(item => item.rewashed)
+    const rewashedQty = rewashed.reduce((sum, item) => sum + (item.received_qty || 0), 0)
     return (
         <div className="space-y-3">
             <div className="grid grid-cols-2 gap-x-4">
@@ -127,6 +129,13 @@ function GatePassQuickView({ gp }: { gp: GatePass }) {
                 </div>
             )}
 
+            {rewashed.length > 0 && (
+                <div className="flex items-center gap-2 rounded-lg border border-[#BBF7D0] bg-[#F0FDF4] px-3 py-2 text-[12px] font-medium text-[#15803D]">
+                    <RotateCw size={14} />
+                    {rewashed.length} rewashed type{rewashed.length > 1 ? 's' : ''} ({rewashedQty} pcs received) · free, not billed
+                </div>
+            )}
+
             <ItemsTable
                 rows={(gp.items ?? []).map(item => ({
                     name: item.item_name,
@@ -134,6 +143,7 @@ function GatePassQuickView({ gp }: { gp: GatePass }) {
                     a: `${item.client_qty}`,
                     b: `${item.received_qty}`,
                     flag: (item.difference ?? 0) !== 0,
+                    rewashed: !!item.rewashed,
                 }))}
                 aLabel="Sent"
                 bLabel="Received"
@@ -221,7 +231,7 @@ function ItemsTable({
     aLabel,
     bLabel,
 }: {
-    rows: Array<{ name: string; spec: string; a: string; b: string; flag: boolean }>
+    rows: Array<{ name: string; spec: string; a: string; b: string; flag: boolean; rewashed?: boolean }>
     aLabel: string
     bLabel: string
 }) {
@@ -244,7 +254,13 @@ function ItemsTable({
                         <tr key={`${row.name}-${row.spec}-${i}`}>
                             <td className={row.flag ? 'px-3 py-2 font-medium text-[#B45309]' : 'px-3 py-2 font-medium text-[var(--text-primary)]'}>
                                 {row.flag && <AlertTriangle size={11} className="mr-1 inline text-[#D97706]" />}
+                                {row.rewashed && <RotateCw size={11} className="mr-1 inline text-[#16A34A]" />}
                                 {row.name}
+                                {row.rewashed && (
+                                    <span className="ml-1.5 rounded-full bg-[#F0FDF4] px-1.5 py-0.5 text-[10px] font-semibold text-[#15803D]">
+                                        re-wash
+                                    </span>
+                                )}
                             </td>
                             {rows.some(r => r.spec) && <td className="px-2 py-2 text-[var(--text-muted)]">{row.spec || '—'}</td>}
                             <td className="px-3 py-2 text-right text-[var(--text-secondary)]">{row.a}</td>

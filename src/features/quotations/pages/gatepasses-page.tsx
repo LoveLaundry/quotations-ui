@@ -14,6 +14,7 @@ import {
     Clock,
     History,
     PackageOpen,
+    RotateCcw,
 } from 'lucide-react'
 import { Button } from '../../../components/ui/button'
 import { EmptyState } from '../../../components/ui/empty-state'
@@ -146,6 +147,8 @@ export default function GatePassesPage() {
     const renderCard = (gp: GatePass) => {
         const total = (gp.items ?? []).reduce((sum, item) => sum + (item.received_qty || 0), 0)
         const mismatches = (gp.items ?? []).filter(item => (item.difference ?? 0) !== 0).length
+        const rewashed = (gp.items ?? []).filter(item => item.rewashed)
+        const rewashedQty = rewashed.reduce((sum, item) => sum + (item.received_qty || 0), 0)
         return (
             <div className="rounded-xl border border-[#E4E7EC] bg-white p-4 shadow-[0_1px_2px_rgba(16,24,40,0.05)] transition-shadow hover:shadow-md">
                 <div className="flex items-start justify-between gap-2">
@@ -174,6 +177,11 @@ export default function GatePassesPage() {
                     {mismatches > 0 && (
                         <span className="inline-flex items-center gap-1 font-medium text-[#D97706]">
                             <AlertTriangle size={11} /> {mismatches} mismatch{mismatches > 1 ? 'es' : ''}
+                        </span>
+                    )}
+                    {rewashedQty > 0 && (
+                        <span className="inline-flex items-center gap-1 font-medium text-[#15803D]">
+                            <RotateCcw size={11} /> {rewashedQty} pcs re-wash · not billed
                         </span>
                     )}
                 </div>

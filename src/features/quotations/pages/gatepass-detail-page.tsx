@@ -683,6 +683,21 @@ export default function GatePassDetailPage() {
                             <X className="h-4 w-4" />
                         </button>
                     </div>
+                    {(() => {
+                        const rewashed = (gp.items ?? []).filter((i: any) => i.rewashed)
+                        const rewashedQty = rewashed.reduce((s: number, i: any) => s + (i.received_qty || 0), 0)
+                        if (rewashedQty <= 0) return null
+                        return (
+                            <div className="mb-3 flex items-start gap-2 rounded-lg border border-[#BBF7D0] bg-[#F0FDF4] px-3 py-2 text-[12px] text-[#15803D]">
+                                <RotateCcw size={14} className="mt-0.5 shrink-0" />
+                                <span>
+                                    <span className="font-semibold">{rewashedQty} pcs</span> rewashed on this pass
+                                    ({rewashed.map((i: any) => i.item_name).join(', ')}) — treated as a free re-wash
+                                    and excluded from this bill.
+                                </span>
+                            </div>
+                        )
+                    })()}
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
                         <label className="flex items-center gap-2 text-[13px] text-[#374151] whitespace-nowrap">
                             <input

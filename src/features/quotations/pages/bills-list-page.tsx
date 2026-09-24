@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { Plus, Search, Receipt, X, Calendar, Download, BadgeCheck, Archive, AlertTriangle, Wallet, Boxes } from 'lucide-react'
+import { Plus, Search, Receipt, X, Calendar, Download, BadgeCheck, Archive, AlertTriangle, Wallet, Boxes, RotateCw } from 'lucide-react'
 import * as XLSX from 'xlsx'
 import { Button } from '../../../components/ui/button'
 import { Badge } from '../../../components/ui/badge'
@@ -272,6 +272,19 @@ export default function BillsListPage() {
                         <p className="text-[11px] text-[var(--text-faint)]">
                             +{(gp.unbilled_items ?? []).length - 3} more item{(gp.unbilled_items ?? []).length - 3 > 1 ? 's' : ''}
                         </p>
+                    )}
+                    {(gp.total_rewashed_qty ?? 0) > 0 && (
+                        <div className="flex items-start justify-between gap-2 text-[12px]">
+                            <span className="inline-flex items-center gap-1.5 truncate text-[#15803D]">
+                                <RotateCw size={12} className="shrink-0" />
+                                <span className="truncate">Free re-wash · not billed
+                                    {(gp.rewashed_items ?? []).length > 0
+                                        ? ` (${(gp.rewashed_items ?? []).map(r => r.item_name).join(', ')})`
+                                        : ''}
+                                </span>
+                            </span>
+                            <span className="shrink-0 font-semibold text-[#15803D]">+{gp.total_rewashed_qty}</span>
+                        </div>
                     )}
                 </div>
 

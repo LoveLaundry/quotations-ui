@@ -95,4 +95,6 @@ export interface UnbilledGatePass {
   delivery_ids: string[]
   unbilled_items: UnbilledGatePassItem[]
   total_unbilled_qty: number
+  rewashed_items?: { item_name: string; specification: string; received_qty: number }[]
+  total_rewashed_qty?: number
 }
