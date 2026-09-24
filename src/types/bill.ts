@@ -76,3 +76,23 @@ export interface BillListResponse {
   items: Bill[]
   total: number
 }
+
+export interface UnbilledGatePassItem {
+  item_name: string
+  category?: string
+  received_qty: number
+  delivered_qty: number
+  billed_qty: number
+  unbilled_qty: number
+}
+
+export interface UnbilledGatePass {
+  id: string
+  gate_pass_number: string
+  client_name: string
+  receiving_date: string
+  quotation_id?: string
+  delivery_ids: string[]
+  unbilled_items: UnbilledGatePassItem[]
+  total_unbilled_qty: number
+}

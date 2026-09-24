@@ -7,6 +7,7 @@ import { cn } from '../../lib/utils'
 import { useAuth } from '../../context/AuthContext'
 import { useNotifications } from '../../features/quotations/hooks/useNotifications'
 import { NotificationDetailDialog } from '../../features/quotations/components/notification-detail-dialog'
+import { HotelSelector } from './hotel-selector'
 import type { Quotation } from '../../types/quotation'
 import type { GatePassPendingEntry, NotificationType } from '../../types/notification'
 
@@ -92,6 +93,9 @@ export function TopBar({ title, sidebarCollapsed, onMobileMenuToggle, onOpenSear
       </div>
 
       <div className="flex items-center gap-3 shrink-0">
+        {/* Hotel scope */}
+        <HotelSelector />
+
         {/* Search trigger */}
         <button
           type="button"

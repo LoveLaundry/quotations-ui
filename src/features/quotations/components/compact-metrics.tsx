@@ -7,6 +7,7 @@ export interface MetricItem {
     value: number
     icon?: ReactNode
     tone?: 'blue' | 'green' | 'amber' | 'red' | 'gray'
+    money?: boolean
 }
 
 const toneMap = {
@@ -33,7 +34,9 @@ export function CompactMetrics({ items, className }: { items: MetricItem[]; clas
                             </div>
                         )}
                         <div className="min-w-0">
-                            <p className={cn('text-[18px] font-bold leading-none tracking-tight', tone.valueText)}>{metric.value}</p>
+                            <p className={cn('text-[18px] font-bold leading-none tracking-tight', metric.money && 'text-[14px]', tone.valueText)} title={metric.money ? `LKR ${metric.value.toLocaleString()}` : undefined}>
+                                {metric.money ? `LKR ${metric.value.toLocaleString()}` : metric.value}
+                            </p>
                             <p className="mt-1 truncate text-[11px] font-medium text-[#98A2B3]">{metric.label}</p>
                         </div>
                     </div>

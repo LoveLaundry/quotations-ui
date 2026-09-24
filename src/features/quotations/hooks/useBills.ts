@@ -24,6 +24,13 @@ export function useBill(id?: string) {
   })
 }
 
+export function useUnbilledGatePasses(client_name?: string) {
+  return useQuery({
+    queryKey: [...billKeys.all, 'unbilled-gatepasses', client_name ?? ''] as const,
+    queryFn: () => billService.getUnbilledGatePasses(client_name),
+  })
+}
+
 export function useCreateBill() {
   const qc = useQueryClient()
   return useMutation({

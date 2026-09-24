@@ -7,6 +7,7 @@ import { router } from './routes'
 import './App.css'
 import LoveLoader from './components/ui/LoveLoader'
 import { ThemeProvider } from './context/ThemeContext'
+import { HotelProvider } from './context/HotelContext'
 import { useAuth } from './context/AuthContext'
 import { DefaultsProvider } from './components/ops/defaults-provider'
 import { sanitizeScope } from './cache/db'
@@ -129,7 +130,9 @@ function App() {
           {/* Suspense covers route-level lazy chunks: the loader only shows while
               a page bundle is actually being fetched, removing the old 600ms wait. */}
           <Suspense fallback={<LoveLoader />}>
-            <RouterProvider router={router} />
+            <HotelProvider>
+              <RouterProvider router={router} />
+            </HotelProvider>
           </Suspense>
           <Toaster
             richColors
