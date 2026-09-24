@@ -154,6 +154,7 @@ export default function GatePassDetailPage() {
     const [markNote, setMarkNote] = useState('')
     const [markDate, setMarkDate] = useState(() => new Date().toISOString().split('T')[0])
     const [adjustingItem, setAdjustingItem] = useState<string | null>(null)
+    const [adjustingSpec, setAdjustingSpec] = useState('')
     const [adjustQty, setAdjustQty] = useState(0)
     const [adjustReason, setAdjustReason] = useState('')
 
@@ -288,10 +289,11 @@ export default function GatePassDetailPage() {
     const totalReturned = (gp.items ?? []).reduce((s: number, i: any) => s + (returnedMap[`${i.item_name}||${i.specification || ''}`] || 0), 0)
     const totalPending = totalReceived - totalDelivered + totalReturned
 
-    const handleAdjust = (itemName: string) => {
-        const item = gp.items.find((i: any) => i.item_name === itemName)
+    const handleAdjust = (itemName: string, spec = '') => {
+        const item = gp.items.find((i: any) => i.item_name === itemName && (i.specification || '') === spec)
         if (!item) return
         setAdjustingItem(itemName)
+        setAdjustingSpec(spec)
         setAdjustQty(item.received_qty)
         setAdjustReason('')
     }
@@ -299,7 +301,7 @@ export default function GatePassDetailPage() {
     const submitAdjust = () => {
         if (!id || !adjustingItem || !adjustReason) return
         adjust.mutate(
-            { id, item_name: adjustingItem, corrected_qty: adjustQty, reason: adjustReason },
+            { id, item_name: adjustingItem, specification: adjustingSpec, corrected_qty: adjustQty, reason: adjustReason },
             { onSuccess: () => setAdjustingItem(null) },
         )
     }
@@ -352,7 +354,8 @@ export default function GatePassDetailPage() {
         )
     }
 
-    const canEdit = !['DELIVERED', 'CANCELLED'].includes(gp.status)
+    const hasMovement = deliveries.some((d: any) => d.status !== 'CANCELLED') || returnsList.length > 0
+    const canEdit = !['DELIVERED', 'CANCELLED'].includes(gp.status) && !hasMovement
 
     const startEdit = () => {
         setEditClientName(gp.client_name)
@@ -850,6 +853,12 @@ export default function GatePassDetailPage() {
             <Card>
                 <CardHeader className="border-b border-[#F2F4F7] pb-3">
                     <CardTitle>Item Breakdown</CardTitle>
+                    {hasMovement && (
+                        <p className="mt-1.5 flex items-start gap-1.5 text-[12px] text-[#B45309]">
+                            <AlertCircle className="h-3.5 w-3.5 mt-0.5 shrink-0" />
+                            Quantities are locked because deliveries/bills exist. Use the pencil on a row to request an adjustment — an approved correction re-syncs linked bills automatically.
+                        </p>
+                    )}
                 </CardHeader>
                 <CardContent className="pt-0">
                     <div className="overflow-x-auto">
@@ -906,10 +915,10 @@ export default function GatePassDetailPage() {
                                                 {item.mismatch_reason?.replace(/_/g, ' ') || '—'}
                                             </td>
                                             <td className="py-3 text-right">
-                                                {!['DELIVERED', 'CANCELLED'].includes(gp.status) && (
+                                                {gp.status !== 'CANCELLED' && (
                                                     <button
-                                                        onClick={() => handleAdjust(item.item_name)}
-                                                        className="opacity-0 group-hover:opacity-100 text-[#6B7280] hover:text-[#2563EB] transition"
+                                                        onClick={() => handleAdjust(item.item_name, item.specification || '')}
+                                                        className="text-[#6B7280] hover:text-[#2563EB] transition"
                                                         title="Adjust quantity"
                                                     >
                                                         <Pencil className="h-3.5 w-3.5" />
@@ -920,7 +929,7 @@ export default function GatePassDetailPage() {
 
                                         {/* Inline adjustment row */}
                                         <AnimatePresence>
-                                            {adjustingItem === item.item_name && (
+                                            {adjustingItem === item.item_name && adjustingSpec === (item.specification || '') && (
                                                 <tr key={`${item.item_name}-adj`}>
                                                     <td colSpan={10} className="pb-3">
                                                         <motion.div
@@ -948,6 +957,9 @@ export default function GatePassDetailPage() {
                                                                     placeholder="Reason for adjustment…"
                                                                     className="h-9 w-full rounded-lg border border-[#BFDBFE] bg-white px-3 text-[13px] outline-none focus:border-[#2563EB]"
                                                                 />
+                                                                <p className="mt-1 text-[11px] text-[#6B7280]">
+                                                                    Needs approval by another user — linked bills update automatically after approval.
+                                                                </p>
                                                             </div>
                                                             <div className="flex gap-2">
                                                                 <Button

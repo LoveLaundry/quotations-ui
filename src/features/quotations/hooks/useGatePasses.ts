@@ -119,19 +119,21 @@ export function useAdjustGatePass() {
         mutationFn: ({
             id,
             item_name,
+            specification,
             corrected_qty,
             reason,
         }: {
             id: string
             item_name: string
+            specification?: string | null
             corrected_qty: number
             reason: string
-        }) => gatepasses.adjust(id, item_name, corrected_qty, reason),
+        }) => gatepasses.adjust(id, item_name, corrected_qty, reason, specification),
         onSuccess: () => {
             invalidateDeliveryData(qc)
-            toast.success('Item quantity adjusted')
+            toast.success('Adjustment requested — waiting for another user\'s approval')
         },
-        onError: () => toast.error('Failed to adjust quantity'),
+        onError: () => toast.error('Failed to request adjustment'),
     })
 }
 

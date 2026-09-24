@@ -33,8 +33,8 @@ export const gatepasses = {
     reopenLegacyBatch: () =>
         billsApi.post<{ reopened: Array<Record<string, unknown>>; skipped: Array<Record<string, unknown>> }>('/gatepasses/reopen-legacy').then((r: any) => r.data),
 
-    adjust: (id: string, item_name: string, corrected_qty: number, reason: string) =>
-        billsApi.post<GatePass>(`/gatepasses/${id}/adjust`, { item_name, corrected_qty, reason }).then((r: any) => r.data),
+    adjust: (id: string, item_name: string, corrected_qty: number, reason: string, specification?: string | null) =>
+        billsApi.post<GatePass>(`/gatepasses/${id}/adjust`, { item_name, specification, corrected_qty, reason }).then((r: any) => r.data),
 
     updateDate: (id: string, receiving_date: string, reason?: string) =>
         billsApi.patch<GatePass>(`/gatepasses/${id}/date`, { receiving_date: toISODatetime(receiving_date), reason }).then((r: any) => r.data),
