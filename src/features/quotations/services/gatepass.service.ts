@@ -52,6 +52,7 @@ export const gatepasses = {
                 received_qty: number
                 mismatch_reason?: string | null
                 mismatch_notes?: string | null
+                rewashed?: boolean
             }>
         },
     ) =>

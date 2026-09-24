@@ -175,6 +175,7 @@ export const GatePassPrintSheet = React.forwardRef<HTMLDivElement, { gp: GatePas
         const items = gp.items ?? []
         const totalPieces = items.reduce((sum, item) => sum + (item.received_qty || 0), 0)
         const mismatchedItems = items.filter(item => item.difference !== 0)
+        const rewashedItems = items.filter(item => item.rewashed)
         const status = GATE_PASS_STATUSES[gp.status]?.label ?? gp.status
 
         return (
@@ -254,7 +255,7 @@ export const GatePassPrintSheet = React.forwardRef<HTMLDivElement, { gp: GatePas
                             {items.map((item, index) => (
                                 <tr key={`${item.item_name}-${index}`}>
                                     <td className="gps-col-no">{index + 1}</td>
-                                    <td>{item.item_name}</td>
+                                    <td>{item.item_name}{item.rewashed ? ' (REWASHED — not billed)' : ''}</td>
                                     <td className="gps-col-spec">{item.specification || ''}</td>
                                     <td className="gps-col-qty">{item.client_qty ?? ''}</td>
                                     <td className="gps-col-qty">{item.received_qty ?? ''}</td>
@@ -278,6 +279,13 @@ export const GatePassPrintSheet = React.forwardRef<HTMLDivElement, { gp: GatePas
                         <div className="gps-mismatch">
                             Note: Quantity differences detected on {mismatchedItems.length} item
                             {mismatchedItems.length !== 1 ? 's' : ''}. Verified before processing.
+                        </div>
+                    )}
+
+                    {rewashedItems.length > 0 && (
+                        <div className="gps-mismatch" style={{ color: '#000' }}>
+                            Note: {rewashedItems.length} item{rewashedItems.length !== 1 ? 's' : ''} tagged as free
+                            re-wash — not billable.
                         </div>
                     )}
 

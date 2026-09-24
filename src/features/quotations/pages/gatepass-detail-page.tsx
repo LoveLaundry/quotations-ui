@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query'
 import {
     ArrowLeft, ClipboardList, Calendar, User, AlertCircle, AlertTriangle,
     ChevronDown, Truck, CheckCircle2, Pencil, X, Check, Receipt,
-    Plus, Save, Trash2, History, RefreshCw, Undo2, Settings2, Flag
+    Plus, Save, Trash2, History, RefreshCw, Undo2, Settings2, Flag, RotateCcw
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from '../../../components/ui/button'
@@ -365,7 +365,7 @@ export default function GatePassDetailPage() {
         setEditing(true)
     }
 
-    const updateEditItem = (idx: number, field: 'item_name' | 'category' | 'specification' | 'client_qty' | 'received_qty', value: string | number) => {
+    const updateEditItem = (idx: number, field: 'item_name' | 'category' | 'specification' | 'client_qty' | 'received_qty' | 'rewashed', value: string | number | boolean) => {
         setEditItems(prev => {
             const next = prev.map((it, i) => (i === idx ? { ...it, [field]: value } : it))
             return next
@@ -393,6 +393,7 @@ export default function GatePassDetailPage() {
                 specification: null,
                 mismatch_reason: null,
                 mismatch_notes: null,
+                rewashed: false,
             },
         ])
     }
@@ -413,6 +414,7 @@ export default function GatePassDetailPage() {
                 received_qty: Number(it.received_qty) || 0,
                 mismatch_reason: it.mismatch_reason || null,
                 mismatch_notes: it.mismatch_notes || null,
+                rewashed: Boolean(it.rewashed),
             }))
         if (items.length === 0) return
         updateGatePass.mutate(
@@ -769,7 +771,7 @@ export default function GatePassDetailPage() {
 
                         <div className="space-y-2">
                             {editItems.map((item: any, idx: number) => (
-                                <div key={idx} className="grid grid-cols-1 gap-2 rounded-lg border border-[#E4E7EC] bg-white p-3 sm:grid-cols-[1fr_1fr_1fr_74px_74px_36px] items-center">
+                                <div key={idx} className="grid grid-cols-1 gap-2 rounded-lg border border-[#E4E7EC] bg-white p-3 sm:grid-cols-[1fr_1fr_1fr_74px_74px_84px_36px] items-center">
                                     <div>
                                         <label className="block text-[10px] text-[#98A2B3] mb-0.5">Item Name</label>
                                         <SearchableSelect
@@ -828,6 +830,19 @@ export default function GatePassDetailPage() {
                                             className="h-9 w-full rounded-lg border border-[#D0D5DD] bg-white px-3 text-[13px] outline-none focus:border-[#2563EB]"
                                         />
                                     </div>
+                                    <label className={`flex items-center justify-center gap-1 rounded-md border px-1.5 py-1.5 text-[10px] font-semibold cursor-pointer select-none transition ${
+                                        item.rewashed
+                                            ? 'bg-[#FFF0F5] text-[#DB2777] border-[#FBCFE8]'
+                                            : 'border-[#E4E7EC] bg-white text-[#98A2B3]'
+                                    }`} title="Free re-wash — not billed">
+                                        <input
+                                            type="checkbox"
+                                            checked={!!item.rewashed}
+                                            onChange={e => updateEditItem(idx, 'rewashed', e.target.checked)}
+                                            className="h-3 w-3 rounded border-[#D0D5DD] accent-[#DB2777]"
+                                        />
+                                        Rewash
+                                    </label>
                                     <div className="flex justify-end">
                                         <Button
                                             type="button"
@@ -876,7 +891,14 @@ export default function GatePassDetailPage() {
                                 {gp.items.map((item: any) => (
                                     <Fragment key={`${item.item_name}||${item.specification || ''}`}>
                                         <tr key={`${item.item_name}||${item.specification || ''}`} className="group">
-                                            <td className="py-3 pr-3 font-medium text-[#101828]">{item.item_name}</td>
+                                            <td className="py-3 pr-3 font-medium text-[#101828]">
+                                                {item.item_name}
+                                                {item.rewashed && (
+                                                    <span className="ml-1.5 inline-flex items-center gap-1 rounded-full bg-[#FFF0F5] border border-[#FBCFE8] px-1.5 py-0.5 text-[10px] font-semibold text-[#DB2777]" title="Free re-wash — never billed">
+                                                        <RotateCcw className="h-2.5 w-2.5" /> Rewashed
+                                                    </span>
+                                                )}
+                                            </td>
                                             <td className="py-3 pr-3">
                                                 {item.specification ? (
                                                     <span className="inline-flex items-center rounded bg-[#FFF7ED] border border-[#FED7AA] px-1.5 py-0.5 text-[11px] font-semibold text-[#EA580C]">

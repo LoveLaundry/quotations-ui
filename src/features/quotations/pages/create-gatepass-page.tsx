@@ -26,6 +26,7 @@ const EMPTY_ITEM: GatePassItem = {
     difference: 0,
     mismatch_reason: '',
     mismatch_notes: '',
+    rewashed: false,
 }
 
 const MISMATCH_REASONS = [
@@ -253,7 +254,7 @@ export default function CreateGatePassPage() {
         })
     }
 
-    const updateItem = (index: number, field: keyof GatePassItem, value: string | number) => {
+    const updateItem = (index: number, field: keyof GatePassItem, value: string | number | boolean) => {
         setForm(prev => {
             const updated = [...prev.items]
             const item = { ...updated[index], [field]: value } as GatePassItem
@@ -707,6 +708,20 @@ export default function CreateGatePassPage() {
                                             {item.difference === 0 ? '✓ Matched' : item.difference > 0 ? `+${item.difference} extra` : `${item.difference} short`}
                                         </div>
 
+                                        <label className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-semibold cursor-pointer select-none transition ${
+                                            item.rewashed
+                                                ? 'bg-[#FFF0F5] text-[#C2410C] border-[#FBCFE8]'
+                                                : 'border-[#E4E7EC] bg-white text-[#98A2B3] hover:border-[#FBCFE8]'
+                                        }`}>
+                                            <input
+                                                type="checkbox"
+                                                checked={!!item.rewashed}
+                                                onChange={e => updateItem(idx, 'rewashed', e.target.checked)}
+                                                className="h-3.5 w-3.5 rounded border-[#D0D5DD] accent-[#DB2777]"
+                                            />
+                                            Rewashed · not billed
+                                        </label>
+
                                         {item.difference !== 0 && (
                                             <div className="flex flex-1 gap-3 flex-wrap min-w-0">
                                                 <div className="w-48">
@@ -773,6 +788,12 @@ export default function CreateGatePassPage() {
                                     <span className="inline-flex items-center gap-1 text-[#D97706]">
                                         <AlertCircle className="h-3.5 w-3.5" />
                                         {form.items.filter(i => i.difference !== 0).length} mismatch{form.items.filter(i => i.difference !== 0).length > 1 ? 'es' : ''}
+                                    </span>
+                                )}
+                                {form.items.some(i => i.rewashed) && (
+                                    <span className="inline-flex items-center gap-1 text-[#DB2777]">
+                                        <RotateCcw className="h-3.5 w-3.5" />
+                                        {form.items.filter(i => i.rewashed).reduce((s, i) => s + i.received_qty, 0)} pcs rewashed · not billed
                                     </span>
                                 )}
                                 {selectedQuotation && (

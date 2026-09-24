@@ -18,6 +18,7 @@ export interface GatePassItem {
     difference: number
     mismatch_reason?: string
     mismatch_notes?: string
+    rewashed?: boolean
 }
 
 export interface GatePassMarkDelivered {
