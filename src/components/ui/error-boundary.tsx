@@ -36,24 +36,24 @@ export class ErrorBoundary extends Component<Props, State> {
         if (!this.state.hasError) return this.props.children
 
         return (
-            <div className="min-h-screen bg-[#F9FAFB] flex items-center justify-center p-4">
-                <div className="max-w-md w-full rounded-2xl border border-[#E4E7EC] bg-white shadow-lg p-8 text-center">
-                    <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-[#FEF2F2] border border-[#FECACA]">
-                        <AlertTriangle className="h-7 w-7 text-[#DC2626]" />
+            <div className="min-h-screen bg-[var(--surface-2)] flex items-center justify-center p-4">
+                <div className="max-w-md w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] shadow-[var(--shadow-overlay)] p-8 text-center">
+                    <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-[var(--red-50)] border border-[var(--red-100)]">
+                        <AlertTriangle className="h-7 w-7 text-[var(--red-600)]" />
                     </div>
-                    <h1 className="text-[18px] font-bold text-[#101828] mb-2">
+                    <h1 className="text-[18px] font-bold text-[var(--text-primary)] mb-2">
                         Something went wrong
                     </h1>
-                    <p className="text-[13px] text-[#6B7280] mb-6 leading-relaxed">
+                    <p className="text-[13px] text-[var(--text-muted)] mb-6 leading-relaxed">
                         An unexpected error occurred. Try reloading the page. If the problem persists, contact your system administrator.
                     </p>
 
                     {this.state.error && (
-                        <details className="mb-6 text-left rounded-lg border border-[#E4E7EC] bg-[#F9FAFB] p-3">
-                            <summary className="text-[12px] font-semibold text-[#374151] cursor-pointer select-none">
+                        <details className="mb-6 text-left rounded-lg border border-[var(--border)] bg-[var(--surface-2)] p-3">
+                            <summary className="text-[12px] font-semibold text-[var(--text-secondary)] cursor-pointer select-none">
                                 Error details
                             </summary>
-                            <pre className="mt-2 text-[11px] text-[#DC2626] whitespace-pre-wrap break-all leading-relaxed">
+                            <pre className="mt-2 text-[11px] text-[var(--red-600)] whitespace-pre-wrap break-all leading-relaxed">
                                 {this.state.error.message}
                             </pre>
                         </details>
@@ -62,14 +62,14 @@ export class ErrorBoundary extends Component<Props, State> {
                     <div className="flex gap-3 justify-center">
                         <button
                             onClick={this.handleHome}
-                            className="flex items-center gap-2 rounded-xl border border-[#E4E7EC] bg-white px-4 py-2.5 text-[13px] font-semibold text-[#374151] hover:bg-[#F9FAFB] hover:border-[#D1D5DB] transition cursor-pointer"
+                            className="flex items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 py-2.5 text-[13px] font-semibold text-[var(--text-secondary)] hover:bg-[var(--surface-2)] hover:border-[var(--border-2)] transition cursor-pointer"
                         >
                             <Home className="h-4 w-4" />
                             Dashboard
                         </button>
                         <button
                             onClick={this.handleReload}
-                            className="flex items-center gap-2 rounded-xl bg-[#101828] px-4 py-2.5 text-[13px] font-semibold text-white hover:bg-[#1D2939] transition cursor-pointer"
+                            className="flex items-center gap-2 rounded-xl bg-[var(--surface)] px-4 py-2.5 text-[13px] font-semibold text-white hover:bg-[var(--surface-2)] transition cursor-pointer"
                         >
                             <RefreshCw className="h-4 w-4" />
                             Reload Page

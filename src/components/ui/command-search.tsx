@@ -91,28 +91,28 @@ export function CommandSearch({ open, onClose }: CommandSearchProps) {
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-start justify-center pt-24 px-4 bg-[#101828]/60 backdrop-blur-[4px]">
+      <div className="fixed inset-0 z-50 flex items-start justify-center pt-24 px-4 bg-black/40">
         <motion.div
           initial={{ opacity: 0, scale: 0.96, y: -8 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.96, y: -8 }}
           transition={{ duration: 0.15 }}
-          className="w-full max-w-2xl overflow-hidden rounded-2xl border border-[#E4E7EC] bg-white shadow-[0_24px_64px_-8px_rgba(16,24,40,0.20)]"
+          className="w-full max-w-2xl overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--surface)] shadow-[var(--shadow-overlay)]"
         >
-          <div className="flex items-center gap-3 border-b border-[#E4E7EC] px-5 py-4">
-            <Search className="h-5 w-5 text-[#DC2626] shrink-0" />
+          <div className="flex items-center gap-3 border-b border-[var(--border)] px-5 py-4">
+            <Search className="h-5 w-5 text-[var(--red-600)] shrink-0" />
             <input
               type="text"
               autoFocus
               value={query}
               onChange={e => setQuery(e.target.value)}
               placeholder="Search hotel, quotation, item, or page…"
-              className="w-full text-[15px] font-medium text-[#101828] outline-none placeholder:text-[#9CA3AF] bg-transparent"
+              className="w-full text-[15px] font-medium text-[var(--text-primary)] outline-none placeholder:text-[var(--text-faint)] bg-transparent"
             />
             <button
               type="button"
               onClick={onClose}
-              className="rounded-lg p-1.5 text-[#9CA3AF] hover:bg-[#F3F4F6] hover:text-[#374151] cursor-pointer transition"
+              className="rounded-lg p-1.5 text-[var(--text-faint)] hover:bg-[var(--surface-2)] hover:text-[var(--text-secondary)] cursor-pointer transition"
             >
               <X className="h-4 w-4" />
             </button>
@@ -121,7 +121,7 @@ export function CommandSearch({ open, onClose }: CommandSearchProps) {
           <div className="max-h-[400px] overflow-y-auto p-3 space-y-1">
             {!q && (
               <>
-                <p className="px-3 py-1.5 text-[11px] font-semibold uppercase tracking-widest text-[#98A2B3]">
+                <p className="px-3 py-1.5 text-[11px] font-semibold uppercase tracking-widest text-[var(--text-faint)]">
                   Quick actions
                 </p>
                 <div className="grid grid-cols-2 gap-2 px-3 pb-2">
@@ -130,12 +130,12 @@ export function CommandSearch({ open, onClose }: CommandSearchProps) {
                       key={a.path}
                       type="button"
                       onClick={() => { navigate(a.path); onClose() }}
-                      className="flex items-center gap-2.5 rounded-xl border border-[#FECACA] bg-[#FFF8F8] px-3 py-2.5 hover:bg-[#FFF1F1] hover:border-[#FCA5A5] transition text-left cursor-pointer group"
+                      className="flex items-center gap-2.5 rounded-xl border border-[var(--red-100)] bg-[var(--red-50)] px-3 py-2.5 hover:bg-[var(--red-50)] hover:border-[var(--red-600)] transition text-left cursor-pointer group"
                     >
-                      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-[#FFF1F1] text-[#DC2626] border border-[#FECACA] transition group-hover:border-[#FCA5A5]">
+                      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-[var(--red-50)] text-[var(--red-600)] border border-[var(--red-100)] transition group-hover:border-[var(--red-600)]">
                         <a.icon size={15} />
                       </span>
-                      <span className="text-[13px] font-semibold text-[#101828]">{a.label}</span>
+                      <span className="text-[13px] font-semibold text-[var(--text-primary)]">{a.label}</span>
                     </button>
                   ))}
                 </div>
@@ -144,7 +144,7 @@ export function CommandSearch({ open, onClose }: CommandSearchProps) {
 
             {q && matchedPages.length > 0 && (
               <>
-                <p className="px-3 py-1.5 text-[11px] font-semibold uppercase tracking-widest text-[#98A2B3]">
+                <p className="px-3 py-1.5 text-[11px] font-semibold uppercase tracking-widest text-[var(--text-faint)]">
                   Pages ({matchedPages.length})
                 </p>
                 {matchedPages.map(page => (
@@ -152,21 +152,21 @@ export function CommandSearch({ open, onClose }: CommandSearchProps) {
                     key={page.path}
                     type="button"
                     onClick={() => { navigate(page.path); onClose() }}
-                    className="w-full flex items-center justify-between rounded-xl px-4 py-2.5 hover:bg-[#F3F4F6] border border-transparent hover:border-[#E4E7EC] transition text-left cursor-pointer group"
+                    className="w-full flex items-center justify-between rounded-xl px-4 py-2.5 hover:bg-[var(--surface-2)] border border-transparent hover:border-[var(--border)] transition text-left cursor-pointer group"
                   >
                     <div className="flex items-center gap-3">
-                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#F3F4F6] text-[#374151] group-hover:bg-[#FFF1F1] group-hover:text-[#DC2626] border border-[#E4E7EC] group-hover:border-[#FECACA] transition text-[12px] font-bold">
+                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--surface-2)] text-[var(--text-secondary)] group-hover:bg-[var(--red-50)] group-hover:text-[var(--red-600)] border border-[var(--border)] group-hover:border-[var(--red-100)] transition text-[12px] font-bold">
                         {page.label.charAt(0).toUpperCase()}
                       </div>
-                      <p className="text-[13px] font-semibold text-[#101828]">{page.label}</p>
+                      <p className="text-[13px] font-semibold text-[var(--text-primary)]">{page.label}</p>
                     </div>
-                    <ArrowRight className="h-4 w-4 text-[#D1D5DB] group-hover:text-[#DC2626] transition-colors" />
+                    <ArrowRight className="h-4 w-4 text-[var(--text-faint)] group-hover:text-[var(--red-600)] transition-colors" />
                   </button>
                 ))}
               </>
             )}
 
-            <p className="px-3 py-1.5 text-[11px] font-semibold uppercase tracking-widest text-[#98A2B3]">
+            <p className="px-3 py-1.5 text-[11px] font-semibold uppercase tracking-widest text-[var(--text-faint)]">
               {q ? `Quotations (${filtered.length})` : 'Recent Quotations'}
             </p>
 
@@ -175,39 +175,39 @@ export function CommandSearch({ open, onClose }: CommandSearchProps) {
                 key={quo.id}
                 type="button"
                 onClick={() => { navigate(`/quotations/${quo.id}`); onClose() }}
-                className="w-full flex items-center justify-between rounded-xl px-4 py-3 hover:bg-[#FFF8F8] border border-transparent hover:border-[#FECACA] transition text-left cursor-pointer group"
+                className="w-full flex items-center justify-between rounded-xl px-4 py-3 hover:bg-[var(--red-50)] border border-transparent hover:border-[var(--red-100)] transition text-left cursor-pointer group"
               >
                 <div className="flex items-center gap-3">
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#F3F4F6] text-[#6B7280] group-hover:bg-[#FFF1F1] group-hover:text-[#DC2626] border border-[#E4E7EC] group-hover:border-[#FECACA] transition text-[13px] font-bold">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[var(--surface-2)] text-[var(--text-muted)] group-hover:bg-[var(--red-50)] group-hover:text-[var(--red-600)] border border-[var(--border)] group-hover:border-[var(--red-100)] transition text-[13px] font-bold">
                     {quo.client_name.charAt(0).toUpperCase()}
                   </div>
                   <div>
-                    <p className="text-[14px] font-semibold text-[#101828]">{quo.client_name}</p>
-                    <p className="text-[12px] text-[#98A2B3]">
+                    <p className="text-[14px] font-semibold text-[var(--text-primary)]">{quo.client_name}</p>
+                    <p className="text-[12px] text-[var(--text-faint)]">
                       {quo.quotation_title || 'Price List'} · {quo.line_items?.length ?? 0} items
                     </p>
                   </div>
                 </div>
-                <ArrowRight className="h-4 w-4 text-[#D1D5DB] group-hover:text-[#DC2626] transition-colors" />
+                <ArrowRight className="h-4 w-4 text-[var(--text-faint)] group-hover:text-[var(--red-600)] transition-colors" />
               </button>
             )) : q && matchedPages.length === 0 ? (
-              <div className="py-8 text-center text-[#98A2B3]">
+              <div className="py-8 text-center text-[var(--text-faint)]">
                 <p className="text-[14px] font-medium">No results for "{query}"</p>
                 <p className="text-[12px] mt-1">Try searching by hotel name, item, or page</p>
               </div>
             ) : !q && quotations.length === 0 ? (
-              <div className="py-8 text-center text-[#98A2B3]">
+              <div className="py-8 text-center text-[var(--text-faint)]">
                 <p className="text-[14px] font-medium">No quotations yet</p>
                 <p className="text-[12px] mt-1">Create a quotation to see it here</p>
               </div>
             ) : null}
           </div>
 
-          <div className="flex items-center justify-between border-t border-[#F2F4F7] bg-[#FAFAFA] px-5 py-3">
-            <span className="flex items-center gap-1.5 text-[12px] text-[#98A2B3]">
-              <Sparkles className="h-3.5 w-3.5 text-[#DC2626]" /> Click to open a quotation or jump to a page
+          <div className="flex items-center justify-between border-t border-[var(--border)] bg-[var(--surface-2)] px-5 py-3">
+            <span className="flex items-center gap-1.5 text-[12px] text-[var(--text-faint)]">
+              <Sparkles className="h-3.5 w-3.5 text-[var(--red-600)]" /> Click to open a quotation or jump to a page
             </span>
-            <kbd className="rounded-md bg-white border border-[#E4E7EC] px-2 py-0.5 text-[11px] font-semibold text-[#6B7280] shadow-sm">
+            <kbd className="rounded-md bg-[var(--surface)] border border-[var(--border)] px-2 py-0.5 text-[11px] font-semibold text-[var(--text-muted)]">
               ESC
             </kbd>
           </div>

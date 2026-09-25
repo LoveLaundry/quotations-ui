@@ -31,17 +31,17 @@ export default function LoginPage() {
     }
 
     const inputClass =
-        'h-11 w-full rounded-xl border border-[#E4E7EC] bg-white px-4 text-[14px] text-[#101828] placeholder:text-[#98A2B3] outline-none focus:border-[#101828] focus:ring-1 focus:ring-[#101828] transition-all duration-150'
+        'h-11 w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 text-[14px] text-[var(--text-primary)] placeholder:text-[var(--text-faint)] outline-none focus:border-[var(--border-2)] focus:ring-1 focus:ring-[var(--ring)] transition-colors duration-150'
 
     return (
-        <div className="min-h-screen bg-[#F9FAFB] flex flex-col items-center justify-center p-4">
+        <div className="min-h-screen bg-[var(--surface-2)] flex flex-col items-center justify-center p-4">
             <motion.div
                 initial={{ opacity: 0, scale: 0.98 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
                 className="w-full max-w-[400px]"
             >
-                <div className="rounded-2xl border border-[#E4E7EC] bg-white shadow-sm p-8">
+                <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-8">
                     {/* Logo & Brand */}
                     <div className="flex flex-col items-center mb-8">
                         <img
@@ -49,10 +49,10 @@ export default function LoginPage() {
                             alt="LoveLaundry Logo"
                             className="h-16 w-16 object-contain mb-4"
                         />
-                        <h1 className="text-[22px] font-bold text-[#101828] tracking-tight">
+                        <h1 className="text-[22px] font-bold text-[var(--text-primary)] tracking-tight">
                             Welcome back
                         </h1>
-                        <p className="text-[14px] text-[#6B7280] mt-1">
+                        <p className="text-[14px] text-[var(--text-muted)] mt-1">
                             Sign in to your account
                         </p>
                     </div>
@@ -60,7 +60,7 @@ export default function LoginPage() {
                     {/* Form */}
                     <form onSubmit={handleSubmit} className="space-y-4">
                         <div>
-                            <label className="block text-[13px] font-medium text-[#374151] mb-1.5">
+                            <label className="block text-[13px] font-medium text-[var(--text-secondary)] mb-1.5">
                                 Username or Email
                             </label>
                             <input
@@ -78,7 +78,7 @@ export default function LoginPage() {
 
                         <div>
                             <div className="flex items-center justify-between mb-1.5">
-                                <label className="block text-[13px] font-medium text-[#374151]">
+                                <label className="block text-[13px] font-medium text-[var(--text-secondary)]">
                                     Password
                                 </label>
                             </div>
@@ -96,7 +96,7 @@ export default function LoginPage() {
                                 <button
                                     type="button"
                                     onClick={() => setShowPw(v => !v)}
-                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#98A2B3] hover:text-[#374151] transition-colors cursor-pointer"
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--text-faint)] hover:text-[var(--text-secondary)] transition-colors cursor-pointer"
                                     tabIndex={-1}
                                     aria-label={showPw ? 'Hide password' : 'Show password'}
                                 >
@@ -110,7 +110,7 @@ export default function LoginPage() {
                             <motion.div
                                 initial={{ opacity: 0, y: -4 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                className="rounded-lg bg-[#FEF2F2] px-4 py-3 text-[13px] text-[#DC2626] font-medium"
+                                className="rounded-lg bg-[var(--red-50)] px-4 py-3 text-[13px] text-[var(--red-600)] font-medium"
                             >
                                 {error}
                             </motion.div>
@@ -121,7 +121,7 @@ export default function LoginPage() {
                             id="login-submit"
                             type="submit"
                             disabled={loading || !username || !password}
-                            className="mt-6 flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-[#101828] text-[14px] font-medium text-white hover:bg-[#1D2939] transition-colors duration-150 disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
+                            className="mt-6 flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-[var(--surface)] text-[14px] font-medium text-white hover:bg-[var(--surface-2)] transition-colors duration-150 disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
                         >
                             {loading ? (
                                 <>
@@ -135,11 +135,11 @@ export default function LoginPage() {
                     </form>
 
                     {/* Guest Pass */}
-                    <div className="mt-6 border-t border-[#E4E7EC] pt-6">
+                    <div className="mt-6 border-t border-[var(--border)] pt-6">
                         <button
                             type="button"
                             onClick={() => navigate('/guest/shop')}
-                            className="flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-[#E4E7EC] bg-white text-[14px] font-semibold text-[#101828] shadow-sm hover:bg-[#F9FAFB] hover:border-[#D0D5DD] transition-all duration-150 cursor-pointer"
+                            className="flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--surface)] text-[14px] font-semibold text-[var(--text-primary)] hover:bg-[var(--surface-2)] hover:border-[var(--border-2)] transition-colors duration-150 cursor-pointer"
                         >
                             Guest Pass
                         </button>

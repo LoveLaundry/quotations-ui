@@ -181,7 +181,7 @@ export default function SalarySlipPage() {
         }
       />
 
-      <div className="bg-white dark:bg-gray-800 rounded-xl border p-6 space-y-4">
+      <div className="bg-[var(--surface)] dark:bg-gray-800 rounded-xl border p-6 space-y-4">
         <h2 className="text-lg font-semibold flex items-center gap-2">
           <Calculator size={20} /> Salary Calculation
         </h2>
@@ -296,7 +296,7 @@ export default function SalarySlipPage() {
 
       {calculation && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="bg-white dark:bg-gray-800 rounded-xl border p-6 space-y-4">
+          <div className="bg-[var(--surface)] dark:bg-gray-800 rounded-xl border p-6 space-y-4">
             {attendanceRequired ? (
             <>
               <h3 className="font-semibold text-lg">Attendance & Base Salary</h3>
@@ -347,7 +347,7 @@ export default function SalarySlipPage() {
             )}
           </div>
 
-          <div className="bg-white dark:bg-gray-800 rounded-xl border p-6 space-y-4">
+          <div className="bg-[var(--surface)] dark:bg-gray-800 rounded-xl border p-6 space-y-4">
             <h3 className="font-semibold text-lg">Earnings & Deductions</h3>
 
             <div className="space-y-3">
@@ -447,7 +447,7 @@ export default function SalarySlipPage() {
       )}
 
       {showSlip && generatedSlip && (
-        <div className="bg-white dark:bg-gray-800 rounded-xl border p-6 space-y-4">
+        <div className="bg-[var(--surface)] dark:bg-gray-800 rounded-xl border p-6 space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold flex items-center gap-2">
               <CheckCircle size={20} className="text-green-600" /> Slip Generated: {generatedSlip.slip_number}

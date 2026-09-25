@@ -56,14 +56,14 @@ export default function ManagementDashboard() {
         <StatCard label="Outstanding Advances" value={fmt(d.outstanding_advances)} icon={<HeartHandshake size={20} />} color="amber" to="/management/advances" />
       </div>
 
-      <div className="bg-white dark:bg-gray-800 rounded-xl border p-5">
+      <div className="bg-[var(--surface)] dark:bg-gray-800 rounded-xl border p-5">
         <h3 className="font-semibold mb-4">Quick Actions</h3>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {QUICK_ACTIONS.map(a => (
             <Link
               key={a.to}
               to={a.to}
-              className="group flex items-center gap-3 rounded-lg border p-3 hover:shadow-sm transition hover:border-red-300"
+              className="group flex items-center gap-3 rounded-lg border p-3 transition hover:border-red-300"
             >
               <span className={`p-2 rounded-lg ${a.color} text-white`}>
                 <a.icon size={18} />
@@ -76,7 +76,7 @@ export default function ManagementDashboard() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white dark:bg-gray-800 rounded-xl border p-5">
+        <div className="bg-[var(--surface)] dark:bg-gray-800 rounded-xl border p-5">
           <h3 className="font-semibold mb-4">Revenue & Expenses (6 Months)</h3>
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={d.monthly_revenue || []}>
@@ -91,7 +91,7 @@ export default function ManagementDashboard() {
           </ResponsiveContainer>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-xl border p-5">
+        <div className="bg-[var(--surface)] dark:bg-gray-800 rounded-xl border p-5">
           <h3 className="font-semibold mb-4">Profit Trend</h3>
           <ResponsiveContainer width="100%" height={300}>
             <LineChart data={d.monthly_profit || []}>
@@ -106,7 +106,7 @@ export default function ManagementDashboard() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="bg-white dark:bg-gray-800 rounded-xl border p-5">
+        <div className="bg-[var(--surface)] dark:bg-gray-800 rounded-xl border p-5">
           <h3 className="font-semibold mb-4">Top Customers</h3>
           <div className="space-y-3">
             {(d.top_customers || []).map((c: any, i: number) => (
@@ -119,7 +119,7 @@ export default function ManagementDashboard() {
           </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-xl border p-5">
+        <div className="bg-[var(--surface)] dark:bg-gray-800 rounded-xl border p-5">
           <h3 className="font-semibold mb-4">Top Items</h3>
           <div className="space-y-3">
             {(d.top_items || []).map((c: any, i: number) => (
@@ -132,7 +132,7 @@ export default function ManagementDashboard() {
           </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-xl border p-5">
+        <div className="bg-[var(--surface)] dark:bg-gray-800 rounded-xl border p-5">
           <h3 className="font-semibold mb-4">Expense Breakdown</h3>
           <div className="space-y-3">
             {(d.expense_breakdown || []).map((e: any, i: number) => (

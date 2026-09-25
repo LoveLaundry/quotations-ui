@@ -24,7 +24,7 @@ export function Logo({ size = 'md', showText = true, className }: LogoProps) {
       />
       {showText ? (
         <div className="min-w-0 leading-none">
-          <p className="font-bold text-slate-900 tracking-tight" style={{ fontFamily: 'Spectral, Georgia, serif', fontSize: size === 'sm' ? 16 : size === 'md' ? 19 : 23 }}>
+          <p className="font-semibold text-slate-900 tracking-tight" style={{ fontSize: size === 'sm' ? 15 : size === 'md' ? 18 : 21 }}>
             Love Laundry
           </p>
           <p className="text-slate-500 font-medium truncate" style={{ fontSize: size === 'sm' ? 11 : 12 }}>

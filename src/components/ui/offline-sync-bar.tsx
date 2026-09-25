@@ -85,7 +85,7 @@ function Bar({
       aria-live="polite"
       onClick={onClick}
       className={cn(
-        'fixed bottom-4 left-1/2 z-50 flex -translate-x-1/2 cursor-default items-center gap-2 rounded-full px-4 py-2 text-xs font-medium shadow-lg',
+        'fixed bottom-4 left-1/2 z-50 flex -translate-x-1/2 cursor-default items-center gap-2 rounded-full px-4 py-2 text-xs font-medium shadow-[var(--shadow-overlay)]',
         tones[tone],
         onClick && 'cursor-pointer',
       )}

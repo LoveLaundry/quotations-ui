@@ -7,7 +7,7 @@ export function Skeleton({ className }: { className?: string }) {
         'rounded-xl',
         'bg-gradient-to-r from-[var(--skeleton-from)] via-[var(--skeleton-via)] to-[var(--skeleton-to)]',
         'bg-[length:200%_100%]',
-        'shadow-sm',
+        '',
         'animate-shimmer',
         className,
       )}

@@ -56,7 +56,7 @@ export default function DeliveryDetailPage() {
     return (
         <div className="space-y-5 pb-10">
             <div className="flex items-start gap-3">
-                <Link to="/deliveries" className="mt-1 text-[#98A2B3] hover:text-[#374151] transition-colors">
+                <Link to="/deliveries" className="mt-1 text-[var(--text-faint)] hover:text-[var(--text-secondary)] transition-colors">
                     <ArrowLeft className="h-4 w-4" />
                 </Link>
                 <div>
@@ -68,7 +68,7 @@ export default function DeliveryDetailPage() {
                         ]}
                     />
                     <h1 className="text-dashboard-title mt-1">{delivery.client_name}</h1>
-                    <p className="text-[13px] text-[#98A2B3] mt-0.5">
+                    <p className="text-[13px] text-[var(--text-faint)] mt-0.5">
                         Gate Pass: <span className="font-mono">{delivery.gate_pass_id}</span>
                     </p>
                 </div>
@@ -80,13 +80,13 @@ export default function DeliveryDetailPage() {
                 <Card className="p-3">
                     <div className="flex items-center justify-between mb-1">
                         <div className="flex items-center gap-2">
-                            <Calendar className="h-3.5 w-3.5 text-[#98A2B3]" />
-                            <p className="text-[11px] text-[#98A2B3] font-medium uppercase tracking-wide">Delivery Date</p>
+                            <Calendar className="h-3.5 w-3.5 text-[var(--text-faint)]" />
+                            <p className="text-[11px] text-[var(--text-faint)] font-medium uppercase tracking-wide">Delivery Date</p>
                         </div>
                         {!editingDate && (
                             <button
                                 onClick={startEditDate}
-                                className="text-[#6B7280] hover:text-[#2563EB] transition"
+                                className="text-[var(--text-muted)] hover:text-[blue-600] transition"
                                 title="Correct delivery date"
                             >
                                 <Pencil className="h-3.5 w-3.5" />
@@ -99,12 +99,12 @@ export default function DeliveryDetailPage() {
                                 type="date"
                                 value={dateValue}
                                 onChange={e => setDateValue(e.target.value)}
-                                className="h-9 w-full rounded-lg border border-[#BFDBFE] bg-white px-3 text-[13px] outline-none focus:border-[#2563EB]"
+                                className="h-9 w-full rounded-lg border border-[blue-200] bg-[var(--surface)] px-3 text-[13px] outline-none focus:border-[blue-600]"
                             />
                             <select
                                 value={dateReason}
                                 onChange={e => setDateReason(e.target.value)}
-                                className="h-9 w-full cursor-pointer rounded-lg border border-[#BFDBFE] bg-white px-3 text-[12px] outline-none focus:border-[#2563EB]"
+                                className="h-9 w-full cursor-pointer rounded-lg border border-[blue-200] bg-[var(--surface)] px-3 text-[12px] outline-none focus:border-[blue-600]"
                             >
                                 <option value="">Reason required…</option>
                                 {DATE_CORRECTION_REASONS.map(r => (
@@ -116,7 +116,7 @@ export default function DeliveryDetailPage() {
                                     size="sm"
                                     onClick={submitDate}
                                     disabled={!dateValue || !dateReason || updateDeliveryDate.isPending}
-                                    className="bg-[#2563EB] hover:bg-[#1D4ED8] text-white"
+                                    className="bg-[blue-600] hover:bg-[blue-700] text-white"
                                 >
                                     <Check className="h-3.5 w-3.5" /> Save
                                 </Button>
@@ -126,7 +126,7 @@ export default function DeliveryDetailPage() {
                             </div>
                         </div>
                     ) : (
-                        <p className="text-[13px] font-semibold text-[#101828]">{formatDate(delivery.delivery_date)}</p>
+                        <p className="text-[13px] font-semibold text-[var(--text-primary)]">{formatDate(delivery.delivery_date)}</p>
                     )}
                 </Card>
 
@@ -137,68 +137,68 @@ export default function DeliveryDetailPage() {
                 ].map(({ icon: Icon, label, value }) => (
                     <Card key={label} className="p-3">
                         <div className="flex items-center gap-2 mb-1">
-                            <Icon className="h-3.5 w-3.5 text-[#98A2B3]" />
-                            <p className="text-[11px] text-[#98A2B3] font-medium uppercase tracking-wide">{label}</p>
+                            <Icon className="h-3.5 w-3.5 text-[var(--text-faint)]" />
+                            <p className="text-[11px] text-[var(--text-faint)] font-medium uppercase tracking-wide">{label}</p>
                         </div>
-                        <p className="text-[13px] font-semibold text-[#101828]">{value}</p>
+                        <p className="text-[13px] font-semibold text-[var(--text-primary)]">{value}</p>
                     </Card>
                 ))}
             </div>
 
             {delivery.notes && (
                 <Card className="p-4">
-                    <p className="text-[11px] font-semibold uppercase tracking-wide text-[#98A2B3] mb-1">Notes</p>
-                    <p className="text-[13px] text-[#374151]">{delivery.notes}</p>
+                    <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--text-faint)] mb-1">Notes</p>
+                    <p className="text-[13px] text-[var(--text-secondary)]">{delivery.notes}</p>
                 </Card>
             )}
 
             {/* Items */}
             <Card>
-                <CardHeader className="border-b border-[#F2F4F7] pb-3">
+                <CardHeader className="border-b border-[var(--border)] pb-3">
                     <div className="flex items-center gap-2">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#F0FDF4] border border-[#BBF7D0]">
-                            <Truck className="h-4 w-4 text-[#16A34A]" />
+                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[emerald-50] border border-[emerald-200]">
+                            <Truck className="h-4 w-4 text-[emerald-600]" />
                         </div>
                         <CardTitle>Delivered Items</CardTitle>
                     </div>
                 </CardHeader>
                 <CardContent className="pt-0">
-                    <div className="divide-y divide-[#F9FAFB]">
+                    <div className="divide-y divide-[var(--border)]">
                         {delivery.items.map((item: any, i: number) => (
                             <div key={i} className="flex items-center justify-between gap-3 py-3.5">
                                 <div className="flex items-center gap-3">
-                                    <div className="h-8 w-8 flex items-center justify-center rounded-lg bg-[#F0FDF4] border border-[#BBF7D0] text-[#16A34A] font-bold text-[12px]">
+                                    <div className="h-8 w-8 flex items-center justify-center rounded-lg bg-[emerald-50] border border-[emerald-200] text-[emerald-600] font-bold text-[12px]">
                                         {item.item_name.charAt(0).toUpperCase()}
                                     </div>
-                                    <p className="text-[13px] font-medium text-[#101828]">
+                                    <p className="text-[13px] font-medium text-[var(--text-primary)]">
                                         {item.item_name}
                                         {item.specification && (
-                                            <span className="ml-2 inline-flex items-center rounded bg-[#FFF7ED] border border-[#FED7AA] px-1.5 py-0.5 text-[10px] font-semibold text-[#EA580C]">
+                                            <span className="ml-2 inline-flex items-center rounded bg-[orange-50] border border-[orange-200] px-1.5 py-0.5 text-[10px] font-semibold text-[var(--red-600)]">
                                                 {item.specification}
                                             </span>
                                         )}
                                     </p>
                                 </div>
-                                <span className="text-[14px] font-semibold text-[#101828]">{item.quantity} pcs</span>
+                                <span className="text-[14px] font-semibold text-[var(--text-primary)]">{item.quantity} pcs</span>
                             </div>
                         ))}
                     </div>
-                    <div className="border-t border-[#E4E7EC] pt-3 mt-2 flex items-center justify-between">
-                        <span className="text-[13px] text-[#6B7280]">Total</span>
-                        <span className="text-[15px] font-bold text-[#101828]">{totalPieces} pieces</span>
+                    <div className="border-t border-[var(--border)] pt-3 mt-2 flex items-center justify-between">
+                        <span className="text-[13px] text-[var(--text-muted)]">Total</span>
+                        <span className="text-[15px] font-bold text-[var(--text-primary)]">{totalPieces} pieces</span>
                     </div>
                 </CardContent>
             </Card>
 
             {/* Link to Gate Pass */}
-            <Card className="p-4 border-[#BFDBFE] bg-[#EFF6FF]">
+            <Card className="p-4 border-[blue-200] bg-[blue-50]">
                 <div className="flex items-center justify-between gap-3">
                     <div>
-                        <p className="text-[12px] font-semibold text-[#2563EB] uppercase tracking-wide mb-0.5">Associated Gate Pass</p>
-                        <p className="text-[13px] font-mono text-[#374151]">{delivery.gate_pass_id}</p>
+                        <p className="text-[12px] font-semibold text-[blue-600] uppercase tracking-wide mb-0.5">Associated Gate Pass</p>
+                        <p className="text-[13px] font-mono text-[var(--text-secondary)]">{delivery.gate_pass_id}</p>
                     </div>
                     <Link to={`/gate-passes/${delivery.gate_pass_id}`}>
-                        <button className="text-[13px] font-medium text-[#2563EB] hover:text-[#1D4ED8] transition cursor-pointer">
+                        <button className="text-[13px] font-medium text-[blue-600] hover:text-[blue-700] transition cursor-pointer">
                             View →
                         </button>
                     </Link>

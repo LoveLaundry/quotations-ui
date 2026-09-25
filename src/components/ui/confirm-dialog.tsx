@@ -39,19 +39,19 @@ export function ConfirmDialog({
   if (!open) return null
 
   const confirmClass = variant === 'danger'
-    ? 'bg-[#DC2626] hover:bg-[#B91C1C] text-white'
-    : 'bg-[#D97706] hover:bg-[#B45309] text-white'
+    ? 'bg-amber-600 hover:bg-amber-700 text-white'
+    : 'bg-[amber-600] hover:bg-[amber-700] text-white'
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="absolute inset-0 bg-black/40" />
       <div
-        className="relative bg-[var(--surface)] rounded-xl border border-[var(--border)] shadow-lg p-6 max-w-sm w-full mx-4"
+        className="relative bg-[var(--surface)] rounded-xl border border-[var(--border)] shadow-[var(--shadow-overlay)] p-6 max-w-sm w-full mx-4"
         onClick={e => e.stopPropagation()}
       >
         <div className="flex items-start gap-3 mb-4">
-          <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${variant === 'danger' ? 'bg-[#FEE2E2]' : 'bg-[#FEF3C7]'}`}>
-            <AlertTriangle className={`h-5 w-5 ${variant === 'danger' ? 'text-[#DC2626]' : 'text-[#D97706]'}`} />
+          <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${variant === 'danger' ? 'bg-amber-100' : 'bg-[amber-100]'}`}>
+            <AlertTriangle className={`h-5 w-5 ${variant === 'danger' ? 'text-amber-600' : 'text-[amber-600]'}`} />
           </div>
           <div>
             <h3 className="text-[15px] font-semibold" style={{ color: 'var(--text-primary)' }}>{title}</h3>

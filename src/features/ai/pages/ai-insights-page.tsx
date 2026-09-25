@@ -16,7 +16,7 @@ function StatCard({ title, value, sub, icon: Icon, color, trend }: {
   title: string; value: string; sub?: string; icon: any; color: string; trend?: 'up' | 'down' | 'flat'
 }) {
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl border p-5 flex items-start gap-4">
+    <div className="bg-[var(--surface)] dark:bg-gray-800 rounded-xl border p-5 flex items-start gap-4">
       <div className={`p-3 rounded-lg ${color}`}>
         <Icon size={18} className="text-white" />
       </div>
@@ -47,7 +47,7 @@ function ForecastChart({ title, series, forecast, color, formatter = fmt }: {
   const trend = (forecast.growth_pct ?? 0) >= 0 ? 'up' : 'down'
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl border p-5">
+    <div className="bg-[var(--surface)] dark:bg-gray-800 rounded-xl border p-5">
       <div className="flex items-center justify-between mb-4">
         <h3 className="font-semibold">{title}</h3>
         <span className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full ${trend === 'up' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300' : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'}`}>
@@ -96,7 +96,7 @@ export default function AiInsightsPage() {
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <div className="p-2.5 rounded-xl bg-gradient-to-br from-violet-500 to-fuchsia-500 text-white">
+          <div className="p-2.5 rounded-lg bg-violet-600 text-white">
             <BrainCircuit size={22} />
           </div>
           <div>
@@ -113,7 +113,7 @@ export default function AiInsightsPage() {
           <select
             value={months}
             onChange={e => setMonths(Number(e.target.value))}
-            className="px-3 py-2 border rounded-lg text-sm bg-white dark:bg-gray-800"
+            className="px-3 py-2 border rounded-lg text-sm bg-[var(--surface)] dark:bg-gray-800"
           >
             <option value={3}>3 months</option>
             <option value={6}>6 months</option>
@@ -153,7 +153,7 @@ export default function AiInsightsPage() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <ForecastChart title="Payroll Forecast" series={d.payroll?.series || []} forecast={d.payroll?.forecast || {}} color="#7c3aed" />
             <ForecastChart title="Net Profit View" series={(d.net_profit?.history || []).map((v: number, i: number) => ({ month: d.revenue?.series?.[i]?.month ?? `M${i + 1}`, value: v }))} forecast={{}} color="#14b8a6" />
-            <div className="bg-white dark:bg-gray-800 rounded-xl border p-5">
+            <div className="bg-[var(--surface)] dark:bg-gray-800 rounded-xl border p-5">
               <h3 className="font-semibold mb-4 flex items-center gap-2"><Sparkles size={16} className="text-violet-500" /> Payroll Risk</h3>
               <div className="space-y-3">
                 {(risk.data?.employees_at_risk || []).map((e: any, i: number) => (
@@ -176,7 +176,7 @@ export default function AiInsightsPage() {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="bg-white dark:bg-gray-800 rounded-xl border p-5">
+            <div className="bg-[var(--surface)] dark:bg-gray-800 rounded-xl border p-5">
               <h3 className="font-semibold mb-4 flex items-center gap-2"><TrendingUp size={16} className="text-emerald-500" /> Top Customers</h3>
               <div className="space-y-3">
                 {(revenue.data?.top_customers || []).map((c: any, i: number) => (
@@ -189,7 +189,7 @@ export default function AiInsightsPage() {
               </div>
             </div>
 
-            <div className="bg-white dark:bg-gray-800 rounded-xl border p-5">
+            <div className="bg-[var(--surface)] dark:bg-gray-800 rounded-xl border p-5">
               <h3 className="font-semibold mb-4 flex items-center gap-2"><Receipt size={16} className="text-red-500" /> Top Expense Categories</h3>
               <div className="space-y-3">
                 {(expenses.data?.top_categories || []).map((c: any, i: number) => (
@@ -202,7 +202,7 @@ export default function AiInsightsPage() {
               </div>
             </div>
 
-            <div className="bg-white dark:bg-gray-800 rounded-xl border p-5">
+            <div className="bg-[var(--surface)] dark:bg-gray-800 rounded-xl border p-5">
               <h3 className="font-semibold mb-4 flex items-center gap-2"><Banknote size={16} className="text-violet-500" /> Top Employees by Payroll</h3>
               <div className="space-y-3">
                 {(salary.data?.top_employees || []).map((e: any, i: number) => (
@@ -216,7 +216,7 @@ export default function AiInsightsPage() {
             </div>
           </div>
 
-          <div className="bg-white dark:bg-gray-800 rounded-xl border p-5">
+          <div className="bg-[var(--surface)] dark:bg-gray-800 rounded-xl border p-5">
             <h3 className="font-semibold mb-2 flex items-center gap-2"><Sparkles size={16} className="text-amber-500" /> Quick Trend Analysis</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               {[

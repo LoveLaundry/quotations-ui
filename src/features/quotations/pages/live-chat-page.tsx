@@ -27,7 +27,7 @@ function MessageBubble({ msg }: { msg: ConversationDetail['messages'][number] })
   if (msg.sender === 'admin') {
     return (
       <div className="flex justify-end">
-        <div className="max-w-[80%] rounded-2xl rounded-br-md bg-[#DC2626] px-4 py-2.5 text-[13px] leading-relaxed text-white">
+        <div className="max-w-[80%] rounded-xl rounded-br-md bg-[var(--red-600)] px-4 py-2.5 text-[13px] leading-relaxed text-white">
           <p className="mb-0.5 text-[10px] font-semibold text-white/70">
             You ({msg.sender_name ?? 'Admin'})
           </p>
@@ -40,15 +40,15 @@ function MessageBubble({ msg }: { msg: ConversationDetail['messages'][number] })
   const isBot = msg.sender === 'bot'
   return (
     <div className="flex justify-start gap-2">
-      <div className="mt-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#FEF2F2] text-[#DC2626]">
+      <div className="mt-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[var(--red-50)] text-[var(--red-600)]">
         {isBot ? <Robot size={15} /> : <UserCircle size={15} />}
       </div>
-      <div className="max-w-[80%] rounded-2xl rounded-bl-md bg-[#F3F4F6] px-4 py-2.5 text-[13px] leading-relaxed text-[#111827]">
-        <p className="mb-0.5 text-[10px] font-semibold text-[#6B7280]">
+      <div className="max-w-[80%] rounded-xl rounded-bl-md bg-[var(--surface-2)] px-4 py-2.5 text-[13px] leading-relaxed text-[var(--text-primary)]">
+        <p className="mb-0.5 text-[10px] font-semibold text-[var(--text-muted)]">
           {isBot ? 'Bot' : msg.sender_name ?? 'Guest'}
         </p>
         <p className="whitespace-pre-line">{msg.text}</p>
-        <p className="mt-1 text-[10px] text-[#9CA3AF]">{formatTime(msg.timestamp)}</p>
+        <p className="mt-1 text-[10px] text-[var(--text-faint)]">{formatTime(msg.timestamp)}</p>
       </div>
     </div>
   )
@@ -104,12 +104,12 @@ export default function LiveChatPage() {
 
   return (
     <div className="flex h-[calc(100vh-52px)] flex-col">
-      <div className="border-b border-[#E5E7EB] px-6 py-4">
-        <h1 className="flex items-center gap-2 text-lg font-semibold text-[#111827]">
-          <ChatCircleDots size={20} weight="fill" className="text-[#DC2626]" />
+      <div className="border-b border-[var(--border)] px-6 py-4">
+        <h1 className="flex items-center gap-2 text-lg font-semibold text-[var(--text-primary)]">
+          <ChatCircleDots size={20} weight="fill" className="text-[var(--red-600)]" />
           Live Chat
         </h1>
-        <p className="text-[13px] text-[#6B7280]">
+        <p className="text-[13px] text-[var(--text-muted)]">
           Public website conversations. Take over a chat to answer as yourself — the bot stays
           silent once you join.
         </p>
@@ -117,11 +117,11 @@ export default function LiveChatPage() {
 
       <div className="flex min-h-0 flex-1">
         {/* Conversation list */}
-        <div className="w-full max-w-[320px] shrink-0 overflow-y-auto border-r border-[#E5E7EB]">
+        <div className="w-full max-w-[320px] shrink-0 overflow-y-auto border-r border-[var(--border)]">
           {listQuery.isLoading ? (
-            <div className="p-4 text-[13px] text-[#9CA3AF]">Loading conversations…</div>
+            <div className="p-4 text-[13px] text-[var(--text-faint)]">Loading conversations…</div>
           ) : conversations.length === 0 ? (
-            <div className="p-6 text-center text-[13px] text-[#9CA3AF]">
+            <div className="p-6 text-center text-[13px] text-[var(--text-faint)]">
               No conversations yet.
             </div>
           ) : (
@@ -132,31 +132,31 @@ export default function LiveChatPage() {
                   key={c.conversation_id}
                   type="button"
                   onClick={() => setSelectedId(c.conversation_id)}
-                  className={`flex w-full flex-col gap-1 border-b border-[#F3F4F6] px-4 py-3 text-left transition-colors ${
-                    active ? 'bg-[#FEF2F2]' : 'hover:bg-[#F9FAFB]'
+                  className={`flex w-full flex-col gap-1 border-b border-[var(--border)] px-4 py-3 text-left transition-colors ${
+                    active ? 'bg-[var(--red-50)]' : 'hover:bg-[var(--surface-2)]'
                   }`}
                 >
                   <div className="flex items-center justify-between gap-2">
-                    <span className="truncate text-[13px] font-semibold text-[#111827]">
+                    <span className="truncate text-[13px] font-semibold text-[var(--text-primary)]">
                       {c.guest_name || 'Website visitor'}
                     </span>
                     <span
                       className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold ${
                         c.status === 'closed'
-                          ? 'bg-[#F3F4F6] text-[#6B7280]'
-                          : 'bg-[#DCFCE7] text-[#15803D]'
+                          ? 'bg-[var(--surface-2)] text-[var(--text-muted)]'
+                          : 'bg-[var(--red-100)] text-[emerald-700]'
                       }`}
                     >
                       {c.status}
                     </span>
                   </div>
-                  <p className="truncate text-[12px] text-[#6B7280]">
+                  <p className="truncate text-[12px] text-[var(--text-muted)]">
                     {c.last_message?.text ?? 'No messages'}
                   </p>
-                  <div className="flex items-center justify-between text-[10px] text-[#9CA3AF]">
+                  <div className="flex items-center justify-between text-[10px] text-[var(--text-faint)]">
                     <span>{formatTime(c.updated_at)}</span>
                     {c.assigned_admin_name && (
-                      <span className="flex items-center gap-1 text-[#DC2626]">
+                      <span className="flex items-center gap-1 text-[var(--red-600)]">
                         <UserCircle size={12} /> {c.assigned_admin_name}
                       </span>
                     )}
@@ -168,19 +168,19 @@ export default function LiveChatPage() {
         </div>
 
         {/* Thread */}
-        <div className="flex min-w-0 flex-1 flex-col bg-[#FAFAFA]">
+        <div className="flex min-w-0 flex-1 flex-col bg-[var(--surface-2)]">
           {!detail ? (
-            <div className="flex flex-1 items-center justify-center text-[13px] text-[#9CA3AF]">
+            <div className="flex flex-1 items-center justify-center text-[13px] text-[var(--text-faint)]">
               Select a conversation to view the chat.
             </div>
           ) : (
             <>
-              <div className="flex items-center justify-between border-b border-[#E5E7EB] bg-white px-5 py-3">
+              <div className="flex items-center justify-between border-b border-[var(--border)] bg-[var(--surface)] px-5 py-3">
                 <div>
-                  <p className="text-[14px] font-semibold text-[#111827]">
+                  <p className="text-[14px] font-semibold text-[var(--text-primary)]">
                     {detail.guest_name || 'Website visitor'}
                   </p>
-                  <p className="text-[11px] text-[#9CA3AF]">
+                  <p className="text-[11px] text-[var(--text-faint)]">
                     {detail.assigned_admin_name
                       ? `Handled by ${detail.assigned_admin_name}`
                       : 'Bot is answering'}
@@ -191,7 +191,7 @@ export default function LiveChatPage() {
                     <button
                       type="button"
                       onClick={() => setStatus('closed')}
-                      className="flex items-center gap-1 rounded-lg border border-[#E5E7EB] px-3 py-1.5 text-[12px] font-medium text-[#6B7280] transition hover:bg-[#F3F4F6]"
+                      className="flex items-center gap-1 rounded-lg border border-[var(--border)] px-3 py-1.5 text-[12px] font-medium text-[var(--text-muted)] transition hover:bg-[var(--surface-2)]"
                     >
                       <XCircle size={14} /> Close
                     </button>
@@ -199,7 +199,7 @@ export default function LiveChatPage() {
                     <button
                       type="button"
                       onClick={() => setStatus('open')}
-                      className="flex items-center gap-1 rounded-lg border border-[#E5E7EB] px-3 py-1.5 text-[12px] font-medium text-[#15803D] transition hover:bg-[#F0FDF4]"
+                      className="flex items-center gap-1 rounded-lg border border-[var(--border)] px-3 py-1.5 text-[12px] font-medium text-[emerald-700] transition hover:bg-[emerald-50]"
                     >
                       <CheckCircle size={14} /> Reopen
                     </button>
@@ -214,7 +214,7 @@ export default function LiveChatPage() {
                 <div ref={messagesEndRef} />
               </div>
 
-              <div className="border-t border-[#E5E7EB] bg-white px-4 py-3">
+              <div className="border-t border-[var(--border)] bg-[var(--surface)] px-4 py-3">
                 <div className="flex items-end gap-2">
                   <textarea
                     value={draft}
@@ -227,13 +227,13 @@ export default function LiveChatPage() {
                     }}
                     rows={1}
                     placeholder="Reply as yourself… (Enter to send)"
-                    className="max-h-32 min-h-[40px] flex-1 resize-none rounded-xl border border-[#E5E7EB] px-3 py-2 text-[13px] text-[#111827] outline-none focus:border-[#DC2626]/40"
+                    className="max-h-32 min-h-[40px] flex-1 resize-none rounded-xl border border-[var(--border)] px-3 py-2 text-[13px] text-[var(--text-primary)] outline-none focus:border-[var(--red-600)]/40"
                   />
                   <button
                     type="button"
                     onClick={send}
                     disabled={!draft.trim() || sending}
-                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#DC2626] text-white transition hover:bg-[#B91C1C] disabled:cursor-not-allowed disabled:opacity-40"
+                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--red-600)] text-white transition hover:bg-[var(--red-700)] disabled:cursor-not-allowed disabled:opacity-40"
                   >
                     {sending ? <CircleNotch size={16} className="animate-spin" /> : <PaperPlaneTilt size={16} />}
                   </button>

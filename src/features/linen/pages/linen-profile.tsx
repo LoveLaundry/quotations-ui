@@ -73,7 +73,7 @@ export default function LinenProfile() {
         {/* Left column — QR, Barcode, Status, Actions */}
         <div className="lg:w-80 space-y-4">
           {/* QR + Barcode card */}
-          <Card className="border border-[var(--border)] shadow-sm">
+          <Card className="border border-[var(--border)]">
             <CardContent className="p-6 flex flex-col items-center gap-4">
               <QRCodeSVG value={linen.linen_id} size={160} level="M" includeMargin />
               <div className="w-full text-center">
@@ -84,7 +84,7 @@ export default function LinenProfile() {
           </Card>
 
           {/* Status */}
-          <Card className="border border-[var(--border)] shadow-sm">
+          <Card className="border border-[var(--border)]">
             <CardContent className="p-4">
               <p className="text-[11px] font-semibold text-[var(--text-muted)] uppercase tracking-wide mb-2">Current Status</p>
               <div className="flex items-center gap-2.5">
@@ -96,7 +96,7 @@ export default function LinenProfile() {
           </Card>
 
           {/* Quick Actions */}
-          <Card className="border border-[var(--border)] shadow-sm">
+          <Card className="border border-[var(--border)]">
             <CardContent className="p-4">
               <p className="text-[11px] font-semibold text-[var(--text-muted)] uppercase tracking-wide mb-3">Quick Actions</p>
               <div className="grid grid-cols-2 gap-2">
@@ -105,7 +105,7 @@ export default function LinenProfile() {
                     key={sa.value}
                     variant="outline"
                     size="sm"
-                    className="text-xs justify-start h-8 focus:ring-2 focus:ring-[#DC2626]/20"
+                    className="text-xs justify-start h-8 focus:ring-2 focus:ring-[var(--ring)]/20"
                     style={{ borderColor: sa.color + '30', color: sa.color }}
                     onClick={() => handleQuickAction(sa.value)}
                     disabled={scanMutation.isPending}
@@ -122,9 +122,9 @@ export default function LinenProfile() {
         {/* Right column — Details + History */}
         <div className="flex-1 space-y-4">
           {/* Item details */}
-          <Card className="border border-[var(--border)] shadow-sm">
+          <Card className="border border-[var(--border)]">
             <CardContent className="p-5">
-              <h2 className="text-base font-bold text-[var(--text-primary)] mb-4" style={{ fontFamily: '"Spectral", Georgia, serif' }}>Item Details</h2>
+              <h2 className="text-base font-bold text-[var(--text-primary)] mb-4">Item Details</h2>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 text-sm">
                 {[
                   ['Category', linen.category],
@@ -156,9 +156,9 @@ export default function LinenProfile() {
           </Card>
 
           {/* Movement history */}
-          <Card className="border border-[var(--border)] shadow-sm">
+          <Card className="border border-[var(--border)]">
             <CardContent className="p-5">
-              <h2 className="text-base font-bold text-[var(--text-primary)] mb-4" style={{ fontFamily: '"Spectral", Georgia, serif' }}>Movement History</h2>
+              <h2 className="text-base font-bold text-[var(--text-primary)] mb-4">Movement History</h2>
               {events?.items?.length ? (
                 <div className="space-y-0">
                   {events.items.map((evt, i) => {

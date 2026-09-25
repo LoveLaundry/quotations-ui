@@ -120,17 +120,17 @@ function statusColors(status?: string) {
 }
 
 const TONE_TEXT: Record<HoverState['tone'], string> = {
-  blue: 'text-[#2563EB]',
-  green: 'text-[#16A34A]',
-  amber: 'text-[#D97706]',
-  gray: 'text-[#6B7280]',
+  blue: 'text-[blue-600]',
+  green: 'text-[emerald-600]',
+  amber: 'text-[amber-600]',
+  gray: 'text-[var(--text-muted)]',
 }
 
 const TONE_BG: Record<HoverState['tone'], string> = {
-  blue: 'border-[#BFDBFE]',
-  green: 'border-[#BBF7D0]',
-  amber: 'border-[#FDE68A]',
-  gray: 'border-[#E4E7EC]',
+  blue: 'border-[blue-200]',
+  green: 'border-[emerald-200]',
+  amber: 'border-[amber-200]',
+  gray: 'border-[var(--border)]',
 }
 
 // ── Main page ─────────────────────────────────────────────────────────────────
@@ -236,19 +236,19 @@ export default function HotelLinenFlowPage() {
         <div>
           <Breadcrumb items={[{ label: 'Dashboard', href: '/' }, { label: 'Hotel Linen Flow' }]} />
           <h1 className="text-dashboard-title mt-1">Hotel Linen Flow</h1>
-          <p className="text-[13px] text-[#98A2B3] mt-0.5">
+          <p className="text-[13px] text-[var(--text-faint)] mt-0.5">
             {isLoading
               ? 'Loading…'
               : `${filteredHotels.length} hotel${filteredHotels.length !== 1 ? 's' : ''} · ${totals.gatePassCount} gate passes visible`}
           </p>
           <SyncStatusBar queryKey={['gatepasses']} label="Gate passes" className="mt-2" />
         </div>
-        <div className="hidden md:flex flex-col gap-1 rounded-xl border border-[#E4E7EC] bg-white px-4 py-3 shadow-sm">
-          <p className="text-[10px] font-semibold uppercase tracking-wide text-[#98A2B3]">How to read</p>
-          <ul className="text-[11.5px] text-[#475569] space-y-1">
-            <li><span className="text-[#2563EB] font-semibold">● Blue clusters</span> are gate passes (items received)</li>
-            <li><span className="text-[#16A34A] font-semibold">● Green fruits</span> are deliveries (items out)</li>
-            <li><span className="text-[#D97706] font-semibold">● Amber fruit</span> = pieces still pending</li>
+        <div className="hidden md:flex flex-col gap-1 rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 py-3">
+          <p className="text-[10px] font-semibold uppercase tracking-wide text-[var(--text-faint)]">How to read</p>
+          <ul className="text-[11.5px] text-[var(--text-secondary)] space-y-1">
+            <li><span className="text-[blue-600] font-semibold">● Blue clusters</span> are gate passes (items received)</li>
+            <li><span className="text-[emerald-600] font-semibold">● Green fruits</span> are deliveries (items out)</li>
+            <li><span className="text-[amber-600] font-semibold">● Amber fruit</span> = pieces still pending</li>
           </ul>
         </div>
       </div>
@@ -265,7 +265,7 @@ export default function HotelLinenFlowPage() {
               <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-[13px] font-bold" style={{ background: stat.bg, color: stat.color }}>
                 {stat.value}
               </div>
-              <p className="text-[12px] font-medium text-[#667085]">{stat.label}</p>
+              <p className="text-[12px] font-medium text-[var(--text-muted)]">{stat.label}</p>
             </div>
           </Card>
         ))}
@@ -273,7 +273,7 @@ export default function HotelLinenFlowPage() {
 
       <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center">
         <div className="relative flex-1">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#98A2B3]" />
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--text-faint)]" />
           <input
             type="text"
             value={searchInput}
@@ -282,13 +282,13 @@ export default function HotelLinenFlowPage() {
               if (e.key === 'Enter') setHotelSearch(searchInput.trim())
             }}
             placeholder="Search hotel…"
-            className="h-10 w-full rounded-lg border border-[#E4E7EC] bg-white pl-9 pr-8 text-[13px] text-[#101828] outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/10 shadow-sm"
+            className="h-10 w-full rounded-lg border border-[var(--border)] bg-[var(--surface)] pl-9 pr-8 text-[13px] text-[var(--text-primary)] outline-none focus:border-[blue-600] focus:ring-2 focus:ring-[blue-600]/10"
           />
           {searchInput && (
             <button
               type="button"
               onClick={() => { setSearchInput(''); setHotelSearch('') }}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#98A2B3] hover:text-[#374151] cursor-pointer"
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[var(--text-faint)] hover:text-[var(--text-secondary)] cursor-pointer"
             >
               <X className="h-3.5 w-3.5" />
             </button>
@@ -297,7 +297,7 @@ export default function HotelLinenFlowPage() {
         <select
           value={period}
           onChange={e => setPeriod(e.target.value as Period)}
-          className="h-10 appearance-none rounded-lg border border-[#E4E7EC] bg-white px-3 text-[13px] text-[#101828] outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/10 shadow-sm cursor-pointer"
+          className="h-10 appearance-none rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 text-[13px] text-[var(--text-primary)] outline-none focus:border-[blue-600] focus:ring-2 focus:ring-[blue-600]/10 cursor-pointer"
         >
           <option value="all">All time</option>
           <option value="month">This month</option>
@@ -321,7 +321,7 @@ export default function HotelLinenFlowPage() {
           action={
             !query && (
               <Link to="/gate-passes/new">
-                <Button className="bg-[#2563EB] hover:bg-[#1D4ED8] text-white">
+                <Button className="bg-[blue-600] hover:bg-[blue-700] text-white">
                   <ClipboardList className="h-4 w-4" /> New Gate Pass
                 </Button>
               </Link>
@@ -475,12 +475,12 @@ function HotelTreeCard({ hotel }: { hotel: HotelNode }) {
     return (
       <Card className="p-4">
         <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#EFF6FF] text-[#2563EB] border border-[#BFDBFE]">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[blue-50] text-[blue-600] border border-[blue-200]">
             <Building2 className="h-4 w-4" />
           </div>
           <div className="min-w-0">
-            <p className="text-[13px] font-semibold text-[#101828] truncate">{hotel.name}</p>
-            <p className="text-[11px] text-[#98A2B3]">No gate passes in this period.</p>
+            <p className="text-[13px] font-semibold text-[var(--text-primary)] truncate">{hotel.name}</p>
+            <p className="text-[11px] text-[var(--text-faint)]">No gate passes in this period.</p>
           </div>
         </div>
       </Card>
@@ -507,18 +507,18 @@ function HotelTreeCard({ hotel }: { hotel: HotelNode }) {
   return (
     <Card className="overflow-hidden p-0">
       {/* Header */}
-      <div className="flex items-center gap-3 px-4 py-3 border-b border-[#F2F4F7]">
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#EFF6FF] text-[#2563EB] border border-[#BFDBFE]">
+      <div className="flex items-center gap-3 px-4 py-3 border-b border-[var(--border)]">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[blue-50] text-[blue-600] border border-[blue-200]">
           <Building2 className="h-4 w-4" />
         </div>
         <div className="min-w-0 flex-1">
-          <p className="text-[13px] font-semibold text-[#101828] truncate">{hotel.name}</p>
-          <p className="text-[11px] text-[#98A2B3]">
+          <p className="text-[13px] font-semibold text-[var(--text-primary)] truncate">{hotel.name}</p>
+          <p className="text-[11px] text-[var(--text-faint)]">
             {hotel.gatePasses.length} gate pass{hotel.gatePasses.length !== 1 ? 'es' : ''}
             {' · '}{hotel.received} in · {hotel.delivered} out
           </p>
         </div>
-        <span className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${pending > 0 ? 'bg-[#FFFBEB] text-[#D97706]' : 'bg-[#F0FDF4] text-[#16A34A]'}`}>
+        <span className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${pending > 0 ? 'bg-[amber-50] text-[amber-600]' : 'bg-[emerald-50] text-[emerald-600]'}`}>
           {Math.max(pending, 0)} remaining
         </span>
       </div>
@@ -694,7 +694,7 @@ function HotelTreeCard({ hotel }: { hotel: HotelNode }) {
         {/* Hover card */}
         {hover && hoverPct && (
           <div
-            className={`pointer-events-none absolute z-10 w-[230px] rounded-xl border bg-white/95 p-3 shadow-xl backdrop-blur ${TONE_BG[hover.tone]}`}
+            className={`pointer-events-none absolute z-10 w-[230px] rounded-xl border bg-[var(--surface)]/95 p-3 shadow-[var(--shadow-overlay)] backdrop-blur ${TONE_BG[hover.tone]}`}
             style={{
               left: `${hoverPct.left}%`,
               top: `${hoverPct.top}%`,
@@ -702,16 +702,16 @@ function HotelTreeCard({ hotel }: { hotel: HotelNode }) {
             }}
           >
             <p className={`text-[12px] font-bold ${TONE_TEXT[hover.tone]} truncate`}>{hover.title}</p>
-            <p className="text-[10.5px] text-[#98A2B3] mt-0.5">{hover.sub}</p>
+            <p className="text-[10.5px] text-[var(--text-faint)] mt-0.5">{hover.sub}</p>
             {hover.chips.length > 0 && (
               <div className="mt-2 flex flex-wrap gap-1">
                 {hover.chips.slice(0, 8).map((chip, ci) => (
-                  <span key={ci} className="rounded-md border border-[#E4E7EC] bg-[#F9FAFB] px-1.5 py-0.5 text-[10px] text-[#475569]">
+                  <span key={ci} className="rounded-md border border-[var(--border)] bg-[var(--surface-2)] px-1.5 py-0.5 text-[10px] text-[var(--text-secondary)]">
                     {chip}
                   </span>
                 ))}
                 {hover.chips.length > 8 && (
-                  <span className="rounded-md border border-[#E4E7EC] bg-[#F9FAFB] px-1.5 py-0.5 text-[10px] text-[#98A2B3]">
+                  <span className="rounded-md border border-[var(--border)] bg-[var(--surface-2)] px-1.5 py-0.5 text-[10px] text-[var(--text-faint)]">
                     +{hover.chips.length - 8} more
                   </span>
                 )}
@@ -721,7 +721,7 @@ function HotelTreeCard({ hotel }: { hotel: HotelNode }) {
         )}
 
         {excess > 0 && (
-          <div className="absolute right-2 top-2 rounded-full bg-white/80 px-2 py-1 text-[10px] font-semibold text-[#98A2B3] backdrop-blur">
+          <div className="absolute right-2 top-2 rounded-full bg-[var(--surface)]/80 px-2 py-1 text-[10px] font-semibold text-[var(--text-faint)] backdrop-blur">
             +{excess} older gate pass{excess > 1 ? 'es' : ''} hidden · {totalLeaves} nodes
           </div>
         )}

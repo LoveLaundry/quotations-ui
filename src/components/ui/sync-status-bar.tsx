@@ -18,38 +18,38 @@ function formatLastUpdated(ts: number | null): string {
 
 const CONF: Record<SyncStatus, { dot: string; text: string; label: (s: ResourceSyncState) => string; Icon?: typeof RefreshCw }> = {
   fresh: {
-    dot: 'bg-[#16A34A]',
-    text: 'text-[#16A34A]',
+    dot: 'bg-[emerald-600]',
+    text: 'text-[emerald-600]',
     label: (s) => formatLastUpdated(s.lastUpdated),
     Icon: CheckCircle2,
   },
   syncing: {
-    dot: 'bg-[#2563EB]',
-    text: 'text-[#2563EB]',
+    dot: 'bg-[blue-600]',
+    text: 'text-[blue-600]',
     label: () => 'Updating…',
     Icon: Loader2,
   },
   stale: {
-    dot: 'bg-[#F59E0B]',
-    text: 'text-[#6B7280]',
+    dot: 'bg-[amber-500]',
+    text: 'text-[var(--text-muted)]',
     label: (s) => `${formatLastUpdated(s.lastUpdated)} · Cached`,
     Icon: RefreshCw,
   },
   offline: {
-    dot: 'bg-[#DC2626]',
-    text: 'text-[#B91C1C]',
+    dot: 'bg-[var(--red-600)]',
+    text: 'text-[var(--red-700)]',
     label: (s) => `${formatLastUpdated(s.lastUpdated)} · Offline`,
     Icon: CloudOff,
   },
   error: {
-    dot: 'bg-[#DC2626]',
-    text: 'text-[#B91C1C]',
+    dot: 'bg-[var(--red-600)]',
+    text: 'text-[var(--red-700)]',
     label: (s) => `${formatLastUpdated(s.lastUpdated)} · Sync unavailable`,
     Icon: AlertTriangle,
   },
   'no-data': {
-    dot: 'bg-[#98A2B3]',
-    text: 'text-[#98A2B3]',
+    dot: 'bg-[var(--surface-2)]',
+    text: 'text-[var(--text-faint)]',
     label: () => 'Loading…',
     Icon: Loader2,
   },
@@ -71,7 +71,7 @@ export function SyncStatusBar({ queryKey, label, className = '' }: SyncStatusBar
 
   return (
     <div
-      className={`inline-flex items-center gap-1.5 rounded-full border border-[#E4E7EC] bg-white px-2.5 py-1 text-[11px] font-medium shadow-sm ${cfg.text} ${className}`}
+      className={`inline-flex items-center gap-1.5 rounded-full border border-[var(--border)] bg-[var(--surface)] px-2.5 py-1 text-[11px] font-medium ${cfg.text} ${className}`}
       title={`Local cache status for ${label ?? String(queryKey[0] ?? '')}`}
       role="status"
       aria-live="polite"

@@ -79,10 +79,10 @@ export default function ManagementItems() {
       </div>
 
       <div className="flex gap-1 bg-gray-100 dark:bg-gray-800 rounded-lg p-1 w-fit">
-        <button onClick={() => setTab('items')} className={`px-4 py-1.5 rounded-md text-sm font-medium ${tab === 'items' ? 'bg-white dark:bg-gray-700 shadow' : ''}`}>
+        <button onClick={() => setTab('items')} className={`px-4 py-1.5 rounded-md text-sm font-medium ${tab === 'items' ? 'bg-[var(--surface)] dark:bg-gray-700 shadow' : ''}`}>
           <Package size={14} className="inline mr-1" /> Items ({itemsData.total})
         </button>
-        <button onClick={() => setTab('categories')} className={`px-4 py-1.5 rounded-md text-sm font-medium ${tab === 'categories' ? 'bg-white dark:bg-gray-700 shadow' : ''}`}>
+        <button onClick={() => setTab('categories')} className={`px-4 py-1.5 rounded-md text-sm font-medium ${tab === 'categories' ? 'bg-[var(--surface)] dark:bg-gray-700 shadow' : ''}`}>
           <Tag size={14} className="inline mr-1" /> Categories ({categories.length})
         </button>
       </div>
@@ -139,7 +139,7 @@ export default function ManagementItems() {
       {tab === 'categories' && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {categories.map((cat: any) => (
-            <div key={cat.id} className="bg-white dark:bg-gray-800 rounded-xl border p-4 flex items-center justify-between">
+            <div key={cat.id} className="bg-[var(--surface)] dark:bg-gray-800 rounded-xl border p-4 flex items-center justify-between">
               <div>
                 <p className="font-medium">{cat.name}</p>
                 <p className="text-sm text-gray-400">{cat.description || 'No description'}</p>
@@ -152,7 +152,7 @@ export default function ManagementItems() {
 
       {showForm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-md">
+          <div className="bg-[var(--surface)] dark:bg-gray-800 rounded-xl p-6 w-full max-w-md">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-lg font-semibold">{editing ? 'Edit' : 'Add'} {tab === 'items' ? 'Item' : 'Category'}</h2>
               <button onClick={() => { setShowForm(false); setEditing(null) }}><X size={20} /></button>

@@ -66,7 +66,7 @@ export default function LinenInventory() {
 
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-[var(--text-primary)]" style={{ fontFamily: '"Spectral", Georgia, serif' }}>Linen Inventory</h1>
+          <h1 className="text-2xl font-bold text-[var(--text-primary)]">Linen Inventory</h1>
           <p className="text-sm text-[var(--text-muted)]">{data?.total ?? 0} total items</p>
         </div>
         <div className="flex gap-2">
@@ -77,7 +77,7 @@ export default function LinenInventory() {
       </div>
 
       {/* Filters */}
-      <Card className="border border-[var(--border)] shadow-sm">
+      <Card className="border border-[var(--border)]">
         <CardContent className="p-4">
           <div className="flex flex-wrap gap-3">
             <div className="relative flex-1 min-w-[200px]">
@@ -86,28 +86,28 @@ export default function LinenInventory() {
                 value={search}
                 onChange={e => setSearch(e.target.value)}
                 placeholder="Search linen ID, type, client..."
-                className="w-full pl-9 pr-3 py-2 text-sm border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[#DC2626]/20 focus:border-[#DC2626] transition-colors"
+                className="w-full pl-9 pr-3 py-2 text-sm border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)]/20 focus:border-[var(--red-600)] transition-colors"
               />
             </div>
             <select value={category} onChange={e => { setCategory(e.target.value); setPage(0) }}
-              className="px-3 py-2 text-sm border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[#DC2626]/20 focus:border-[#DC2626] transition-colors">
+              className="px-3 py-2 text-sm border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)]/20 focus:border-[var(--red-600)] transition-colors">
               <option value="">All Categories</option>
               {LINEN_CATEGORIES.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
             </select>
             <select value={status} onChange={e => { setStatus(e.target.value); setPage(0) }}
-              className="px-3 py-2 text-sm border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[#DC2626]/20 focus:border-[#DC2626] transition-colors">
+              className="px-3 py-2 text-sm border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)]/20 focus:border-[var(--red-600)] transition-colors">
               <option value="">All Statuses</option>
               {(Object.keys(LINEN_STATUS_CONFIG) as LinenStatus[]).map(s => (
                 <option key={s} value={s}>{LINEN_STATUS_CONFIG[s].label}</option>
               ))}
             </select>
             <select value={condition} onChange={e => { setCondition(e.target.value); setPage(0) }}
-              className="px-3 py-2 text-sm border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[#DC2626]/20 focus:border-[#DC2626] transition-colors">
+              className="px-3 py-2 text-sm border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)]/20 focus:border-[var(--red-600)] transition-colors">
               <option value="">All Conditions</option>
               {LINEN_CONDITIONS.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
             </select>
             {hasFilters && (
-              <Button variant="ghost" size="sm" onClick={clearFilters} className="text-[var(--text-muted)] hover:text-[#DC2626]">
+              <Button variant="ghost" size="sm" onClick={clearFilters} className="text-[var(--text-muted)] hover:text-[var(--red-600)]">
                 <X size={14} className="mr-1" />Clear
               </Button>
             )}
@@ -121,7 +121,7 @@ export default function LinenInventory() {
       ) : isError ? <ErrorState /> : !data?.items?.length ? (
         <EmptyState title="No linen found" description="Try adjusting your filters or generate new linen tags." />
       ) : (
-        <Card className="border border-[var(--border)] shadow-sm overflow-hidden">
+        <Card className="border border-[var(--border)] overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
@@ -153,7 +153,7 @@ export default function LinenInventory() {
                       <td className="px-4 py-3 text-[var(--text-secondary)] text-center">{linen.wash_count}</td>
                       <td className="px-4 py-3 text-[var(--text-muted)] text-xs">{linen.last_scanned_date ? formatDate(linen.last_scanned_date) : '—'}</td>
                       <td className="px-4 py-3">
-                        <Link to={`/linen/${linen.id}`} onClick={e => e.stopPropagation()} className="text-[#DC2626] hover:underline text-xs font-semibold">View</Link>
+                        <Link to={`/linen/${linen.id}`} onClick={e => e.stopPropagation()} className="text-[var(--red-600)] hover:underline text-xs font-semibold">View</Link>
                       </td>
                     </tr>
                   )

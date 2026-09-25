@@ -26,7 +26,7 @@ export default function GatePassHub() {
       <Breadcrumb items={[{ label: 'Linen', href: '/linen' }, { label: 'Gate Pass' }]} />
 
       <div>
-        <h1 className="text-2xl font-bold text-[var(--text-primary)]" style={{ fontFamily: '"Spectral", Georgia, serif' }}>
+        <h1 className="text-2xl font-bold text-[var(--text-primary)]">
           Gate Pass — Camelot
         </h1>
         <p className="text-sm text-[var(--text-muted)]">Kimberley Hotels & Resorts · printable receipt templates</p>
@@ -35,7 +35,7 @@ export default function GatePassHub() {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-3xl">
         {TEMPLATES.map(t => (
           <Link key={t.to} to={t.to} className="group block">
-            <Card className="h-full border border-[var(--border)] shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
+            <Card className="h-full border border-[var(--border)] hover:-translate-y-0.5 transition-colors duration-200">
               <CardContent className="p-5">
                 <div className="flex items-start justify-between">
                   <div
@@ -44,7 +44,7 @@ export default function GatePassHub() {
                   >
                     <t.icon size={22} />
                   </div>
-                  <ArrowUpRight size={18} className="text-[var(--text-muted)] group-hover:text-[#DC2626] transition-colors" />
+                  <ArrowUpRight size={18} className="text-[var(--text-muted)] group-hover:text-[var(--red-600)] transition-colors" />
                 </div>
                 <h2 className="mt-4 text-base font-bold text-[var(--text-primary)]">{t.title}</h2>
                 <p className="mt-1 text-sm text-[var(--text-muted)] leading-relaxed">{t.description}</p>

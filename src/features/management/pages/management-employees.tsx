@@ -196,7 +196,7 @@ export default function ManagementEmployees() {
             : emp.salary_type === 'CONTRACT' ? emp.contract_amount
             : emp.basic_salary
           return (
-            <div key={emp.id} className={`bg-white dark:bg-gray-800 rounded-xl border p-5 space-y-3 ${!isActive ? 'opacity-70' : ''}`}>
+            <div key={emp.id} className={`bg-[var(--surface)] dark:bg-gray-800 rounded-xl border p-5 space-y-3 ${!isActive ? 'opacity-70' : ''}`}>
               <div className="flex items-start justify-between">
                 <div>
                   <div className="flex items-center gap-2">
@@ -319,7 +319,7 @@ export default function ManagementEmployees() {
       {/* Add/Edit Employee */}
       {showForm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto">
+          <div className="bg-[var(--surface)] dark:bg-gray-800 rounded-xl p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-lg font-semibold">{editing ? 'Edit' : 'Add'} Employee</h2>
               <button onClick={() => { setShowForm(false); setEditing(null) }}><X size={20} /></button>
@@ -459,7 +459,7 @@ export default function ManagementEmployees() {
       {/* Record Salary Modal */}
       {showSalary && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-md">
+          <div className="bg-[var(--surface)] dark:bg-gray-800 rounded-xl p-6 w-full max-w-md">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-lg font-semibold">Record Salary - {showSalary.name}</h2>
               <button onClick={() => setShowSalary(null)}><X size={20} /></button>

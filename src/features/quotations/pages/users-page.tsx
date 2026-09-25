@@ -144,18 +144,18 @@ export default function UsersPage() {
     }
 
     const inputClass =
-        'h-10 w-full rounded-xl border border-[#E4E7EC] bg-white px-3.5 text-[13px] text-[#101828] placeholder:text-[#98A2B3] outline-none focus:border-[#101828] focus:ring-1 focus:ring-[#101828] transition-all duration-150'
+        'h-10 w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3.5 text-[13px] text-[var(--text-primary)] placeholder:text-[var(--text-faint)] outline-none focus:border-[var(--border-2)] focus:ring-1 focus:ring-[var(--ring)] transition-colors duration-150'
 
     const roleColor: Record<string, string> = {
-        ADMIN: 'bg-[#FEF3C7] text-[#92400E] border-[#FDE68A]',
-        MANAGER: 'bg-[#EDE9FE] text-[#5B21B6] border-[#DDD6FE]',
-        STAFF: 'bg-[#F0FDF4] text-[#166534] border-[#BBF7D0]',
+        ADMIN: 'bg-[amber-100] text-red-800 border-[amber-200]',
+        MANAGER: 'bg-[var(--red-50)] text-[var(--red-700)] border-[violet-200]',
+        STAFF: 'bg-[emerald-50] text-red-800 border-[emerald-200]',
     }
 
     const statusColor: Record<string, string> = {
-        active: 'bg-[#F0FDF4] text-[#166534] border-[#BBF7D0]',
-        inactive: 'bg-[#FEF2F2] text-[#DC2626] border-[#FECACA]',
-        unset: 'bg-[#F3F4F6] text-[#6B7280] border-[#E5E7EB]',
+        active: 'bg-[emerald-50] text-red-800 border-[emerald-200]',
+        inactive: 'bg-[var(--red-50)] text-[var(--red-600)] border-[var(--red-100)]',
+        unset: 'bg-[var(--surface-2)] text-[var(--text-muted)] border-[var(--border)]',
     }
 
     return (
@@ -165,7 +165,7 @@ export default function UsersPage() {
                 <div>
                     <Breadcrumb items={[{ label: 'Dashboard', href: '/' }, { label: 'Users' }]} />
                     <h1 className="text-dashboard-title mt-1">User Management</h1>
-                    <p className="text-[13px] text-[#98A2B3] mt-0.5">Create and manage system users</p>
+                    <p className="text-[13px] text-[var(--text-faint)] mt-0.5">Create and manage system users</p>
                 </div>
                 <div className="flex items-center gap-2">
                     <Button
@@ -187,14 +187,14 @@ export default function UsersPage() {
             {/* Stats row */}
             <div className="grid grid-cols-3 gap-3">
                 {[
-                    { label: 'Total Users', value: users.length, color: 'text-[#101828]' },
-                    { label: 'Active', value: users.filter(u => u.status === 'active').length, color: 'text-[#16A34A]' },
-                    { label: 'Admins', value: users.filter(u => u.role_id?.toUpperCase() === 'ADMIN').length, color: 'text-[#92400E]' },
+                    { label: 'Total Users', value: users.length, color: 'text-[var(--text-primary)]' },
+                    { label: 'Active', value: users.filter(u => u.status === 'active').length, color: 'text-[emerald-600]' },
+                    { label: 'Admins', value: users.filter(u => u.role_id?.toUpperCase() === 'ADMIN').length, color: 'tex-amber-800' },
                 ].map(stat => (
                     <Card key={stat.label}>
                         <CardContent className="pt-4 pb-4 text-center">
                             <p className={`text-[24px] font-bold ${stat.color}`}>{loadingUsers ? '—' : stat.value}</p>
-                            <p className="text-[12px] text-[#6B7280] mt-0.5">{stat.label}</p>
+                            <p className="text-[12px] text-[var(--text-muted)] mt-0.5">{stat.label}</p>
                         </CardContent>
                     </Card>
                 ))}
@@ -204,17 +204,17 @@ export default function UsersPage() {
             {loadingUsers ? (
                 <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                     {[1, 2, 3].map(i => (
-                        <div key={i} className="h-28 rounded-xl bg-[#F3F4F6] animate-pulse" />
+                        <div key={i} className="h-28 rounded-xl bg-[var(--surface-2)] animate-pulse" />
                     ))}
                 </div>
             ) : users.length === 0 ? (
                 <Card>
                     <CardContent className="py-16 flex flex-col items-center justify-center gap-3">
-                        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#F3F4F6] text-[#6B7280]">
+                        <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-[var(--surface-2)] text-[var(--text-muted)]">
                             <RiUserLine size={28} />
                         </div>
-                        <p className="text-[14px] font-semibold text-[#101828]">No users found</p>
-                        <p className="text-[13px] text-[#6B7280]">Create the first user to get started</p>
+                        <p className="text-[14px] font-semibold text-[var(--text-primary)]">No users found</p>
+                        <p className="text-[13px] text-[var(--text-muted)]">Create the first user to get started</p>
                         <Button onClick={openModal} className="mt-2 flex items-center gap-1.5">
                             <RiUserAddLine size={14} /> Create First User
                         </Button>
@@ -229,15 +229,15 @@ export default function UsersPage() {
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: Math.min(idx * 0.04, 0.3) }}
                         >
-                            <Card className="hover:border-[#D1D5DB] transition-colors">
+                            <Card className="hover:border-[var(--border-2)] transition-colors">
                                 <CardContent className="pt-4 pb-4">
                                     <div className="flex items-start gap-3">
-                                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#101828] to-[#374151] text-white font-bold text-[15px]">
+                                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[var(--text-primary)] text-white font-bold text-[15px]">
                                             {u.user_name.charAt(0).toUpperCase()}
                                         </div>
                                         <div className="min-w-0 flex-1">
-                                            <p className="text-[14px] font-semibold text-[#101828] truncate">{u.user_name}</p>
-                                            <p className="text-[12px] text-[#6B7280] truncate">{u.email || u.auth_id}</p>
+                                            <p className="text-[14px] font-semibold text-[var(--text-primary)] truncate">{u.user_name}</p>
+                                            <p className="text-[12px] text-[var(--text-muted)] truncate">{u.email || u.auth_id}</p>
                                             <div className="flex items-center gap-1.5 mt-2 flex-wrap">
                                                 <span className={`inline-flex items-center rounded-md border px-2 py-0.5 text-[10px] font-semibold ${roleColor[u.role_id?.toUpperCase()] || roleColor.STAFF}`}>
                                                     {u.role_id?.toUpperCase()}
@@ -246,7 +246,7 @@ export default function UsersPage() {
                                                     {u.status}
                                                 </span>
                                                 {u.employee_id && (
-                                                    <span className="inline-flex items-center rounded-md border border-[#E4E7EC] bg-[#F9FAFB] px-2 py-0.5 text-[10px] text-[#6B7280]">
+                                                    <span className="inline-flex items-center rounded-md border border-[var(--border)] bg-[var(--surface-2)] px-2 py-0.5 text-[10px] text-[var(--text-muted)]">
                                                         #{u.employee_id}
                                                     </span>
                                                 )}
@@ -256,7 +256,7 @@ export default function UsersPage() {
                                             type="button"
                                             onClick={() => openEdit(u)}
                                             title="Edit user"
-                                            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-[#6B7280] hover:bg-[#F3F4F6] hover:text-[#101828] transition-colors"
+                                            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-[var(--text-muted)] hover:bg-[var(--surface-2)] hover:text-[var(--text-primary)] transition-colors"
                                         >
                                             <RiEditLine size={15} />
                                         </button>
@@ -277,7 +277,7 @@ export default function UsersPage() {
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
-                            className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm"
+                            className="fixed inset-0 z-50 bg-black/40 backdrop-blur-none"
                             onClick={() => setShowModal(false)}
                         />
                         <motion.div
@@ -288,22 +288,22 @@ export default function UsersPage() {
                             transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
                             className="fixed inset-0 z-50 flex items-center justify-center p-4"
                         >
-                            <div className="w-full max-w-md rounded-2xl border border-[#E4E7EC] bg-white shadow-2xl overflow-hidden">
+                            <div className="w-full max-w-md rounded-xl border border-[var(--border)] bg-[var(--surface)] shadow-[var(--shadow-overlay)] overflow-hidden">
                                 {/* Modal header */}
-                                <div className="flex items-center justify-between px-6 py-4 border-b border-[#F2F4F7]">
+                                <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--border)]">
                                     <div className="flex items-center gap-3">
-                                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#101828] text-white">
+                                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--surface)] text-white">
                                             <RiEditLine size={16} />
                                         </div>
                                         <div>
-                                            <p className="text-[14px] font-bold text-[#101828]">{editId ? 'Edit User' : 'Create User'}</p>
-                                            <p className="text-[11px] text-[#6B7280]">{editId ? 'Update this system user' : 'Add a new system user'}</p>
+                                            <p className="text-[14px] font-bold text-[var(--text-primary)]">{editId ? 'Edit User' : 'Create User'}</p>
+                                            <p className="text-[11px] text-[var(--text-muted)]">{editId ? 'Update this system user' : 'Add a new system user'}</p>
                                         </div>
                                     </div>
                                     <button
                                         type="button"
                                         onClick={() => setShowModal(false)}
-                                        className="flex h-7 w-7 items-center justify-center rounded-lg text-[#6B7280] hover:bg-[#F3F4F6] hover:text-[#101828] transition-colors"
+                                        className="flex h-7 w-7 items-center justify-center rounded-lg text-[var(--text-muted)] hover:bg-[var(--surface-2)] hover:text-[var(--text-primary)] transition-colors"
                                     >
                                         <RiCloseLine size={16} />
                                     </button>
@@ -313,8 +313,8 @@ export default function UsersPage() {
                                 <form onSubmit={handleSubmit} ref={flow.ref} onKeyDown={flow.handleKeyDown} className="p-6 space-y-4 max-h-[75vh] overflow-y-auto">
                                     <div className="grid grid-cols-2 gap-3">
                                         <div>
-                                            <label className="block text-[12px] font-medium text-[#374151] mb-1.5">
-                                                Full Name <span className="text-[#DC2626]">*</span>
+                                            <label className="block text-[12px] font-medium text-[var(--text-secondary)] mb-1.5">
+                                                Full Name <span className="text-[var(--red-600)]">*</span>
                                             </label>
                                             <input
                                                 type="text"
@@ -327,8 +327,8 @@ export default function UsersPage() {
                                             />
                                         </div>
                                         <div>
-                                            <label className="block text-[12px] font-medium text-[#374151] mb-1.5">
-                                                Username <span className="text-[#DC2626]">*</span>
+                                            <label className="block text-[12px] font-medium text-[var(--text-secondary)] mb-1.5">
+                                                Username <span className="text-[var(--red-600)]">*</span>
                                             </label>
                                             <input
                                                 type="text"
@@ -342,8 +342,8 @@ export default function UsersPage() {
                                     </div>
 
                                     <div>
-                                        <label className="block text-[12px] font-medium text-[#374151] mb-1.5">
-                                            {editId ? 'New Password' : 'Password'} {!editId && <span className="text-[#DC2626]">*</span>}
+                                        <label className="block text-[12px] font-medium text-[var(--text-secondary)] mb-1.5">
+                                            {editId ? 'New Password' : 'Password'} {!editId && <span className="text-[var(--red-600)]">*</span>}
                                         </label>
                                         <div className="relative">
                                             <input
@@ -357,7 +357,7 @@ export default function UsersPage() {
                                             <button
                                                 type="button"
                                                 onClick={() => setShowPw(v => !v)}
-                                                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#98A2B3] hover:text-[#374151] transition-colors"
+                                                className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--text-faint)] hover:text-[var(--text-secondary)] transition-colors"
                                                 tabIndex={-1}
                                             >
                                                 {showPw ? <RiEyeOffLine size={16} /> : <RiEyeLine size={16} />}
@@ -367,7 +367,7 @@ export default function UsersPage() {
 
                                     <div className="grid grid-cols-2 gap-3">
                                         <div>
-                                            <label className="block text-[12px] font-medium text-[#374151] mb-1.5">Role</label>
+                                            <label className="block text-[12px] font-medium text-[var(--text-secondary)] mb-1.5">Role</label>
                                             <select
                                                 value={form.role_id}
                                                 onChange={e => setForm(f => ({ ...f, role_id: e.target.value }))}
@@ -379,7 +379,7 @@ export default function UsersPage() {
                                             </select>
                                         </div>
                                         <div>
-                                            <label className="block text-[12px] font-medium text-[#374151] mb-1.5">Status</label>
+                                            <label className="block text-[12px] font-medium text-[var(--text-secondary)] mb-1.5">Status</label>
                                             <select
                                                 value={form.status}
                                                 onChange={e => setForm(f => ({ ...f, status: e.target.value }))}
@@ -393,7 +393,7 @@ export default function UsersPage() {
                                     </div>
 
                                     <div>
-                                        <label className="block text-[12px] font-medium text-[#374151] mb-1.5">Email</label>
+                                        <label className="block text-[12px] font-medium text-[var(--text-secondary)] mb-1.5">Email</label>
                                         <input
                                             type="email"
                                             value={form.email}
@@ -405,7 +405,7 @@ export default function UsersPage() {
 
                                     <div className="grid grid-cols-2 gap-3">
                                         <div>
-                                            <label className="block text-[12px] font-medium text-[#374151] mb-1.5">Mobile</label>
+                                            <label className="block text-[12px] font-medium text-[var(--text-secondary)] mb-1.5">Mobile</label>
                                             <input
                                                 type="text"
                                                 value={form.mobile_number}
@@ -415,7 +415,7 @@ export default function UsersPage() {
                                             />
                                         </div>
                                         <div>
-                                            <label className="block text-[12px] font-medium text-[#374151] mb-1.5">Employee ID</label>
+                                            <label className="block text-[12px] font-medium text-[var(--text-secondary)] mb-1.5">Employee ID</label>
                                             <input
                                                 type="text"
                                                 value={form.employee_id}
@@ -427,9 +427,9 @@ export default function UsersPage() {
                                     </div>
 
                                     {/* Admin notice */}
-                                    <div className="flex items-start gap-2 rounded-lg bg-[#F0FDF4] border border-[#BBF7D0] px-3 py-2.5">
-                                        <RiShieldCheckLine size={14} className="text-[#16A34A] mt-0.5 shrink-0" />
-                                        <p className="text-[11px] text-[#166534]">
+                                    <div className="flex items-start gap-2 rounded-lg bg-[emerald-50] border border-[emerald-200] px-3 py-2.5">
+                                        <RiShieldCheckLine size={14} className="text-[emerald-600] mt-0.5 shrink-0" />
+                                        <p className="text-[11px] tex-emerald-800">
                                             {editId
                                                 ? 'Changes are saved immediately. Enter a new password only if you want to reset it.'
                                                 : 'User will be created with the selected role. They can log in immediately using their username and password.'}
@@ -440,14 +440,14 @@ export default function UsersPage() {
                                         <button
                                             type="button"
                                             onClick={() => setShowModal(false)}
-                                            className="flex-1 h-10 rounded-xl border border-[#E4E7EC] bg-white text-[13px] font-medium text-[#374151] hover:bg-[#F9FAFB] transition-colors"
+                                            className="flex-1 h-10 rounded-xl border border-[var(--border)] bg-[var(--surface)] text-[13px] font-medium text-[var(--text-secondary)] hover:bg-[var(--surface-2)] transition-colors"
                                         >
                                             Cancel
                                         </button>
                                         <button
                                             type="submit"
                                             disabled={submitting}
-                                            className="flex-1 h-10 rounded-xl bg-[#101828] text-[13px] font-medium text-white hover:bg-[#1D2939] transition-colors disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                            className="flex-1 h-10 rounded-xl bg-[var(--surface)] text-[13px] font-medium text-white hover:bg-[var(--surface-2)] transition-colors disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                                         >
                                             {submitting ? (
                                                 <>

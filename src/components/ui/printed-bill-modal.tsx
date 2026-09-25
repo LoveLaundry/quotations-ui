@@ -35,13 +35,13 @@ export function PrintedBillModal({ open, onClose, defaultQuotationId }: PrintedB
   return (
     <AnimatePresence>
       {open && (
-        <div className="fixed inset-0 z-50 flex items-start justify-center p-3 sm:p-6 bg-[#101828]/60 backdrop-blur-sm overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex items-start justify-center p-3 sm:p-6 bg-[#101828]/60 backdrop-blur-none overflow-y-auto">
           <motion.div
             initial={{ opacity: 0, scale: 0.96, y: 12 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.96, y: 12 }}
             transition={{ duration: 0.16 }}
-            className="w-full max-w-3xl overflow-hidden rounded-2xl border border-[#E4E7EC] bg-white shadow-2xl my-4 sm:my-8"
+            className="w-full max-w-3xl overflow-hidden rounded-xl border border-[#E4E7EC] bg-white shadow-2xl my-4 sm:my-8"
           >
             <div className="flex items-center justify-between border-b border-[#E4E7EC] bg-[#FAFAFA] px-5 py-4">
               <div className="flex items-center gap-3">

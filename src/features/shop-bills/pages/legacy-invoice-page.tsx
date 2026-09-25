@@ -40,7 +40,7 @@ const legacyPrintStyles = `
     .no-print { display: none !important; }
   }
 
-  .li-print-sheet { font-family: "Spectral", Georgia, serif; color: #111; background: #fff; font-size: 12px; line-height: 1.4; }
+  .li-print-sheet { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: #111; background: #fff; font-size: 12px; line-height: 1.4; }
   .li-slip { border: 1.5px solid #E01E31; }
   .li-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; padding: 12px 20px; border-bottom: 1.5px solid #E01E31; }
   .li-brand { display: flex; align-items: center; gap: 10px; }
@@ -188,7 +188,7 @@ onSuccess: invoice => {
       {/* Header */}
       <div className="print:hidden">
         <Breadcrumb items={[{ label: 'Dashboard', href: '/' }, { label: 'Shop Bills', href: '/shop-bills' }, { label: 'Legacy Invoice' }]} />
-        <div className="mt-3 flex flex-col gap-4 rounded-2xl border border-[#E4E7EC] bg-white px-4 py-3 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+        <div className="mt-3 flex flex-col gap-4 rounded-xl border border-[#E4E7EC] bg-white px-4 py-3 shadow-sm sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-3">
             <div className="h-12 w-12 shrink-0 rounded-full border-2 border-[#DC2626] bg-white p-1 flex items-center justify-center">
               <img src="/icon.png" alt="Love Laundry" className="h-full w-full rounded-full object-contain" />

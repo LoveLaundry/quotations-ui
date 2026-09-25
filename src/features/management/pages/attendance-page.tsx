@@ -243,7 +243,7 @@ export default function AttendancePage() {
 
       {/* Summary card */}
       {summary && (
-        <div className="bg-white dark:bg-gray-800 rounded-xl border p-4">
+        <div className="bg-[var(--surface)] dark:bg-gray-800 rounded-xl border p-4">
           <div className="flex items-center justify-between mb-3">
             <span className="text-sm font-semibold text-gray-600 dark:text-gray-300">
               {summary.start_date} → {summary.end_date}
@@ -267,7 +267,7 @@ export default function AttendancePage() {
         </div>
       )}
 
-      <div className="bg-white dark:bg-gray-800 rounded-xl border p-6 space-y-4">
+      <div className="bg-[var(--surface)] dark:bg-gray-800 rounded-xl border p-6 space-y-4">
         <div className="flex items-center justify-between flex-wrap gap-3">
           <h2 className="text-lg font-semibold flex items-center gap-2">
             <CalendarDays size={20} /> Monthly Attendance
@@ -335,7 +335,7 @@ export default function AttendancePage() {
               <div key={dn} className="bg-gray-50 dark:bg-gray-800 px-2 py-2 text-center text-xs font-semibold text-gray-500 uppercase">{dn}</div>
             ))}
             {Array.from({ length: firstDow }).map((_, i) => (
-              <div key={`blank-${i}`} className="bg-white dark:bg-gray-800 min-h-20" />
+              <div key={`blank-${i}`} className="bg-[var(--surface)] dark:bg-gray-800 min-h-20" />
             ))}
             {days.map((d: string, i: number) => {
               const rec = byDate[d]
@@ -346,7 +346,7 @@ export default function AttendancePage() {
               const isToday = d === todayStr
               const cellBg = isHoliday
                 ? 'bg-purple-50 dark:bg-purple-900/20' : isWeekend
-                ? 'bg-slate-50 dark:bg-slate-800/50' : 'bg-white dark:bg-gray-800'
+                ? 'bg-slate-50 dark:bg-slate-800/50' : 'bg-[var(--surface)] dark:bg-gray-800'
               return (
                 <div key={d} onClick={() => togglePick(d)}
                   ref={grid.registerCell(Math.floor(i / 7), i % 7)} tabIndex={0}
@@ -487,7 +487,7 @@ export default function AttendancePage() {
                     const dayMap = empDayMap[e.id] || {}
                     return (
                       <div key={e.id} className="grid" style={{ gridTemplateColumns: `150px repeat(${days.length}, 34px)` }}>
-                        <div className="sticky left-0 z-10 flex items-center gap-2 border-b border-r px-3 py-1.5 bg-white dark:bg-gray-800">
+                        <div className="sticky left-0 z-10 flex items-center gap-2 border-b border-r px-3 py-1.5 bg-[var(--surface)] dark:bg-gray-800">
                           <span className="truncate text-[12px] font-medium">{e.name}</span>
                         </div>
                         {days.map((d: string) => {
@@ -531,7 +531,7 @@ export default function AttendancePage() {
       {/* Edit modal */}
       {editDate && editForm && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" onClick={() => setEditDate(null)}>
-          <div className="bg-white dark:bg-gray-800 rounded-xl border p-6 w-[380px] space-y-4 shadow-xl" onClick={e => e.stopPropagation()} ref={editFlow.ref} onKeyDown={editFlow.handleKeyDown}>
+          <div className="bg-[var(--surface)] dark:bg-gray-800 rounded-xl border p-6 w-[380px] space-y-4 shadow-[var(--shadow-overlay)]" onClick={e => e.stopPropagation()} ref={editFlow.ref} onKeyDown={editFlow.handleKeyDown}>
             <div className="flex items-center justify-between">
               <h3 className="font-semibold flex items-center gap-2">
                 <Pencil size={16} /> {editDate}
@@ -588,7 +588,7 @@ export default function AttendancePage() {
               {byDate[editDate]?.id && (
                 <button onClick={() => setDeleteTarget(byDate[editDate].id)}
                   disabled={deleteMut.isPending}
-                  className="px-4 py-2 bg-white border border-red-300 text-red-600 rounded-lg text-sm font-medium hover:bg-red-50 disabled:opacity-50 flex items-center gap-1">
+                  className="px-4 py-2 bg-[var(--surface)] border border-red-300 text-red-600 rounded-lg text-sm font-medium hover:bg-red-50 disabled:opacity-50 flex items-center gap-1">
                   <Trash2 size={14} /> Delete
                 </button>
               )}
@@ -599,7 +599,7 @@ export default function AttendancePage() {
     {/* Quick save card */}
       {quickDate && (
         <div className="fixed inset-0 bg-black/20 flex items-center justify-center z-40" onClick={() => setQuickDate(null)}>
-          <div className="bg-white dark:bg-gray-800 rounded-xl border p-5 w-[300px] space-y-3 shadow-xl" onClick={e => e.stopPropagation()}>
+          <div className="bg-[var(--surface)] dark:bg-gray-800 rounded-xl border p-5 w-[300px] space-y-3 shadow-[var(--shadow-overlay)]" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between">
               <h3 className="font-semibold flex items-center gap-2 text-sm">
                 <Check size={15} className="text-green-600" /> Quick save — {quickDate}

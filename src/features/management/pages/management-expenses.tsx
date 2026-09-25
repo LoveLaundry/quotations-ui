@@ -140,12 +140,12 @@ export default function ManagementExpenses() {
       </FilterBar>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <div className="bg-white dark:bg-gray-800 rounded-xl border p-4">
+        <div className="bg-[var(--surface)] dark:bg-gray-800 rounded-xl border p-4">
           <p className="text-sm text-gray-500">Total Expenses</p>
           <p className="text-xl font-bold">Rs. {totalExpenses.toLocaleString()}</p>
         </div>
         {summary.slice(0, 3).map((s: any, i: number) => (
-          <div key={i} className="bg-white dark:bg-gray-800 rounded-xl border p-4">
+          <div key={i} className="bg-[var(--surface)] dark:bg-gray-800 rounded-xl border p-4">
             <p className="text-sm text-gray-500">{s.category}</p>
             <p className="text-xl font-bold">Rs. {s.total.toLocaleString()}</p>
             <p className="text-xs text-gray-400">{s.count} entries</p>
@@ -168,7 +168,7 @@ export default function ManagementExpenses() {
 
       {showForm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-md">
+          <div className="bg-[var(--surface)] dark:bg-gray-800 rounded-xl p-6 w-full max-w-md">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-lg font-semibold">{editing ? 'Edit' : 'Add'} Expense</h2>
               <button onClick={() => { setShowForm(false); setEditing(null) }}><X size={20} /></button>

@@ -67,7 +67,7 @@ export default function ManagementReports() {
       </div>
 
       {/* Filters */}
-      <div className="flex gap-3 flex-wrap items-end bg-white dark:bg-gray-800 rounded-xl border p-4">
+      <div className="flex gap-3 flex-wrap items-end bg-[var(--surface)] dark:bg-gray-800 rounded-xl border p-4">
         <Filter size={16} className="text-gray-400" />
         <div>
           <label className="text-xs text-gray-500">From</label>
@@ -104,26 +104,26 @@ export default function ManagementReports() {
       {report === 'profit-loss' && plData && (
         <div className="space-y-6">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="bg-white dark:bg-gray-800 rounded-xl border p-4">
+            <div className="bg-[var(--surface)] dark:bg-gray-800 rounded-xl border p-4">
               <p className="text-sm text-gray-500">Total Revenue</p>
               <p className="text-xl font-bold text-green-600">{fmt(plData.total_revenue)}</p>
             </div>
-            <div className="bg-white dark:bg-gray-800 rounded-xl border p-4">
+            <div className="bg-[var(--surface)] dark:bg-gray-800 rounded-xl border p-4">
               <p className="text-sm text-gray-500">Cost of Goods</p>
               <p className="text-xl font-bold text-orange-600">{fmt(plData.total_cogs)}</p>
             </div>
-            <div className="bg-white dark:bg-gray-800 rounded-xl border p-4">
+            <div className="bg-[var(--surface)] dark:bg-gray-800 rounded-xl border p-4">
               <p className="text-sm text-gray-500">Gross Profit</p>
               <p className="text-xl font-bold">{fmt(plData.gross_profit)}</p>
             </div>
-            <div className="bg-white dark:bg-gray-800 rounded-xl border p-4">
+            <div className="bg-[var(--surface)] dark:bg-gray-800 rounded-xl border p-4">
               <p className="text-sm text-gray-500">Net Profit</p>
               <p className={`text-xl font-bold ${plData.net_profit >= 0 ? 'text-green-600' : 'text-red-600'}`}>{fmt(plData.net_profit)}</p>
             </div>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="bg-white dark:bg-gray-800 rounded-xl border p-5">
+            <div className="bg-[var(--surface)] dark:bg-gray-800 rounded-xl border p-5">
               <h3 className="font-semibold mb-3">Revenue by Customer</h3>
               <ResponsiveContainer width="100%" height={300}>
                 <BarChart data={plData.revenue_by_customer || []} layout="vertical">
@@ -136,7 +136,7 @@ export default function ManagementReports() {
               </ResponsiveContainer>
             </div>
 
-            <div className="bg-white dark:bg-gray-800 rounded-xl border p-5">
+            <div className="bg-[var(--surface)] dark:bg-gray-800 rounded-xl border p-5">
               <h3 className="font-semibold mb-3">Revenue by Category</h3>
               <ResponsiveContainer width="100%" height={300}>
                 <PieChart>
@@ -152,7 +152,7 @@ export default function ManagementReports() {
             </div>
           </div>
 
-          <div className="bg-white dark:bg-gray-800 rounded-xl border p-5">
+          <div className="bg-[var(--surface)] dark:bg-gray-800 rounded-xl border p-5">
             <h3 className="font-semibold mb-3">Expense Breakdown</h3>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               {(plData.expenses_by_category || []).map((e: any, i: number) => (
@@ -168,7 +168,7 @@ export default function ManagementReports() {
 
       {/* Daily Report */}
       {report === 'daily' && dailyData && (
-        <div className="bg-white dark:bg-gray-800 rounded-xl border p-6 space-y-4">
+        <div className="bg-[var(--surface)] dark:bg-gray-800 rounded-xl border p-6 space-y-4">
           <h2 className="text-lg font-semibold">Daily Report - {dailyData.date}</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div><p className="text-sm text-gray-500">Transactions</p><p className="text-xl font-bold">{dailyData.transactions}</p></div>
@@ -181,7 +181,7 @@ export default function ManagementReports() {
 
       {/* Monthly Report */}
       {report === 'monthly' && monthlyData && (
-        <div className="bg-white dark:bg-gray-800 rounded-xl border p-6 space-y-4">
+        <div className="bg-[var(--surface)] dark:bg-gray-800 rounded-xl border p-6 space-y-4">
           <h2 className="text-lg font-semibold">Monthly Report - {monthlyData.year}-{String(monthlyData.month).padStart(2, '0')}</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div><p className="text-sm text-gray-500">Transactions</p><p className="text-xl font-bold">{monthlyData.transactions}</p></div>
@@ -209,7 +209,7 @@ export default function ManagementReports() {
 
       {/* Outstanding */}
       {report === 'outstanding' && (
-        <div className="bg-white dark:bg-gray-800 rounded-xl border p-6 space-y-4">
+        <div className="bg-[var(--surface)] dark:bg-gray-800 rounded-xl border p-6 space-y-4">
           <h2 className="text-lg font-semibold">Outstanding Payments</h2>
           <table className="w-full text-sm">
             <thead className="bg-gray-50 dark:bg-gray-700">

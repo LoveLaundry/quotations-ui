@@ -65,7 +65,7 @@ export function RowActionsMenu({ actions, size = 16 }: { actions: RowAction[]; s
                     event.stopPropagation()
                     setOpen(value => !value)
                 }}
-                className="flex h-7 w-7 cursor-pointer items-center justify-center rounded-lg border border-transparent text-[#98A2B3] transition hover:border-[#E4E7EC] hover:bg-[#F9FAFB] hover:text-[#475467]"
+                className="flex h-7 w-7 cursor-pointer items-center justify-center rounded-lg border border-transparent text-[var(--text-faint)] transition hover:border-[var(--border)] hover:bg-[var(--surface-2)] hover:text-[var(--text-muted)]"
             >
                 <MoreVertical size={size} />
             </button>
@@ -73,7 +73,7 @@ export function RowActionsMenu({ actions, size = 16 }: { actions: RowAction[]; s
                 <div
                     ref={rootRef}
                     style={{ top: pos.top, right: pos.right }}
-                    className="fixed z-[9999] min-w-[176px] overflow-hidden rounded-xl border border-[#E4E7EC] bg-white p-1 shadow-lg"
+                    className="fixed z-[9999] min-w-[176px] overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--surface)] p-1 shadow-[var(--shadow-overlay)]"
                 >
                     {actions.map(action => (
                         <button
@@ -87,8 +87,8 @@ export function RowActionsMenu({ actions, size = 16 }: { actions: RowAction[]; s
                             className={cn(
                                 'flex w-full cursor-pointer items-center gap-2 rounded-lg px-2.5 py-1.5 text-left text-[12px] font-medium transition',
                                 action.danger
-                                    ? 'text-[#DC2626] hover:bg-red-50'
-                                    : 'text-[#475467] hover:bg-[#F9FAFB] hover:text-[#101828]',
+                                    ? 'text-[var(--red-600)] hover:bg-red-50'
+                                    : 'text-[var(--text-muted)] hover:bg-[var(--surface-2)] hover:text-[var(--text-primary)]',
                             )}
                         >
                             {action.icon}

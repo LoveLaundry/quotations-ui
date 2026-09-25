@@ -178,7 +178,7 @@ export default function LinenScanner() {
       <Breadcrumb items={[{ label: 'Linen' }, { label: 'Scanner' }]} />
 
       <div>
-        <h1 className="text-2xl font-bold text-[var(--text-primary)]" style={{ fontFamily: '"Spectral", Georgia, serif' }}>
+        <h1 className="text-2xl font-bold text-[var(--text-primary)]">
           Scan Linen
         </h1>
         <p className="text-sm text-[var(--text-muted)]">Scan a QR code or enter a linen ID manually</p>
@@ -223,7 +223,7 @@ export default function LinenScanner() {
         )}
         {cameraActive && (
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
-            <div className="w-56 h-56 border-2 border-white/60 rounded-2xl" />
+            <div className="w-56 h-56 border-2 border-white/60 rounded-xl" />
           </div>
         )}
         {cameraActive && (
@@ -235,7 +235,7 @@ export default function LinenScanner() {
 
       {/* Camera error */}
       {cameraError && (
-        <Card className="border border-red-200 bg-red-50 shadow-sm">
+        <Card className="border border-red-200 bg-red-50">
           <CardContent className="p-4">
             <div className="flex items-start gap-3">
               <CameraOff size={18} className="text-red-600 flex-shrink-0 mt-0.5" />
@@ -252,7 +252,7 @@ export default function LinenScanner() {
 
       {/* Manual input */}
       {mode === 'manual' && !cameraActive && (
-        <Card className="border border-[var(--border)] shadow-sm">
+        <Card className="border border-[var(--border)]">
           <CardContent className="p-5">
             <div className="flex gap-3">
               <div className="relative flex-1">
@@ -264,7 +264,7 @@ export default function LinenScanner() {
                   onKeyDown={e => e.key === 'Enter' && handleLookup()}
                   placeholder="Enter linen ID (e.g. LL-7K4P92)"
                   autoFocus
-                  className="w-full pl-10 pr-4 py-3 text-lg font-mono border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[#DC2626]/20 focus:border-[#DC2626] transition-colors"
+                  className="w-full pl-10 pr-4 py-3 text-lg font-mono border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)]/20 focus:border-[var(--red-600)] transition-colors"
                 />
               </div>
               <Button onClick={handleLookup} disabled={!code.trim() || isFetching} className="px-6">
@@ -277,7 +277,7 @@ export default function LinenScanner() {
 
       {/* Not found */}
       {!linen && lastScanned && !isFetching && (
-        <Card className="border border-[var(--border)] shadow-sm">
+        <Card className="border border-[var(--border)]">
           <CardContent className="p-8 text-center">
             <p className="text-sm text-[var(--text-muted)]">No linen found with ID: <span className="font-mono font-semibold">{lastScanned}</span></p>
             <div className="mt-3 flex gap-2 justify-center">
@@ -299,7 +299,7 @@ export default function LinenScanner() {
               <div className="flex items-center gap-2 flex-wrap">
                 <p className="text-sm font-bold" style={{ color: stCfg?.color }}>{stCfg?.label}</p>
                 {lastAction && (
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-white/70 border" style={{ color: lastAction.color, borderColor: lastAction.color + '40' }}>
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[var(--surface)]/70 border" style={{ color: lastAction.color, borderColor: lastAction.color + '40' }}>
                     <CheckCircle size={10} /> {lastAction.label} applied
                   </span>
                 )}
@@ -314,7 +314,7 @@ export default function LinenScanner() {
           </div>
 
           <div className="flex flex-col lg:flex-row gap-4">
-            <Card className="flex-1 border border-[var(--border)] shadow-sm">
+            <Card className="flex-1 border border-[var(--border)]">
               <CardContent className="p-5">
                 <div className="flex items-center justify-between mb-3">
                   <h2 className="text-[11px] font-semibold text-[var(--text-muted)] uppercase tracking-wide">Item Info</h2>
@@ -337,13 +337,13 @@ export default function LinenScanner() {
                     </div>
                   ))}
                 </div>
-                <Link to={`/linen/${linen.id}`} className="inline-block mt-4 text-xs text-[#DC2626] hover:underline font-semibold">
+                <Link to={`/linen/${linen.id}`} className="inline-block mt-4 text-xs text-[var(--red-600)] hover:underline font-semibold">
                   View Full Profile →
                 </Link>
               </CardContent>
             </Card>
 
-            <Card className="lg:w-72 border border-[var(--border)] shadow-sm">
+            <Card className="lg:w-72 border border-[var(--border)]">
               <CardContent className="p-5">
                 <h2 className="text-[11px] font-semibold text-[var(--text-muted)] uppercase tracking-wide mb-3">Quick Actions</h2>
                 <div className="space-y-1.5">
@@ -352,7 +352,7 @@ export default function LinenScanner() {
                       key={sa.value}
                       variant="outline"
                       size="sm"
-                      className="w-full justify-start text-xs h-8 focus:ring-2 focus:ring-[#DC2626]/20"
+                      className="w-full justify-start text-xs h-8 focus:ring-2 focus:ring-[var(--ring)]/20"
                       style={{ borderColor: sa.color + '30', color: sa.color }}
                       onClick={() => handleQuickAction(sa.value)}
                       disabled={scanMutation.isPending}

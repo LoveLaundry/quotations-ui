@@ -49,7 +49,7 @@ export function Loader({
         minHeight: fullScreen ? '100vh' : 'auto',
         padding: fullScreen ? '0' : '20px',
         background: fullScreen ? '#fff' : 'transparent',
-        fontFamily: '"Spectral", Georgia, serif',
+        fontFamily: 'inherit',
       }}
     >
       <style dangerouslySetInnerHTML={{ __html: loadingStyles }} />

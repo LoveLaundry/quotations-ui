@@ -90,30 +90,30 @@ export function SignatureUploadDialog({ open, slots, onClose, onConfirm }: Signa
           {slots.map(slot => {
             const has = Boolean(pending[slot.id])
             return (
-              <div key={slot.id} className="flex items-center gap-3 rounded-xl border border-[#E4E7EC] p-3">
+              <div key={slot.id} className="flex items-center gap-3 rounded-xl border border-[var(--border)] p-3">
                 <label className="flex flex-1 cursor-pointer items-center gap-2">
                   <input
                     type="checkbox"
                     checked={Boolean(place[slot.id])}
                     onChange={e => setPlace(p => ({ ...p, [slot.id]: e.target.checked }))}
                     disabled={!has}
-                    className="accent-[#2563EB] cursor-pointer"
+                    className="accent-blue-600 cursor-pointer"
                   />
-                  <span className="text-[13px] font-medium text-[#101828]">{slot.label}</span>
+                  <span className="text-[13px] font-medium text-[var(--text-primary)]">{slot.label}</span>
                 </label>
                 {has ? (
                   <div className="flex items-center gap-2">
                     <img
                       src={pending[slot.id]}
                       alt={slot.label}
-                      className="h-10 max-w-[90px] rounded border border-[#E4E7EC] bg-white object-contain"
+                      className="h-10 max-w-[90px] rounded border border-[var(--border)] bg-[var(--surface)] object-contain"
                     />
                     <button
                       onClick={() => {
                         setPending(p => { const n = { ...p }; delete n[slot.id]; return n })
                         setPlace(p => ({ ...p, [slot.id]: false }))
                       }}
-                      className="cursor-pointer p-1 text-[#98A2B3] hover:text-[#DC2626]"
+                      className="cursor-pointer p-1 text-[var(--text-faint)] hover:text-blue-600"
                       aria-label={`Remove ${slot.label}`}
                     >
                       <X size={14} />
@@ -122,7 +122,7 @@ export function SignatureUploadDialog({ open, slots, onClose, onConfirm }: Signa
                 ) : (
                   <button
                     onClick={() => pickFor(slot.id)}
-                    className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-[#E4E7EC] px-3 py-1.5 text-[12px] font-semibold text-[#2563EB] hover:bg-[#F5F8FF]"
+                    className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-[var(--border)] px-3 py-1.5 text-[12px] font-semibold text-[blue-600] hover:bg-[var(--surface-2)]"
                   >
                     <Upload size={14} /> Upload
                   </button>

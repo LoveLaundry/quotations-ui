@@ -92,7 +92,7 @@ export default function AttendanceLogPage() {
       <div className="flex items-center justify-between flex-wrap gap-3">
         <h1 className="text-2xl font-bold">Log Attendance — All Staff</h1>
         <div className="flex items-center gap-2">
-          <div className="flex items-center gap-2 px-3 py-2 border rounded-lg text-sm bg-white dark:bg-gray-800">
+          <div className="flex items-center gap-2 px-3 py-2 border rounded-lg text-sm bg-[var(--surface)] dark:bg-gray-800">
             <CalendarDays size={16} className="text-gray-400" />
             <input
               type="date"
@@ -122,7 +122,7 @@ export default function AttendanceLogPage() {
         </span>
       </div>
 
-      <div className="bg-white dark:bg-gray-800 rounded-xl border overflow-hidden">
+      <div className="bg-[var(--surface)] dark:bg-gray-800 rounded-xl border overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
