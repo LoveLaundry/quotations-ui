@@ -34,20 +34,20 @@ export function Pagination({ total, limit, offset, onChange, className }: Pagina
 
   return (
     <div className={cn('flex items-center justify-between flex-wrap gap-3', className)}>
-      <p className="text-[12px] text-[var(--text-muted)]">
-        Showing <span className="font-semibold text-[var(--text-secondary)]">{start}</span>–<span className="font-semibold text-[var(--text-secondary)]">{end}</span> of <span className="font-semibold text-[var(--text-secondary)]">{total}</span>
+      <p className="text-[12px] text-[#6B7280]">
+        Showing <span className="font-semibold text-[#374151]">{start}</span>–<span className="font-semibold text-[#374151]">{end}</span> of <span className="font-semibold text-[#374151]">{total}</span>
       </p>
       <div className="flex items-center gap-1">
         <button
           onClick={() => onChange(Math.max(0, offset - limit))}
           disabled={currentPage === 1}
-          className="flex h-8 w-8 items-center justify-center rounded-lg border border-[var(--border)] bg-[var(--surface)] text-[var(--text-secondary)] hover:bg-[var(--surface-2)] disabled:opacity-40 disabled:cursor-not-allowed transition"
+          className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#E5E7EB] bg-white text-[#374151] hover:bg-[#F9FAFB] disabled:opacity-40 disabled:cursor-not-allowed transition"
         >
           <ChevronLeft size={14} />
         </button>
         {pageNumbers.map((p, i) =>
           p === '...' ? (
-            <span key={`dots-${i}`} className="px-1 text-[12px] text-[var(--text-faint)]">…</span>
+            <span key={`dots-${i}`} className="px-1 text-[12px] text-[#9CA3AF]">…</span>
           ) : (
             <button
               key={p}
@@ -55,8 +55,8 @@ export function Pagination({ total, limit, offset, onChange, className }: Pagina
               className={cn(
                 'flex h-8 min-w-[32px] items-center justify-center rounded-lg text-[12px] font-medium border transition',
                 p === currentPage
-                  ? 'bg-[blue-600] text-white border-[blue-600]'
-                  : 'border-[var(--border)] bg-[var(--surface)] text-[var(--text-secondary)] hover:bg-[var(--surface-2)]',
+                  ? 'bg-[#2563EB] text-white border-[#2563EB]'
+                  : 'border-[#E5E7EB] bg-white text-[#374151] hover:bg-[#F9FAFB]',
               )}
             >
               {p}
@@ -66,7 +66,7 @@ export function Pagination({ total, limit, offset, onChange, className }: Pagina
         <button
           onClick={() => onChange(Math.min((totalPages - 1) * limit, offset + limit))}
           disabled={currentPage === totalPages}
-          className="flex h-8 w-8 items-center justify-center rounded-lg border border-[var(--border)] bg-[var(--surface)] text-[var(--text-secondary)] hover:bg-[var(--surface-2)] disabled:opacity-40 disabled:cursor-not-allowed transition"
+          className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#E5E7EB] bg-white text-[#374151] hover:bg-[#F9FAFB] disabled:opacity-40 disabled:cursor-not-allowed transition"
         >
           <ChevronRight size={14} />
         </button>

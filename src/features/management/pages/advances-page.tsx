@@ -81,17 +81,17 @@ export default function AdvancesPage() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-[var(--surface)] dark:bg-gray-800 rounded-xl border p-4">
+        <div className="bg-white dark:bg-gray-800 rounded-xl border p-4">
           <div className="text-sm text-gray-500">Total Outstanding</div>
           <div className="text-2xl font-bold text-red-600">Rs. {totalOutstanding.toLocaleString()}</div>
         </div>
-        <div className="bg-[var(--surface)] dark:bg-gray-800 rounded-xl border p-4">
+        <div className="bg-white dark:bg-gray-800 rounded-xl border p-4">
           <div className="text-sm text-gray-500">Records Shown</div>
           <div className="text-2xl font-bold">{advancesData.total}</div>
         </div>
       </div>
 
-      <div className="bg-[var(--surface)] dark:bg-gray-800 rounded-xl border p-4">
+      <div className="bg-white dark:bg-gray-800 rounded-xl border p-4">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
             <label className="text-sm font-medium text-gray-600 dark:text-gray-400">Employee</label>
@@ -122,7 +122,7 @@ export default function AdvancesPage() {
         </div>
       </div>
 
-      <div className="bg-[var(--surface)] dark:bg-gray-800 rounded-xl border overflow-hidden">
+      <div className="bg-white dark:bg-gray-800 rounded-xl border overflow-hidden">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b bg-gray-50 dark:bg-gray-700/50">
@@ -183,7 +183,7 @@ export default function AdvancesPage() {
 
       {showForm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="bg-[var(--surface)] dark:bg-gray-800 rounded-xl p-6 w-full max-w-md">
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-md">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-lg font-semibold">Record Advance</h2>
               <button onClick={() => setShowForm(false)}><X size={20} /></button>

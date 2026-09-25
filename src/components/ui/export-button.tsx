@@ -81,16 +81,16 @@ export function ExportButton({ data, filename, columns, label = 'Export', classN
     <div className={cn('relative', className)} ref={ref}>
       <button
         onClick={() => setOpen(!open)}
-        className="flex items-center gap-1.5 px-3 py-2 text-[13px] font-medium border border-[var(--border)] bg-[var(--surface)] rounded-lg hover:bg-[var(--surface-2)] text-[var(--text-secondary)] transition"
+        className="flex items-center gap-1.5 px-3 py-2 text-[13px] font-medium border border-[#E5E7EB] bg-white rounded-lg hover:bg-[#F9FAFB] text-[#374151] transition"
       >
         <Download size={14} /> {label} <ChevronDown size={12} className={cn('transition-transform', open && 'rotate-180')} />
       </button>
       {open && (
-        <div className="absolute right-0 top-full mt-1 z-50 bg-[var(--surface)] border border-[var(--border)] rounded-xl shadow-[var(--shadow-overlay)] py-1 min-w-[160px]">
-          <button onClick={handleCSV} className="w-full text-left px-4 py-2 text-[13px] hover:bg-[var(--surface-2)] transition font-medium text-[var(--text-secondary)]">
+        <div className="absolute right-0 top-full mt-1 z-50 bg-white border border-[#E5E7EB] rounded-xl shadow-lg py-1 min-w-[160px]">
+          <button onClick={handleCSV} className="w-full text-left px-4 py-2 text-[13px] hover:bg-[#F9FAFB] transition font-medium text-[#374151]">
             Export CSV
           </button>
-          <button onClick={handleJSON} className="w-full text-left px-4 py-2 text-[13px] hover:bg-[var(--surface-2)] transition font-medium text-[var(--text-secondary)]">
+          <button onClick={handleJSON} className="w-full text-left px-4 py-2 text-[13px] hover:bg-[#F9FAFB] transition font-medium text-[#374151]">
             Export JSON
           </button>
         </div>

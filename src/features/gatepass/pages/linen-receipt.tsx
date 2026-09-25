@@ -158,7 +158,7 @@ export default function CamelotLinenReceipt() {
 
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h1 className="text-2xl font-bold text-[var(--text-primary)]">
+            <h1 className="text-2xl font-bold text-[var(--text-primary)]" style={{ fontFamily: '"Spectral", Georgia, serif' }}>
               Camelot Linen Receipt
             </h1>
             <p className="text-sm text-[var(--text-muted)]">Click any cell to type the quantity — print the filled receipt</p>

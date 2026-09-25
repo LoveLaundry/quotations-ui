@@ -35,7 +35,7 @@ export default function QuotationPrintPage() {
         alignItems: 'center',
         justifyContent: 'center',
         background: '#fff',
-        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
+        fontFamily: '"Spectral", Georgia, serif',
         padding: '20px',
       }}>
         <img
@@ -72,7 +72,7 @@ export default function QuotationPrintPage() {
             border: 'none',
             borderRadius: '0',
             cursor: 'pointer',
-            fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
+            fontFamily: '"Spectral", Georgia, serif',
             fontSize: '14px',
           }}
         >
@@ -87,7 +87,7 @@ export default function QuotationPrintPage() {
       minHeight: '100vh',
       background: '#f5f5f5',
       padding: '40px 20px',
-      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
+      fontFamily: '"Spectral", Georgia, serif',
     }}>
       {/* Print button - TOP CENTER, above A4 pages */}
       <div className="no-print" style={{
@@ -111,7 +111,7 @@ export default function QuotationPrintPage() {
             display: 'inline-flex',
             alignItems: 'center',
             gap: '8px',
-            fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
+            fontFamily: '"Spectral", Georgia, serif',
             boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
           }}
           onMouseOver={(e) => e.currentTarget.style.background = '#dc2626'}

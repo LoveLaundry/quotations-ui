@@ -9,13 +9,13 @@ interface EmptyStateProps {
 
 export function EmptyState({ icon, title, description, action }: EmptyStateProps) {
   return (
-    <div className="flex flex-col items-center justify-center rounded-lg border border-[var(--border)] bg-[var(--surface)] px-8 py-14 text-center">
-      <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-lg bg-[var(--surface-2)] text-[var(--text-faint)]">
-        {icon || <Inbox className="h-5 w-5" />}
+    <div className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-[#E5E7EB] bg-[#FAFAFA] p-12 text-center smooth-appear">
+      <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-[#F3F4F6] to-[#E5E7EB] border border-[#D1D5DB]">
+        {icon || <Inbox className="h-7 w-7 text-[#9CA3AF]" />}
       </div>
-      <p className="text-[14px] font-semibold text-[var(--text-primary)]">{title}</p>
-      <p className="mt-1.5 max-w-sm text-[13px] text-[var(--text-muted)]">{description}</p>
-      {action && <div className="mt-5">{action}</div>}
+      <p className="text-[16px] font-semibold text-[#374151]">{title}</p>
+      <p className="mt-2 max-w-sm text-[14px] text-[#6B7280] leading-relaxed">{description}</p>
+      {action && <div className="mt-6">{action}</div>}
     </div>
   )
 }

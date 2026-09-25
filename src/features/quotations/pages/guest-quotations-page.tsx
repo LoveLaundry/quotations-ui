@@ -40,10 +40,10 @@ export default function GuestQuotationsPage() {
   }
 
   const STATUS_STYLE: Record<string, string> = {
-    draft: 'bg-[var(--surface-2)] text-[var(--text-muted)] border-[var(--border)]',
-    sent: 'bg-[blue-50] text-[blue-600] border-[blue-200]',
-    accepted: 'bg-[var(--red-50)] text-[var(--red-600)] border-[var(--red-100)]',
-    archived: 'bg-[var(--surface-2)] text-[var(--text-faint)] border-[var(--border)]',
+    draft: 'bg-[#F9FAFB] text-[#6B7280] border-[#E4E7EC]',
+    sent: 'bg-[#EFF6FF] text-[#2563EB] border-[#BFDBFE]',
+    accepted: 'bg-[#FFF1F1] text-[#DC2626] border-[#FECACA]',
+    archived: 'bg-[#FAFAFA] text-[#9CA3AF] border-[#E4E7EC]',
   }
 
   return (
@@ -56,14 +56,14 @@ export default function GuestQuotationsPage() {
           background: 'rgba(255,255,255,0.85)',
           backdropFilter: 'blur(12px)',
           borderColor: 'var(--border)',
-          boxShadow: 'var(--)',
+          boxShadow: 'var(--shadow-sm)',
         }}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div
-                className="flex h-10 w-10 items-center justify-center rounded-xl"
+                className="flex h-10 w-10 items-center justify-center rounded-xl shadow-md"
                 style={{ background: 'linear-gradient(135deg, #DC2626, #B91C1C)' }}
               >
                 <RiStore2Line className="h-5 w-5 text-white" />
@@ -71,7 +71,7 @@ export default function GuestQuotationsPage() {
               <div>
                 <h1
                   className="text-[17px] font-bold leading-tight"
-                  style={{ color: 'var(--text-primary)' }}
+                  style={{ color: 'var(--text-primary)', fontFamily: 'Spectral, serif' }}
                 >
                   Love Laundry
                 </h1>
@@ -84,7 +84,7 @@ export default function GuestQuotationsPage() {
               className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg border text-[12px] font-semibold"
               style={{ background: '#FFF1F1', borderColor: '#FECACA', color: '#DC2626' }}
             >
-              <div className="h-1.5 w-1.5 rounded-full bg-[var(--red-600)] animate-pulse" />
+              <div className="h-1.5 w-1.5 rounded-full bg-[#DC2626] animate-pulse" />
               Public Catalog
             </div>
           </div>
@@ -116,11 +116,11 @@ export default function GuestQuotationsPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {[1, 2, 3, 4, 5, 6].map((i) => (
               <div key={i} className="card-surface p-5 animate-pulse">
-                <div className="h-5 bg-[var(--surface-2)] rounded w-3/4 mb-3" />
-                <div className="h-3.5 bg-[var(--surface-2)] rounded w-1/2 mb-5" />
+                <div className="h-5 bg-[#F3F4F6] rounded w-3/4 mb-3" />
+                <div className="h-3.5 bg-[#F3F4F6] rounded w-1/2 mb-5" />
                 <div className="space-y-2">
-                  <div className="h-3 bg-[var(--surface-2)] rounded" />
-                  <div className="h-3 bg-[var(--surface-2)] rounded w-5/6" />
+                  <div className="h-3 bg-[#F3F4F6] rounded" />
+                  <div className="h-3 bg-[#F3F4F6] rounded w-5/6" />
                 </div>
               </div>
             ))}
@@ -131,7 +131,7 @@ export default function GuestQuotationsPage() {
               className="flex h-14 w-14 items-center justify-center rounded-xl border mx-auto mb-4"
               style={{ background: '#FFF1F1', borderColor: '#FECACA' }}
             >
-              <RiFileLine className="h-7 w-7 text-[var(--red-600)]" />
+              <RiFileLine className="h-7 w-7 text-[#DC2626]" />
             </div>
             <h3 className="text-[15px] font-semibold mb-1" style={{ color: 'var(--text-primary)' }}>
               No Services Available
@@ -148,14 +148,14 @@ export default function GuestQuotationsPage() {
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.25, delay: index * 0.05 }}
-                className="card-interactive p-5 cursor-pointer group"
+                className="luxury-card p-5 cursor-pointer group"
                 onClick={() => setSelectedQuotation(quotation)}
               >
                 {/* Card header */}
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex-1 min-w-0 pr-3">
                     <h3
-                      className="text-[14px] font-bold truncate mb-0.5 group-hover:text-[var(--red-600)] transition-colors"
+                      className="text-[14px] font-bold truncate mb-0.5 group-hover:text-[#DC2626] transition-colors"
                       style={{ color: 'var(--text-primary)' }}
                     >
                       {quotation.quotation_title || 'Service Package'}
@@ -165,10 +165,10 @@ export default function GuestQuotationsPage() {
                     </p>
                   </div>
                   <div
-                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border transition-colors group-hover:bg-[var(--red-600)] group-hover:border-[var(--red-600)]"
+                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border transition-all group-hover:bg-[#DC2626] group-hover:border-[#DC2626]"
                     style={{ background: '#FFF1F1', borderColor: '#FECACA' }}
                   >
-                    <RiFileLine className="h-4 w-4 text-[var(--red-600)] transition-colors group-hover:text-white" />
+                    <RiFileLine className="h-4 w-4 text-[#DC2626] transition-colors group-hover:text-white" />
                   </div>
                 </div>
 
@@ -205,7 +205,7 @@ export default function GuestQuotationsPage() {
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-[11px]" style={{ color: 'var(--text-muted)' }}>Estimated Total</span>
-                    <span className="text-[15px] font-bold text-[var(--red-600)]">
+                    <span className="text-[15px] font-bold text-[#DC2626]">
                       LKR {calculateTotal(quotation.line_items || []).toLocaleString()}
                     </span>
                   </div>
@@ -214,7 +214,7 @@ export default function GuestQuotationsPage() {
                 {/* View button */}
                 <button
                   type="button"
-                  className="w-full mt-4 flex items-center justify-center gap-2 rounded-lg border px-4 py-2 text-[12px] font-medium transition-colors duration-150 hover:bg-[var(--red-50)] hover:border-[var(--red-100)] hover:text-[var(--red-600)]"
+                  className="w-full mt-4 flex items-center justify-center gap-2 rounded-lg border px-4 py-2 text-[12px] font-medium transition-all duration-150 hover:bg-[#FFF1F1] hover:border-[#FECACA] hover:text-[#DC2626]"
                   style={{ borderColor: 'var(--border)', color: 'var(--text-tertiary)' }}
                 >
                   <RiEyeLine className="h-3.5 w-3.5" />
@@ -239,7 +239,7 @@ export default function GuestQuotationsPage() {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.96, y: 8 }}
               transition={{ duration: 0.2 }}
-              className="bg-[var(--surface)] rounded-xl shadow-[var(--shadow-overlay)] max-w-2xl w-full max-h-[90vh] overflow-hidden"
+              className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden"
               style={{ border: '1px solid var(--border)' }}
               onClick={(e) => e.stopPropagation()}
             >
@@ -248,7 +248,7 @@ export default function GuestQuotationsPage() {
                 <div>
                   <h2
                     className="text-[18px] font-bold mb-0.5"
-                    style={{ color: 'var(--text-primary)' }}
+                    style={{ color: 'var(--text-primary)', fontFamily: 'Spectral, serif' }}
                   >
                     {selectedQuotation.quotation_title || 'Service Package'}
                   </h2>
@@ -259,7 +259,7 @@ export default function GuestQuotationsPage() {
                 <button
                   type="button"
                   onClick={() => setSelectedQuotation(null)}
-                  className="flex h-8 w-8 items-center justify-center rounded-lg border transition-colors hover:bg-[var(--red-50)] hover:border-[var(--red-100)] hover:text-[var(--red-600)]"
+                  className="flex h-8 w-8 items-center justify-center rounded-lg border transition-all hover:bg-[#FFF1F1] hover:border-[#FECACA] hover:text-[#DC2626]"
                   style={{ borderColor: 'var(--border)', color: 'var(--text-muted)' }}
                 >
                   <RiCloseLine className="h-5 w-5" />
@@ -293,7 +293,7 @@ export default function GuestQuotationsPage() {
                         )}
                       </div>
                       <div className="text-right shrink-0">
-                        <p className="text-[15px] font-bold text-[var(--red-600)]">
+                        <p className="text-[15px] font-bold text-[#DC2626]">
                           LKR {(item.unit_price || 0).toLocaleString()}
                         </p>
                       </div>
@@ -309,7 +309,7 @@ export default function GuestQuotationsPage() {
                   <span className="text-[14px] font-semibold" style={{ color: 'var(--text-tertiary)' }}>
                     Total Estimate
                   </span>
-                  <span className="text-[18px] font-bold text-[var(--red-600)]">
+                  <span className="text-[18px] font-bold text-[#DC2626]">
                     LKR {calculateTotal(selectedQuotation.line_items || []).toLocaleString()}
                   </span>
                 </div>

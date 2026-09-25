@@ -88,7 +88,7 @@ export default function ExtraWorkPage() {
         </div>
       </div>
 
-      <div className="bg-[var(--surface)] dark:bg-gray-800 rounded-xl border p-6">
+      <div className="bg-white dark:bg-gray-800 rounded-xl border p-6">
         <h2 className="font-semibold flex items-center gap-2 mb-3">
           <Tag size={18} /> Categories
         </h2>
@@ -107,7 +107,7 @@ export default function ExtraWorkPage() {
         </div>
       </div>
 
-      <div className="bg-[var(--surface)] dark:bg-gray-800 rounded-xl border p-6">
+      <div className="bg-white dark:bg-gray-800 rounded-xl border p-6">
         <h2 className="font-semibold mb-3">Records</h2>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
@@ -153,7 +153,7 @@ export default function ExtraWorkPage() {
 
       {showCatForm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="bg-[var(--surface)] dark:bg-gray-800 rounded-xl p-6 w-full max-w-md">
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-md">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-lg font-semibold">New Category</h2>
               <button onClick={() => setShowCatForm(false)}><X size={20} /></button>
@@ -204,7 +204,7 @@ export default function ExtraWorkPage() {
 
       {showRecordForm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="bg-[var(--surface)] dark:bg-gray-800 rounded-xl p-6 w-full max-w-md">
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-md">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-lg font-semibold">Add Extra Work Record</h2>
               <button onClick={() => setShowRecordForm(false)}><X size={20} /></button>

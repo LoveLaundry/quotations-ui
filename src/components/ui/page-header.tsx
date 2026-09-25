@@ -17,15 +17,15 @@ export function PageHeader({ title, subtitle, actions, backTo, className }: Page
         {backTo && (
           <Link
             to={backTo}
-            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-2)] text-[var(--text-secondary)] transition"
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-[#E5E7EB] bg-white hover:bg-[#F9FAFB] text-[#374151] transition"
           >
             <ChevronLeft size={16} />
           </Link>
         )}
         <div className="min-w-0">
-          <h1 className="text-[22px] font-bold text-[var(--text-primary)] leading-tight truncate">{title}</h1>
+          <h1 className="text-[22px] font-bold text-[#111827] leading-tight truncate">{title}</h1>
           {subtitle && (
-            <p className="text-[13px] text-[var(--text-muted)] mt-0.5 truncate">{subtitle}</p>
+            <p className="text-[13px] text-[#6B7280] mt-0.5 truncate">{subtitle}</p>
           )}
         </div>
       </div>

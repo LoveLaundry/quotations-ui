@@ -46,14 +46,14 @@ function fmt(lkr: number) {
 function ActionIcon({ action }: { action: string }) {
   const a = (action || '').toUpperCase()
   const cfg = a.includes('CREATE') || a.includes('ADD')
-    ? 'bg-[emerald-50] text-[emerald-600] border-[emerald-200]'
+    ? 'bg-[#F0FDF4] text-[#16A34A] border-[#BBF7D0]'
     : a.includes('UPDATE') || a.includes('EDIT') || a.includes('BILL_EDIT')
-      ? 'bg-[blue-50] text-[blue-600] border-[blue-200]'
+      ? 'bg-[#EFF6FF] text-[#2563EB] border-[#BFDBFE]'
       : a.includes('DELETE') || a.includes('REMOVE') || a.includes('CANCEL')
-        ? 'bg-[var(--red-50)] text-[var(--red-600)] border-[var(--red-100)]'
+        ? 'bg-[#FFF1F1] text-[#DC2626] border-[#FECACA]'
         : a.includes('PAYMENT')
-          ? 'bg-[emerald-50] text-[emerald-600] border-[emerald-200]'
-          : 'bg-[var(--surface-2)] text-[var(--text-muted)] border-[var(--border)]'
+          ? 'bg-[#F0FDF4] text-[#16A34A] border-[#BBF7D0]'
+          : 'bg-[#F9FAFB] text-[#6B7280] border-[#E4E7EC]'
   return <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-semibold ${cfg}`}>{a}</span>
 }
 
@@ -230,7 +230,7 @@ function TablesRow({ data }: { data: DashboardOverviewData }) {
                   <motion.tr key={c.client_name} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.04 }} className="hover:bg-[var(--surface-hover)]">
                     <td className="px-3 py-2.5">
                       <div className="flex items-center gap-2">
-                        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[var(--red-50)] border border-[var(--red-100)] text-[11px] font-bold text-[var(--red-600)]">
+                        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#FFF1F1] border border-[#FECACA] text-[11px] font-bold text-[#DC2626]">
                           {c.client_name.charAt(0).toUpperCase()}
                         </div>
                         <span className="font-medium truncate max-w-[140px]">{c.client_name}</span>
@@ -240,11 +240,11 @@ function TablesRow({ data }: { data: DashboardOverviewData }) {
                       <div className="flex items-center gap-2">
                         <span className="font-semibold">LKR {fmt(c.revenue)}</span>
                         <div className="h-1.5 flex-1 bg-[var(--border)] rounded-full overflow-hidden max-w-[80px]">
-                          <div className="h-full bg-[var(--red-600)] rounded-full" style={{ width: `${(c.revenue / maxRevenue) * 100}%` }} />
+                          <div className="h-full bg-[#DC2626] rounded-full" style={{ width: `${(c.revenue / maxRevenue) * 100}%` }} />
                         </div>
                       </div>
                     </td>
-                    <td className="px-3 py-2.5 text-[amber-600] font-semibold">LKR {fmt(c.outstanding)}</td>
+                    <td className="px-3 py-2.5 text-[#D97706] font-semibold">LKR {fmt(c.outstanding)}</td>
                     <td className="px-3 py-2.5" style={{ color: 'var(--text-tertiary)' }}>{c.bills}</td>
                   </motion.tr>
                 ))}
@@ -255,7 +255,7 @@ function TablesRow({ data }: { data: DashboardOverviewData }) {
       </Card>
 
       {/* Pending Balance */}
-      <Card className={totalPending > 0 ? 'border-[orange-200]' : ''}>
+      <Card className={totalPending > 0 ? 'border-[#FED7AA]' : ''}>
         <CardHeader className="border-b border-[var(--border)] pb-3">
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center gap-2 text-[14px]">
@@ -263,11 +263,11 @@ function TablesRow({ data }: { data: DashboardOverviewData }) {
             </CardTitle>
             {totalPending > 0 && (
               <div className="flex items-center gap-2">
-                <span className="inline-flex items-center rounded-full bg-[amber-600] px-3 py-1 text-[16px] font-bold text-white">
+                <span className="inline-flex items-center rounded-full bg-[#D97706] px-3 py-1 text-[16px] font-bold text-white shadow-sm">
                   {totalPending}
                 </span>
                 <Link to="/deliveries/new">
-                  <Button size="sm" className="bg-[emerald-600] hover:bg-[emerald-700] text-white text-[11px] gap-1 cursor-pointer">
+                  <Button size="sm" className="bg-[#16A34A] hover:bg-[#15803D] text-white text-[11px] gap-1 cursor-pointer">
                     <Truck className="h-3 w-3" /> Deliver
                   </Button>
                 </Link>
@@ -290,12 +290,12 @@ function TablesRow({ data }: { data: DashboardOverviewData }) {
                 >
                   <div className="flex items-center justify-between mb-1.5">
                     <div className="flex items-center gap-2">
-                      <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[amber-600] text-white text-[10px] font-bold">
+                      <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#D97706] text-white text-[10px] font-bold">
                         {client.charAt(0).toUpperCase()}
                       </div>
                       <span className="text-[13px] font-semibold" style={{ color: 'var(--text-primary)' }}>{client}</span>
                     </div>
-                    <span className="inline-flex items-center rounded-full bg-[orange-50] border border-[orange-200] px-2.5 py-0.5 text-[13px] font-bold text-[orange-700]">
+                    <span className="inline-flex items-center rounded-full bg-[#FFF7ED] border border-[#FED7AA] px-2.5 py-0.5 text-[13px] font-bold text-[#C2410C]">
                       {data.total}
                     </span>
                   </div>
@@ -304,11 +304,11 @@ function TablesRow({ data }: { data: DashboardOverviewData }) {
                       <div key={`${item.item_name}-${j}`} className="flex items-center gap-2 text-[12px]">
                         <span className="font-medium" style={{ color: 'var(--text-secondary)' }}>{item.item_name}</span>
                         {item.specification && (
-                          <span className="inline-flex items-center rounded bg-[orange-50] border border-[orange-200] px-1.5 py-0.5 text-[10px] font-semibold text-[var(--red-600)]">
+                          <span className="inline-flex items-center rounded bg-[#FFF7ED] border border-[#FED7AA] px-1.5 py-0.5 text-[10px] font-semibold text-[#EA580C]">
                             {item.specification}
                           </span>
                         )}
-                        <span className="font-semibold text-[amber-600]">{item.pending} pending</span>
+                        <span className="font-semibold text-[#D97706]">{item.pending} pending</span>
                       </div>
                     ))}
                   </div>
@@ -333,9 +333,9 @@ function AlertBanners({ data }: { data: DashboardOverviewData }) {
         <div
           key={a.id}
           className={`flex items-start gap-3 rounded-xl border px-4 py-3 text-[13px] ${
-            a.severity === 'high' ? 'bg-[var(--red-50)] border-[var(--red-100)] tex-red-800' :
-            a.severity === 'medium' ? 'bg-[amber-50] border-[amber-200] text-red-800' :
-            'bg-[blue-50] border-[blue-200] text-[blue-800]'
+            a.severity === 'high' ? 'bg-[#FFF1F1] border-[#FECACA] text-[#991B1B]' :
+            a.severity === 'medium' ? 'bg-[#FFFBEB] border-[#FDE68A] text-[#92400E]' :
+            'bg-[#EFF6FF] border-[#BFDBFE] text-[#1E40AF]'
           }`}
         >
           <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" />
@@ -465,7 +465,7 @@ function BalancesOverview({ data, onShowDetails }: { data: DashboardOverviewData
           <div className="mt-3 flex justify-end">
             <button
               onClick={onShowDetails}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[12px] font-medium text-gray-600 bg-[var(--surface)] hover:bg-gray-100 rounded-lg border border-gray-200 transition cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[12px] font-medium text-gray-600 bg-white hover:bg-gray-100 rounded-lg border border-gray-200 transition cursor-pointer"
             >
               <Eye className="h-3.5 w-3.5" />
               View Full Details
@@ -707,7 +707,7 @@ function PeriodComparison({ data }: { data: DashboardOverviewData }) {
               <div key={cmp.label} className="text-center">
                 <p className="text-[11px] font-semibold uppercase tracking-wide mb-1" style={{ color: 'var(--text-tertiary)' }}>{cmp.label}</p>
                 <p className="text-[16px] font-bold" style={{ color: 'var(--text-primary)' }}>{val}</p>
-                <div className={`inline-flex items-center gap-0.5 mt-1 text-[11px] font-semibold ${improved ? 'text-[emerald-600]' : 'tex-emerald-600'}`}>
+                <div className={`inline-flex items-center gap-0.5 mt-1 text-[11px] font-semibold ${improved ? 'text-[#16A34A]' : 'text-[#DC2626]'}`}>
                   {improved ? <ArrowUpRight className="h-3 w-3" /> : <ArrowDownRight className="h-3 w-3" />}
                   {Math.abs(diff).toFixed(0)}% vs prev
                 </div>
@@ -753,16 +753,16 @@ function ItemAnalytics({ data }: { data: DashboardOverviewData }) {
                     <div className="flex items-center gap-2">
                       <span className="font-semibold">{item.total_received}</span>
                       <div className="h-1.5 flex-1 bg-[var(--border)] rounded-full overflow-hidden max-w-[60px]">
-                        <div className="h-full bg-[blue-600] rounded-full" style={{ width: `${(item.total_received / maxReceived) * 100}%` }} />
+                        <div className="h-full bg-[#2563EB] rounded-full" style={{ width: `${(item.total_received / maxReceived) * 100}%` }} />
                       </div>
                     </div>
                   </td>
-                  <td className="px-3 py-2.5 text-[emerald-600] font-semibold">{item.total_delivered}</td>
+                  <td className="px-3 py-2.5 text-[#16A34A] font-semibold">{item.total_delivered}</td>
                   <td className="px-3 py-2.5">
                     {item.pending > 0 ? (
-                      <span className="inline-flex items-center rounded-full bg-[orange-50] border border-[orange-200] px-2 py-0.5 text-[11px] font-semibold text-[orange-700]">{item.pending}</span>
+                      <span className="inline-flex items-center rounded-full bg-[#FFF7ED] border border-[#FED7AA] px-2 py-0.5 text-[11px] font-semibold text-[#C2410C]">{item.pending}</span>
                     ) : (
-                      <span className="text-[emerald-600]">—</span>
+                      <span className="text-[#16A34A]">—</span>
                     )}
                   </td>
                   <td className="px-3 py-2.5" style={{ color: 'var(--text-tertiary)' }}>{item.client_count}</td>
@@ -879,7 +879,7 @@ function QuotationFunnel({ data }: { data: DashboardOverviewData }) {
             {c.quotationAcceptedValue > 0 && (
               <div className="pt-2 border-t border-[var(--border)] text-center">
                 <span className="text-[12px]" style={{ color: 'var(--text-tertiary)' }}>Accepted Value: </span>
-                <span className="text-[14px] font-bold text-[emerald-600]">LKR {fmt(c.quotationAcceptedValue)}</span>
+                <span className="text-[14px] font-bold text-[#16A34A]">LKR {fmt(c.quotationAcceptedValue)}</span>
               </div>
             )}
           </div>
@@ -993,7 +993,7 @@ export default function DashboardPage() {
               <Download className="h-3.5 w-3.5 mr-1.5" /> Export
             </Button>
             {showExport && (
-              <div className="absolute right-0 top-full mt-1 z-50 bg-[var(--surface)] border border-[var(--border)] rounded-xl shadow-[var(--shadow-overlay)] py-1 min-w-[200px]">
+              <div className="absolute right-0 top-full mt-1 z-50 bg-[var(--surface)] border border-[var(--border)] rounded-xl shadow-lg py-1 min-w-[200px]">
                 {([['gatepasses', 'Gate Passes'], ['bills', 'Bills'], ['deliveries', 'Deliveries']] as const).map(([type, label]) => (
                   <div key={type} className="flex border-b border-[var(--border)] last:border-0">
                     <button onClick={() => handleExport(type, 'csv')} className="flex-1 text-left px-4 py-2 text-[13px] hover:bg-[var(--surface-hover)] transition font-medium">
@@ -1008,7 +1008,7 @@ export default function DashboardPage() {
             )}
           </div>
           <Link to="/quotations/new">
-            <Button size="sm" className="">
+            <Button size="sm" className="shadow-sm">
               <Plus className="h-3.5 w-3.5 mr-1" /> New Quotation
             </Button>
           </Link>
@@ -1023,7 +1023,7 @@ export default function DashboardPage() {
             onClick={() => setPeriod(p.value)}
             className={`rounded-xl px-4 py-2 text-[13px] font-medium whitespace-nowrap transition cursor-pointer ${
               period === p.value
-                ? 'bg-[var(--red-600)] text-white'
+                ? 'bg-[#DC2626] text-white shadow-sm'
                 : 'hover:bg-[var(--surface-hover)]'
             }`}
             style={period !== p.value ? { color: 'var(--text-secondary)' } : {}}

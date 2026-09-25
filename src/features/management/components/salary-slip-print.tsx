@@ -131,7 +131,7 @@ export function SalarySlipPrint({ slip, lang = 'EN' }: SalarySlipProps) {
   const t = T[isSi ? 'SI' : 'EN']
   const fontFamily = isSi
     ? '"Noto Sans Sinhala", "Iskoola Pota", "FMAbhaya", "Bhashitha", "Nirmala UI", sans-serif'
-    : 'inherit'
+    : '"Spectral", Georgia, serif'
   const prefix = isSi ? 'රු. ' : 'Rs. '
   const formatRs = (val: number) => `${prefix}${Number(val || 0).toLocaleString('en-LK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
 

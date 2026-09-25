@@ -22,7 +22,7 @@ const billPrintStyles = `
   @page :first { margin: 0; }
 
   .bill-print-page {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-family: "Spectral", Georgia, serif;
     color: #000;
     background: #fff;
   }
@@ -61,13 +61,13 @@ const billPrintStyles = `
     letter-spacing: 3px;
     line-height: 1.2;
     margin: 0;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-family: "Spectral", Georgia, serif;
   }
   .bp-company-tagline {
     font-size: 16px;
     font-weight: 600;
     margin: 2px 0 0 0;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-family: "Spectral", Georgia, serif;
   }
   .bp-services {
     display: flex;

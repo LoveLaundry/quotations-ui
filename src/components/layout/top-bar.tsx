@@ -63,8 +63,9 @@ export function TopBar({ title, sidebarCollapsed, onMobileMenuToggle, onOpenSear
         className={cn(
         'fixed top-0 right-0 z-30 h-16',
         'flex items-center justify-between px-6',
-        'bg-[var(--surface)] border-b border-[var(--border)]',
+        'bg-white/80 backdrop-blur-md border-b border-[var(--border)]',
         'transition-[left] duration-200 select-none',
+        'shadow-sm',
         sidebarCollapsed ? 'left-0 lg:left-[60px]' : 'left-0 lg:left-[232px]',
       )}
     >
@@ -72,7 +73,7 @@ export function TopBar({ title, sidebarCollapsed, onMobileMenuToggle, onOpenSear
         <button
           type="button"
           onClick={onMobileMenuToggle}
-          className="flex h-9 w-9 items-center justify-center rounded-lg text-[var(--text-muted)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] transition-colors duration-100 lg:hidden"
+          className="flex h-9 w-9 items-center justify-center rounded-xl text-[var(--text-muted)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] transition-all duration-200 lg:hidden"
           aria-label="Menu"
         >
           <List size={20} />
@@ -99,7 +100,7 @@ export function TopBar({ title, sidebarCollapsed, onMobileMenuToggle, onOpenSear
         <button
           type="button"
           onClick={() => onOpenSearch?.()}
-          className="flex h-9 items-center gap-2 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 text-[var(--text-muted)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] hover:border-[var(--border-2)] transition-colors duration-100 cursor-pointer shadow-sm"
+          className="flex h-9 items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3 text-[var(--text-muted)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] hover:border-[var(--border-2)] transition-all duration-200 cursor-pointer shadow-sm"
           aria-label="Search"
           title="Search (Ctrl+K)"
         >
@@ -115,18 +116,18 @@ export function TopBar({ title, sidebarCollapsed, onMobileMenuToggle, onOpenSear
           <button
             type="button"
             onClick={() => setShowNotifications(v => !v)}
-            className="relative flex h-9 w-9 items-center justify-center rounded-lg border border-[var(--border)] bg-[var(--surface)] text-[var(--text-muted)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] hover:border-[var(--border-2)] transition-colors duration-100 cursor-pointer shadow-sm"
+            className="relative flex h-9 w-9 items-center justify-center rounded-xl border border-[var(--border)] bg-[var(--surface)] text-[var(--text-muted)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] hover:border-[var(--border-2)] transition-all duration-200 cursor-pointer shadow-sm"
             aria-label={isLoading ? 'Loading notifications...' : `Notifications${totalCount > 0 ? ` (${totalCount})` : ''}`}
             title={isLoading ? 'Loading notifications...' : totalCount > 0 ? `${totalCount} notification${totalCount !== 1 ? 's' : ''}` : 'No new notifications'}
           >
             <Bell size={18} />
             {totalCount > 0 && !isLoading && (
-              <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-[var(--red-600)] text-white text-[10px] font-bold border-2 border-[var(--surface)]">
+              <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-[#DC2626] text-white text-[10px] font-bold border-2 border-white">
                 {totalCount > 99 ? '99+' : totalCount}
               </span>
             )}
             {isLoading && (
-              <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full b-emerald-600 text-white text-[10px] font-bold border-2 border-[var(--surface)] animate-pulse">
+              <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-[#16A34A] text-white text-[10px] font-bold border-2 border-white animate-pulse">
                 …
               </span>
             )}
@@ -141,13 +142,13 @@ export function TopBar({ title, sidebarCollapsed, onMobileMenuToggle, onOpenSear
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.95, y: -8 }}
                   transition={{ duration: 0.15 }}
-                  className="absolute right-0 top-full mt-2 z-50 w-96 rounded-lg border bg-[var(--surface)] shadow-[var(--shadow-overlay)] overflow-hidden"
+                  className="absolute right-0 top-full mt-2 z-50 w-96 rounded-xl border bg-[var(--surface)] shadow-[0_16px_40px_-4px_rgba(16,24,40,0.15)] overflow-hidden"
                 >
                   {/* Header */}
                   <div className="px-4 py-3 border-b border-[var(--border)] flex items-center justify-between">
                     <h3 className="text-[13px] font-semibold text-[var(--text-primary)]">
                       Notifications {totalCount > 0 && (
-                        <span className="ml-2 inline-flex items-center justify-center w-5 h-5 rounded-full bg-[var(--red-600)] text-white text-[10px] font-bold">
+                        <span className="ml-2 inline-flex items-center justify-center w-5 h-5 rounded-full bg-[#DC2626] text-white text-[10px] font-bold">
                           {totalCount}
                         </span>
                       )}
@@ -155,7 +156,7 @@ export function TopBar({ title, sidebarCollapsed, onMobileMenuToggle, onOpenSear
                     {totalCount > 0 && (
                       <button
                         onClick={() => { setShowNotifications(false); navigate('/notifications'); }}
-                        className="text-[11px] font-medium text-[var(--red-600)] hover:text-[var(--red-700)] hover:underline"
+                        className="text-[11px] font-medium text-[#DC2626] hover:text-[#B91C1C] hover:underline"
                       >
                         View all
                       </button>
@@ -166,7 +167,7 @@ export function TopBar({ title, sidebarCollapsed, onMobileMenuToggle, onOpenSear
                   <div className="max-h-[400px] overflow-y-auto">
                     {isLoading ? (
                       <div className="px-4 py-8 text-center text-[var(--text-faint)]">
-                        <div className="animate-spin inline-block w-5 h-5 border-2 borde-emerald-600 border-t-transparent rounded-full mb-2" />
+                        <div className="animate-spin inline-block w-5 h-5 border-2 border-[#16A34A] border-t-transparent rounded-full mb-2" />
                         <p className="text-[13px]">Loading notifications...</p>
                       </div>
                     ) : notificationItems.length === 0 ? (
@@ -186,8 +187,8 @@ export function TopBar({ title, sidebarCollapsed, onMobileMenuToggle, onOpenSear
                             <div className="flex items-start gap-3">
                               <div className={`flex h-8 w-8 items-center justify-center rounded-lg shrink-0 ${
                                  notification.type === 'gatepass_pending'
-                                  ? 'bg-[var(--red-50)] text-[var(--red-600)]' 
-                                  : 'bg-[var(--surface-2)] text-emerald-600'
+                                  ? 'bg-[#FEF2F2] text-[#DC2626]' 
+                                  : 'bg-[#F0FDF4] text-[#16A34A]'
                               }`}>
                                  {notification.type === 'gatepass_pending' ? (
                                    <PaperPlaneTilt size={16} />
@@ -244,9 +245,9 @@ export function TopBar({ title, sidebarCollapsed, onMobileMenuToggle, onOpenSear
           <button
             type="button"
             onClick={() => setShowMenu(v => !v)}
-            className="flex items-center gap-2.5 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 py-2 cursor-pointer hover:bg-[var(--surface-hover)] hover:border-[var(--border-2)] transition-colors duration-100 max-w-[220px]"
+            className="flex items-center gap-2.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3 py-2 cursor-pointer hover:bg-[var(--surface-hover)] hover:border-[var(--border-2)] transition-all duration-200 shadow-sm max-w-[220px]"
           >
-            <div className="flex h-7 w-7 items-center justify-center rounded-lg overflow-hidden bg-emerald-600 text-white text-[11px] font-bold shrink-0">
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg overflow-hidden bg-gradient-to-br from-[#16A34A] to-[#15803D] text-white shadow-sm text-[11px] font-bold shrink-0">
               {user?.user_dp ? (
                 <img src={user.user_dp} alt={user.user_name} className="h-full w-full object-cover" />
               ) : user ? (
@@ -274,7 +275,7 @@ export function TopBar({ title, sidebarCollapsed, onMobileMenuToggle, onOpenSear
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.95, y: -8 }}
                   transition={{ duration: 0.15 }}
-                  className="absolute right-0 top-full mt-2 z-50 w-64 rounded-lg border bg-[var(--surface)] shadow-[var(--shadow-overlay)] py-1.5"
+                  className="absolute right-0 top-full mt-2 z-50 w-64 rounded-xl border bg-[var(--surface)] shadow-[0_16px_40px_-4px_rgba(16,24,40,0.15)] py-1.5"
                 >
                   <div className="px-4 py-3 border-b border-[var(--border)]">
                     <p className="text-[13px] font-semibold text-[var(--text-primary)] truncate">
@@ -300,7 +301,7 @@ export function TopBar({ title, sidebarCollapsed, onMobileMenuToggle, onOpenSear
                     <button
                       type="button"
                       onClick={handleLogout}
-                      className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2.5 text-[13px] font-medium text-[var(--red-600)] hover:bg-[var(--red-50)] transition-colors cursor-pointer"
+                      className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2.5 text-[13px] font-medium text-[#DC2626] hover:bg-[#FEF2F2] transition-colors cursor-pointer"
                     >
                       <SignOut size={16} />
                       Sign Out

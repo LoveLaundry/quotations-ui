@@ -52,16 +52,16 @@ export function StatCard({ label, value, icon, trend, trendLabel, description, c
         }
       } : undefined}
       className={cn(
-        'group relative overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--surface)] p-5',
-        'transition-colors duration-100 hover:border-[var(--border-2)]',
+        'group relative overflow-hidden rounded-xl border border-[#E5E7EB] bg-white p-5',
+        'shadow-sm transition-all duration-200 hover:shadow-md hover:border-[#D1D5DB]',
         clickable && 'cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/40',
         className,
       )}
     >
       <div className="flex items-start justify-between relative">
         <div className="flex-1 min-w-0">
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-[var(--text-muted)]">{label}</p>
-          <p className="mt-1.5 text-[28px] font-bold text-[var(--text-primary)] leading-none tracking-tight truncate">{value}</p>
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-[#6B7280]">{label}</p>
+          <p className="mt-1.5 text-[28px] font-bold text-[#111827] leading-none tracking-tight truncate">{value}</p>
           {(trendNum !== undefined || trendStr || displayLabel) && (
             <div className="flex items-center gap-2 mt-2">
               {trendNum !== undefined && (
@@ -81,7 +81,7 @@ export function StatCard({ label, value, icon, trend, trendLabel, description, c
                 </span>
               )}
               {displayLabel && !trendStr && (
-                <span className="text-[12px] text-[var(--text-muted)]">{displayLabel}</span>
+                <span className="text-[12px] text-[#6B7280]">{displayLabel}</span>
               )}
             </div>
           )}

@@ -45,7 +45,7 @@ export default function LinenBulkScan() {
       <Breadcrumb items={[{ label: 'Linen' }, { label: 'Bulk Scan' }]} />
 
       <div>
-        <h1 className="text-2xl font-bold text-[var(--text-primary)]">
+        <h1 className="text-2xl font-bold text-[var(--text-primary)]" style={{ fontFamily: '"Spectral", Georgia, serif' }}>
           Bulk Scan
         </h1>
         <p className="text-sm text-[var(--text-muted)]">Process multiple linens with a single action</p>
@@ -54,7 +54,7 @@ export default function LinenBulkScan() {
       <div className="flex flex-col lg:flex-row gap-5">
         {/* Left — input */}
         <div className="flex-1 space-y-4">
-          <Card className="border border-[var(--border)]">
+          <Card className="border border-[var(--border)] shadow-sm">
             <CardContent className="p-5 space-y-4">
               <div>
                 <label className="text-[11px] font-semibold text-[var(--text-muted)] uppercase tracking-wide mb-1.5 block">Action</label>
@@ -62,7 +62,7 @@ export default function LinenBulkScan() {
                   <select
                     value={action}
                     onChange={e => setAction(e.target.value)}
-                    className="flex-1 px-3 py-2 text-sm border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)]/20 focus:border-[var(--red-600)] transition-colors"
+                    className="flex-1 px-3 py-2 text-sm border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[#DC2626]/20 focus:border-[#DC2626] transition-colors"
                   >
                     {SCAN_ACTIONS.map(sa => <option key={sa.value} value={sa.value}>{sa.label}</option>)}
                   </select>
@@ -82,7 +82,7 @@ export default function LinenBulkScan() {
                   value={location}
                   onChange={e => setLocation(e.target.value)}
                   placeholder="e.g. Hotel Floor 3, Room 301"
-                  className="w-full px-3 py-2 text-sm border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)]/20 focus:border-[var(--red-600)] transition-colors"
+                  className="w-full px-3 py-2 text-sm border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[#DC2626]/20 focus:border-[#DC2626] transition-colors"
                 />
               </div>
 
@@ -99,7 +99,7 @@ export default function LinenBulkScan() {
                   }}
                   placeholder={"Enter linen IDs, one per line or space-separated...\ne.g. LL-7K4P92 LL-82M7QF"}
                   rows={4}
-                  className="w-full px-3 py-2 text-sm font-mono border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)] resize-none focus:outline-none focus:ring-2 focus:ring-[var(--ring)]/20 focus:border-[var(--red-600)] transition-colors"
+                  className="w-full px-3 py-2 text-sm font-mono border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)] resize-none focus:outline-none focus:ring-2 focus:ring-[#DC2626]/20 focus:border-[#DC2626] transition-colors"
                 />
                 <div className="flex items-center gap-2 mt-2">
                   <Button variant="outline" size="sm" onClick={addCode} disabled={!input.trim()}>Add</Button>
@@ -128,7 +128,7 @@ export default function LinenBulkScan() {
         {/* Right — queue + results */}
         <div className="lg:w-80 space-y-4">
           {/* Queued codes */}
-          <Card className="border border-[var(--border)]">
+          <Card className="border border-[var(--border)] shadow-sm">
             <CardContent className="p-4">
               <div className="flex items-center justify-between mb-2">
                 <p className="text-[11px] font-semibold text-[var(--text-muted)] uppercase tracking-wide">Queued ({codes.length})</p>
@@ -156,7 +156,7 @@ export default function LinenBulkScan() {
 
           {/* Results */}
           {bulkMutation.data && (
-            <Card className="border border-[var(--border)]">
+            <Card className="border border-[var(--border)] shadow-sm">
               <CardContent className="p-4 space-y-3">
                 <div className="flex items-center justify-between">
                   <p className="text-[11px] font-semibold text-[var(--text-muted)] uppercase tracking-wide">Last Result</p>

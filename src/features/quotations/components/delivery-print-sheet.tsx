@@ -11,7 +11,7 @@ const deliveryPrintStyles = `
   @page { size: A4; margin: 0; }
   @page :first { margin: 0; }
   .dls-page {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-family: "Spectral", Georgia, serif;
     color: #000;
     background: #fff;
   }

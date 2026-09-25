@@ -150,43 +150,43 @@ export default function GatePassesPage() {
         const rewashed = (gp.items ?? []).filter(item => item.rewashed)
         const rewashedQty = rewashed.reduce((sum, item) => sum + (item.received_qty || 0), 0)
         return (
-            <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-4 transition-shadow">
+            <div className="rounded-xl border border-[#E4E7EC] bg-white p-4 shadow-[0_1px_2px_rgba(16,24,40,0.05)] transition-shadow hover:shadow-md">
                 <div className="flex items-start justify-between gap-2">
                     <div className="flex min-w-0 items-start gap-3">
-                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-[blue-200] bg-[blue-50] text-[blue-600]">
+                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-[#BFDBFE] bg-[#EFF6FF] text-[#2563EB]">
                             <ClipboardList size={16} />
                         </div>
                         <div className="min-w-0">
-                            <p className="font-mono text-[12px] font-semibold text-[var(--text-primary)]">{gp.gate_pass_number}</p>
+                            <p className="font-mono text-[12px] font-semibold text-[#101828]">{gp.gate_pass_number}</p>
                             <div className="mt-0.5 flex flex-wrap items-center gap-1.5">
                                 {showAllHotels && <HotelBadge name={gp.client_name} />}
                                 {!showAllHotels && (
                                     <p className="truncate text-[12px] text-[var(--text-muted)]">{gp.client_name || '—'}</p>
                                 )}
                             </div>
-                            <p className="mt-1 text-[11px] text-[var(--text-faint)]">{formatDateOnly(gp.receiving_date)}</p>
+                            <p className="mt-1 text-[11px] text-[#98A2B3]">{formatDateOnly(gp.receiving_date)}</p>
                         </div>
                     </div>
                     <GatePassStatusPill status={gp.status} />
                 </div>
 
-                <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-[var(--border)] pt-3 text-[12px] text-[var(--text-muted)]">
-                    <span><span className="font-semibold text-[var(--text-secondary)]">{gp.items.length}</span> types</span>
-                    <span><span className="font-semibold text-[var(--text-secondary)]">{total}</span> pcs</span>
-                    <span>by <span className="font-medium text-[var(--text-secondary)]">{gp.received_by || '—'}</span></span>
+                <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-[#F2F4F7] pt-3 text-[12px] text-[#6B7280]">
+                    <span><span className="font-semibold text-[#374151]">{gp.items.length}</span> types</span>
+                    <span><span className="font-semibold text-[#374151]">{total}</span> pcs</span>
+                    <span>by <span className="font-medium text-[#374151]">{gp.received_by || '—'}</span></span>
                     {mismatches > 0 && (
-                        <span className="inline-flex items-center gap-1 font-medium text-[amber-600]">
+                        <span className="inline-flex items-center gap-1 font-medium text-[#D97706]">
                             <AlertTriangle size={11} /> {mismatches} mismatch{mismatches > 1 ? 'es' : ''}
                         </span>
                     )}
                     {rewashedQty > 0 && (
-                        <span className="inline-flex items-center gap-1 font-medium text-[emerald-700]">
+                        <span className="inline-flex items-center gap-1 font-medium text-[#15803D]">
                             <RotateCcw size={11} /> {rewashedQty} pcs re-wash · not billed
                         </span>
                     )}
                 </div>
 
-                <div className="mt-2 flex justify-end border-t border-[var(--border)] pt-2">
+                <div className="mt-2 flex justify-end border-t border-[#F2F4F7] pt-2">
                     <EntityCardActions
                         onQuickView={() => setQuickView(gp)}
                         onOpen={() => navigate(`/gate-passes/${gp.id}`)}
@@ -205,11 +205,11 @@ export default function GatePassesPage() {
                 <div>
                     <Breadcrumb items={[{ label: 'Dashboard', href: '/' }, { label: 'Gate Passes' }]} />
                     <h1 className="text-dashboard-title mt-1">Gate Passes</h1>
-                    <p className="text-[13px] text-[var(--text-faint)] mt-0.5">
+                    <p className="text-[13px] text-[#98A2B3] mt-0.5">
                         Receipts, mismatches, and delivery readiness — organized by hotel.
                     </p>
                     <div className="mt-1.5">
-                        <span className="text-[12px] font-medium text-[var(--text-muted)]">
+                        <span className="text-[12px] font-medium text-[#6B7280]">
                             {isLoading ? 'Loading…' : `${rows.length} gate pass${rows.length !== 1 ? 'es' : ''}`}
                             {hotel ? ` · ${hotel}` : ' · All hotels'}
                         </span>
@@ -217,7 +217,7 @@ export default function GatePassesPage() {
                     </div>
                 </div>
                 <Link to="/gate-passes/new" className="shrink-0">
-                    <Button className="bg-[blue-600] hover:bg-[blue-700] text-white shadow-[var(--shadow-overlay)] shadow-blue-600/20">
+                    <Button className="bg-[#2563EB] hover:bg-[#1D4ED8] text-white shadow-lg shadow-blue-600/20">
                         <Plus className="h-4 w-4" /> Create Gate Pass
                     </Button>
                 </Link>
@@ -227,22 +227,22 @@ export default function GatePassesPage() {
             <CompactMetrics items={kpis} />
 
             {/* Filters */}
-            <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-3">
+            <div className="rounded-xl border border-[#E4E7EC] bg-white p-3 shadow-[0_1px_2px_rgba(16,24,40,0.05)]">
                 <div className="flex flex-col gap-2.5 lg:flex-row lg:items-center">
                     <div className="relative flex-1">
-                        <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--text-faint)]" />
+                        <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#98A2B3]" />
                         <input
                             type="text"
                             value={searchInput}
                             onChange={event => setSearchInput(event.target.value)}
                             placeholder={`Search ${hotel ? hotel : 'all hotels'} by gate pass no., item, person…`}
-                            className="h-10 w-full rounded-lg border border-[var(--border)] bg-[var(--surface)] pl-9 pr-8 text-[13px] text-[var(--text-primary)] outline-none focus:border-[blue-600] focus:ring-2 focus:ring-[blue-600]/10"
+                            className="h-10 w-full rounded-lg border border-[#E4E7EC] bg-white pl-9 pr-8 text-[13px] text-[#101828] shadow-sm outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/10"
                         />
                         {searchInput && (
                             <button
                                 type="button"
                                 onClick={() => setSearchInput('')}
-                                className="absolute right-2.5 top-1/2 -translate-y-1/2 cursor-pointer text-[var(--text-faint)] hover:text-[var(--text-secondary)]"
+                                className="absolute right-2.5 top-1/2 -translate-y-1/2 cursor-pointer text-[#98A2B3] hover:text-[#374151]"
                             >
                                 <X className="h-3.5 w-3.5" />
                             </button>
@@ -264,25 +264,25 @@ export default function GatePassesPage() {
                 </div>
 
                 {showMore && (
-                    <div className="mt-3 grid gap-2.5 border-t border-[var(--border)] pt-3 sm:grid-cols-2">
+                    <div className="mt-3 grid gap-2.5 border-t border-[#F2F4F7] pt-3 sm:grid-cols-2">
                         <div className="relative">
-                            <CalendarDays className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--text-faint)]" />
+                            <CalendarDays className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#98A2B3]" />
                             <input
                                 type="date"
                                 value={dateFrom}
                                 onChange={event => setDateFrom(event.target.value)}
                                 aria-label="Received from"
-                                className="h-10 w-full rounded-lg border border-[var(--border)] bg-[var(--surface)] pl-9 pr-3 text-[13px] text-[var(--text-primary)] outline-none focus:border-[blue-600] focus:ring-2 focus:ring-[blue-600]/10"
+                                className="h-10 w-full rounded-lg border border-[#E4E7EC] bg-white pl-9 pr-3 text-[13px] text-[#101828] shadow-sm outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/10"
                             />
                         </div>
                         <div className="relative">
-                            <CalendarDays className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--text-faint)]" />
+                            <CalendarDays className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#98A2B3]" />
                             <input
                                 type="date"
                                 value={dateTo}
                                 onChange={event => setDateTo(event.target.value)}
                                 aria-label="Received to"
-                                className="h-10 w-full rounded-lg border border-[var(--border)] bg-[var(--surface)] pl-9 pr-3 text-[13px] text-[var(--text-primary)] outline-none focus:border-[blue-600] focus:ring-2 focus:ring-[blue-600]/10"
+                                className="h-10 w-full rounded-lg border border-[#E4E7EC] bg-white pl-9 pr-3 text-[13px] text-[#101828] shadow-sm outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/10"
                             />
                         </div>
                     </div>
@@ -315,7 +315,7 @@ export default function GatePassesPage() {
                         description="Record your first gate pass when laundry is received from a hotel."
                         action={
                             <Link to="/gate-passes/new">
-                                <Button className="bg-[blue-600] hover:bg-[blue-700] text-white">
+                                <Button className="bg-[#2563EB] hover:bg-[#1D4ED8] text-white">
                                     <Plus className="h-4 w-4" /> Create Gate Pass
                                 </Button>
                             </Link>

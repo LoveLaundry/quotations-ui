@@ -48,7 +48,7 @@ export function BalancesPopup({ open, onClose, clients, aging, totalOutstanding 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="absolute inset-0 bg-black/50 backdrop-blur-none"
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
             onClick={onClose}
           />
 
@@ -57,7 +57,7 @@ export function BalancesPopup({ open, onClose, clients, aging, totalOutstanding 
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-            className="relative w-full max-w-4xl max-h-[90vh] bg-[var(--surface)] rounded-xl shadow-[var(--shadow-overlay)] overflow-hidden flex flex-col"
+            className="relative w-full max-w-4xl max-h-[90vh] bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col"
           >
             {/* Header */}
             <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
@@ -129,7 +129,7 @@ export function BalancesPopup({ open, onClose, clients, aging, totalOutstanding 
                     key={s.key}
                     onClick={() => setSortBy(s.key)}
                     className={`px-3 py-1.5 text-[11px] font-medium rounded-md transition cursor-pointer ${
-                      sortBy === s.key ? 'bg-[var(--surface)] text-gray-900' : 'text-gray-500 hover:text-gray-700'
+                      sortBy === s.key ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-700'
                     }`}
                   >
                     {s.label}
@@ -221,7 +221,7 @@ export function BalancesPopup({ open, onClose, clients, aging, totalOutstanding 
                                         </div>
                                         <div className="flex flex-wrap gap-1.5">
                                           {gp.items.map((item, k) => (
-                                            <span key={`${item.item_name}-${item.specification}`} className="inline-flex items-center gap-1 bg-[var(--surface)] border border-gray-200 rounded px-2 py-0.5 text-[11px]">
+                                            <span key={`${item.item_name}-${item.specification}`} className="inline-flex items-center gap-1 bg-white border border-gray-200 rounded px-2 py-0.5 text-[11px]">
                                               <span className="font-medium text-gray-700">{item.item_name}</span>
                                               {item.specification && (
                                                 <span

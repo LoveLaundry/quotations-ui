@@ -84,12 +84,12 @@ function eventLabel(type: string): string {
 
 function QuickActions() {
   const actions = [
-    { to: '/gate-passes/new', label: 'Receive', hint: 'New gate pass', icon: ClipboardList, cls: 'bg-[var(--red-600)] hover:bg-[var(--red-700)] text-white border-transparent' },
-    { to: '/deliveries/new', label: 'Deliver', hint: 'Record delivery', icon: Truck, cls: 'bg-[emerald-600] hover:bg-[emerald-700] text-white border-transparent' },
-    { to: '/bills/new', label: 'Bill', hint: 'Create bill', icon: FileText, cls: 'bg-[var(--surface)] hover:bg-[var(--surface-hover)] text-[var(--text-primary)]' },
-    { to: '/returns/new', label: 'Return', hint: 'Record return', icon: RotateCcw, cls: 'bg-[var(--surface)] hover:bg-[var(--surface-hover)] text-[var(--text-primary)]' },
-    { to: '/management/expenses', label: 'Expense', hint: 'Record expense', icon: Receipt, cls: 'bg-[var(--surface)] hover:bg-[var(--surface-hover)] text-[var(--text-primary)]' },
-    { to: '/management/attendance-log', label: 'Attendance', hint: 'Log staff', icon: CalendarCheck, cls: 'bg-[var(--surface)] hover:bg-[var(--surface-hover)] text-[var(--text-primary)]' },
+    { to: '/gate-passes/new', label: 'Receive', hint: 'New gate pass', icon: ClipboardList, cls: 'bg-[#DC2626] hover:bg-[#B91C1C] text-white border-transparent' },
+    { to: '/deliveries/new', label: 'Deliver', hint: 'Record delivery', icon: Truck, cls: 'bg-[#16A34A] hover:bg-[#15803D] text-white border-transparent' },
+    { to: '/bills/new', label: 'Bill', hint: 'Create bill', icon: FileText, cls: 'bg-white hover:bg-[var(--surface-hover)] text-[var(--text-primary)]' },
+    { to: '/returns/new', label: 'Return', hint: 'Record return', icon: RotateCcw, cls: 'bg-white hover:bg-[var(--surface-hover)] text-[var(--text-primary)]' },
+    { to: '/management/expenses', label: 'Expense', hint: 'Record expense', icon: Receipt, cls: 'bg-white hover:bg-[var(--surface-hover)] text-[var(--text-primary)]' },
+    { to: '/management/attendance-log', label: 'Attendance', hint: 'Log staff', icon: CalendarCheck, cls: 'bg-white hover:bg-[var(--surface-hover)] text-[var(--text-primary)]' },
   ]
 
   return (
@@ -134,7 +134,7 @@ function AttentionQueue() {
             Needs Attention
           </CardTitle>
           {!clear && (
-            <span className="inline-flex items-center rounded-full bg-[var(--red-50)] border border-[var(--red-100)] px-2.5 py-0.5 text-[12px] font-bold text-[var(--red-600)]">
+            <span className="inline-flex items-center rounded-full bg-[#FFF1F1] border border-[#FECACA] px-2.5 py-0.5 text-[12px] font-bold text-[#DC2626]">
               {pendingAdj.length + issues.length}
             </span>
           )}
@@ -212,7 +212,7 @@ function AttentionQueue() {
                 <div className="divide-y divide-[var(--border)] rounded-lg border border-[var(--border)]">
                   {issues.slice(0, 8).map(row => (
                     <Link key={row.id} to={`/gate-passes/${row.id}`} className="flex items-center gap-3 px-3 py-2.5 hover:bg-[var(--surface-hover)] transition">
-                      <AlertTriangle className="h-4 w-4 shrink-0 text-[amber-600]" />
+                      <AlertTriangle className="h-4 w-4 shrink-0 text-[#D97706]" />
                       <div className="min-w-0 flex-1">
                         <p className="truncate text-[13px] font-medium" style={{ color: 'var(--text-primary)' }}>
                           #{row.gate_pass_number} · {row.client_name}
@@ -287,7 +287,7 @@ function PendingDeliveries() {
             Pending to Deliver
           </CardTitle>
           {rows.length > 0 && (
-            <Button asChild size="sm" className="h-7 bg-[emerald-600] hover:bg-[emerald-700] text-white">
+            <Button asChild size="sm" className="h-7 bg-[#16A34A] hover:bg-[#15803D] text-white">
               <Link to="/deliveries/new">
                 <Truck className="h-3.5 w-3.5" /> Deliver
               </Link>
@@ -303,7 +303,7 @@ function PendingDeliveries() {
           </div>
         ) : rows.length === 0 ? (
           <EmptyState
-            icon={<Truck className="h-6 w-6 text-[var(--text-faint)]" />}
+            icon={<Truck className="h-6 w-6 text-[#9CA3AF]" />}
             title="Nothing pending"
             description="Every received item has been delivered."
           />
@@ -311,7 +311,7 @@ function PendingDeliveries() {
           <div className="divide-y divide-[var(--border)]">
             {rows.map(r => (
               <Link key={r.gate_pass_id} to={`/gate-passes/${r.gate_pass_id}`} className="flex items-center gap-3 py-2.5 hover:bg-[var(--surface-hover)] transition">
-                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[orange-50] border border-[orange-200] text-[11px] font-bold text-[orange-700]">
+                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#FFF7ED] border border-[#FED7AA] text-[11px] font-bold text-[#C2410C]">
                   {r.total_pending}
                 </div>
                 <div className="min-w-0 flex-1">
@@ -395,7 +395,7 @@ function ReturnsOwedCard() {
               ))}
             </div>
             <div>
-              <Link to="/returns" className="inline-flex items-center gap-1 text-[12px] font-semibold text-[amber-600] hover:text-[amber-700] transition-colors">
+              <Link to="/returns" className="inline-flex items-center gap-1 text-[12px] font-semibold text-[#D97706] hover:text-[#B45309] transition-colors">
                 Review returns <ArrowRight className="h-3 w-3" />
               </Link>
             </div>
@@ -715,7 +715,7 @@ function DailyTimeline({ date }: { date: string }) {
           </div>
         ) : events.length === 0 ? (
           <EmptyState
-            icon={<Clock className="h-6 w-6 text-[var(--text-faint)]" />}
+            icon={<Clock className="h-6 w-6 text-[#9CA3AF]" />}
             title="No activity recorded"
             description="Movements for this day will appear here as they are entered."
           />
@@ -732,7 +732,7 @@ function DailyTimeline({ date }: { date: string }) {
                 <span className="w-12 shrink-0 text-right text-[11px] font-medium tabular-nums" style={{ color: 'var(--text-tertiary)' }}>
                   {fmtTime(e.occurred_at)}
                 </span>
-                <span className="h-2 w-2 shrink-0 rounded-full bg-[var(--red-600)]" />
+                <span className="h-2 w-2 shrink-0 rounded-full bg-[#DC2626]" />
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-[13px]" style={{ color: 'var(--text-primary)' }}>
                     <span className="font-medium">{eventLabel(e.event_type)}</span>
@@ -935,7 +935,7 @@ function CloseDayCard({ date }: { date: string }) {
                 style={{ color: 'var(--text-primary)' }}
               />
               <Button
-                className="h-9 bg-[var(--red-600)] hover:bg-[var(--red-700)] text-white"
+                className="h-9 bg-[#DC2626] hover:bg-[#B91C1C] text-white"
                 disabled={close.isPending || isFuture}
                 title={isFuture ? 'Can close past or today’s day — not a future day' : undefined}
                 onClick={() => setConfirm(true)}

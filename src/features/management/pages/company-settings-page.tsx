@@ -73,7 +73,7 @@ export default function CompanySettingsPage() {
         </button>
       </div>
 
-      <div className="bg-[var(--surface)] dark:bg-gray-800 rounded-xl border p-6 space-y-6">
+      <div className="bg-white dark:bg-gray-800 rounded-xl border p-6 space-y-6">
         <h2 className="text-lg font-semibold flex items-center gap-2">
           <Settings size={20} /> Payroll Configuration
         </h2>
@@ -125,7 +125,7 @@ export default function CompanySettingsPage() {
                   className={`px-3 py-2 rounded-lg text-sm font-medium border ${
                     active
                       ? 'bg-red-600 text-white border-red-600'
-                      : 'bg-[var(--surface)] dark:bg-gray-700 text-gray-500 border-gray-200 dark:border-gray-600'
+                      : 'bg-white dark:bg-gray-700 text-gray-500 border-gray-200 dark:border-gray-600'
                   }`}
                 >
                   {label}

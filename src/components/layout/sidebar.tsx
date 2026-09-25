@@ -187,7 +187,7 @@ export function Sidebar({
               animate={{ x: 0 }}
               exit={{ x: -240 }}
               transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-              className="fixed inset-y-0 left-0 z-40 flex w-[240px] flex-col sidebar-dark lg:hidden"
+              className="fixed inset-y-0 left-0 z-40 flex w-[240px] flex-col sidebar-dark shadow-2xl lg:hidden"
             >
               <SidebarContent
                 collapsed={false}
@@ -309,7 +309,7 @@ function SidebarContent({
           <button
             type="button"
             onClick={onToggle}
-            className="flex w-full items-center justify-center gap-1.5 rounded-md px-2.5 py-2 text-[12px] font-medium text-[var(--sidebar-label)] hover:bg-[var(--sidebar-hover-bg)] hover:text-[var(--sidebar-hover-text)] transition-colors duration-100 cursor-pointer"
+            className="flex w-full items-center justify-center gap-1.5 rounded-lg px-2.5 py-2 text-[12px] font-medium text-[var(--sidebar-label)] hover:bg-[var(--sidebar-hover-bg)] hover:text-[var(--sidebar-hover-text)] transition cursor-pointer"
             aria-label={collapsed ? 'Expand' : 'Collapse'}
           >
             {collapsed ? (
@@ -351,31 +351,23 @@ function SidebarNavItem({
         }}
         className={({ isActive }) =>
           cn(
-            'group relative flex items-center gap-2.5 rounded-md px-2.5 py-2 text-[13px] transition-colors duration-100',
+            'group flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-[13px] font-medium transition-all duration-150',
             collapsed && 'justify-center px-2',
             isActive
-              ? 'bg-[var(--sidebar-hover-bg)] font-semibold text-[var(--sidebar-active)]'
-              : 'font-medium text-[var(--sidebar-text)] hover:bg-[var(--sidebar-hover-bg)] hover:text-[var(--sidebar-hover-text)]'
+              ? 'bg-[#DC2626] text-white'
+              : 'text-[var(--sidebar-text)] hover:bg-[var(--sidebar-hover-bg)] hover:text-[var(--sidebar-hover-text)]'
           )
         }
       >
         {({ isActive }) => (
           <>
-            {/* A thin accent bar marks the active route; a filled block of
-                brand colour on every parent item is far too loud. */}
-            {isActive && !collapsed && (
-              <span
-                aria-hidden
-                className="absolute left-0 top-1/2 h-4 w-0.5 -translate-y-1/2 rounded-full bg-[var(--red-600)]"
-              />
-            )}
             <Icon
               size={18}
               weight={isActive ? 'fill' : 'regular'}
               className={cn(
-                'shrink-0 transition-colors duration-100',
+                'shrink-0 transition-colors duration-150',
                 isActive
-                  ? 'text-[var(--sidebar-active)]'
+                  ? 'text-white'
                   : 'text-[var(--sidebar-label)] group-hover:text-[var(--sidebar-hover-text)]'
               )}
             />
@@ -386,7 +378,7 @@ function SidebarNavItem({
 
       {/* Sub-items with connector line */}
       {hasChildren && !collapsed && (
-        <div className="relative ml-[18px] pl-4 py-0.5 border-l border-[var(--border)]">
+        <div className="relative ml-[18px] pl-4 py-0.5 border-l border-[var(--sidebar-hover-bg)]">
           {children!.map((child) => (
             <NavLink
               key={child.to}
@@ -397,10 +389,10 @@ function SidebarNavItem({
               }}
               className={({ isActive }) =>
                 cn(
-                  'group flex items-center gap-2 rounded-md px-2.5 py-1.5 text-[12px] transition-colors duration-100 -ml-4 border-l-2',
+                  'group flex items-center gap-2 rounded-md px-2.5 py-1.5 text-[12px] font-medium transition-all duration-150 -ml-4 border-l-2',
                   isActive
-                    ? 'bg-[var(--sidebar-hover-bg)] font-semibold text-[var(--sidebar-active)] border-[var(--red-600)]'
-                    : 'font-medium border-transparent text-[var(--sidebar-text)] hover:bg-[var(--sidebar-hover-bg)] hover:text-[var(--sidebar-hover-text)]'
+                    ? 'bg-[#DC2626]/10 text-[#DC2626] border-[#DC2626]'
+                    : 'border-transparent text-[var(--sidebar-text)] hover:bg-[var(--sidebar-hover-bg)] hover:text-[var(--sidebar-hover-text)]'
                 )
               }
             >
@@ -410,9 +402,9 @@ function SidebarNavItem({
                     size={14}
                     weight={isActive ? 'fill' : 'regular'}
                     className={cn(
-                      'shrink-0 transition-colors duration-100',
+                      'shrink-0 transition-colors duration-150',
                       isActive
-                        ? 'text-[var(--red-600)]'
+                        ? 'text-[#DC2626]'
                         : 'text-[var(--sidebar-label)] group-hover:text-[var(--sidebar-hover-text)]'
                     )}
                   />
@@ -432,7 +424,7 @@ function LogoDark() {
     <div className="flex items-center gap-2.5 select-none">
       <Logo size="sm" showText={false} />
       <div className="min-w-0 leading-none">
-        <p className="text-[14px] font-pacifico text-[var(--sidebar-active)] tracking-tight">
+        <p className="text-[14px] font-pacifico text-white tracking-tight">
           Love Laundry
         </p>
         <p className="text-[10px] text-[var(--sidebar-label)]">

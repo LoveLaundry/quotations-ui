@@ -110,7 +110,7 @@ export function AppShell() {
     <div className="min-h-screen bg-[var(--bg)] transition-colors">
       {mobileOpen && (
         <div
-          className="fixed inset-0 z-30 bg-black/30 lg:hidden transition-opacity duration-200"
+          className="fixed inset-0 z-30 bg-black/50 backdrop-blur-sm lg:hidden transition-opacity duration-200"
           onClick={() => setMobileOpen(false)}
         />
       )}

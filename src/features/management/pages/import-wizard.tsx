@@ -86,7 +86,7 @@ export default function ImportWizard() {
 
       {/* Step 1: Upload */}
       {step === 'upload' && (
-        <div className="bg-[var(--surface)] dark:bg-gray-800 rounded-xl border p-8 space-y-6">
+        <div className="bg-white dark:bg-gray-800 rounded-xl border p-8 space-y-6">
           <div className="text-center">
             <p className="text-gray-600 dark:text-gray-300 mb-4">
               Download the template, fill in your historical data, then upload the completed file.
@@ -118,7 +118,7 @@ export default function ImportWizard() {
 
       {/* Step 2: Preview */}
       {step === 'preview' && previewData && (
-        <div className="bg-[var(--surface)] dark:bg-gray-800 rounded-xl border p-6 space-y-4">
+        <div className="bg-white dark:bg-gray-800 rounded-xl border p-6 space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold">Preview ({previewData.total_rows} rows)</h2>
             <div className="flex gap-2">
@@ -186,7 +186,7 @@ export default function ImportWizard() {
 
       {/* Step 3: Result */}
       {step === 'result' && result && (
-        <div className="bg-[var(--surface)] dark:bg-gray-800 rounded-xl border p-8 text-center space-y-4">
+        <div className="bg-white dark:bg-gray-800 rounded-xl border p-8 text-center space-y-4">
           <CheckCircle2 size={64} className="mx-auto text-green-500" />
           <h2 className="text-xl font-bold">Import Complete!</h2>
           <div className="grid grid-cols-3 gap-4 max-w-md mx-auto">

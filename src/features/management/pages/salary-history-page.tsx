@@ -200,7 +200,7 @@ export default function SalaryHistoryPage() {
       </div>
 
       {/* Payroll Run card */}
-      <div className="bg-[var(--surface)] dark:bg-gray-800 rounded-xl border p-5">
+      <div className="bg-white dark:bg-gray-800 rounded-xl border p-5">
         <h2 className="font-semibold flex items-center gap-2 mb-3">
           <PlayCircle size={18} /> Run Payroll
         </h2>
@@ -320,7 +320,7 @@ export default function SalaryHistoryPage() {
         )}
       </div>
 
-      <div className="bg-[var(--surface)] dark:bg-gray-800 rounded-xl border p-4">
+      <div className="bg-white dark:bg-gray-800 rounded-xl border p-4">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div>
             <label className="text-sm font-medium text-gray-600 dark:text-gray-400">Employee</label>
@@ -356,7 +356,7 @@ export default function SalaryHistoryPage() {
         </div>
       </div>
 
-      <div className="bg-[var(--surface)] dark:bg-gray-800 rounded-xl border overflow-hidden">
+      <div className="bg-white dark:bg-gray-800 rounded-xl border overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
@@ -445,7 +445,7 @@ export default function SalaryHistoryPage() {
 
       {overrideEmp && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="bg-[var(--surface)] dark:bg-gray-800 rounded-xl p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto">
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-1">
               <h3 className="font-semibold flex items-center gap-2"><Settings2 size={18} /> Adjust Month Arrangement</h3>
               <button onClick={() => setOverrideEmp(null)}><XCircle size={20} /></button>
@@ -537,8 +537,8 @@ export default function SalaryHistoryPage() {
 
       {viewSlip && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="bg-[var(--surface)] dark:bg-gray-800 rounded-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-            <div className="sticky top-0 bg-[var(--surface)] dark:bg-gray-800 border-b px-6 py-3 flex items-center justify-between z-10">
+          <div className="bg-white dark:bg-gray-800 rounded-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 bg-white dark:bg-gray-800 border-b px-6 py-3 flex items-center justify-between z-10">
               <h3 className="font-semibold">{viewSlip.slip_number} — {viewSlip.employee_name}</h3>
               <div className="flex items-center gap-2">
                 <div className="flex items-center gap-1 border rounded-lg p-1">

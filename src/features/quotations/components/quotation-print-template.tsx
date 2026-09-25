@@ -66,7 +66,7 @@ const printStyles = `
   .quotation-print-page {
     color: #000;
     background: #fff;
-    font-family: inherit;
+    font-family: "Spectral", Georgia, serif;
   }
   .page-sheet {
     width: 210mm;
@@ -123,7 +123,7 @@ const printStyles = `
     letter-spacing: 2px;
     line-height: 1.2;
     margin: 0 0 4px 0;
-    font-family: inherit;
+    font-family: "Spectral", Georgia, serif;
   }
   .company-tagline {
     font-size: 14px;
@@ -131,7 +131,7 @@ const printStyles = `
     font-style: italic;
     margin: 0;
     color: #333;
-    font-family: inherit;
+    font-family: "Spectral", Georgia, serif;
   }
   .reg-no {
     font-size: 12px;
@@ -199,7 +199,7 @@ const printStyles = `
     border-bottom: 2px solid #000;
     padding-bottom: 10px;
     margin-bottom: 20px;
-    font-family: inherit;
+    font-family: "Spectral", Georgia, serif;
   }
   .details-grid {
     display: grid;
@@ -256,7 +256,7 @@ const printStyles = `
     text-transform: uppercase;
     letter-spacing: 0.5px;
     font-size: 10px;
-    font-family: inherit;
+    font-family: "Spectral", Georgia, serif;
     border: 1px solid #000;
   }
   .items-table .col-no { width: 45px; text-align: center; }
@@ -278,7 +278,7 @@ const printStyles = `
     border-top: 2px solid #000;
     border-bottom: 2px solid #000;
     background: #f0f0f0;
-    font-family: inherit;
+    font-family: "Spectral", Georgia, serif;
   }
   .signatures {
     display: flex;
@@ -336,7 +336,7 @@ const printStyles = `
     color: #000;
   }
   .page-indicator {
-    font-family: inherit;
+    font-family: "Spectral", Georgia, serif;
   }
   .continue-notice {
     text-align: center;
@@ -378,7 +378,7 @@ export const QuotationPrintTemplate = React.forwardRef<HTMLDivElement, Quotation
         ref={ref}
         className="quotation-print-page"
         style={{
-          fontFamily: 'inherit',
+          fontFamily: '"Spectral", Georgia, serif',
           color: '#000',
         }}
       >

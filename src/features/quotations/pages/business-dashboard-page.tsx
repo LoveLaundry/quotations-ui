@@ -85,14 +85,14 @@ function KpiCard({ label, value, icon, accent, delta, to }: KpiProps) {
           navigate(to!)
         }
       } : undefined}
-      className={`rounded-xl border border-[var(--border)] bg-[var(--surface)] p-5 transition-colors ${
-        clickable ? 'cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/40 hover:border-[var(--border-2)]' : ''
+      className={`rounded-2xl border border-[#E4E7EC] bg-white p-5 shadow-sm transition-all hover:shadow-md ${
+        clickable ? 'cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/40 hover:border-[#D1D5DB]' : ''
       }`}
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="text-[12px] font-semibold uppercase tracking-wide text-[var(--text-muted)]">{label}</p>
-          <p className="mt-2 text-[27px] font-bold text-[var(--text-primary)] leading-none truncate">{value}</p>
+          <p className="text-[12px] font-semibold uppercase tracking-wide text-[#6B7280]">{label}</p>
+          <p className="mt-2 text-[27px] font-bold text-[#101828] leading-none truncate">{value}</p>
         </div>
         <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${accent}`}>
           {icon}
@@ -102,12 +102,12 @@ function KpiCard({ label, value, icon, accent, delta, to }: KpiProps) {
         <div className="mt-3 flex items-center gap-1.5">
           <span
             className={`inline-flex items-center gap-0.5 text-[12px] font-semibold ${
-              delta.good ? 'text-[emerald-600]' : 'tex-emerald-600'
+              delta.good ? 'text-[#16A34A]' : 'text-[#DC2626]'
             }`}
           >
             {delta.text}
           </span>
-          <span className="text-[12px] text-[var(--text-faint)]">vs prev</span>
+          <span className="text-[12px] text-[#98A2B3]">vs prev</span>
         </div>
       )}
     </div>
@@ -117,10 +117,10 @@ function KpiCard({ label, value, icon, accent, delta, to }: KpiProps) {
 function ChartTooltip({ active, payload, label, money = true }: any) {
   if (!active || !payload?.length) return null
   return (
-    <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 py-2">
-      <p className="text-[12px] font-medium text-[var(--text-muted)]">{label}</p>
+    <div className="rounded-lg border border-[#E5E7EB] bg-white px-3 py-2 shadow-md">
+      <p className="text-[12px] font-medium text-[#6B7280]">{label}</p>
       {payload.map((p: any, i: number) => (
-        <p key={i} className="text-[13px] font-semibold text-[var(--text-primary)]">
+        <p key={i} className="text-[13px] font-semibold text-[#101828]">
           {p.name}: {money ? fmtMoney(p.value) : fmtNum(p.value)}
         </p>
       ))}
@@ -185,7 +185,7 @@ export default function BusinessDashboardPage() {
       label: 'Revenue',
       value: fmtMoney(current.revenue),
       icon: <DollarSign size={20} />,
-      accent: 'bg-[var(--red-50)] text-[var(--red-600)]',
+      accent: 'bg-[#FEF2F2] text-[#DC2626]',
       cur: current.revenue,
       prev: previous.revenue,
       better: true,
@@ -195,7 +195,7 @@ export default function BusinessDashboardPage() {
       label: 'Collected',
       value: fmtMoney(current.collected),
       icon: <Wallet size={20} />,
-      accent: 'bg-[emerald-50] text-[emerald-600]',
+      accent: 'bg-[#F0FDF4] text-[#16A34A]',
       cur: current.collected,
       prev: previous.collected,
       better: true,
@@ -205,7 +205,7 @@ export default function BusinessDashboardPage() {
       label: 'Outstanding',
       value: fmtMoney(current.outstanding),
       icon: <Receipt size={20} />,
-      accent: 'bg-[orange-50] text-[var(--red-600)]',
+      accent: 'bg-[#FFF7ED] text-[#EA580C]',
       cur: current.outstanding,
       prev: previous.outstanding,
       better: false,
@@ -215,7 +215,7 @@ export default function BusinessDashboardPage() {
       label: 'Collection Rate',
       value: `${current.collectionRate.toFixed(1)}%`,
       icon: <Percent size={20} />,
-      accent: 'bg-[blue-50] text-[blue-600]',
+      accent: 'bg-[#EFF6FF] text-[#2563EB]',
       cur: current.collectionRate,
       prev: previous.collectionRate,
       better: true,
@@ -237,7 +237,7 @@ export default function BusinessDashboardPage() {
       label: 'Gate Passes',
       value: fmtNum(current.gatePasses),
       icon: <Package size={20} />,
-      accent: 'bg-[violet-50] text-[violet-600]',
+      accent: 'bg-[#F5F3FF] text-[#7C3AED]',
       cur: current.gatePasses,
       prev: previous.gatePasses,
       better: true,
@@ -247,7 +247,7 @@ export default function BusinessDashboardPage() {
       label: 'Items Received',
       value: fmtNum(current.itemsReceived),
       icon: <Boxes size={20} />,
-      accent: 'b-emerald-50 tex-emerald-600',
+      accent: 'bg-[#ECFDF5] text-[#059669]',
       cur: current.itemsReceived,
       prev: previous.itemsReceived,
       better: true,
@@ -257,7 +257,7 @@ export default function BusinessDashboardPage() {
       label: 'Items Delivered',
       value: fmtNum(current.itemsDelivered),
       icon: <Truck size={20} />,
-      accent: 'bg-[emerald-50] text-[emerald-600]',
+      accent: 'bg-[#F0FDF4] text-[#16A34A]',
       cur: current.itemsDelivered,
       prev: previous.itemsDelivered,
       better: true,
@@ -267,7 +267,7 @@ export default function BusinessDashboardPage() {
       label: 'Pending Items',
       value: fmtNum(current.itemsPending),
       icon: <AlertTriangle size={20} />,
-      accent: 'bg-[var(--red-50)] text-[var(--red-600)]',
+      accent: 'bg-[#FEF2F2] text-[#DC2626]',
       cur: current.itemsPending,
       prev: previous.itemsPending,
       better: false,
@@ -288,26 +288,26 @@ export default function BusinessDashboardPage() {
         <div>
           <div className="inline-flex items-center gap-2 mb-1.5">
             <div className="h-2 w-2 rounded-full bg-blue-500" />
-            <p className="text-[11px] sm:text-[12px] font-semibold uppercase tracking-wide text-[var(--text-muted)]">
+            <p className="text-[11px] sm:text-[12px] font-semibold uppercase tracking-wide text-[#6B7280]">
               Deep Analytics & Insights
             </p>
           </div>
           <h1 className="text-dashboard-title">Business Intelligence</h1>
-          <p className="text-[13px] text-[var(--text-faint)] mt-0.5">
+          <p className="text-[13px] text-[#98A2B3] mt-0.5">
             Financial, operational and client performance for the selected period
           </p>
           <SyncStatusBar queryKey={['dashboard']} label="Dashboard" className="mt-2" />
         </div>
-        <div className="inline-flex rounded-xl bg-[var(--surface-2)] p-1 self-start">
+        <div className="inline-flex rounded-xl bg-[#F3F4F6] p-1 self-start">
           {PERIODS.map((p) => (
             <button
               key={p.key}
               type="button"
               onClick={() => setPeriod(p.key)}
-              className={`px-3 py-1.5 text-[13px] font-medium rounded-lg transition-colors cursor-pointer ${
+              className={`px-3 py-1.5 text-[13px] font-medium rounded-lg transition-all cursor-pointer ${
                 period === p.key
-                  ? 'bg-[var(--surface)] text-[var(--text-primary)]'
-                  : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'
+                  ? 'bg-white text-[#101828] shadow-sm'
+                  : 'text-[#6B7280] hover:text-[#111827]'
               }`}
             >
               {p.label}
@@ -324,10 +324,10 @@ export default function BusinessDashboardPage() {
               key={a.id}
               className={`flex items-start gap-3 rounded-xl border p-3.5 ${
                 a.severity === 'high'
-                  ? 'bg-[var(--red-50)] border-[var(--red-100)] tex-red-800'
+                  ? 'bg-[#FEF2F2] border-[#FECACA] text-[#991B1B]'
                   : a.severity === 'medium'
-                    ? 'bg-[amber-50] border-[amber-200] text-red-800'
-                    : 'bg-[blue-50] border-[blue-200] text-[blue-800]'
+                    ? 'bg-[#FFFBEB] border-[#FDE68A] text-[#92400E]'
+                    : 'bg-[#EFF6FF] border-[#BFDBFE] text-[#1E40AF]'
               }`}
             >
               <AlertTriangle size={18} className="mt-0.5 shrink-0" />
@@ -376,7 +376,7 @@ export default function BusinessDashboardPage() {
       {/* Charts row 1 */}
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
         <Card className="lg:col-span-2">
-          <CardHeader className="border-b border-[var(--border)] pb-3">
+          <CardHeader className="border-b border-[#F2F4F7] pb-3">
             <CardTitle>Revenue vs Collection</CardTitle>
           </CardHeader>
           <CardContent className="pt-4">
@@ -422,7 +422,7 @@ export default function BusinessDashboardPage() {
                 </AreaChart>
               </ResponsiveContainer>
             ) : (
-              <div className="flex h-[280px] items-center justify-center text-[13px] text-[var(--text-faint)]">
+              <div className="flex h-[280px] items-center justify-center text-[13px] text-[#98A2B3]">
                 No revenue data for this period
               </div>
             )}
@@ -430,7 +430,7 @@ export default function BusinessDashboardPage() {
         </Card>
 
         <Card>
-          <CardHeader className="border-b border-[var(--border)] pb-3">
+          <CardHeader className="border-b border-[#F2F4F7] pb-3">
             <CardTitle>Payment Status</CardTitle>
           </CardHeader>
           <CardContent className="pt-4">
@@ -453,13 +453,13 @@ export default function BusinessDashboardPage() {
                 </PieChart>
               </ResponsiveContainer>
             ) : (
-              <div className="flex h-[280px] items-center justify-center text-[13px] text-[var(--text-faint)]">
+              <div className="flex h-[280px] items-center justify-center text-[13px] text-[#98A2B3]">
                 No billing data
               </div>
             )}
             <div className="mt-2 flex flex-wrap justify-center gap-3">
               {current.paymentStatus.map((s) => (
-                <div key={s.name} className="flex items-center gap-1.5 text-[12px] text-[var(--text-muted)]">
+                <div key={s.name} className="flex items-center gap-1.5 text-[12px] text-[#6B7280]">
                   <span className="h-2.5 w-2.5 rounded-full" style={{ background: s.color }} />
                   {s.name} · {fmtMoney(s.value)}
                 </div>
@@ -472,7 +472,7 @@ export default function BusinessDashboardPage() {
       {/* Charts row 2 */}
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <Card>
-          <CardHeader className="border-b border-[var(--border)] pb-3">
+          <CardHeader className="border-b border-[#F2F4F7] pb-3">
             <CardTitle>Top Clients by Revenue</CardTitle>
           </CardHeader>
           <CardContent className="pt-4">
@@ -502,7 +502,7 @@ export default function BusinessDashboardPage() {
                 </BarChart>
               </ResponsiveContainer>
             ) : (
-              <div className="flex h-[260px] items-center justify-center text-[13px] text-[var(--text-faint)]">
+              <div className="flex h-[260px] items-center justify-center text-[13px] text-[#98A2B3]">
                 No client data for this period
               </div>
             )}
@@ -510,15 +510,15 @@ export default function BusinessDashboardPage() {
         </Card>
 
         <Card>
-          <CardHeader className="border-b border-[var(--border)] pb-3">
+          <CardHeader className="border-b border-[#F2F4F7] pb-3">
             <CardTitle>Sales Pipeline</CardTitle>
           </CardHeader>
           <CardContent className="pt-4 space-y-4">
             <div className="grid grid-cols-3 gap-3">
               {pipeline.map((p) => (
-                <div key={p.name} className="rounded-xl border border-[var(--border)] p-3 text-center">
-                  <p className="text-[22px] font-bold text-[var(--text-primary)]">{p.value}</p>
-                  <p className="text-[12px] text-[var(--text-muted)]">{p.name}</p>
+                <div key={p.name} className="rounded-xl border border-[#E4E7EC] p-3 text-center">
+                  <p className="text-[22px] font-bold text-[#101828]">{p.value}</p>
+                  <p className="text-[12px] text-[#6B7280]">{p.name}</p>
                 </div>
               ))}
             </div>
@@ -533,12 +533,12 @@ export default function BusinessDashboardPage() {
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
-            <div className="flex items-center justify-between rounded-xl bg-[var(--surface-2)] px-4 py-3">
-              <div className="flex items-center gap-2 text-[13px] text-[var(--text-muted)]">
-                <FileText size={16} className="text-[blue-600]" />
+            <div className="flex items-center justify-between rounded-xl bg-[#F9FAFB] px-4 py-3">
+              <div className="flex items-center gap-2 text-[13px] text-[#6B7280]">
+                <FileText size={16} className="text-[#2563EB]" />
                 Accepted value
               </div>
-              <span className="text-[15px] font-bold text-[var(--text-primary)]">
+              <span className="text-[15px] font-bold text-[#101828]">
                 {fmtMoney(current.quotationAcceptedValue)}
               </span>
             </div>
@@ -549,37 +549,37 @@ export default function BusinessDashboardPage() {
       {/* Tables row */}
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <Card>
-          <CardHeader className="border-b border-[var(--border)] pb-3 flex items-center justify-between">
+          <CardHeader className="border-b border-[#F2F4F7] pb-3 flex items-center justify-between">
             <CardTitle>Top Clients</CardTitle>
             <button
               onClick={() => navigate('/bills')}
-              className="inline-flex items-center gap-1 text-[12px] font-medium text-[var(--red-600)] hover:text-[var(--red-700)]"
+              className="inline-flex items-center gap-1 text-[12px] font-medium text-[#DC2626] hover:text-[#B91C1C]"
             >
               View all <ArrowUpRight size={14} />
             </button>
           </CardHeader>
           <CardContent className="pt-0">
             {current.topClients.length > 0 ? (
-              <div className="divide-y divide-[var(--border)]">
+              <div className="divide-y divide-[#F2F4F7]">
                 {current.topClients.map((c) => {
                   const pct = current.revenue > 0 ? (c.revenue / current.revenue) * 100 : 0
                   return (
                     <div key={c.client_name} className="flex items-center justify-between gap-3 py-3">
                       <div className="min-w-0">
-                        <p className="truncate text-[13px] font-semibold text-[var(--text-primary)]">
+                        <p className="truncate text-[13px] font-semibold text-[#101828]">
                           {c.client_name}
                         </p>
-                        <p className="text-[11px] text-[var(--text-faint)]">
+                        <p className="text-[11px] text-[#98A2B3]">
                           {c.bills} bill{c.bills !== 1 ? 's' : ''} · {fmtMoney(c.outstanding)} outstanding
                         </p>
-                        <div className="mt-1.5 h-1.5 w-full max-w-[200px] rounded-full bg-[var(--surface-2)]">
+                        <div className="mt-1.5 h-1.5 w-full max-w-[200px] rounded-full bg-[#F1F3F5]">
                           <div
-                            className="h-1.5 rounded-full bg-[var(--red-600)]"
+                            className="h-1.5 rounded-full bg-[#DC2626]"
                             style={{ width: `${Math.min(100, pct)}%` }}
                           />
                         </div>
                       </div>
-                      <span className="shrink-0 text-[14px] font-bold text-[var(--text-primary)]">
+                      <span className="shrink-0 text-[14px] font-bold text-[#101828]">
                         {fmtMoney(c.revenue)}
                       </span>
                     </div>
@@ -587,40 +587,40 @@ export default function BusinessDashboardPage() {
                 })}
               </div>
             ) : (
-              <p className="py-8 text-center text-[13px] text-[var(--text-faint)]">No client data</p>
+              <p className="py-8 text-center text-[13px] text-[#98A2B3]">No client data</p>
             )}
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader className="border-b border-[var(--border)] pb-3 flex items-center justify-between">
+          <CardHeader className="border-b border-[#F2F4F7] pb-3 flex items-center justify-between">
             <CardTitle>Items Pending Delivery</CardTitle>
             <button
               onClick={() => navigate('/gate-passes')}
-              className="inline-flex items-center gap-1 text-[12px] font-medium text-[var(--red-600)] hover:text-[var(--red-700)]"
+              className="inline-flex items-center gap-1 text-[12px] font-medium text-[#DC2626] hover:text-[#B91C1C]"
             >
               Gate passes <ArrowUpRight size={14} />
             </button>
           </CardHeader>
           <CardContent className="pt-0">
             {current.pendingGatePasses.length > 0 ? (
-              <div className="divide-y divide-[var(--border)]">
+              <div className="divide-y divide-[#F2F4F7]">
                 {current.pendingGatePasses.map((g) => (
                   <div key={g.gate_pass_number} className="flex items-center justify-between gap-3 py-3">
                     <div className="min-w-0">
-                      <p className="truncate text-[13px] font-semibold text-[var(--text-primary)]">
+                      <p className="truncate text-[13px] font-semibold text-[#101828]">
                         {g.client_name}
                       </p>
-                      <p className="text-[11px] text-[var(--text-faint)] font-mono">#{g.gate_pass_number}</p>
+                      <p className="text-[11px] text-[#98A2B3] font-mono">#{g.gate_pass_number}</p>
                     </div>
-                    <span className="shrink-0 inline-flex items-center gap-1 rounded-full bg-[var(--red-50)] px-2.5 py-1 text-[12px] font-semibold text-[var(--red-600)] border border-[var(--red-100)]">
+                    <span className="shrink-0 inline-flex items-center gap-1 rounded-full bg-[#FEF2F2] px-2.5 py-1 text-[12px] font-semibold text-[#DC2626] border border-[#FECACA]">
                       <Boxes size={13} /> {fmtNum(g.pending)} pending
                     </span>
                   </div>
                 ))}
               </div>
             ) : (
-              <p className="py-8 text-center text-[13px] text-[emerald-600]">
+              <p className="py-8 text-center text-[13px] text-[#16A34A]">
                 All received items have been delivered
               </p>
             )}
@@ -630,26 +630,26 @@ export default function BusinessDashboardPage() {
 
       {/* Clients summary footer */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-5">
-          <div className="flex items-center gap-2 text-[var(--text-muted)]">
+        <div className="rounded-2xl border border-[#E4E7EC] bg-white p-5 shadow-sm">
+          <div className="flex items-center gap-2 text-[#6B7280]">
             <Users size={16} />
             <p className="text-[12px] font-semibold uppercase tracking-wide">Active Clients</p>
           </div>
-          <p className="mt-2 text-[24px] font-bold text-[var(--text-primary)]">{fmtNum(current.activeClients)}</p>
+          <p className="mt-2 text-[24px] font-bold text-[#101828]">{fmtNum(current.activeClients)}</p>
         </div>
-        <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-5">
-          <div className="flex items-center gap-2 text-[var(--text-muted)]">
+        <div className="rounded-2xl border border-[#E4E7EC] bg-white p-5 shadow-sm">
+          <div className="flex items-center gap-2 text-[#6B7280]">
             <UserPlus size={16} />
             <p className="text-[12px] font-semibold uppercase tracking-wide">New Clients</p>
           </div>
-          <p className="mt-2 text-[24px] font-bold text-[var(--text-primary)]">{fmtNum(current.newClients)}</p>
+          <p className="mt-2 text-[24px] font-bold text-[#101828]">{fmtNum(current.newClients)}</p>
         </div>
-        <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-5">
-          <div className="flex items-center gap-2 text-[var(--text-muted)]">
+        <div className="rounded-2xl border border-[#E4E7EC] bg-white p-5 shadow-sm">
+          <div className="flex items-center gap-2 text-[#6B7280]">
             <TrendingUp size={16} />
             <p className="text-[12px] font-semibold uppercase tracking-wide">Avg Bill Value</p>
           </div>
-          <p className="mt-2 text-[24px] font-bold text-[var(--text-primary)]">{fmtMoney(current.avgBill)}</p>
+          <p className="mt-2 text-[24px] font-bold text-[#101828]">{fmtMoney(current.avgBill)}</p>
         </div>
       </div>
     </div>

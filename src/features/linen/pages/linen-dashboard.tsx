@@ -35,7 +35,7 @@ export default function LinenDashboard() {
       <Breadcrumb items={[{ label: 'Linen' }, { label: 'Dashboard' }]} />
 
       <div>
-        <h1 className="text-2xl font-bold text-[var(--text-primary)]">
+        <h1 className="text-2xl font-bold text-[var(--text-primary)]" style={{ fontFamily: '"Spectral", Georgia, serif' }}>
           Linen Tracking
         </h1>
         <p className="text-sm text-[var(--text-muted)] mt-1">Overview of all linen assets across clients and statuses</p>
@@ -57,7 +57,7 @@ export default function LinenDashboard() {
             const key = status.toLowerCase()
             const value = (stats as unknown as Record<string, number>)[key] ?? 0
             return (
-              <Card key={status} className="group border border-[var(--border)] hover:-translate-y-0.5 transition-colors duration-200 hover:border-[var(--border-2)]">
+              <Card key={status} className="group border border-[var(--border)] shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 hover:border-[var(--border-2)]">
                 <CardContent className="p-4 flex items-center gap-3">
                   <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: cfg.color }} />
                   <div className="min-w-0">

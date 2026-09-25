@@ -38,18 +38,18 @@ export function DataTable<T extends Record<string, any>>({
 
   return (
     <div className={cn(
-      'overflow-x-auto rounded-xl border border-[var(--border)] bg-[var(--surface)]',
+      'overflow-x-auto rounded-xl border border-[#E4E7EC] bg-white shadow-[0_1px_2px_rgba(16,24,40,0.05)]',
       className,
     )}>
       <table className="w-full text-left border-collapse">
-        <thead className={cn('bg-[var(--surface-2)] border-b border-[var(--border)]', headerClassName)}>
+        <thead className={cn('bg-[#F9FAFB] border-b border-[#E4E7EC]', headerClassName)}>
           <tr>
             {columns.map(col => (
               <th
                 key={col.key}
                 style={col.width ? { width: col.width } : undefined}
                 className={cn(
-                  'px-4 py-3 text-[11px] font-semibold text-[var(--text-faint)] tracking-wider uppercase whitespace-nowrap',
+                  'px-4 py-3 text-[11px] font-semibold text-[#98A2B3] tracking-wider uppercase whitespace-nowrap',
                   alignClass[col.headerAlign || 'left'],
                 )}
               >
@@ -58,12 +58,12 @@ export function DataTable<T extends Record<string, any>>({
             ))}
           </tr>
         </thead>
-        <tbody className="divide-y divide-[var(--border)]">
+        <tbody className="divide-y divide-[#F2F4F7]">
           {data.length === 0 ? (
             <tr>
               <td colSpan={columns.length} className="px-4 py-12">
                 {emptyState || (
-                  <p className="text-center text-[13px] text-[var(--text-faint)]">No data found</p>
+                  <p className="text-center text-[13px] text-[#9CA3AF]">No data found</p>
                 )}
               </td>
             </tr>
@@ -73,8 +73,8 @@ export function DataTable<T extends Record<string, any>>({
                 key={rowKey ? rowKey(row) : idx}
                 onClick={onRowClick ? () => onRowClick(row) : undefined}
                 className={cn(
-                  'bg-[var(--surface)] transition-colors duration-100 hover:bg-[var(--surface-2)]',
-                  idx % 2 === 1 && 'bg-[var(--surface-2)]',
+                  'bg-white transition-colors duration-100 hover:bg-[#FAFAFA]',
+                  idx % 2 === 1 && 'bg-[#FAFAFA]',
                   onRowClick && 'cursor-pointer',
                   typeof rowClassName === 'function' ? rowClassName(row, idx) : rowClassName,
                 )}
@@ -83,7 +83,7 @@ export function DataTable<T extends Record<string, any>>({
                   <td
                     key={col.key}
                     className={cn(
-                      'px-4 py-3 text-[13px] text-[var(--text-muted)] align-middle',
+                      'px-4 py-3 text-[13px] text-[#475467] align-middle',
                       alignClass[col.align || 'left'],
                     )}
                   >

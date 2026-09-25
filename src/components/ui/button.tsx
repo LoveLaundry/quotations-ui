@@ -5,39 +5,47 @@ import { cn } from '../../lib/utils'
 
 const buttonVariants = cva(
   [
-    'inline-flex items-center justify-center gap-2 shrink-0 select-none',
-    'rounded-md text-[13px] font-medium leading-none',
-    'border border-transparent',
-    'transition-colors duration-100',
-    'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ring)]',
+    'inline-flex items-center justify-center gap-2 shrink-0',
+    'rounded-lg text-[13px] font-medium leading-none',
+    'border transition-all duration-200',
+    'focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-red-500/20 focus-visible:ring-offset-2',
     'disabled:pointer-events-none disabled:opacity-50 disabled:cursor-not-allowed',
-    'cursor-pointer',
+    'cursor-pointer select-none',
+    'active:scale-[0.97] hover:shadow-sm',
   ].join(' '),
   {
     variants: {
       variant: {
-        /* Solid near-black. The accent colour is reserved for status and
-           destructive states, so the brand red stops appearing everywhere. */
-        default: 'bg-[var(--text-primary)] text-[var(--surface)] hover:opacity-90',
-        /* Opt-in brand-coloured call to action, for the few places that
-           genuinely want the red. */
-        brand:
-          'bg-[var(--red-600)] text-white hover:bg-[var(--red-700)]',
-        secondary:
-          'bg-[var(--surface)] border-[var(--border-2)] text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]',
-        outline:
-          'bg-transparent border-[var(--border-2)] text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]',
-        ghost:
-          'bg-transparent text-[var(--text-muted)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]',
-        destructive:
-          'bg-transparent border-[var(--red-100)] text-[var(--red-600)] hover:bg-[var(--red-50)] hover:border-[var(--red-600)]',
-        link: 'bg-transparent text-[var(--red-600)] underline-offset-4 hover:underline',
+        default: [
+          'bg-gradient-to-b from-[#DC2626] to-[#B91C1C]',
+          'border-[#B91C1C] text-white',
+          'shadow-sm shadow-red-600/20',
+          'hover:from-[#B91C1C] hover:to-[#991B1B]',
+          'hover:shadow-md hover:shadow-red-600/30',
+        ].join(' '),
+        secondary: [
+          'bg-[var(--surface)] border border-[var(--border)] text-[var(--text-secondary)]',
+          'shadow-sm',
+          'hover:bg-[var(--surface-hover)] hover:border-[var(--border-2)] hover:text-[var(--text-primary)]',
+        ].join(' '),
+        outline: [
+          'bg-transparent border-[var(--red-100)] text-[var(--red-600)]',
+          'hover:bg-[var(--red-50)] hover:border-[var(--red-600)]',
+        ].join(' '),
+        ghost: [
+          'bg-transparent border-transparent text-[var(--text-muted)]',
+          'hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]',
+        ].join(' '),
+        destructive: [
+          'bg-[var(--red-50)] border-[var(--red-100)] text-[var(--red-600)]',
+          'hover:bg-[var(--red-100)] hover:border-[var(--red-600)]',
+        ].join(' '),
       },
       size: {
-        default: 'h-9 px-3.5',
+        default: 'h-9 px-4',
         sm: 'h-8 px-3 text-[12px]',
-        lg: 'h-10 px-4 text-[14px]',
-        icon: 'h-9 w-9 p-0',
+        lg: 'h-11 px-5 text-[14px] font-semibold',
+        icon: 'h-9 w-9 p-0 rounded-lg border-transparent',
       },
     },
     defaultVariants: { variant: 'default', size: 'default' },

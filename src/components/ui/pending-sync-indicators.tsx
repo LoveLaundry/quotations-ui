@@ -25,8 +25,8 @@ export function PendingSyncBadge({
       className={cn(
         'inline-flex items-center gap-1 whitespace-nowrap rounded-full border px-2 py-0.5 text-[10px] font-semibold',
         failed
-          ? 'border-amber-200 bg-amber-50 text-amber-600'
-          : 'border-[amber-200] bg-[amber-50] text-[amber-600]',
+          ? 'border-[#FECACA] bg-[#FFF1F1] text-[#DC2626]'
+          : 'border-[#FDE68A] bg-[#FFFBEB] text-[#D97706]',
         className,
       )}
     >
@@ -58,8 +58,8 @@ export function OfflineChangesChip({
       className={cn(
         'inline-flex items-center gap-1 whitespace-nowrap rounded-full border px-2.5 py-0.5 text-[11px] font-medium',
         counts.failed > 0
-          ? 'border-amber-200 bg-amber-50 text-amber-600'
-          : 'border-[amber-200] bg-[amber-50] text-[amber-600]',
+          ? 'border-[#FECACA] bg-[#FFF1F1] text-[#DC2626]'
+          : 'border-[#FDE68A] bg-[#FFFBEB] text-[#D97706]',
         className,
       )}
     >

@@ -114,7 +114,7 @@ export const ConsolidatedInvoiceTemplate = React.forwardRef<HTMLDivElement, Cons
     const g = (n: number) => n.toFixed(2)
 
     return (
-      <div ref={ref} className="inv-root" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif', color: '#000', background: '#fff' }}>
+      <div ref={ref} className="inv-root" style={{ fontFamily: '"Spectral", Georgia, serif', color: '#000', background: '#fff' }}>
         <style dangerouslySetInnerHTML={{ __html: printStyles }} />
 
         <div style={{ padding: '0 0 8px 0' }}>

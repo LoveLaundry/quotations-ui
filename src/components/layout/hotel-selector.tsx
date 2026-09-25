@@ -32,9 +32,9 @@ export function HotelSelector() {
                 type="button"
                 onClick={() => setOpen(v => !v)}
                 title="Hotel talk: your records are scoped to the selected hotel"
-                className="flex h-9 max-w-[240px] cursor-pointer items-center gap-2 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 text-[var(--text-muted)] transition-colors duration-100 hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] hover:border-[var(--border-2)]"
+                className="flex h-9 max-w-[240px] cursor-pointer items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3 text-[var(--text-muted)] shadow-sm transition-all duration-200 hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] hover:border-[var(--border-2)]"
             >
-                <Building2 size={15} className="shrink-0 text-emerald-50" />
+                <Building2 size={15} className="shrink-0 text-[#DC2626]" />
                 <span className="hidden lg:inline text-[11px] font-semibold uppercase tracking-wide text-[var(--text-faint)]">
                     Hotel
                 </span>
@@ -68,7 +68,7 @@ export function HotelSelector() {
                                 <button
                                     type="button"
                                     onClick={() => { setSelectedHotel(''); setOpen(false) }}
-                                    className="flex w-full cursor-pointer items-center gap-2.5 border-b border-[var(--border)] bg-[var(--surface-2)] px-4 py-2.5 text-left text-[13px] font-semibold text-emerald-700 transition-colors hover:bg-[var(--surface-hover)]"
+                                    className="flex w-full cursor-pointer items-center gap-2.5 border-b border-[var(--border)] bg-[#F0FDF4]/60 px-4 py-2.5 text-left text-[13px] font-semibold text-[#15803D] transition-colors hover:bg-[#F0FDF4]"
                                 >
                                     <Layers size={15} />
                                     All Hotels
@@ -97,7 +97,7 @@ export function HotelSelector() {
                                         <Building2 size={14} className="shrink-0 text-[var(--text-faint)]" />
                                         <span className="truncate">{hotel}</span>
                                         {selectedHotel === hotel && (
-                                            <Check size={14} className="ml-auto shrink-0 text-emerald-50" />
+                                            <Check size={14} className="ml-auto shrink-0 text-[#DC2626]" />
                                         )}
                                     </button>
                                 ))}

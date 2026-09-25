@@ -165,14 +165,14 @@ export function SearchableSelect({
         type="button"
         tabIndex={-1}
         onClick={() => setOpen(o => !o)}
-        className="absolute right-2 top-1/2 -translate-y-1/2 text-[var(--text-faint)] hover:text-[var(--text-secondary)] cursor-pointer"
+        className="absolute right-2 top-1/2 -translate-y-1/2 text-[#98A2B3] hover:text-[#374151] cursor-pointer"
         aria-label="Toggle options"
       >
         <ChevronDown className="h-3.5 w-3.5" />
       </button>
 
       {open && filtered.length > 0 && (
-        <div className="absolute z-50 mt-1 w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] shadow-[var(--shadow-overlay)] overflow-hidden max-h-64 overflow-y-auto">
+        <div className="absolute z-50 mt-1 w-full rounded-xl border border-[#E4E7EC] bg-white shadow-lg overflow-hidden max-h-64 overflow-y-auto">
           {filtered.map((opt, i) => (
             <button
               key={opt.value}
@@ -180,13 +180,13 @@ export function SearchableSelect({
               onMouseDown={e => { e.preventDefault(); commit(opt, false) }}
               onMouseEnter={() => setHighlight(i)}
               className={`flex w-full items-center gap-2 px-3 py-2 text-left text-[13px] transition cursor-pointer ${
-                i === highlight ? 'bg-[var(--red-50)]' : 'hover:bg-[var(--surface-2)]'
+                i === highlight ? 'bg-[#FFF1F1]' : 'hover:bg-[#F9FAFB]'
               }`}
             >
               <span className="min-w-0 flex-1">
-                <span className="block font-medium text-[var(--text-primary)] truncate">{opt.label}</span>
+                <span className="block font-medium text-[#101828] truncate">{opt.label}</span>
                 {(opt.sub || opt.hint) && (
-                  <span className="block text-[11px] text-[var(--text-faint)] truncate">{opt.sub ?? opt.hint}</span>
+                  <span className="block text-[11px] text-[#98A2B3] truncate">{opt.sub ?? opt.hint}</span>
                 )}
               </span>
             </button>

@@ -12,7 +12,7 @@ const gatePassPrintStyles = `
   @page { size: A4; margin: 0; }
   @page :first { margin: 0; }
   .gps-page {
-    font-family: inherit;
+    font-family: "Spectral", Georgia, serif;
     color: #000;
     background: #fff;
   }

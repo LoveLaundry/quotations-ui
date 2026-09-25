@@ -54,7 +54,7 @@ export default function HolidaysPage() {
         </button>
       </div>
 
-      <div className="bg-[var(--surface)] dark:bg-gray-800 rounded-xl border p-4">
+      <div className="bg-white dark:bg-gray-800 rounded-xl border p-4">
         <div className="flex items-center gap-4">
           <div>
             <label className="text-sm font-medium text-gray-600 dark:text-gray-400">Year</label>
@@ -78,7 +78,7 @@ export default function HolidaysPage() {
           <div className="text-center py-8 text-gray-400 col-span-3">No holidays defined for {yearFilter}</div>
         ) : (
           holidays.map((h: any) => (
-            <div key={h.id} className="bg-[var(--surface)] dark:bg-gray-800 rounded-xl border p-4 flex items-start justify-between">
+            <div key={h.id} className="bg-white dark:bg-gray-800 rounded-xl border p-4 flex items-start justify-between">
               <div>
                 <div className="flex items-center gap-2">
                   <Calendar size={16} className="text-red-500" />
@@ -105,7 +105,7 @@ export default function HolidaysPage() {
 
       {showForm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="bg-[var(--surface)] dark:bg-gray-800 rounded-xl p-6 w-full max-w-md">
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-md">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-lg font-semibold">Add Holiday</h2>
               <button onClick={() => setShowForm(false)}><X size={20} /></button>

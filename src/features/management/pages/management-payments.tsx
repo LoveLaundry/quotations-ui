@@ -78,7 +78,7 @@ export default function ManagementPayments() {
           <option value="">All Customers</option>
           {customers.map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
         </select>
-        <div className="bg-[var(--surface)] dark:bg-gray-800 rounded-xl border p-4">
+        <div className="bg-white dark:bg-gray-800 rounded-xl border p-4">
           <p className="text-sm text-gray-500">Total Payments</p>
           <p className="text-xl font-bold">Rs. {totalPaid.toLocaleString()}</p>
         </div>
@@ -120,7 +120,7 @@ export default function ManagementPayments() {
 
       {showForm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="bg-[var(--surface)] dark:bg-gray-800 rounded-xl p-6 w-full max-w-md">
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-md">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-lg font-semibold">Record Payment</h2>
               <button onClick={() => setShowForm(false)}><X size={20} /></button>

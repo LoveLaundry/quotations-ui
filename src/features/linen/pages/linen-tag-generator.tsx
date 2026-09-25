@@ -47,7 +47,7 @@ function TagCard({ tag, onReady }: { tag: TagItem; onReady?: (linenId: string, q
   }, [tag.linen_id, onReady])
 
   return (
-    <div className="border-2 border-black p-3 flex flex-col items-center gap-1 bg-[var(--surface)]" style={{ width: '70mm', height: '38mm', pageBreakInside: 'avoid' }}>
+    <div className="border-2 border-black p-3 flex flex-col items-center gap-1 bg-white" style={{ width: '70mm', height: '38mm', pageBreakInside: 'avoid' }}>
       <p className="text-[8px] font-bold uppercase tracking-widest">Love Laundry</p>
       <div ref={qrRef}><QRCodeSVG value={tag.linen_id} size={50} level="M" /></div>
       <svg ref={barcodeRef} style={{ width: '80%', height: 20 }} />
@@ -154,7 +154,7 @@ export default function LinenTagGenerator() {
 
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-[var(--text-primary)]">Generate Linen Tags</h1>
+          <h1 className="text-2xl font-bold text-[var(--text-primary)]" style={{ fontFamily: '"Spectral", Georgia, serif' }}>Generate Linen Tags</h1>
           <p className="text-sm text-[var(--text-muted)]">Create linen IDs and preview printable tags</p>
         </div>
         {generatedTags.length > 0 && (
@@ -167,46 +167,46 @@ export default function LinenTagGenerator() {
 
       <div className="flex flex-col lg:flex-row gap-5">
         {/* Form */}
-        <Card className="lg:w-96 border border-[var(--border)]">
+        <Card className="lg:w-96 border border-[var(--border)] shadow-sm">
           <CardContent className="p-5 space-y-4">
             <div>
               <label className="text-[11px] font-semibold text-[var(--text-muted)] uppercase tracking-wide mb-1.5 block">Category</label>
               <select value={category} onChange={e => setCategory(e.target.value)}
-                className="w-full px-3 py-2 text-sm border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)]/20 focus:border-[var(--red-600)] transition-colors">
+                className="w-full px-3 py-2 text-sm border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[#DC2626]/20 focus:border-[#DC2626] transition-colors">
                 {LINEN_CATEGORIES.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
               </select>
             </div>
             <div>
               <label className="text-[11px] font-semibold text-[var(--text-muted)] uppercase tracking-wide mb-1.5 block">Item Type *</label>
               <input value={itemType} onChange={e => setItemType(e.target.value)} placeholder="e.g. King Bedsheet"
-                className="w-full px-3 py-2 text-sm border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)]/20 focus:border-[var(--red-600)] transition-colors" />
+                className="w-full px-3 py-2 text-sm border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[#DC2626]/20 focus:border-[#DC2626] transition-colors" />
             </div>
             <div>
               <label className="text-[11px] font-semibold text-[var(--text-muted)] uppercase tracking-wide mb-1.5 block">Client / Hotel *</label>
               <input value={clientName} onChange={e => setClientName(e.target.value)} placeholder="e.g. Hotel Riu"
-                className="w-full px-3 py-2 text-sm border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)]/20 focus:border-[var(--red-600)] transition-colors" />
+                className="w-full px-3 py-2 text-sm border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[#DC2626]/20 focus:border-[#DC2626] transition-colors" />
             </div>
             <div>
               <label className="text-[11px] font-semibold text-[var(--text-muted)] uppercase tracking-wide mb-1.5 block">Quantity *</label>
               <input type="number" value={quantity} onChange={e => setQuantity(Number(e.target.value))} min={1} max={10000}
-                className="w-full px-3 py-2 text-sm border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)]/20 focus:border-[var(--red-600)] transition-colors" />
+                className="w-full px-3 py-2 text-sm border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[#DC2626]/20 focus:border-[#DC2626] transition-colors" />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="text-[11px] font-semibold text-[var(--text-muted)] uppercase tracking-wide mb-1.5 block">Size</label>
                 <input value={size} onChange={e => setSize(e.target.value)} placeholder="e.g. King"
-                  className="w-full px-3 py-2 text-sm border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)]/20 focus:border-[var(--red-600)] transition-colors" />
+                  className="w-full px-3 py-2 text-sm border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[#DC2626]/20 focus:border-[#DC2626] transition-colors" />
               </div>
               <div>
                 <label className="text-[11px] font-semibold text-[var(--text-muted)] uppercase tracking-wide mb-1.5 block">Color</label>
                 <input value={color} onChange={e => setColor(e.target.value)} placeholder="e.g. White"
-                  className="w-full px-3 py-2 text-sm border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)]/20 focus:border-[var(--red-600)] transition-colors" />
+                  className="w-full px-3 py-2 text-sm border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[#DC2626]/20 focus:border-[#DC2626] transition-colors" />
               </div>
             </div>
             <div>
               <label className="text-[11px] font-semibold text-[var(--text-muted)] uppercase tracking-wide mb-1.5 block">Department</label>
               <input value={department} onChange={e => setDepartment(e.target.value)} placeholder="e.g. Housekeeping"
-                className="w-full px-3 py-2 text-sm border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)]/20 focus:border-[var(--red-600)] transition-colors" />
+                className="w-full px-3 py-2 text-sm border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[#DC2626]/20 focus:border-[#DC2626] transition-colors" />
             </div>
             <Button onClick={handleGenerate} disabled={!itemType || !clientName || quantity <= 0 || generateMutation.isPending} className="w-full">
               <Plus size={16} className="mr-2" />
@@ -235,7 +235,7 @@ export default function LinenTagGenerator() {
               </div>
             </div>
           ) : (
-            <Card className="border border-[var(--border)]">
+            <Card className="border border-[var(--border)] shadow-sm">
               <CardContent className="p-12 text-center">
                 <Printer size={40} className="mx-auto mb-3 text-[var(--text-muted)] opacity-30" />
                 <p className="text-sm text-[var(--text-muted)]">Fill in the form and click Generate to preview tags</p>

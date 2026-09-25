@@ -129,7 +129,7 @@ export default function StatementPage() {
           ]}
         />
         <h1 className="text-dashboard-title mt-1">Client Statement</h1>
-        <p className="text-[13px] text-[var(--text-faint)] mt-0.5">
+        <p className="text-[13px] text-[#98A2B3] mt-0.5">
           Chronological money and quantity movements for one client
         </p>
       </div>
@@ -138,27 +138,27 @@ export default function StatementPage() {
         <CardContent className="pt-4">
           <div className="flex max-w-xl items-center gap-2">
             <div className="relative flex-1">
-              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--text-faint)]" />
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#98A2B3]" />
               <input
                 type="text"
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && searchInput.trim() && setClientName(searchInput.trim())}
                 placeholder="Enter client name…"
-                className="h-10 w-full rounded-lg border border-[var(--border)] bg-[var(--surface)] pl-9 pr-8 text-[13px] text-[var(--text-primary)] outline-none focus:border-[amber-600] focus:ring-2 focus:ring-[amber-600]/10"
+                className="h-10 w-full rounded-lg border border-[#E4E7EC] bg-white pl-9 pr-8 text-[13px] text-[#101828] outline-none focus:border-[#D97706] focus:ring-2 focus:ring-[#D97706]/10 shadow-sm"
               />
               {searchInput && (
                 <button
                   type="button"
                   onClick={() => { setSearchInput(''); setClientName('') }}
-                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[var(--text-faint)] hover:text-[var(--text-secondary)] cursor-pointer"
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#98A2B3] hover:text-[#374151] cursor-pointer"
                 >
                   <X className="h-3.5 w-3.5" />
                 </button>
               )}
             </div>
             <Button
-              className="h-10 bg-[amber-600] hover:bg-[amber-700] text-white"
+              className="h-10 bg-[#D97706] hover:bg-[#B45309] text-white"
               disabled={!searchInput.trim()}
               onClick={() => setClientName(searchInput.trim())}
             >
@@ -171,7 +171,7 @@ export default function StatementPage() {
 
       {!clientName.trim() ? (
         <EmptyState
-          icon={<Landmark className="h-6 w-6 text-[var(--text-faint)]" />}
+          icon={<Landmark className="h-6 w-6 text-[#9CA3AF]" />}
           title="Pick a client"
           description="Search by client name to see their bills, payments, deliveries and returns."
         />
@@ -234,7 +234,7 @@ export default function StatementPage() {
                           <p className="text-[13px] font-medium">
                             Bill <span className="tabular-nums">{b.id}</span> · {b.payment_status}
                           </p>
-                          <p className="text-[11px] text-[var(--text-faint)] tabular-nums">
+                          <p className="text-[11px] text-[#98A2B3] tabular-nums">
                             Billed {fmtMoney(b.grand_total ?? b.total_amount ?? 0)} · Paid {fmtMoney(collectedHere)}
                           </p>
                         </div>
@@ -243,7 +243,7 @@ export default function StatementPage() {
                         </span>
                         <Link
                           to={`/bills/${b.id}`}
-                          className="inline-flex shrink-0 items-center gap-1 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-2.5 py-1.5 text-[12px] font-semibold text-[var(--text-secondary)] hover:border-[amber-600] hover:text-[amber-700] transition-colors"
+                          className="inline-flex shrink-0 items-center gap-1 rounded-lg border border-[#E4E7EC] bg-white px-2.5 py-1.5 text-[12px] font-semibold text-[#374151] hover:border-[#D97706] hover:text-[#B45309] transition-colors"
                         >
                           Record payment <ArrowRight className="h-3 w-3" />
                         </Link>
@@ -277,13 +277,13 @@ export default function StatementPage() {
                     const b = row.bill
                     return (
                       <div key={`bil-${b.id}-${i}`} className="flex items-center gap-3 px-4 py-2.5">
-                        <FileText className="h-4 w-4 shrink-0 text-[amber-600]" />
+                        <FileText className="h-4 w-4 shrink-0 text-[#D97706]" />
                         <div className="min-w-0 flex-1">
                           <p className="text-[13px] font-medium">{b.client_name} — bill created</p>
-                          <p className="text-[11px] text-[var(--text-faint)]">{b.items?.reduce((s, it) => s + it.quantity, 0) ?? 0} pcs · {b.payment_status}</p>
+                          <p className="text-[11px] text-[#98A2B3]">{b.items?.reduce((s, it) => s + it.quantity, 0) ?? 0} pcs · {b.payment_status}</p>
                         </div>
                         <span className="text-[12px] font-semibold tabular-nums">{fmtMoney(b.grand_total ?? b.total_amount ?? 0)}</span>
-                        <span className="w-24 text-right text-[11px] text-[var(--text-faint)] tabular-nums">{dayOnly(b.created_at)}</span>
+                        <span className="w-24 text-right text-[11px] text-[#98A2B3] tabular-nums">{dayOnly(b.created_at)}</span>
                       </div>
                     )
                   }
@@ -294,10 +294,10 @@ export default function StatementPage() {
                         <Landmark className="h-4 w-4 shrink-0 text-emerald-600" />
                         <div className="min-w-0 flex-1">
                           <p className="text-[13px] font-medium">{p.client_name} — payment</p>
-                          <p className="text-[11px] text-[var(--text-faint)]">{p.payment_method}{p.reference ? ` · ${p.reference}` : ''}</p>
+                          <p className="text-[11px] text-[#98A2B3]">{p.payment_method}{p.reference ? ` · ${p.reference}` : ''}</p>
                         </div>
                         <span className="text-[12px] font-semibold tabular-nums text-emerald-600">+{fmtMoney(p.amount)}</span>
-                        <span className="w-24 text-right text-[11px] text-[var(--text-faint)] tabular-nums">{dayOnly(p.payment_date || p.created_at)}</span>
+                        <span className="w-24 text-right text-[11px] text-[#98A2B3] tabular-nums">{dayOnly(p.payment_date || p.created_at)}</span>
                       </div>
                     )
                   }
@@ -308,14 +308,14 @@ export default function StatementPage() {
                         <Truck className="h-4 w-4 shrink-0 text-blue-600" />
                         <div className="min-w-0 flex-1">
                           <p className="text-[13px] font-medium">{d.client_name} — delivery</p>
-                          <p className="text-[11px] text-[var(--text-faint)]">
+                          <p className="text-[11px] text-[#98A2B3]">
                             {d.items?.map(it => `${it.item_name} ×${it.quantity}`).join(', ') ?? '—'}
                           </p>
                         </div>
                         <span className="text-[12px] tabular-nums">
                           {(d.items ?? []).reduce((s, it) => s + (it.quantity || 0), 0)} pcs
                         </span>
-                        <span className="w-24 text-right text-[11px] text-[var(--text-faint)] tabular-nums">{dayOnly(d.delivery_date)}</span>
+                        <span className="w-24 text-right text-[11px] text-[#98A2B3] tabular-nums">{dayOnly(d.delivery_date)}</span>
                       </div>
                     )
                   }
@@ -325,20 +325,20 @@ export default function StatementPage() {
                       <RotateCcw className="h-4 w-4 shrink-0 text-amber-600" />
                       <div className="min-w-0 flex-1">
                         <p className="text-[13px] font-medium">{r.client_name} — return{` ${r.return_id}`}</p>
-                        <p className="text-[11px] text-[var(--text-faint)]">
+                        <p className="text-[11px] text-[#98A2B3]">
                           {r.items?.map(it => `${it.item_name} ×${it.returned_qty}`).join(', ') ?? '—'}
                         </p>
                       </div>
                       <span className="text-[12px] tabular-nums">
                         {(r.items ?? []).reduce((s, it) => s + (it.returned_qty || 0), 0)} pcs
                       </span>
-                      <span className="w-24 text-right text-[11px] text-[var(--text-faint)] tabular-nums">{dayOnly(r.created_at)}</span>
+                      <span className="w-24 text-right text-[11px] text-[#98A2B3] tabular-nums">{dayOnly(r.created_at)}</span>
                     </div>
                   )
                 })}
               </div>
               {rows.length === 0 && (
-                <p className="px-4 py-6 text-center text-[13px] text-[var(--text-faint)]">No movements found.</p>
+                <p className="px-4 py-6 text-center text-[13px] text-[#98A2B3]">No movements found.</p>
               )}
             </CardContent>
           </Card>
