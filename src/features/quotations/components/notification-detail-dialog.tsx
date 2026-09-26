@@ -108,6 +108,37 @@ export function NotificationDetailDialog({ open, onOpenChange, data, type }: Not
                   <p className="text-[14px] font-medium text-[#101828]">{(data as GatePassPendingEntry).delivered}</p>
                 </div>
               </div>
+
+              {(() => {
+                const entry = data as GatePassPendingEntry
+                if (!entry.returned && !entry.balance_adjusted) return null
+                return (
+                  <div className="mt-2 rounded-lg border border-[#D1E9DD] bg-[#F0FDF4] px-3 py-2.5">
+                    <p className="text-[11px] font-semibold uppercase tracking-wide text-[#047857]">
+                      Balance adjustments
+                    </p>
+                    <p className="mt-1 text-[12px] text-[#065F46]">
+                      {!!entry.returned && (
+                        <span>
+                          {entry.returned} returned to us and still to be sent
+                          {!!entry.balance_adjusted ? ' · ' : ''}
+                        </span>
+                      )}
+                      {!!entry.balance_adjusted && (
+                        <span>
+                          {entry.balance_adjusted > 0 ? 'Credited +' : 'Debited '}
+                          {entry.balance_adjusted} pcs
+                        </span>
+                      )}
+                    </p>
+                    <p className="mt-1 text-[11px] text-[#059669]">
+                      Pending {entry.pending} = {entry.received} received − {entry.delivered} delivered
+                      {!!entry.returned ? ` + ${entry.returned} returned` : ''}
+                      {!!entry.balance_adjusted ? ` ${entry.balance_adjusted > 0 ? '+' : '−'} ${Math.abs(entry.balance_adjusted)} adjusted` : ''}
+                    </p>
+                  </div>
+                )
+              })()}
             </div>
           ) : (
             <div className="rounded-lg border border-[#E4E7EC] bg-white p-4 space-y-3">

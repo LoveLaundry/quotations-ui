@@ -9,6 +9,10 @@ export interface GatePassPendingEntry {
   item_name: string
   received: number
   delivered: number
+  /** Pieces the client sent back that are still with us. */
+  returned?: number
+  /** Signed correction folded into `pending`. */
+  balance_adjusted?: number
   pending: number
 }
 

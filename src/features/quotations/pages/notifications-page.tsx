@@ -188,6 +188,20 @@ export default function NotificationsPage() {
                       <div className="mt-1.5 flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-[#98A2B3]">
                         <span>Received: {e.received}</span>
                         <span>Delivered: {e.delivered}</span>
+                        {!!e.returned && <span className="text-[#047857]">Returned: +{e.returned}</span>}
+                        {!!e.balance_adjusted && (
+                          <span
+                            className={e.balance_adjusted > 0 ? 'text-[#047857]' : 'text-[#98A2B3]'}
+                            title={
+                              e.balance_adjusted > 0
+                                ? 'Credited — these pieces are owed to the client on top of the undelivered ones'
+                                : 'Debited — these pieces are no longer outstanding'
+                            }
+                          >
+                            Balance: {e.balance_adjusted > 0 ? '+' : ''}
+                            {e.balance_adjusted}
+                          </span>
+                        )}
                         <span className="font-semibold text-[#DC2626]">Pending: {e.pending}</span>
                       </div>
                     </div>
