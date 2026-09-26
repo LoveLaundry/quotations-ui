@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import {
   MagnifyingGlass, ArrowRight, FilePlus, Receipt, ClipboardText, ShoppingCart, FileText, X,
 } from '@phosphor-icons/react'
+import type { Icon } from '@phosphor-icons/react'
 import { useQuotations } from '../../features/quotations/hooks/useQuotations'
 import { cn } from '../../lib/utils'
 import { Dialog, DialogContent, DialogTitle } from './dialog'
@@ -53,12 +54,26 @@ const NAV_ITEMS: NavTarget[] = [
   { label: 'Linen Dashboard', keywords: 'linen tracking dashboard', path: '/linen' },
 ]
 
-const QUICK_ACTIONS: { label: string; path: string; icon: any }[] = [
+const QUICK_ACTIONS: { label: string; path: string; icon: Icon }[] = [
   { label: 'New Quotation', path: '/quotations/new', icon: FilePlus },
   { label: 'New Bill', path: '/bills/new', icon: Receipt },
   { label: 'New Gate Pass', path: '/gate-passes/new', icon: ClipboardText },
   { label: 'New Shop Bill', path: '/shop-bills/new', icon: ShoppingCart },
 ]
+
+/**
+ * Rendered as an element, never invoked as a function.
+ *
+ * Phosphor icons are `React.forwardRef` objects, not plain functions, so
+ * `Icon({ size: 14 })` throws "is not a function" the moment the palette is
+ * opened with an empty field. Because this renders inside the layout, the throw
+ * reached the route error boundary and replaced the whole page with
+ * "Error 500 — Unexpected Error" instead of failing locally.
+ */
+function QuickActionIcon({ path }: { path: string }) {
+  const Icon = QUICK_ACTIONS.find((a) => a.path === path)?.icon ?? FileText
+  return <Icon size={14} />
+}
 
 type Result =
   | { kind: 'page'; key: string; label: string; path: string }
@@ -237,7 +252,7 @@ export function CommandSearch({ open, onClose }: CommandSearchProps) {
                     )}
                   >
                     {r.kind === 'page' && !q ? (
-                      (QUICK_ACTIONS.find((a) => a.path === r.path)?.icon ?? FileText)({ size: 14 })
+                      <QuickActionIcon path={r.path} />
                     ) : (
                       r.label.slice(0, 1).toUpperCase()
                     )}
