@@ -1,5 +1,15 @@
 import React from 'react'
-import type { Delivery, GatePass } from '../../../types/operations'
+import {
+    balanceAdjustmentReasonLabel,
+    balanceItemKey,
+} from '../../../lib/balance-adjustments'
+import type {
+    BalanceAdjustment,
+    Delivery,
+    DeliveryBalanceReport,
+    DeliveryItem,
+    GatePass,
+} from '../../../types/operations'
 
 const deliveryPrintStyles = `
   @media print {
@@ -137,8 +147,21 @@ const deliveryPrintStyles = `
     height: 22px;
   }
   .dls-col-no { width: 24px; text-align: center; }
-  .dls-col-spec { width: 38%; }
-  .dls-col-qty { width: 80px; text-align: center; }
+  .dls-col-spec { width: 22%; }
+  .dls-col-qty { width: 62px; text-align: center; }
+  .dls-col-bal { width: 62px; text-align: center; }
+  .dls-items-table thead th.dls-col-bal {
+    font-size: 10px;
+    letter-spacing: 0.2px;
+  }
+  .dls-row-total td {
+    font-weight: 800;
+    background: #f5f5f5;
+  }
+  .dls-adj-credit { color: #166534; }
+  .dls-adj-debit { color: #991b1b; }
+  .dls-notes { margin-top: 6px; font-size: 11px; }
+  .dls-note-line { margin: 0 0 2px; }
   .dls-totals {
     display: flex;
     justify-content: space-between;
@@ -162,11 +185,29 @@ const deliveryPrintStyles = `
   }
 `
 
-export const DeliveryPrintSheet = React.forwardRef<HTMLDivElement, { delivery: Delivery; gp?: GatePass }>(
-    ({ delivery, gp }, ref) => {
+export const DeliveryPrintSheet = React.forwardRef<
+    HTMLDivElement,
+    {
+        delivery: Delivery
+        gp?: GatePass
+        report?: DeliveryBalanceReport | null
+        adjustments?: BalanceAdjustment[]
+    }
+>(({ delivery, gp, report, adjustments }, ref) => {
         const items = delivery.items ?? []
         const totalPieces = items.reduce((sum, item) => sum + (item.quantity || 0), 0)
         const gatePassNumber = gp?.gate_pass_number ?? delivery.gate_pass_id.slice(-8).toUpperCase()
+
+        // The running balance is per item and keyed the same way the engine keys
+        // it, so a line only carries figures it actually has.
+        const balanceByKey = new Map((report?.items ?? []).map(r => [r.item_key, r]))
+        const balanceFor = (item: DeliveryItem) =>
+            balanceByKey.get(balanceItemKey(item.item_name, item.specification))
+        const showBalance = Boolean(report)
+        const columnCount = showBalance ? 8 : 4
+        const signed = (n: number) => (n > 0 ? `+${n}` : `${n}`)
+        // A voided correction is history, not a figure on a signed note.
+        const liveAdjustmentNotes = (adjustments ?? []).filter(a => a.status === 'POSTED')
 
         return (
             <div ref={ref} className="dls-page">
@@ -240,25 +281,102 @@ export const DeliveryPrintSheet = React.forwardRef<HTMLDivElement, { delivery: D
                                 <th className="dls-col-no">No.</th>
                                 <th>Item</th>
                                 <th className="dls-col-spec">Specification</th>
-                                <th className="dls-col-qty">Quantity</th>
+                                {showBalance ? (
+                                    <>
+                                        <th className="dls-col-bal">Prev. Bal.</th>
+                                        <th className="dls-col-bal">Received</th>
+                                        <th className="dls-col-bal">Delivered</th>
+                                        <th className="dls-col-bal">Adj.</th>
+                                        <th className="dls-col-bal">Balance</th>
+                                    </>
+                                ) : (
+                                    <th className="dls-col-qty">Quantity</th>
+                                )}
                             </tr>
                         </thead>
                         <tbody>
-                            {items.map((item, index) => (
-                                <tr key={`${item.item_name}-${index}`}>
-                                    <td className="dls-col-no">{index + 1}</td>
-                                    <td>{item.item_name}</td>
-                                    <td className="dls-col-spec">{item.specification || ''}</td>
-                                    <td className="dls-col-qty">{item.quantity ?? ''}</td>
-                                </tr>
-                            ))}
+                            {items.map((item, index) => {
+                                const bal = balanceFor(item)
+                                return (
+                                    <tr key={`${item.item_name}-${index}`}>
+                                        <td className="dls-col-no">{index + 1}</td>
+                                        <td>{item.item_name}</td>
+                                        <td className="dls-col-spec">{item.specification || ''}</td>
+                                        {showBalance ? (
+                                            <>
+                                                <td className="dls-col-bal">{bal?.previous_balance_qty ?? ''}</td>
+                                                <td className="dls-col-bal">{bal?.received_qty ?? ''}</td>
+                                                <td className="dls-col-bal">{bal?.delivered_qty ?? item.quantity ?? ''}</td>
+                                                <td
+                                                    className={`dls-col-bal ${
+                                                        (bal?.balance_adjustment_qty ?? 0) > 0
+                                                            ? 'dls-adj-credit'
+                                                            : (bal?.balance_adjustment_qty ?? 0) < 0
+                                                              ? 'dls-adj-debit'
+                                                              : ''
+                                                    }`}
+                                                >
+                                                    {bal?.balance_adjustment_qty
+                                                        ? signed(bal.balance_adjustment_qty)
+                                                        : ''}
+                                                </td>
+                                                <td className="dls-col-bal">{bal?.current_balance_qty ?? ''}</td>
+                                            </>
+                                        ) : (
+                                            <td className="dls-col-qty">{item.quantity ?? ''}</td>
+                                        )}
+                                    </tr>
+                                )
+                            })}
                             {items.length === 0 && (
                                 <tr>
-                                    <td colSpan={4}>No items</td>
+                                    <td colSpan={columnCount}>No items</td>
+                                </tr>
+                            )}
+                            {showBalance && items.length > 0 && (
+                                <tr className="dls-row-total">
+                                    <td className="dls-col-no" />
+                                    <td>Total</td>
+                                    <td className="dls-col-spec" />
+                                    <td className="dls-col-bal">{report?.totals.previous_balance_qty ?? ''}</td>
+                                    <td className="dls-col-bal">{report?.totals.received_qty ?? ''}</td>
+                                    <td className="dls-col-bal">{report?.totals.delivered_qty ?? ''}</td>
+                                    <td className="dls-col-bal">
+                                        {report?.totals.balance_adjustment_qty
+                                            ? signed(report.totals.balance_adjustment_qty)
+                                            : ''}
+                                    </td>
+                                    <td className="dls-col-bal">{report?.totals.current_balance_qty ?? ''}</td>
                                 </tr>
                             )}
                         </tbody>
                     </table>
+
+                    {showBalance && (
+                        <div className="dls-notes">
+                            <p className="dls-note-line">
+                                <strong>Prev. Bal.</strong> pieces still held before this delivery.{' '}
+                                <strong>Balance</strong> pieces still held after it. Corrections are pieces only
+                                and do not change the invoice.
+                            </p>
+                            {liveAdjustmentNotes.length > 0 && (
+                                <div>
+                                    <p className="dls-note-line" style={{ marginTop: 4 }}>
+                                        <strong>Corrections on this delivery:</strong>
+                                    </p>
+                                    {liveAdjustmentNotes.map(adj => (
+                                        <p className="dls-note-line" key={adj.id}>
+                                            {adj.item_name}
+                                            {adj.specification ? ` (${adj.specification})` : ''}:{' '}
+                                            {signed(adj.quantity)} pcs —{' '}
+                                            {balanceAdjustmentReasonLabel(adj.reason)}
+                                            {adj.notes ? ` — ${adj.notes}` : ''}
+                                        </p>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    )}
 
                     <div className="dls-totals">
                         <span>Total Item Types: {items.length}</span>
@@ -278,6 +396,5 @@ export const DeliveryPrintSheet = React.forwardRef<HTMLDivElement, { delivery: D
                     </div>
                 </div>
             </div>
-        )
-    },
-)
+    )
+})

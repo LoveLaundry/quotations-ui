@@ -91,6 +91,79 @@ export interface DeliveryCreate {
     notes?: string
 }
 
+// ── Balance adjustments ────────────────────────────────────────────────────────
+// A signed correction to an item's PIECE balance, posted when a delivery was
+// recorded wrongly. This is deliberately NOT the client-count workflow: the
+// pieces are counted at the gate pass, and money derives from that received
+// quantity alone, so a correction can never change what is invoiceable.
+//
+//   +n  we under-delivered / lost / damaged -> the client is owed n more
+//   -n  we logged more as sent than was taken -> n fewer are outstanding
+export interface BalanceAdjustment {
+    id: string
+    gate_pass_id: string
+    delivery_id: string | null
+    item_name: string
+    specification: string
+    quantity: number
+    reason: string
+    notes: string | null
+    status: 'POSTED' | 'VOID'
+    created_by: string
+    created_at: string
+    voided_at?: string
+    voided_by?: string
+    void_reason?: string
+}
+
+export interface BalanceAdjustmentCreate {
+    gate_pass_id: string
+    item_name: string
+    specification?: string | null
+    /** Signed and non-zero: positive credits the client, negative debits them. */
+    quantity: number
+    reason: string
+    notes?: string | null
+    /** Attach to a delivery so the correction shows on that delivery note. */
+    delivery_id?: string | null
+}
+
+/** One line of the running balance printed on a delivery note. */
+export interface DeliveryBalanceItem {
+    item_key: string
+    item_name: string
+    specification: string
+    category: string
+    /** What was still outstanding BEFORE this delivery. */
+    previous_balance_qty: number
+    received_qty: number
+    /** What THIS delivery carried. */
+    delivered_qty: number
+    balance_adjustment_qty: number
+    /** What was still outstanding AFTER this delivery. */
+    current_balance_qty: number
+    /** current === previous - delivered + adjustment, unless clamping kicked in. */
+    reconciles: boolean
+    flags: string[]
+}
+
+export interface DeliveryBalanceReport {
+    delivery_id: string
+    gate_pass_id: string
+    gate_pass_number: string | null
+    client_name: string | null
+    delivery_date: string | null
+    items: DeliveryBalanceItem[]
+    totals: {
+        previous_balance_qty: number
+        received_qty: number
+        delivered_qty: number
+        balance_adjustment_qty: number
+        current_balance_qty: number
+    }
+    flags: string[]
+}
+
 // ── Dispatch (pickup / delivery scheduling) ────────────────────────────────────
 export type DispatchStatus =
     | 'SCHEDULED'

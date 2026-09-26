@@ -23,7 +23,11 @@ import { Skeleton } from '../../../components/ui/skeleton'
 import { Breadcrumb } from '../../../components/ui/breadcrumb'
 import { SyncStatusBar } from '../../../components/ui/sync-status-bar'
 import { formatDateOnly } from '../../../lib/utils'
-import { useDeliveries } from '../hooks/useDeliveries'
+import {
+    useDeliveries,
+    useDeliveryAdjustments,
+    useDeliveryBalanceReport,
+} from '../hooks/useDeliveries'
 import { useGatePasses } from '../hooks/useGatePasses'
 import {
     DeliveryStatusPill,
@@ -181,6 +185,15 @@ export default function DeliveriesPage() {
     // Print support
     const printRef = useRef<HTMLDivElement>(null)
     const [printTarget, setPrintTarget] = useState<Delivery | null>(null)
+    // The running balance is fetched for the delivery being printed, so the
+    // note has to wait for it — otherwise a slow request prints a note with
+    // silently missing balance columns.
+    const { data: printReport, isFetching: reportFetching } = useDeliveryBalanceReport(
+        printTarget?.id,
+    )
+    const { data: printAdjustments } = useDeliveryAdjustments({
+        delivery_id: printTarget?.id ?? '',
+    })
     const handlePrint = useReactToPrint({
         contentRef: printRef,
         documentTitle: printTarget ? `Delivery-${printTarget.id}` : 'Delivery',
@@ -192,12 +205,13 @@ export default function DeliveriesPage() {
 
     useEffect(() => {
         if (!printTarget) return
+        if (reportFetching) return
         const timer = setTimeout(() => {
             handlePrintRef.current()
             setPrintTarget(null)
         }, 120)
         return () => clearTimeout(timer)
-    }, [printTarget])
+    }, [printTarget, reportFetching])
 
     const requestPrint = (delivery: Delivery) => setPrintTarget(delivery)
 
@@ -437,6 +451,8 @@ export default function DeliveriesPage() {
                         ref={printRef}
                         delivery={printTarget}
                         gp={gpMap.get(printTarget.gate_pass_id)}
+                        report={printReport}
+                        adjustments={printAdjustments}
                     />
                 </div>
             )}

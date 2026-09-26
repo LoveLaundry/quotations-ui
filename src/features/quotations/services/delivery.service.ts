@@ -1,6 +1,12 @@
 import billsApi from '../../../api/bills-api'
 import { idempotencyKey } from '../../../lib/idempotency'
-import type { Delivery, DeliveryCreate } from '../../../types/operations'
+import type {
+    BalanceAdjustment,
+    BalanceAdjustmentCreate,
+    Delivery,
+    DeliveryBalanceReport,
+    DeliveryCreate,
+} from '../../../types/operations'
 
 function toISODatetime(dateStr: string): string {
     // If already a full datetime string, return as-is
@@ -54,4 +60,25 @@ export const deliveries = {
         billsApi.get<PendingGatePass[]>('/deliveries/pending-gatepasses', {
             params: clientName ? { client_name: clientName } : {},
         }).then((r: any) => r.data),
+
+    balanceReport: (deliveryId: string) =>
+        billsApi.get<DeliveryBalanceReport>(`/deliveries/${deliveryId}/balance-report`)
+            .then(r => r.data),
+
+    adjustments: (params: { gate_pass_id?: string; delivery_id?: string }) =>
+        billsApi.get<BalanceAdjustment[]>('/balance-adjustments', { params }).then(r => r.data),
+
+    createAdjustment: async (data: BalanceAdjustmentCreate) => {
+        const key = await idempotencyKey(data)
+        return billsApi.post<BalanceAdjustment>('/balance-adjustments', data, {
+            headers: { 'X-Idempotency-Key': key },
+        }).then(r => r.data)
+    },
+
+    voidAdjustment: (id: string, reason: string) =>
+        billsApi.post<{ id: string; status: string }>(
+            `/balance-adjustments/${id}/void`,
+            null,
+            { params: { reason } },
+        ).then(r => r.data),
 }
