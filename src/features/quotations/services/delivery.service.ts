@@ -1,5 +1,5 @@
 import billsApi from '../../../api/bills-api'
-import { idempotencyKey } from '../../../lib/idempotency'
+import { newIdempotencyKey } from '../../../lib/idempotency'
 import type {
     BalanceAdjustment,
     BalanceAdjustmentCreate,
@@ -57,9 +57,8 @@ export const deliveries = {
             ...data,
             delivery_date: toISODatetime(data.delivery_date),
         }
-        const key = await idempotencyKey(payload)
         return billsApi.post<Delivery>('/deliveries', payload, {
-            headers: { 'X-Idempotency-Key': key },
+            headers: { 'X-Idempotency-Key': newIdempotencyKey() },
         }).then((r: any) => r.data)
     },
 
@@ -75,10 +74,17 @@ export const deliveries = {
     adjustments: (params: { gate_pass_id?: string; delivery_id?: string }) =>
         billsApi.get<BalanceAdjustment[]>('/balance-adjustments', { params }).then(r => r.data),
 
+    /**
+     * Post a signed balance correction.
+     *
+     * A submission-scoped idempotency key, NOT a hash of the body: two
+     * corrections that happen to be identical (same item, same reason, same
+     * pieces) are two real corrections, and a body hash made the second one
+     * return the first and change nothing while reporting success.
+     */
     createAdjustment: async (data: BalanceAdjustmentCreate) => {
-        const key = await idempotencyKey(data)
         return billsApi.post<BalanceAdjustment>('/balance-adjustments', data, {
-            headers: { 'X-Idempotency-Key': key },
+            headers: { 'X-Idempotency-Key': newIdempotencyKey() },
         }).then(r => r.data)
     },
 

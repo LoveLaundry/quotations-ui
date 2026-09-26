@@ -9,6 +9,7 @@ import { ErrorState } from '../../../components/ui/error-state'
 import { Breadcrumb } from '../../../components/ui/breadcrumb'
 import { deliveries } from '../services/delivery.service'
 import { useCreateDelivery } from '../hooks/useDeliveries'
+import { balanceItemKey } from '../../../lib/balance-adjustments'
 import { useDataGrid } from '../../../hooks/use-data-grid'
 import { useEnterFlow } from '../../../hooks/use-enter-flow'
 import { useDefaults, useDraft, hasDraft } from '../../../components/ops'
@@ -69,9 +70,6 @@ const inputClass =
     'h-10 w-full rounded-lg border border-[#E4E7EC] bg-white px-3 text-[13px] text-[#101828] outline-none focus:border-[#16A34A] focus:ring-2 focus:ring-[#16A34A]/10 shadow-sm transition'
 const labelClass = 'block text-[11px] font-semibold uppercase tracking-wide text-[#6B7280] mb-1.5'
 
-function itemKey(name: string, spec: string) {
-    return spec ? `${name}||${spec}` : name
-}
 
 /**
  * Why a row is pending more than a plain receipt would suggest.
@@ -192,7 +190,7 @@ export default function CreateDeliveryPage() {
     const autoItemTotals: AutoItemTotal[] = useMemo(() => {
         const map = new Map<string, AutoItemTotal>()
         for (const item of allItems) {
-            const key = itemKey(item.item_name, item.specification)
+            const key = balanceItemKey(item.item_name, item.specification)
             const existing = map.get(key)
             if (existing) {
                 existing.total_pending += item.pending_qty
@@ -232,7 +230,7 @@ export default function CreateDeliveryPage() {
         for (const total of autoItemTotals) {
             let remaining = form.autoTotals[total.item_key] ?? 0
             for (const item of distributed) {
-                if (itemKey(item.item_name, item.specification) !== total.item_key) continue
+                if (balanceItemKey(item.item_name, item.specification) !== total.item_key) continue
                 if (remaining <= 0) break
                 const give = Math.min(remaining, item.pending_qty)
                 item.quantity = give
@@ -683,7 +681,7 @@ export default function CreateDeliveryPage() {
                                                     )}
                                                 </p>
                                                 <p className="text-[11px] text-[#98A2B3]">
-                                                    Available: {total.total_pending} across {allItems.filter(i => itemKey(i.item_name, i.specification) === total.item_key).length} GP{allItems.filter(i => itemKey(i.item_name, i.specification) === total.item_key).length !== 1 ? 's' : ''}
+                                                    Available: {total.total_pending} across {allItems.filter(i => balanceItemKey(i.item_name, i.specification) === total.item_key).length} GP{allItems.filter(i => balanceItemKey(i.item_name, i.specification) === total.item_key).length !== 1 ? 's' : ''}
                                                     <BalanceBreakdown
                                                         returned={total.total_returned}
                                                         adjusted={total.total_balance_adjusted}

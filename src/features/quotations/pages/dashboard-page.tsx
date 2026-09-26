@@ -314,7 +314,7 @@ function TablesRow({ data }: { data: DashboardOverviewData }) {
             )}
           </div>
         </CardHeader>
-        <CardContent className="pt-0 overflow-x-auto">
+        <CardContent className="table-scroll pt-0">
           {pendingClients.length === 0 ? (
             <div className="py-8 text-center text-[13px]" style={{ color: 'var(--text-muted)' }}>All deliveries are up to date</div>
           ) : (

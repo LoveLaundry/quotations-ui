@@ -23,7 +23,7 @@ import axios, {
   type AxiosResponse,
   type InternalAxiosRequestConfig,
 } from 'axios'
-import { idempotencyKey } from '../lib/idempotency'
+import { newIdempotencyKey } from '../lib/idempotency'
 import { isGlobalOnline, isServiceDown, markServiceDown, markServiceUp } from './offline'
 import { enqueueMutation } from './outbox'
 
@@ -94,14 +94,32 @@ function parsePendingIdentity(service: string, method: string, url: string): Pen
   return { kind: 'create' }
 }
 
+function readIdempotencyHeader(config: InternalAxiosRequestConfig): string | undefined {
+  const headers = config.headers as
+    | (Record<string, unknown> & { get?: (name: string) => unknown })
+    | undefined
+  if (!headers) return undefined
+  const raw =
+    typeof headers.get === 'function'
+      ? headers.get('X-Idempotency-Key')
+      : (headers['X-Idempotency-Key'] ?? headers['x-idempotency-key'])
+  const value = Array.isArray(raw) ? raw[0] : raw
+  return typeof value === 'string' && value.trim() ? value.trim() : undefined
+}
+
 async function buildQueuedResponse(
   config: InternalAxiosRequestConfig,
   service: string,
 ): Promise<AxiosResponse<QueuedOfflineResponse>> {
   const method = (config.method ?? 'get').toUpperCase()
   const body = config.data
-  let key: string | undefined
-  if (method === 'POST') key = await idempotencyKey(body)
+  // The queued row MUST reuse the key the first attempt carried. Deriving a new
+  // one from the body meant a write that reached the server but lost its
+  // response replayed under a different key and created a second record — the
+  // exact duplicate the idempotency guard exists to prevent. When the caller
+  // supplied no key (a request that never went out), mint one now so the row is
+  // still safe to retry.
+  const key = method === 'POST' ? readIdempotencyHeader(config) ?? newIdempotencyKey() : undefined
   const identity = parsePendingIdentity(service, method, config.url ?? '')
   const outbox_id = await enqueueMutation({
     service,

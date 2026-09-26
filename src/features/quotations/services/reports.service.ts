@@ -1,5 +1,5 @@
 import billsApi from '../../../api/bills-api'
-import { idempotencyKey } from '../../../lib/idempotency'
+import { newIdempotencyKey } from '../../../lib/idempotency'
 import type { Payment, PaymentCreate } from '../../../types/operations'
 import type { ClientSummary } from '../../../types/operations'
 
@@ -59,10 +59,14 @@ export const payments = {
     listForBill: (billId: string) =>
         billsApi.get<Payment[]>(`/bills/${billId}/payments`).then((r: any) => r.data),
 
+    /**
+     * Two payments of the same amount against the same bill on the same day are
+     * two real payments, so the key identifies this submission rather than the
+     * payload's shape. A body hash silently dropped the second one.
+     */
     create: async (billId: string, data: PaymentCreate) => {
-        const key = await idempotencyKey({ bill_id: billId, ...data })
         return billsApi.post<Payment>(`/bills/${billId}/payments`, data, {
-            headers: { 'X-Idempotency-Key': key },
+            headers: { 'X-Idempotency-Key': newIdempotencyKey() },
         }).then((r: any) => r.data)
     },
 }

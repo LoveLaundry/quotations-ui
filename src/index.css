@@ -1160,6 +1160,29 @@
 .ledger-dense tbody td { padding: 6px 10px; font-size: 12.5px; }
 .ledger-dense thead th { padding: 7px 10px; }
 
+/* A short, wide table inside a card: scrolls sideways and nothing else.
+ *
+ * `overflow-x: auto` alone is not this. CSS resolves the unset axis against
+ * `visible`, so `overflow-x: auto` silently makes the element a scroll
+ * container on BOTH axes. On a container with no height limit that vertical
+ * scroll can never move, and any `position: sticky` header inside it is pinned
+ * to a scrollport that never scrolls — so the header looks pinned and is not.
+ * It also makes the card a nested scroll target, which is how content ends up
+ * cut off behind a container the reader cannot find the edge of.
+ *
+ * Here the axis that is not in use is pinned to `hidden`, so the region scrolls
+ * exactly one way and the header above it is just a header.
+ */
+.table-scroll {
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+}
+/* Pairs with `.table-scroll`: a floor width so the scroll actually engages
+   instead of crushing every column to a few characters on a phone. */
+.table-scroll > table { min-width: 560px; }
+
 /* Numeric alignment for money and quantity columns. */
 .num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
 

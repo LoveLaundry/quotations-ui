@@ -129,7 +129,9 @@ function ClientSearch() {
 
       {isError && <ErrorState description="Failed to load client summary" />}
 
-      {data && (
+      {data && (() => {
+        const pendingRows = (data.pending_balances ?? []).filter((b: any) => (b.pending ?? 0) > 0)
+        return (
         <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="space-y-5">
           {/* Stats */}
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -143,7 +145,11 @@ function ClientSearch() {
             <StatCard label="Outstanding" value={`LKR ${data.stats.outstanding_amount.toLocaleString()}`} icon={AlertTriangle} accent="#DC2626" />
           </div>
 
-          {/* Pending Balances */}
+          {/* Pending Balances. Only the rows that are actually owed: this card
+              is titled "pending", and listing every settled item under it buried
+              the handful of lines an operator had to act on. When nothing is
+              owed the card says so rather than vanishing, so an empty section is
+              never mistaken for a failed load. */}
           {data.pending_balances?.length > 0 && (
             <Card>
               <CardHeader className="border-b border-[#F2F4F7] pb-3">
@@ -152,27 +158,36 @@ function ClientSearch() {
                   <CardTitle>Pending Item Balances</CardTitle>
                 </div>
                 <p className="mt-1.5 text-[12px]" style={{ color: 'var(--text-tertiary)' }}>
-                  Pending = received − delivered + returned + balance correction. A returned or
-                  credited piece is still owed to the client and has to be sent.
+                  Pending = received − delivered + returned + balance correction, counted per item
+                  and floored at zero. A returned or credited piece is still owed to the client and
+                  has to be sent.
                 </p>
               </CardHeader>
-              <CardContent className="pt-0 overflow-x-auto">
+              <CardContent className="table-scroll pt-0">
                 <table className="w-full text-[13px]">
                   <thead className="bg-[#F9FAFB] border-b border-[#E4E7EC]">
                     <tr>
-                      {['Item Name', 'Received', 'Delivered', 'Returned', 'Balance', 'Pending'].map(h => (
-                        <th key={h} className="px-4 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wide" style={{ color: 'var(--text-tertiary)' }}>{h}</th>
+                      {['Item Name', 'Received', 'Delivered', 'Returned', 'Balance', 'Pending'].map((h, hi) => (
+                        <th
+                          key={h}
+                          className={`px-4 py-2.5 text-[11px] font-semibold uppercase tracking-wide ${
+                            hi === 0 ? 'text-left' : 'text-right'
+                          }`}
+                          style={{ color: 'var(--text-tertiary)' }}
+                        >
+                          {h}
+                        </th>
                       ))}
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-[#F9FAFB]">
-                    {data.pending_balances.map((b: any, i: number) => (
-                      <tr key={i} className={b.pending > 0 ? 'bg-[#FFFBEB]' : ''}>
+                    {pendingRows.map((b: any, i: number) => (
+                      <tr key={i} className="bg-[#FFFBEB]">
                         <td className="px-4 py-3 font-medium text-[#101828]">{b.item_name}</td>
-                        <td className="px-4 py-3" style={{ color: 'var(--text-secondary)' }}>{b.received}</td>
-                        <td className="px-4 py-3" style={{ color: 'var(--text-secondary)' }}>{b.delivered}</td>
-                        <td className="px-4 py-3" style={{ color: 'var(--text-secondary)' }}>{b.returned || 0}</td>
-                        <td className="px-4 py-3">
+                        <td className="num px-4 py-3" style={{ color: 'var(--text-secondary)' }}>{b.received}</td>
+                        <td className="num px-4 py-3" style={{ color: 'var(--text-secondary)' }}>{b.delivered}</td>
+                        <td className="num px-4 py-3" style={{ color: 'var(--text-secondary)' }}>{b.returned || 0}</td>
+                        <td className="px-4 py-3 text-right">
                           {b.balance_adjusted ? (
                             <span
                               className="inline-flex items-center rounded border px-1.5 py-0.5 text-[11px] font-semibold tabular-nums"
@@ -194,7 +209,7 @@ function ClientSearch() {
                             <span style={{ color: 'var(--text-tertiary)' }}>—</span>
                           )}
                         </td>
-                        <td className="px-4 py-3">
+                        <td className="num px-4 py-3">
                           <span className={`font-bold ${b.pending > 0 ? 'text-[#D97706]' : 'text-[#16A34A]'}`}>
                             {b.pending > 0 ? b.pending : '✓ 0'}
                           </span>
@@ -203,6 +218,12 @@ function ClientSearch() {
                     ))}
                   </tbody>
                 </table>
+                {pendingRows.length === 0 && (
+                  <p className="px-4 py-6 text-center text-[12.5px]" style={{ color: 'var(--text-tertiary)' }}>
+                    Nothing outstanding. Every item received on this client&rsquo;s open gate passes has
+                    been delivered, handed back to the client, or corrected away.
+                  </p>
+                )}
               </CardContent>
             </Card>
           )}
@@ -216,7 +237,7 @@ function ClientSearch() {
                   <CardTitle>Recent Gate Passes</CardTitle>
                 </div>
               </CardHeader>
-              <CardContent className="pt-0 overflow-x-auto">
+              <CardContent className="table-scroll pt-0">
                 <table className="w-full text-[13px]">
                   <thead className="bg-[#F9FAFB] border-b border-[#E4E7EC]">
                     <tr>
@@ -250,7 +271,7 @@ function ClientSearch() {
                   <CardTitle>Recent Bills</CardTitle>
                 </div>
               </CardHeader>
-              <CardContent className="pt-0 overflow-x-auto">
+              <CardContent className="table-scroll pt-0">
                 <table className="w-full text-[13px]">
                   <thead className="bg-[#F9FAFB] border-b border-[#E4E7EC]">
                     <tr>
@@ -275,7 +296,8 @@ function ClientSearch() {
             </Card>
           )}
         </motion.div>
-      )}
+        )
+      })}
 
       {!data && !isLoading && !isError && (
         <div className="py-16 text-center space-y-2">
@@ -300,7 +322,7 @@ function ItemWiseReport() {
   if (!data.length) return <div className="py-12 text-center text-[13px]" style={{ color: 'var(--text-tertiary)' }}>No data available</div>
 
   return (
-    <div className="overflow-x-auto rounded-xl border border-[#E4E7EC]">
+    <div className="table-scroll rounded-xl border border-[#E4E7EC]">
       <table className="w-full text-[13px]">
         <thead className="bg-[#F9FAFB] border-b border-[#E4E7EC]">
           <tr>
@@ -357,7 +379,7 @@ function GatePassReport() {
   if (!data.length) return <div className="py-12 text-center text-[13px]" style={{ color: 'var(--text-tertiary)' }}>No data available</div>
 
   return (
-    <div className="overflow-x-auto rounded-xl border border-[#E4E7EC]">
+    <div className="table-scroll rounded-xl border border-[#E4E7EC]">
       <table className="w-full text-[13px]">
         <thead className="bg-[#F9FAFB] border-b border-[#E4E7EC]">
           <tr>
@@ -435,7 +457,7 @@ function BillingReport() {
               <CardTitle>Per-Client Billing Breakdown</CardTitle>
             </div>
           </CardHeader>
-          <CardContent className="pt-0 overflow-x-auto">
+          <CardContent className="table-scroll pt-0">
             <table className="w-full text-[13px]">
               <thead className="bg-[#F9FAFB] border-b border-[#E4E7EC]">
                 <tr>
@@ -493,7 +515,7 @@ function AuditLog() {
   if (!data.length) return <div className="py-12 text-center text-[13px]" style={{ color: 'var(--text-tertiary)' }}>No audit entries found</div>
 
   return (
-    <div className="overflow-x-auto rounded-xl border border-[#E4E7EC]">
+    <div className="table-scroll rounded-xl border border-[#E4E7EC]">
       <table className="w-full text-[13px]">
         <thead className="bg-[#F9FAFB] border-b border-[#E4E7EC]">
           <tr>

@@ -1,43 +1,52 @@
-/** Deterministic idempotency key for create requests.
+/**
+ * Idempotency keys for create requests.
  *
- * The key is derived from the canonical payload so a retry of the same
- * logical submission (network drop, double click, offline queue replay)
- * yields the identical `X-Idempotency-Key` header, letting the backend's
- * idempotency guard return the already-created entity instead of a duplicate.
+ * A client that may retry a POST (network drop, double click, offline queue
+ * replay) sends an `X-Idempotency-Key` header; the backend memorizes
+ * key -> created entity and returns the original instead of duplicating.
  *
- * Uses SHA-256 when `crypto.subtle` is available (secure contexts: HTTPS /
- * localhost) and falls back to a deterministic 32-bit hash otherwise.
+ * The key therefore has to identify ONE LOGICAL SUBMISSION, not the shape of
+ * the payload. It used to be a hash of the canonicalised body, which made two
+ * genuinely different submissions indistinguishable: posting "+3 pieces
+ * missing in transit" on the same item twice returned the first correction and
+ * created nothing, so the second one silently vanished and the balance stayed
+ * wrong with no way to fix it from the UI. The same trap swallowed a second
+ * identical payment. A submission-scoped key keeps the retry guarantee and
+ * stops discarding real work.
+ *
+ * The offline adapter carries that exact key into the outbox, so a queued write
+ * replays under the key its first attempt used and the retry guard still fires.
  */
 
-function canonicalize(value: unknown): string {
-  if (value === null || value === undefined) return 'null'
-  if (typeof value !== 'object') return JSON.stringify(value)
-  if (Array.isArray(value)) {
-    return `[${value.map(canonicalize).join(',')}]`
+const HEX = '0123456789abcdef'
+
+function randomHex(bytes: number): string {
+  const buf = new Uint8Array(bytes)
+  const webCrypto: Crypto | undefined =
+    typeof globalThis !== 'undefined' ? (globalThis.crypto as Crypto | undefined) : undefined
+  if (webCrypto && typeof webCrypto.getRandomValues === 'function') {
+    webCrypto.getRandomValues(buf)
+  } else {
+    for (let i = 0; i < buf.length; i++) buf[i] = Math.floor(Math.random() * 256)
   }
-  const obj = value as Record<string, unknown>
-  return `{${Object.keys(obj)
-    .sort()
-    .map((k) => `${JSON.stringify(k)}:${canonicalize(obj[k])}`)
-    .join(',')}}`
+  let out = ''
+  for (let i = 0; i < buf.length; i++) {
+    out += HEX[buf[i] >> 4] + HEX[buf[i] & 15]
+  }
+  return out
 }
 
-export async function idempotencyKey(payload: unknown): Promise<string> {
-  const text = canonicalize(payload)
-  try {
-    if (typeof crypto !== 'undefined' && crypto.subtle && crypto.subtle.digest) {
-      const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text))
-      const hex = Array.from(new Uint8Array(digest))
-        .map((b) => b.toString(16).padStart(2, '0'))
-        .join('')
-      return `s1-${hex}`
-    }
-  } catch {
-    // Secure-context API unavailable — fall back to the sync hash.
-  }
-  let hash = 5381
-  for (let i = 0; i < text.length; i++) {
-    hash = ((hash << 5) + hash + text.charCodeAt(i)) >>> 0
-  }
-  return `f1-${hash.toString(16)}`
+let counter = 0
+
+/**
+ * A key unique to this submission. Call it once per user action and reuse the
+ * returned string for every network attempt of that action.
+ *
+ * The monotonic counter is mixed in so two keys minted inside the same
+ * millisecond — which a double tap can produce — can never collide even if the
+ * platform's random source is weak.
+ */
+export function newIdempotencyKey(): string {
+  counter = (counter + 1) % Number.MAX_SAFE_INTEGER
+  return `s2-${Date.now().toString(36)}-${counter.toString(36)}-${randomHex(8)}`
 }

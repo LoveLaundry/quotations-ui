@@ -2,7 +2,8 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { deliveries } from '../services/delivery.service'
 import { invalidateDeliveryData } from './useGatePasses'
-import type { BalanceAdjustmentCreate, DeliveryCreate } from '../../../types/operations'
+import { reportWriteOutcome } from '../../../lib/offline-write'
+import type { BalanceAdjustment, BalanceAdjustmentCreate, DeliveryCreate } from '../../../types/operations'
 
 export const deliveryKeys = {
     all: ['deliveries'] as const,
@@ -31,9 +32,9 @@ export function useCreateDelivery() {
     const qc = useQueryClient()
     return useMutation({
         mutationFn: (data: DeliveryCreate) => deliveries.create(data),
-        onSuccess: () => {
+        onSuccess: (created) => {
+            reportWriteOutcome(created, 'delivery', 'Delivery saved offline — queued to send')
             invalidateDeliveryData(qc)
-            toast.success('Delivery recorded successfully')
         },
         onError: (e: Error) => toast.error(e.message || 'Failed to record delivery'),
     })
@@ -68,14 +69,25 @@ export function useDeliveryAdjustments(params: { gate_pass_id?: string; delivery
     })
 }
 
+/**
+ * Post a balance correction.
+ *
+ * `onSuccess` reports the real outcome: a write the offline adapter queued is
+ * NOT saved, and saying "recorded" there is how an operator ends up posting the
+ * same correction twice.
+ */
 export function useCreateBalanceAdjustment() {
     const qc = useQueryClient()
     return useMutation({
         mutationFn: (data: BalanceAdjustmentCreate) => deliveries.createAdjustment(data),
-        onSuccess: () => {
+        onSuccess: (created: BalanceAdjustment) => {
+            reportWriteOutcome(
+                created,
+                'balance_adjustment',
+                'Correction saved offline — queued to send',
+            )
             invalidateDeliveryData(qc)
             qc.invalidateQueries({ queryKey: deliveryKeys.all })
-            toast.success('Balance adjustment recorded')
         },
         onError: (e: Error) => toast.error(e.message || 'Failed to record balance adjustment'),
     })
@@ -85,10 +97,10 @@ export function useVoidBalanceAdjustment() {
     const qc = useQueryClient()
     return useMutation({
         mutationFn: ({ id, reason }: { id: string; reason: string }) => deliveries.voidAdjustment(id, reason),
-        onSuccess: () => {
+        onSuccess: (result) => {
+            reportWriteOutcome(result, 'void', 'Void saved offline — queued to send')
             invalidateDeliveryData(qc)
             qc.invalidateQueries({ queryKey: deliveryKeys.all })
-            toast.success('Balance adjustment voided')
         },
         onError: (e: Error) => toast.error(e.message || 'Failed to void balance adjustment'),
     })

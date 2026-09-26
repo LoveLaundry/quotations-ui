@@ -1,11 +1,13 @@
 import billsApi from '../../../api/bills-api'
-import { idempotencyKey } from '../../../lib/idempotency'
+import { newIdempotencyKey } from '../../../lib/idempotency'
 import type { Bill, BillPayload, BillListParams, BillListResponse, UnbilledGatePass } from '../../../types/bill'
 
 async function createBill(payload: BillPayload): Promise<Bill> {
-  const key = await idempotencyKey(payload)
+  // Submission-scoped, not a hash of the body: two invoices built from the
+  // same gate passes are two invoices, and a body hash made the second one
+  // return the first while reporting success.
   const response = await billsApi.post<Bill>('/bills', payload, {
-    headers: { 'X-Idempotency-Key': key },
+    headers: { 'X-Idempotency-Key': newIdempotencyKey() },
   })
   return response.data
 }

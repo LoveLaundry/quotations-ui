@@ -121,7 +121,7 @@ export function NotificationDetailDialog({ open, onOpenChange, data, type }: Not
                       {!!entry.returned && (
                         <span>
                           {entry.returned} returned to us and still to be sent
-                          {!!entry.balance_adjusted ? ' · ' : ''}
+                          {entry.balance_adjusted ? ' · ' : ''}
                         </span>
                       )}
                       {!!entry.balance_adjusted && (
@@ -133,8 +133,8 @@ export function NotificationDetailDialog({ open, onOpenChange, data, type }: Not
                     </p>
                     <p className="mt-1 text-[11px] text-[#059669]">
                       Pending {entry.pending} = {entry.received} received − {entry.delivered} delivered
-                      {!!entry.returned ? ` + ${entry.returned} returned` : ''}
-                      {!!entry.balance_adjusted ? ` ${entry.balance_adjusted > 0 ? '+' : '−'} ${Math.abs(entry.balance_adjusted)} adjusted` : ''}
+                      {entry.returned ? ` + ${entry.returned} returned` : ''}
+                      {entry.balance_adjusted ? ` ${entry.balance_adjusted > 0 ? '+' : '−'} ${Math.abs(entry.balance_adjusted)} adjusted` : ''}
                     </p>
                   </div>
                 )

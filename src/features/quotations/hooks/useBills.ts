@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { billService } from '../services/bill.service'
+import { reportWriteOutcome } from '../../../lib/offline-write'
 import type { BillPayload, BillListParams } from '../../../types/bill'
 
 export const billKeys = {
@@ -35,9 +36,9 @@ export function useCreateBill() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: (payload: BillPayload) => billService.createBill(payload),
-    onSuccess: () => {
+    onSuccess: (created) => {
+      reportWriteOutcome(created, 'bill', 'Bill saved offline — queued to send')
       qc.invalidateQueries({ queryKey: billKeys.all })
-      toast.success('Bill saved')
     },
     onError: () => toast.error('Failed to save bill'),
   })
