@@ -1,12 +1,7 @@
 import { useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { gatepasses } from '../services/gatepass.service'
-import type {
-    GatePass,
-    GatePassBalance,
-    GatePassCreate,
-    GatePassMarkDelivered,
-} from '../../../types/operations'
+import type { GatePass, GatePassCreate, GatePassMarkDelivered } from '../../../types/operations'
 
 export const gatepassKeys = {
     all: ['gatepasses'] as const,

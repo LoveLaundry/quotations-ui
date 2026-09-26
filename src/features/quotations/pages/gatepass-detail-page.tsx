@@ -252,7 +252,7 @@ export default function GatePassDetailPage() {
     const balancedItems = useMemo(
         () =>
             (balanceData?.items ?? []).filter(
-                (b) => b.returned_back_qty > 0 || b.balance_adjustment_qty !== 0,
+                (b: GatePassBalanceItem) => b.returned_back_qty > 0 || b.balance_adjustment_qty !== 0,
             ),
         [balanceData],
     )
@@ -703,7 +703,7 @@ export default function GatePassDetailPage() {
 
                         {balancedItems.length > 0 && (
                             <ul className="mt-3 space-y-1.5">
-                                {balancedItems.map((b) => (
+                                {balancedItems.map((b: GatePassBalanceItem) => (
                                     <li
                                         key={b.item_key}
                                         className="flex flex-wrap items-center justify-between gap-2 rounded-[6px] border border-[#E4E7EC] bg-[#F9FAFB] px-3 py-2"
