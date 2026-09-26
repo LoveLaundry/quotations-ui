@@ -212,6 +212,10 @@ export function CommandSearch({ open, onClose }: CommandSearchProps) {
             </p>
             {results.map((r, i) => {
               const isActive = i === active
+              const QuickIcon =
+                r.kind === 'page' && !q
+                  ? (QUICK_ACTIONS.find((a) => a.path === r.path)?.icon ?? FileText)
+                  : null
               return (
                 <div
                   key={r.key}
@@ -236,8 +240,8 @@ export function CommandSearch({ open, onClose }: CommandSearchProps) {
                         : 'border-[var(--border)] bg-[var(--surface-2)] text-[var(--text-muted)]',
                     )}
                   >
-                    {r.kind === 'page' && !q ? (
-                      (QUICK_ACTIONS.find((a) => a.path === r.path)?.icon ?? FileText)({ size: 14 })
+                    {QuickIcon ? (
+                      <QuickIcon size={14} />
                     ) : (
                       r.label.slice(0, 1).toUpperCase()
                     )}
