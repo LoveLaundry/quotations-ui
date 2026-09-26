@@ -128,6 +128,11 @@ const deliveryPrintStyles = `
   }
   .dls-items-table {
     width: 100%;
+    /* Fixed layout so the declared column widths are honoured. With auto layout
+       five balance columns plus a long item name pushed the table wider than
+       the 210mm sheet, and the right-hand Balance column was cut off by the
+       page edge on exactly the notes that needed it most. */
+    table-layout: fixed;
     border-collapse: collapse;
     border: 2px solid #000;
     font-size: 12px;
@@ -137,7 +142,8 @@ const deliveryPrintStyles = `
   .dls-items-table th,
   .dls-items-table td {
     border: 1px solid #000;
-    padding: 4px 6px;
+    padding: 4px 5px;
+    overflow-wrap: anywhere;
   }
   .dls-items-table th {
     text-align: left;
@@ -147,13 +153,18 @@ const deliveryPrintStyles = `
     height: 22px;
   }
   .dls-col-no { width: 24px; text-align: center; }
-  .dls-col-spec { width: 22%; }
+  .dls-col-spec { width: 18%; }
   .dls-col-qty { width: 62px; text-align: center; }
-  .dls-col-bal { width: 62px; text-align: center; }
+  /* Five of these at A4 portrait leaves room for the item name; wider columns
+     did not. */
+  .dls-col-bal { width: 13%; text-align: center; }
   .dls-items-table thead th.dls-col-bal {
-    font-size: 10px;
-    letter-spacing: 0.2px;
+    font-size: 9.5px;
+    line-height: 1.15;
+    letter-spacing: 0.1px;
   }
+  /* A figure that could not be read must look unreadable, not look like zero. */
+  .dls-missing { color: #9ca3af; font-weight: 600; }
   .dls-row-total td {
     font-weight: 800;
     background: #f5f5f5;
