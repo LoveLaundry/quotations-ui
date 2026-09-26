@@ -1,35 +1,67 @@
+import * as React from 'react'
 import { cn } from '../../lib/utils'
 
-export function Table({ className, ...props }: React.HTMLAttributes<HTMLTableElement>) {
+/**
+ * Table — the ledger surface.
+ *
+ * Density over decoration: 10px/12px cells, 13px text, hairline row rules, a
+ * sticky header, and no zebra striping (it fights with hover and with status
+ * fills). Horizontal scroll is contained here, never on the page, so a wide
+ * ledger on a 360px screen scrolls inside its own frame with the header frozen.
+ *
+ * `responsive` opts out of the desktop minimum width for tables that genuinely
+ * fit a narrow screen; everything else gets `min-width` and a local scrollbar.
+ */
+export function Table({ className, ...props }: React.TableHTMLAttributes<HTMLTableElement>) {
   return (
-    <div className="overflow-x-auto rounded-xl border border-[#E4E7EC] bg-white shadow-[0_1px_2px_rgba(16,24,40,0.05)]">
-      <table className={cn('w-full text-left border-collapse', className)} {...props} />
+    <TableFrame>
+      <table className={cn('ledger', className)} {...props} />
+    </TableFrame>
+  )
+}
+
+/** Scroll container + edge shadows. Use when composing a table by hand. */
+export function TableFrame({
+  className,
+  children,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement>) {
+  return (
+    <div className={cn('scroll-fade ledger-wrap', className)} {...props}>
+      {children}
     </div>
   )
 }
 
 export function TableHeader({ className, ...props }: React.HTMLAttributes<HTMLTableSectionElement>) {
-  return <thead className={cn('bg-[#F9FAFB] border-b border-[#E4E7EC]', className)} {...props} />
+  return <thead className={cn(className)} {...props} />
 }
 
 export function TableBody({ className, ...props }: React.HTMLAttributes<HTMLTableSectionElement>) {
-  return <tbody className={cn('divide-y divide-[#F2F4F7]', className)} {...props} />
+  return <tbody className={cn(className)} {...props} />
 }
 
-export function TableRow({ className, ...props }: React.HTMLAttributes<HTMLTableRowElement>) {
+export function TableFooter({ className, ...props }: React.HTMLAttributes<HTMLTableSectionElement>) {
   return (
-    <tr className={cn('bg-white transition-colors duration-100 hover:bg-[#FAFAFA]', className)} {...props} />
+    <tfoot
+      className={cn('border-t-2 border-[var(--border-2)] bg-[var(--surface-2)] font-medium', className)}
+      {...props}
+    />
   )
+}
+
+export function TableRow({
+  className,
+  interactive,
+  ...props
+}: React.HTMLAttributes<HTMLTableRowElement> & { interactive?: boolean }) {
+  return <tr className={cn(interactive && 'cursor-pointer', className)} {...props} />
 }
 
 export function TableHead({ className, ...props }: React.ThHTMLAttributes<HTMLTableCellElement>) {
-  return (
-    <th className={cn('px-4 py-3 text-[11px] font-600 text-[#98A2B3] tracking-wider uppercase whitespace-nowrap', className)} {...props} />
-  )
+  return <th scope="col" className={cn(className)} {...props} />
 }
 
 export function TableCell({ className, ...props }: React.TdHTMLAttributes<HTMLTableCellElement>) {
-  return (
-    <td className={cn('px-4 py-3 text-[13px] text-[#475467] align-middle', className)} {...props} />
-  )
+  return <td className={cn(className)} {...props} />
 }

@@ -6,24 +6,28 @@ interface LoadingSpinnerProps {
   className?: string
 }
 
-const sizeMap = {
-  sm: 'h-4 w-4 border-2',
-  md: 'h-8 w-8 border-2',
-  lg: 'h-12 w-12 border-3',
-}
+const SIZE = { sm: 'size-4 border-2', md: 'size-6 border-2', lg: 'size-8 border-2' } as const
 
+/**
+ * LoadingSpinner — reserved for whole-view loads. Inside a region, use a
+ * skeleton so the surrounding layout stays put.
+ */
 export function LoadingSpinner({ size = 'md', label, className }: LoadingSpinnerProps) {
   return (
-    <div className={cn('flex flex-col items-center justify-center gap-3', className)}>
-      <div
+    <div
+      role="status"
+      aria-live="polite"
+      className={cn('flex flex-col items-center justify-center gap-2.5 py-8', className)}
+    >
+      <span
+        aria-hidden
         className={cn(
-          'animate-spin rounded-full border-[#E5E7EB] border-t-[#DC2626]',
-          sizeMap[size],
+          'animate-spin rounded-full border-[var(--border-2)] border-t-[var(--brand)]',
+          SIZE[size],
         )}
       />
-      {label && (
-        <p className="text-[13px] text-[#6B7280]">{label}</p>
-      )}
+      {label && <p className="text-[12.5px] text-[var(--text-muted)]">{label}</p>}
+      <span className="sr-only">{label ?? 'Loading'}</span>
     </div>
   )
 }

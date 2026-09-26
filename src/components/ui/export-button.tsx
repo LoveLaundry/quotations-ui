@@ -1,6 +1,8 @@
-import { useState, useRef, useEffect, useMemo, useCallback } from 'react'
-import { Download, ChevronDown } from 'lucide-react'
+import { useMemo, useCallback } from 'react'
+import { Download, FileJson, FileSpreadsheet } from 'lucide-react'
 import { cn } from '../../lib/utils'
+import { Button } from './button'
+import { DropdownMenu, type MenuGroup } from './dropdown-menu'
 
 interface ExportColumn {
   key: string
@@ -13,6 +15,9 @@ interface ExportButtonProps {
   columns?: ExportColumn[]
   label?: string
   className?: string
+  disabled?: boolean
+  /** Extra formats offered alongside CSV/JSON. */
+  extra?: MenuGroup[]
 }
 
 function downloadBlob(content: string, filename: string, mimeType: string) {
@@ -27,74 +32,90 @@ function downloadBlob(content: string, filename: string, mimeType: string) {
   URL.revokeObjectURL(url)
 }
 
+/** Escapes a value for CSV, and neutralises spreadsheet formula injection. */
+function csvCell(value: unknown): string {
+  if (value === null || value === undefined) return ''
+  let s = String(value)
+  if (/^[=+\-@\t\r]/.test(s)) s = `'${s}`
+  return `"${s.replace(/"/g, '""')}"`
+}
+
 function toCSV(data: Record<string, any>[], columns: ExportColumn[]): string {
-  const header = columns.map(c => `"${c.label}"`).join(',')
-  const rows = data.map(row =>
-    columns.map(c => {
-      const val = row[c.key]
-      if (val === null || val === undefined) return ''
-      return `"${String(val).replace(/"/g, '""')}"`
-    }).join(',')
-  )
-  return [header, ...rows].join('\n')
+  const header = columns.map((c) => csvCell(c.label)).join(',')
+  const rows = data.map((row) => columns.map((c) => csvCell(row[c.key])).join(','))
+  return [header, ...rows].join('\r\n')
 }
 
 function toJSON(data: Record<string, any>[], columns: ExportColumn[]): string {
-  const filtered = data.map(row => {
+  const mapped = data.map((row) => {
     const obj: Record<string, any> = {}
     for (const c of columns) obj[c.label] = row[c.key]
     return obj
   })
-  return JSON.stringify(filtered, null, 2)
+  return JSON.stringify(mapped, null, 2)
 }
 
-export function ExportButton({ data, filename, columns, label = 'Export', className }: ExportButtonProps) {
-  const [open, setOpen] = useState(false)
-  const ref = useRef<HTMLDivElement>(null)
+/**
+ * ExportButton — one control, every format the page supports.
+ * Disabled (with a reason in the tooltip) when there is nothing to export,
+ * rather than letting the user click into an empty menu.
+ */
+export function ExportButton({
+  data,
+  filename,
+  columns,
+  label = 'Export',
+  className,
+  disabled,
+  extra,
+}: ExportButtonProps) {
+  const cols = useMemo(
+    () => columns || (data.length > 0 ? Object.keys(data[0]).map((k) => ({ key: k, label: k })) : []),
+    [columns, data],
+  )
 
-  const cols = useMemo(() => columns || (data.length > 0
-    ? Object.keys(data[0]).map(k => ({ key: k, label: k }))
-    : []), [columns, data])
-
-  useEffect(() => {
-    if (!open) return
-    const handler = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
-    }
-    document.addEventListener('mousedown', handler)
-    return () => document.removeEventListener('mousedown', handler)
-  }, [open])
-
-  const handleCSV = useCallback(() => {
+  const exportCSV = useCallback(() => {
     if (!cols.length) return
     downloadBlob(toCSV(data, cols), `${filename}.csv`, 'text/csv;charset=utf-8;')
-    setOpen(false)
   }, [data, cols, filename])
 
-  const handleJSON = useCallback(() => {
+  const exportJSON = useCallback(() => {
     if (!cols.length) return
     downloadBlob(toJSON(data, cols), `${filename}.json`, 'application/json')
-    setOpen(false)
   }, [data, cols, filename])
 
+  const isEmpty = !disabled && data.length === 0
+  const blocked = disabled || isEmpty
+
+  const groups: MenuGroup[] = [
+    {
+      label: `${data.length} row${data.length === 1 ? '' : 's'}`,
+      items: [
+        { id: 'csv', label: 'CSV (Excel)', icon: <FileSpreadsheet />, onSelect: exportCSV, disabled: !cols.length },
+        { id: 'json', label: 'JSON', icon: <FileJson />, onSelect: exportJSON, disabled: !cols.length },
+      ],
+    },
+    ...(extra ?? []),
+  ]
+
   return (
-    <div className={cn('relative', className)} ref={ref}>
-      <button
-        onClick={() => setOpen(!open)}
-        className="flex items-center gap-1.5 px-3 py-2 text-[13px] font-medium border border-[#E5E7EB] bg-white rounded-lg hover:bg-[#F9FAFB] text-[#374151] transition"
-      >
-        <Download size={14} /> {label} <ChevronDown size={12} className={cn('transition-transform', open && 'rotate-180')} />
-      </button>
-      {open && (
-        <div className="absolute right-0 top-full mt-1 z-50 bg-white border border-[#E5E7EB] rounded-xl shadow-lg py-1 min-w-[160px]">
-          <button onClick={handleCSV} className="w-full text-left px-4 py-2 text-[13px] hover:bg-[#F9FAFB] transition font-medium text-[#374151]">
-            Export CSV
-          </button>
-          <button onClick={handleJSON} className="w-full text-left px-4 py-2 text-[13px] hover:bg-[#F9FAFB] transition font-medium text-[#374151]">
-            Export JSON
-          </button>
-        </div>
-      )}
+    <div className={cn('relative', className)}>
+      <DropdownMenu
+        label="Export options"
+        groups={groups}
+        trigger={(p) => (
+          <Button
+            {...(p as any)}
+            variant="secondary"
+            size="sm"
+            disabled={blocked}
+            title={isEmpty ? 'Nothing to export' : undefined}
+          >
+            <Download aria-hidden />
+            {label}
+          </Button>
+        )}
+      />
     </div>
   )
 }

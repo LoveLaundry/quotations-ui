@@ -1,8 +1,16 @@
 import { useState } from 'react'
-import { X, Search, ChevronDown, ChevronUp, FileText } from 'lucide-react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { Search, ChevronDown } from 'lucide-react'
 import type { ClientWiseEntry } from '../hooks/useBusinessDashboard'
 import type { OutstandingAging } from '../services/dashboard.service'
+import { Avatar } from '../../../components/ui/avatar'
+import { Badge } from '../../../components/ui/badge'
+import { Button } from '../../../components/ui/button'
+import {
+  Dialog, DialogContent, DialogHeader, DialogBody, DialogFooter,
+  DialogTitle, DialogDescription, DialogClose,
+} from '../../../components/ui/dialog'
+import { EmptyState } from '../../../components/ui/empty-state'
+import { Input } from '../../../components/ui/input'
 
 interface BalancesPopupProps {
   open: boolean
@@ -14,286 +22,314 @@ interface BalancesPopupProps {
   totalCollected: number
 }
 
-const SPEC_COLORS = ['#7C3AED', '#0891B2', '#059669', '#D946EF', '#EA580C', '#4F46E5', '#DC2626', '#0D9488']
+type SortKey = 'outstanding' | 'name'
+
+const AGING_BUCKETS: { key: keyof OutstandingAging; label: string }[] = [
+  { key: 'current', label: 'Current' },
+  { key: '30_day', label: '1-30 d' },
+  { key: '60_day', label: '31-60 d' },
+  { key: '90_day', label: '61-90 d' },
+  { key: 'over_90', label: '90+ d' },
+]
 
 function formatDate(dateStr: string) {
-  if (!dateStr) return '—'
+  if (!dateStr) return '-'
   const d = new Date(dateStr)
   return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
 }
 
-export function BalancesPopup({ open, onClose, clients, aging, totalOutstanding }: BalancesPopupProps) {
-  const [search, setSearch] = useState('')
-  const [expandedClient, setExpandedClient] = useState<string | null>(null)
-  const [sortBy, setSortBy] = useState<'outstanding' | 'name'>('outstanding')
-
-  const outstandingClients = clients
-    .filter(c => c.outstanding > 0)
-    .filter(c => !search || c.client_name.toLowerCase().includes(search.toLowerCase()))
-
-  const sorted = [...outstandingClients].sort((a, b) => {
-    if (sortBy === 'outstanding') return b.outstanding - a.outstanding
-    return a.client_name.localeCompare(b.client_name)
-  })
-
-  const agingTotal = aging.current + aging['30_day'] + aging['60_day'] + aging['90_day'] + aging.over_90
-
-  if (!open) return null
-
-  return (
-    <AnimatePresence>
-      {open && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-            onClick={onClose}
-          />
-
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-            className="relative w-full max-w-4xl max-h-[90vh] bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col"
-          >
-            {/* Header */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gray-100">
-                  <FileText className="h-5 w-5 text-gray-600" />
-                </div>
-                <div>
-                  <h2 className="text-lg font-bold text-gray-900">Outstanding Balances</h2>
-                  <p className="text-[12px] text-gray-500">Breakdown by client and gate pass</p>
-                </div>
-              </div>
-              <button
-                onClick={onClose}
-                className="flex h-8 w-8 items-center justify-center rounded-lg hover:bg-gray-100 transition cursor-pointer"
-              >
-                <X className="h-4 w-4 text-gray-500" />
-              </button>
-            </div>
-
-            {/* Big Balance Display */}
-            <div className="px-6 py-6 border-b border-gray-100">
-              <div className="text-center mb-4">
-                <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-400 mb-1">Total Outstanding</p>
-                <p className="text-[42px] font-extrabold text-gray-900 leading-none">
-                  LKR {totalOutstanding.toLocaleString()}
-                </p>
-                <p className="text-[13px] text-gray-500 mt-2">
-                  {outstandingClients.length} client{outstandingClients.length !== 1 ? 's' : ''} with pending payments
-                </p>
-              </div>
-
-              {/* Aging row */}
-              <div className="grid grid-cols-5 gap-3 mt-4">
-                {[
-                  { label: 'Current', value: aging.current },
-                  { label: '1-30 Days', value: aging['30_day'] },
-                  { label: '31-60 Days', value: aging['60_day'] },
-                  { label: '61-90 Days', value: aging['90_day'] },
-                  { label: '90+ Days', value: aging.over_90 },
-                ].map(bucket => (
-                  <div key={bucket.label} className="text-center">
-                    <p className="text-[10px] text-gray-400 mb-1">{bucket.label}</p>
-                    <p className="text-[13px] font-bold text-gray-900">LKR {bucket.value.toLocaleString()}</p>
-                    <p className="text-[10px] text-gray-400">{agingTotal > 0 ? ((bucket.value / agingTotal) * 100).toFixed(0) : 0}%</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Search & Sort */}
-            <div className="px-6 py-3 border-b border-gray-100 flex items-center gap-3">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="Search clients..."
-                  value={search}
-                  onChange={e => setSearch(e.target.value)}
-                  className="w-full pl-9 pr-4 py-2 text-[13px] border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300"
-                />
-              </div>
-              <div className="flex gap-1 bg-gray-100 rounded-lg p-0.5">
-                {[
-                  { key: 'outstanding' as const, label: 'Amount' },
-                  { key: 'name' as const, label: 'Name' },
-                ].map(s => (
-                  <button
-                    key={s.key}
-                    onClick={() => setSortBy(s.key)}
-                    className={`px-3 py-1.5 text-[11px] font-medium rounded-md transition cursor-pointer ${
-                      sortBy === s.key ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-700'
-                    }`}
-                  >
-                    {s.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Client List - Gate Pass Breakdown */}
-            <div className="flex-1 overflow-y-auto px-6 py-4 space-y-3">
-              {sorted.length === 0 ? (
-                <div className="text-center py-12">
-                  <FileText className="h-12 w-12 text-gray-300 mx-auto mb-3" />
-                  <p className="text-[15px] font-semibold text-gray-900">All clear!</p>
-                  <p className="text-[13px] text-gray-500">No outstanding balances found.</p>
-                </div>
-              ) : (
-                sorted.map((client, i) => {
-                  const isExpanded = expandedClient === client.client_name
-
-                  return (
-                    <motion.div
-                      key={client.client_name}
-                      initial={{ opacity: 0, y: 8 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: i * 0.03 }}
-                      className="border border-gray-200 rounded-xl overflow-hidden"
-                    >
-                      {/* Client Header */}
-                      <div
-                        className="flex items-center gap-4 px-4 py-3 cursor-pointer hover:bg-gray-50 transition"
-                        onClick={() => setExpandedClient(isExpanded ? null : client.client_name)}
-                      >
-                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[14px] font-bold text-white bg-gray-700">
-                          {client.client_name.charAt(0).toUpperCase()}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-[14px] font-semibold text-gray-900 truncate">{client.client_name}</p>
-                          <p className="text-[12px] text-gray-500">{client.gate_pass_count} gate passes</p>
-                        </div>
-                        <p className="text-[18px] font-bold text-gray-900 shrink-0">
-                          LKR {client.outstanding.toLocaleString()}
-                        </p>
-                        <div className="shrink-0 text-gray-400">
-                          {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-                        </div>
-                      </div>
-
-                      {/* Expanded: Gate Pass Breakdown */}
-                      <AnimatePresence>
-                        {isExpanded && (
-                          <motion.div
-                            initial={{ height: 0, opacity: 0 }}
-                            animate={{ height: 'auto', opacity: 1 }}
-                            exit={{ height: 0, opacity: 0 }}
-                            transition={{ duration: 0.2 }}
-                            className="overflow-hidden"
-                          >
-                            <div className="px-4 pb-4 border-t border-gray-100 pt-3">
-                              {/* Summary */}
-                              <div className="grid grid-cols-3 gap-3 mb-4">
-                                <div className="bg-gray-50 rounded-lg p-3 text-center">
-                                  <p className="text-[10px] text-gray-400 uppercase">Billed</p>
-                                  <p className="text-[15px] font-bold text-gray-900">LKR {client.total_billed.toLocaleString()}</p>
-                                </div>
-                                <div className="bg-gray-50 rounded-lg p-3 text-center">
-                                  <p className="text-[10px] text-gray-400 uppercase">Paid</p>
-                                  <p className="text-[15px] font-bold text-gray-900">LKR {client.paid_amount.toLocaleString()}</p>
-                                </div>
-                                <div className="bg-gray-50 rounded-lg p-3 text-center">
-                                  <p className="text-[10px] text-gray-400 uppercase">Outstanding</p>
-                                  <p className="text-[15px] font-bold text-gray-900">LKR {client.outstanding.toLocaleString()}</p>
-                                </div>
-                              </div>
-
-                              {/* Gate Pass Breakdown */}
-                              {client.gate_passes && client.gate_passes.length > 0 && (
-                                <div>
-                                  <p className="text-[12px] font-semibold text-gray-600 mb-2">Gate Passes</p>
-                                  <div className="space-y-2">
-                                    {client.gate_passes.map((gp) => (
-                                      <div key={gp.gate_pass_number} className="bg-gray-50 rounded-lg px-3 py-2">
-                                        <div className="flex items-center justify-between mb-1">
-                                          <div className="flex items-center gap-2">
-                                            <span className="text-[12px] font-mono font-semibold text-gray-700">{gp.gate_pass_number}</span>
-                                            <span className="text-[11px] text-gray-400">•</span>
-                                            <span className="text-[11px] text-gray-500">{formatDate(gp.receiving_date)}</span>
-                                          </div>
-                                        </div>
-                                        <div className="flex flex-wrap gap-1.5">
-                                          {gp.items.map((item, k) => (
-                                            <span key={`${item.item_name}-${item.specification}`} className="inline-flex items-center gap-1 bg-white border border-gray-200 rounded px-2 py-0.5 text-[11px]">
-                                              <span className="font-medium text-gray-700">{item.item_name}</span>
-                                              {item.specification && (
-                                                <span
-                                                  className="font-bold text-white rounded px-1"
-                                                  style={{ backgroundColor: SPEC_COLORS[k % SPEC_COLORS.length], fontSize: '9px' }}
-                                                >
-                                                  {item.specification}
-                                                </span>
-                                              )}
-                                              <span className="text-gray-400">×{item.received}</span>
-                                            </span>
-                                          ))}
-                                        </div>
-                                      </div>
-                                    ))}
-                                  </div>
-                                </div>
-                              )}
-
-                              {/* Pending Items Summary */}
-                              {client.items && client.items.length > 0 && (
-                                <div className="mt-3">
-                                  <p className="text-[12px] font-semibold text-gray-600 mb-2">Pending Items</p>
-                                  <div className="space-y-1.5">
-                                    {client.items.map((item, j) => (
-                                      <div key={`${item.item_name}-${item.specification}`} className="flex items-center justify-between bg-gray-50 rounded-lg px-3 py-2">
-                                        <div className="flex items-center gap-2 min-w-0">
-                                          <span className="text-[13px] font-medium text-gray-900 truncate">{item.item_name}</span>
-                                          {item.specification && (
-                                            <span
-                                              className="inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-bold text-white shrink-0"
-                                              style={{ backgroundColor: SPEC_COLORS[j % SPEC_COLORS.length] }}
-                                            >
-                                              {item.specification}
-                                            </span>
-                                          )}
-                                        </div>
-                                        <div className="flex items-center gap-3 shrink-0">
-                                          <span className="text-[12px] text-gray-500">{item.delivered}/{item.received}</span>
-                                          <span className="text-[13px] font-bold text-gray-900">{item.pending}</span>
-                                        </div>
-                                      </div>
-                                    ))}
-                                  </div>
-                                </div>
-                              )}
-                            </div>
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                    </motion.div>
-                  )
-                })
-              )}
-            </div>
-
-            {/* Footer */}
-            <div className="px-6 py-3 border-t border-gray-100 bg-gray-50 flex items-center justify-between">
-              <p className="text-[12px] text-gray-500">
-                {sorted.length} client{sorted.length !== 1 ? 's' : ''} with outstanding balances
-              </p>
-              <button
-                onClick={onClose}
-                className="px-4 py-2 text-[13px] font-medium bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition cursor-pointer"
-              >
-                Close
-              </button>
-            </div>
-          </motion.div>
-        </div>
-      )}
-    </AnimatePresence>
-  )
+function lkr(n: number) {
+  return n.toLocaleString('en', { maximumFractionDigits: 0 })
 }
 
+/**
+ * BalancesPopup - the receivables ledger behind the dashboard's outstanding
+ * total. Each client expands into its gate passes, so a single unpaid client
+ * can be traced to the delivery that caused it without leaving the dialog.
+ */
+export function BalancesPopup({
+  open,
+  onClose,
+  clients,
+  aging,
+  totalOutstanding,
+}: BalancesPopupProps) {
+  const [search, setSearch] = useState('')
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({})
+  const [sortBy, setSortBy] = useState<SortKey>('outstanding')
+
+  const query = search.trim().toLowerCase()
+  const outstandingClients = clients
+    .filter((c) => c.outstanding > 0)
+    .filter((c) => !query || c.client_name.toLowerCase().includes(query))
+
+  const sorted = [...outstandingClients].sort((a, b) =>
+    sortBy === 'outstanding' ? b.outstanding - a.outstanding : a.client_name.localeCompare(b.client_name),
+  )
+
+  const agingTotal =
+    aging.current + aging['30_day'] + aging['60_day'] + aging['90_day'] + aging.over_90
+
+  return (
+    <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
+      <DialogContent size="xl">
+        <DialogHeader>
+          <div className="min-w-0">
+            <DialogTitle>Outstanding balances</DialogTitle>
+            <DialogDescription>
+              {outstandingClients.length} client{outstandingClients.length !== 1 ? 's' : ''} with pending
+              payments, broken down by gate pass.
+            </DialogDescription>
+          </div>
+        </DialogHeader>
+
+        <DialogBody className="space-y-4 p-0 sm:p-0">
+          {/* Totals */}
+          <div className="border-b border-[var(--border)] bg-[var(--surface-2)] px-4 py-4 sm:px-5">
+            <p className="section-label">Total outstanding</p>
+            <p className="mt-1 text-[26px] font-bold leading-none tabular-nums tracking-tight sm:text-[30px]">
+              <span className="mr-1.5 text-[14px] font-semibold text-[var(--text-muted)]">LKR</span>
+              {lkr(totalOutstanding)}
+            </p>
+
+            <dl className="mt-4 grid grid-cols-3 gap-px overflow-hidden rounded-[6px] border border-[var(--border)] bg-[var(--border)] sm:grid-cols-5">
+              {AGING_BUCKETS.map((b) => {
+                const value = aging[b.key] as number
+                const pct = agingTotal > 0 ? (value / agingTotal) * 100 : 0
+                return (
+                  <div key={b.label} className="bg-[var(--surface)] px-2.5 py-2">
+                    <dt className="text-[10.5px] font-semibold uppercase tracking-wide text-[var(--text-muted)]">
+                      {b.label}
+                    </dt>
+                    <dd className="mt-0.5 text-[12.5px] font-semibold tabular-nums">
+                      LKR {lkr(value)}
+                      <span className="ml-1 font-normal text-[var(--text-faint)]">
+                        {pct.toFixed(0)}%
+                      </span>
+                    </dd>
+                  </div>
+                )
+              })}
+            </dl>
+          </div>
+
+          {/* Search & sort */}
+          <div className="flex flex-wrap items-center gap-2 px-4 sm:px-5">
+            <div className="relative min-w-[180px] flex-1">
+              <Search
+                aria-hidden
+                className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-[var(--text-faint)]"
+              />
+              <Input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search clients..."
+                aria-label="Search clients"
+                hasPrefix
+              />
+            </div>
+            <div
+              role="group"
+              aria-label="Sort clients"
+              className="flex gap-0.5 rounded-[6px] border border-[var(--border)] bg-[var(--surface-2)] p-0.5"
+            >
+              {([
+                { key: 'outstanding' as const, label: 'Amount' },
+                { key: 'name' as const, label: 'Name' },
+              ]).map((s) => (
+                <button
+                  key={s.key}
+                  type="button"
+                  onClick={() => setSortBy(s.key)}
+                  aria-pressed={sortBy === s.key}
+                  className={`rounded-[4px] px-2.5 py-1 text-[12px] font-medium transition-colors duration-100 ${
+                    sortBy === s.key
+                      ? 'bg-[var(--surface)] text-[var(--text-primary)] shadow-[0_1px_2px_rgb(16_24_40/0.06)]'
+                      : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'
+                  }`}
+                >
+                  {s.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Client ledger */}
+          {sorted.length === 0 ? (
+            <EmptyState
+              title={query ? 'No matching clients' : 'Nothing outstanding'}
+              description={
+                query
+                  ? `No client name matches "${search.trim()}".`
+                  : 'Every client is settled up for this period.'
+              }
+              className="py-10"
+            />
+          ) : (
+            <ul className="divide-y divide-[var(--border)] border-y border-[var(--border)]">
+              {sorted.map((client) => {
+                const isOpen = Boolean(expanded[client.client_name])
+                const detailId = `balances-${client.client_name}`
+
+                return (
+                  <li key={client.client_name}>
+                    <button
+                      type="button"
+                      aria-expanded={isOpen}
+                      aria-controls={detailId}
+                      onClick={() =>
+                        setExpanded((prev) => ({
+                          ...prev,
+                          [client.client_name]: !prev[client.client_name],
+                        }))
+                      }
+                      className="flex w-full items-center gap-3 px-4 py-2.5 text-left transition-colors duration-100 hover:bg-[var(--surface-hover)] sm:px-5"
+                    >
+                      <ChevronDown
+                        aria-hidden
+                        className={`size-4 shrink-0 text-[var(--text-faint)] transition-transform duration-150 ${
+                          isOpen ? '' : '-rotate-90'
+                        }`}
+                      />
+                      <Avatar name={client.client_name} size="lg" />
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate text-[13.5px] font-medium">{client.client_name}</span>
+                        <span className="block text-[11.5px] text-[var(--text-muted)] tabular-nums">
+                          {client.gate_pass_count} gate pass{client.gate_pass_count !== 1 ? 'es' : ''}
+                        </span>
+                      </span>
+                      <span className="shrink-0 text-right">
+                        <span className="block text-[14px] font-semibold tabular-nums">
+                          LKR {lkr(client.outstanding)}
+                        </span>
+                        {client.total_billed > 0 && (
+                          <span className="block text-[11px] text-[var(--text-muted)] tabular-nums">
+                            {((client.outstanding / client.total_billed) * 100).toFixed(0)}% of billed
+                          </span>
+                        )}
+                      </span>
+                    </button>
+
+                    {isOpen && (
+                      <div
+                        id={detailId}
+                        className="border-t border-[var(--border)] bg-[var(--surface-2)] px-4 py-3 sm:px-5"
+                      >
+                        <dl className="mb-3 grid grid-cols-3 gap-px overflow-hidden rounded-[6px] border border-[var(--border)] bg-[var(--border)]">
+                          {[
+                            { label: 'Billed', value: client.total_billed },
+                            { label: 'Paid', value: client.paid_amount },
+                            { label: 'Outstanding', value: client.outstanding },
+                          ].map((m) => (
+                            <div key={m.label} className="bg-[var(--surface)] px-2.5 py-2">
+                              <dt className="section-label">{m.label}</dt>
+                              <dd
+                                className={`mt-0.5 text-[13px] font-semibold tabular-nums ${
+                                  m.label === 'Outstanding' ? 'text-[var(--warning-text)]' : ''
+                                }`}
+                              >
+                                LKR {lkr(m.value)}
+                              </dd>
+                            </div>
+                          ))}
+                        </dl>
+
+                        {client.gate_passes && client.gate_passes.length > 0 && (
+                          <div className="mb-3">
+                            <p className="section-label mb-1.5">Gate passes</p>
+                            <ul className="space-y-1.5">
+                              {client.gate_passes.map((gp) => (
+                                <li
+                                  key={gp.gate_pass_number}
+                                  className="rounded-[6px] border border-[var(--border)] bg-[var(--surface)] px-2.5 py-2"
+                                >
+                                  <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                                    <span className="font-[family-name:var(--font-mono)] text-[12px] font-semibold">
+                                      #{gp.gate_pass_number}
+                                    </span>
+                                    <span aria-hidden className="text-[var(--text-faint)]">
+                                      .
+                                    </span>
+                                    <span className="text-[11.5px] text-[var(--text-muted)] tabular-nums">
+                                      {formatDate(gp.receiving_date)}
+                                    </span>
+                                  </div>
+                                  <ul className="mt-1.5 flex flex-wrap gap-1">
+                                    {gp.items.map((item) => (
+                                      <li
+                                        key={`${item.item_name}-${item.specification}`}
+                                        className="inline-flex items-center gap-1.5 rounded-[4px] border border-[var(--border-2)] bg-[var(--surface-2)] px-1.5 py-0.5 text-[11px]"
+                                      >
+                                        <span className="font-medium">{item.item_name}</span>
+                                        {item.specification && (
+                                          <Badge size="xs" tone="neutral">
+                                            {item.specification}
+                                          </Badge>
+                                        )}
+                                        <span className="text-[var(--text-muted)] tabular-nums">
+                                          x{item.received}
+                                        </span>
+                                      </li>
+                                    ))}
+                                  </ul>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+
+                        {client.items && client.items.length > 0 && (
+                          <div>
+                            <p className="section-label mb-1.5">Pending items</p>
+                            <ul className="divide-y divide-[var(--border)] rounded-[6px] border border-[var(--border)] bg-[var(--surface)]">
+                              {client.items.map((item) => (
+                                <li
+                                  key={`${item.item_name}-${item.specification}`}
+                                  className="flex items-center justify-between gap-3 px-2.5 py-1.5"
+                                >
+                                  <span className="flex min-w-0 items-center gap-1.5">
+                                    <span className="truncate text-[12.5px] font-medium">
+                                      {item.item_name}
+                                    </span>
+                                    {item.specification && (
+                                      <Badge size="xs" tone="neutral">
+                                        {item.specification}
+                                      </Badge>
+                                    )}
+                                  </span>
+                                  <span className="flex shrink-0 items-center gap-3">
+                                    <span className="text-[11.5px] text-[var(--text-muted)] tabular-nums">
+                                      {item.delivered}/{item.received} sent
+                                    </span>
+                                    <span className="w-10 text-right text-[12.5px] font-semibold tabular-nums text-[var(--warning-text)]">
+                                      {item.pending}
+                                    </span>
+                                  </span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </li>
+                )
+              })}
+            </ul>
+          )}
+        </DialogBody>
+
+        <DialogFooter className="items-center justify-between sm:justify-between">
+          <p className="text-[12px] text-[var(--text-muted)] tabular-nums">
+            {sorted.length} client{sorted.length !== 1 ? 's' : ''} . LKR {lkr(totalOutstanding)}
+          </p>
+          <DialogClose asChild>
+            <Button variant="secondary" size="sm">
+              Close
+            </Button>
+          </DialogClose>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  )
+}

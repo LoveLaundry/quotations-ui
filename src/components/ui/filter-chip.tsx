@@ -5,27 +5,40 @@ interface FilterChipProps {
   active?: boolean
   count?: number
   onClick?: () => void
+  className?: string
+  /** Marks the filter as currently applied with `aria-pressed`. */
+  pressed?: boolean
 }
 
-export function FilterChip({ label, active, count, onClick }: FilterChipProps) {
+/**
+ * FilterChip — a toggle in a FilterBar.
+ * Flat fill when active, outlined when not. Counts are part of the label so a
+ * screen reader announces "Pending (12)" rather than two disconnected strings.
+ */
+export function FilterChip({ label, active, count, onClick, className }: FilterChipProps) {
   return (
     <button
       type="button"
       onClick={onClick}
+      aria-pressed={active}
       className={cn(
-        'inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5',
-        'text-[12px] font-medium transition-all duration-100 cursor-pointer',
+        'inline-flex shrink-0 items-center gap-1.5 rounded-[6px] border px-2.5 py-1.5',
+        'text-[12.5px] font-medium whitespace-nowrap transition-colors duration-100',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:ring-offset-1',
         active
-          ? 'bg-[#DC2626] border-[#DC2626] text-white shadow-[0_1px_3px_rgba(220,38,38,0.25)]'
-          : 'bg-white border-[#E4E7EC] text-[#374151] hover:border-[#D1D5DB] hover:bg-[#F9FAFB]',
+          ? 'border-[var(--brand)] bg-[var(--brand)] text-white'
+          : 'border-[var(--border-2)] bg-[var(--surface)] text-[var(--text-tertiary)] hover:border-[var(--border-strong)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]',
+        className,
       )}
     >
-      {label}
+      <span>{label}</span>
       {count !== undefined && (
-        <span className={cn(
-          'rounded px-1.5 py-0.5 text-[10px] font-semibold',
-          active ? 'bg-white/20 text-white' : 'bg-[#F3F4F6] text-[#6B7280]',
-        )}>
+        <span
+          className={cn(
+            'rounded-[3px] px-1 text-[11px] font-semibold tabular-nums',
+            active ? 'bg-white/20 text-white' : 'bg-[var(--surface-3)] text-[var(--text-muted)]',
+          )}
+        >
           {count}
         </span>
       )}

@@ -1,6 +1,10 @@
-import { useEffect } from 'react'
-import { AlertTriangle } from 'lucide-react'
+import { useEffect, useId, useRef, type ReactNode } from 'react'
+import { AlertTriangle, Loader2, TriangleAlert } from 'lucide-react'
+import { cn } from '../../lib/utils'
 import { Button } from './button'
+import {
+  Dialog, DialogBody, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
+} from './dialog'
 
 interface ConfirmDialogProps {
   open: boolean
@@ -9,12 +13,22 @@ interface ConfirmDialogProps {
   description?: string
   confirmLabel?: string
   cancelLabel?: string
-  variant?: 'danger' | 'warning'
+  variant?: 'danger' | 'warning' | 'primary'
   loading?: boolean
+  /** Rendered above the buttons — e.g. the exact change being committed. */
+  detail?: ReactNode
   onConfirm: () => void
   onCancel: () => void
 }
 
+/**
+ * ConfirmDialog — one confirmation pattern for the whole app.
+ *
+ * Built on the shared Dialog so size, footer order, mobile sheet behaviour and
+ * focus handling are identical everywhere. Focus lands on Cancel for
+ * destructive actions, Escape cancels, and the destructive tone is carried by
+ * the icon, the tint and the confirm button together.
+ */
 export function ConfirmDialog({
   open,
   title,
@@ -24,47 +38,80 @@ export function ConfirmDialog({
   cancelLabel = 'Cancel',
   variant = 'danger',
   loading = false,
+  detail,
   onConfirm,
   onCancel,
 }: ConfirmDialogProps) {
+  const titleId = useId()
+  const bodyId = useId()
+  const cancelRef = useRef<HTMLButtonElement>(null)
+
+  const tone =
+    variant === 'danger'
+      ? { icon: 'bg-[var(--danger-soft)] text-[var(--danger-text)] border-[var(--danger-border)]' }
+      : variant === 'warning'
+        ? { icon: 'bg-[var(--warning-soft)] text-[var(--warning-text)] border-[var(--warning-border)]' }
+        : { icon: 'bg-[var(--info-soft)] text-[var(--info-text)] border-[var(--info-border)]' }
+
+  const Icon = variant === 'danger' ? TriangleAlert : variant === 'warning' ? AlertTriangle : TriangleAlert
+
+  // Escape to cancel, suppressed while the action is in flight so a half
+  // committed request cannot be abandoned.
   useEffect(() => {
-    if (!open) return
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && !loading) onCancel()
+    if (!open || loading) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onCancel()
     }
-    document.addEventListener('keydown', handler)
-    return () => document.removeEventListener('keydown', handler)
+    document.addEventListener('keydown', onKey)
+    return () => document.removeEventListener('keydown', onKey)
   }, [open, loading, onCancel])
 
-  if (!open) return null
-
-  const confirmClass = variant === 'danger'
-    ? 'bg-[#DC2626] hover:bg-[#B91C1C] text-white'
-    : 'bg-[#D97706] hover:bg-[#B45309] text-white'
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/40" />
-      <div
-        className="relative bg-[var(--surface)] rounded-xl border border-[var(--border)] shadow-lg p-6 max-w-sm w-full mx-4"
-        onClick={e => e.stopPropagation()}
+    <Dialog open={open} onOpenChange={(o) => { if (!o && !loading) onCancel() }}>
+      <DialogContent
+        size="sm"
+        onOpenAutoFocus={(e) => {
+          if (variant === 'danger') {
+            e.preventDefault()
+            cancelRef.current?.focus()
+          }
+        }}
+        aria-labelledby={titleId}
+        aria-describedby={bodyId}
       >
-        <div className="flex items-start gap-3 mb-4">
-          <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${variant === 'danger' ? 'bg-[#FEE2E2]' : 'bg-[#FEF3C7]'}`}>
-            <AlertTriangle className={`h-5 w-5 ${variant === 'danger' ? 'text-[#DC2626]' : 'text-[#D97706]'}`} />
+        <DialogHeader className="border-0 pb-0 pr-10">
+          <div className="flex items-start gap-3">
+            <div className={cn(tone.icon, 'flex size-9 shrink-0 items-center justify-center rounded-[8px] border')}>
+              <Icon className="size-[18px]" aria-hidden />
+            </div>
+            <div className="min-w-0 pt-0.5">
+              <DialogTitle id={titleId}>{title}</DialogTitle>
+              {(message || description) && (
+                <DialogDescription id={bodyId}>{message || description}</DialogDescription>
+              )}
+            </div>
           </div>
-          <div>
-            <h3 className="text-[15px] font-semibold" style={{ color: 'var(--text-primary)' }}>{title}</h3>
-            <p className="text-[13px] mt-1" style={{ color: 'var(--text-tertiary)' }}>{message || description}</p>
-          </div>
-        </div>
-        <div className="flex gap-2 justify-end">
-          <Button variant="outline" size="sm" onClick={onCancel} disabled={loading}>{cancelLabel}</Button>
-          <Button size="sm" className={confirmClass} onClick={onConfirm} disabled={loading}>
+        </DialogHeader>
+
+        <DialogBody>
+          {detail}
+        </DialogBody>
+
+        <DialogFooter>
+          <Button ref={cancelRef} variant="secondary" onClick={onCancel} disabled={loading} className="sm:min-w-[84px]">
+            {cancelLabel}
+          </Button>
+          <Button
+            variant={variant === 'primary' ? 'primary' : variant === 'warning' ? 'warning' : 'danger'}
+            onClick={onConfirm}
+            disabled={loading}
+            className="sm:min-w-[84px]"
+          >
+            {loading && <Loader2 className="animate-spin" aria-hidden />}
             {loading ? 'Working…' : confirmLabel}
           </Button>
-        </div>
-      </div>
-    </div>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   )
 }

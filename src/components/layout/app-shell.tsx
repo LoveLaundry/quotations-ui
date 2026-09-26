@@ -1,11 +1,9 @@
 import { useEffect, useState } from 'react'
 import { Outlet, useLocation, useNavigate } from 'react-router-dom'
-import { AnimatePresence, motion } from 'framer-motion'
 import { Sidebar } from './sidebar'
 import { TopBar } from './top-bar'
 import { CommandSearch } from '../ui/command-search'
 import { OfflineSyncBar } from '../ui/offline-sync-bar'
-import { cn } from '../../lib/utils'
 import { useAuth } from '../../context/AuthContext'
 import { setUnauthorizedHandler } from '../../api/interceptors'
 
@@ -68,6 +66,9 @@ const pageTitles: Record<string, string> = {
   '/management/company-settings': 'Company Settings',
   '/management/payments': 'Payments',
   '/management/reports': 'Management Reports',
+  '/ai-insights': 'AI Insights',
+  '/reports-backup': 'Reports & Backup',
+  '/hotel-linen-flow': 'Hotel Linen Flow',
 }
 
 function getPageTitle(pathname: string): string {
@@ -85,7 +86,6 @@ function getPageTitle(pathname: string): string {
   return pageTitles[pathname] ?? 'Love Laundry'
 }
 
-
 export function AppShell() {
   const [collapsed, setCollapsed] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
@@ -102,22 +102,47 @@ export function AppShell() {
     return () => setUnauthorizedHandler(null)
   }, [logout, navigate])
 
-  const Toggle=()=>{
-    setCollapsed(!collapsed);
-  }
+  // Ctrl/Cmd+K opens search from anywhere, including inside inputs and textareas.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault()
+        setCmdOpen(true)
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [])
+
+  // A new route should start at the top. Without this, a scrolled list keeps its
+  // scroll offset and the next page appears to open halfway down.
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [location.pathname])
+
+  // The collapsed rail is a desktop-only affordance; reset it when the viewport
+  // shrinks so the mobile drawer is never hidden behind a stale collapsed state.
+  useEffect(() => {
+    const mq = window.matchMedia('(min-width: 1024px)')
+    const onChange = () => {
+      if (!mq.matches) setCollapsed(false)
+    }
+    mq.addEventListener('change', onChange)
+    return () => mq.removeEventListener('change', onChange)
+  }, [])
 
   return (
-    <div className="min-h-screen bg-[var(--bg)] transition-colors">
-      {mobileOpen && (
-        <div
-          className="fixed inset-0 z-30 bg-black/50 backdrop-blur-sm lg:hidden transition-opacity duration-200"
-          onClick={() => setMobileOpen(false)}
-        />
-      )}
+    <div className="min-h-dvh bg-[var(--bg)]">
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:rounded-[6px] focus:bg-[var(--brand)] focus:px-3 focus:py-2 focus:text-[13px] focus:font-medium focus:text-white"
+      >
+        Skip to content
+      </a>
 
       <Sidebar
         collapsed={collapsed}
-        onToggle={() => Toggle()}
+        onToggle={() => setCollapsed((c) => !c)}
         mobileOpen={mobileOpen}
         onMobileClose={() => setMobileOpen(false)}
       />
@@ -125,7 +150,7 @@ export function AppShell() {
       <TopBar
         title={getPageTitle(location.pathname)}
         sidebarCollapsed={collapsed}
-        onMobileMenuToggle={() => setMobileOpen(v => !v)}
+        onMobileMenuToggle={() => setMobileOpen((v) => !v)}
         onOpenSearch={() => setCmdOpen(true)}
       />
 
@@ -133,23 +158,16 @@ export function AppShell() {
 
       <OfflineSyncBar />
 
-      <main className={cn(
-        'min-h-screen pt-16 transition-[padding-left] duration-200',
-        'pl-0 lg:pl-[232px]',
-        collapsed && 'lg:pl-[60px]',
-      )}>
-        <div className="mx-auto max-w-[1400px] px-4 py-5 sm:px-6 sm:py-6 lg:px-8 lg:py-8">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={location.pathname}
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -6 }}
-              transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-            >
-              <Outlet />
-            </motion.div>
-          </AnimatePresence>
+      <main
+        id="main-content"
+        className={`min-h-dvh pt-13 transition-[padding-left] duration-150 ease-out ${
+          collapsed ? 'lg:pl-[60px]' : 'lg:pl-[236px]'
+        }`}
+      >
+        {/* Wide cap with a tighter margin on small screens: a 320px viewport
+            gets 16px of gutter, a desktop gets a comfortable measure. */}
+        <div className="mx-auto w-full max-w-[1480px] px-4 py-4 sm:px-5 sm:py-5 lg:px-7 lg:py-6">
+          <Outlet />
         </div>
       </main>
     </div>

@@ -1,36 +1,45 @@
-import { Edit, Eye, Plus, Search, Trash2, FileText } from 'lucide-react'
-import { motion } from 'framer-motion'
+import { FilePlus, Eye, PencilSimple, Trash, FileText } from '@phosphor-icons/react'
 import { useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Button } from '../../../components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card'
 import { ConfirmDialog } from '../../../components/ui/confirm-dialog'
-import { EmptyState } from '../../../components/ui/empty-state'
-import { ErrorState } from '../../../components/ui/error-state'
-import { Input } from '../../../components/ui/input'
-import { Skeleton } from '../../../components/ui/skeleton'
-import { Breadcrumb } from '../../../components/ui/breadcrumb'
+import { EmptyState, ErrorState } from '../../../components/ui/empty-state'
+import { SkeletonTable } from '../../../components/ui/skeleton'
+import { PageHeader } from '../../../components/ui/page-header'
+import { FilterBar, FilterChip } from '../../../components/ui/filter-bar'
+import { Toolbar, ToolbarGroup, SearchInput } from '../../../components/ui/toolbar'
+import { DataTable, type Column } from '../../../components/ui/data-table'
+import { RowActions, type MenuGroup } from '../../../components/ui/dropdown-menu'
+import { Badge, type BadgeTone } from '../../../components/ui/badge'
 import { formatDate } from '../../../lib/utils'
 import { useDeleteQuotation, useQuotations } from '../hooks/useQuotations'
 import { QuotationPreviewDialog } from '../components/quotation-preview-dialog'
 import { ORDER_STATUSES } from '../../../types/quotation'
 import type { OrderStatus, Quotation } from '../../../types/quotation'
 
-const STATUS_CONFIG = {
-  draft:           { label: 'Draft',    cls: 'bg-[#F9FAFB] text-[#6B7280] border-[#E4E7EC]' },
-  sent:            { label: 'Sent',     cls: 'bg-[#EFF6FF] text-[#2563EB] border-[#BFDBFE]' },
-  accepted:        { label: 'Accepted', cls: 'bg-[#F0FDF4] text-[#16A34A] border-[#BBF7D0]' },
-  archived:        { label: 'Archived', cls: 'bg-[#FAFAFA] text-[#9CA3AF] border-[#E4E7EC]' },
-  received:        { label: 'Received', cls: 'bg-[#EFF4FF] text-[#3538CD] border-[#C7D7FE]' },
-  washing:         { label: 'Washing',  cls: 'bg-[#EFF4FF] text-[#3538CD] border-[#C7D7FE]' },
-  pressing:        { label: 'Pressing', cls: 'bg-[#FEF6E7] text-[#B54708] border-[#FCE7C0]' },
-  folding:         { label: 'Folding',  cls: 'bg-[#FEF6E7] text-[#B54708] border-[#FCE7C0]' },
-  packing:         { label: 'Packing',  cls: 'bg-[#FEF6E7] text-[#B54708] border-[#FCE7C0]' },
-  ready:           { label: 'Ready',    cls: 'bg-[#ECFDF3] text-[#027A48] border-[#ABEFC6]' },
-  out_for_delivery:{ label: 'Out for Delivery', cls: 'bg-[#ECFDF3] text-[#027A48] border-[#ABEFC6]' },
-  delivered:       { label: 'Delivered', cls: 'bg-[#ECFDF3] text-[#027A48] border-[#ABEFC6]' },
-  cancelled:       { label: 'Cancelled', cls: 'bg-[#FEF3F2] text-[#B42318] border-[#FECDCA]' },
+/** Order status → badge tone. Grouped by meaning, not by hue: in-progress
+ *  states are all `info`, finished states `success`, blocked `danger`. */
+const STATUS_TONE: Record<string, BadgeTone> = {
+  draft: 'neutral',
+  sent: 'info',
+  accepted: 'success',
+  archived: 'neutral',
+  received: 'info',
+  washing: 'info',
+  pressing: 'info',
+  folding: 'info',
+  packing: 'info',
+  ready: 'success',
+  out_for_delivery: 'info',
+  delivered: 'success',
+  cancelled: 'danger',
 }
+
+const STATUS_LABEL: Record<string, string> = {
+  out_for_delivery: 'Out for delivery',
+}
+
+const label = (s: string) => STATUS_LABEL[s] ?? s.replace(/_/g, ' ')
 
 export default function QuotationsPage() {
   const navigate = useNavigate()
@@ -42,151 +51,213 @@ export default function QuotationsPage() {
   const [statusFilter, setStatusFilter] = useState<'all' | OrderStatus>('all')
   const [deleteTarget, setDeleteTarget] = useState<Quotation | null>(null)
 
-  const filtered = useMemo(
-    () =>
-      (data ?? [])
-        .filter(q => {
-          const term = search.trim().toLowerCase()
-          const matchesSearch =
-            !term ||
-            (q.client_name ?? '').toLowerCase().includes(term) ||
-            (q.quotation_title ?? '').toLowerCase().includes(term) ||
-            (q.line_items ?? []).some(li => (li.item_name ?? '').toLowerCase().includes(term))
-          const matchesStatus = statusFilter === 'all' || q.status === statusFilter
-          return matchesSearch && matchesStatus
-        })
-        .sort((a, b) => (a.client_name ?? '').localeCompare(b.client_name ?? '')),
-    [data, search, statusFilter],
-  )
+  const rows = useMemo(() => data ?? [], [data])
+
+  /** Count per status, so a filter chip can show how much is behind it. */
+  const counts = useMemo(() => {
+    const map = new Map<string, number>()
+    for (const q of rows) {
+      if (q.status) map.set(q.status, (map.get(q.status) ?? 0) + 1)
+    }
+    return map
+  }, [rows])
+
+  const filtered = useMemo(() => {
+    const term = search.trim().toLowerCase()
+    return rows
+      .filter((q) => {
+        const matchesSearch =
+          !term ||
+          (q.client_name ?? '').toLowerCase().includes(term) ||
+          (q.quotation_title ?? '').toLowerCase().includes(term) ||
+          (q.line_items ?? []).some((li) => (li.item_name ?? '').toLowerCase().includes(term))
+        const matchesStatus = statusFilter === 'all' || q.status === statusFilter
+        return matchesSearch && matchesStatus
+      })
+      .sort((a, b) => (a.client_name ?? '').localeCompare(b.client_name ?? ''))
+  }, [rows, search, statusFilter])
+
+  const rowActions = (q: Quotation): MenuGroup[] => [
+    {
+      items: [
+        { id: 'preview', label: 'Quick preview', icon: <Eye size={16} />, onSelect: () => setPreview(q) },
+        { id: 'view', label: 'Open', icon: <FileText size={16} />, onSelect: () => navigate(`/quotations/${q.id}`) },
+        { id: 'edit', label: 'Edit', icon: <PencilSimple size={16} />, onSelect: () => navigate(`/quotations/${q.id}/edit`) },
+        {
+          id: 'delete',
+          label: 'Delete',
+          icon: <Trash size={16} />,
+          destructive: true,
+          onSelect: () => setDeleteTarget(q),
+        },
+      ],
+    },
+  ]
+
+  const columns: Column<Quotation>[] = [
+    {
+      key: 'client_name',
+      header: 'Client',
+      render: (q) => (
+        <div className="min-w-0">
+          <p className="truncate text-[13px] font-medium text-[var(--text-primary)]">
+            {q.client_name ?? '(no name)'}
+          </p>
+          {q.quotation_title && (
+            <p className="truncate text-[11.5px] text-[var(--text-muted)]">{q.quotation_title}</p>
+          )}
+        </div>
+      ),
+    },
+    {
+      key: 'status',
+      header: 'Status',
+      width: '160px',
+      render: (q) =>
+        q.status ? (
+          <Badge size="xs" tone={STATUS_TONE[q.status] ?? 'neutral'} dot>
+            {label(q.status)}
+          </Badge>
+        ) : (
+          <span className="text-[12px] text-[var(--text-faint)]">—</span>
+        ),
+    },
+    {
+      key: 'line_items',
+      header: 'Items',
+      numeric: true,
+      width: '80px',
+      render: (q) => q.line_items?.length ?? 0,
+    },
+    {
+      key: 'updated_at',
+      header: 'Updated',
+      width: '140px',
+      render: (q) => (
+        <span className="text-[12.5px] whitespace-nowrap text-[var(--text-tertiary)]">
+          {formatDate(q.updated_at ?? q.created_at)}
+        </span>
+      ),
+    },
+    {
+      key: '_actions',
+      header: <span className="sr-only">Actions</span>,
+      align: 'right',
+      width: '56px',
+      render: (q) => <RowActions groups={rowActions(q)} label={`Actions for ${q.client_name}`} />,
+    },
+  ]
+
+  const isFiltered = Boolean(search.trim()) || statusFilter !== 'all'
 
   return (
-    <div className="space-y-5 pb-8 select-none">
-      <div className="flex flex-col gap-3">
-        <div>
-          <Breadcrumb items={[{ label: 'Dashboard', href: '/' }, { label: 'Quotations' }]} />
-          <h1 className="text-dashboard-title mt-1">Quotations</h1>
-          <p className="text-[13px] text-[#98A2B3] mt-0.5">All hotel & client price lists</p>
-        </div>
-        <Link to="/quotations/new" className="w-full sm:w-auto">
-          <Button size="lg" className="w-full max-w-md">
-            <Plus className="h-4 w-4" /> New Quotation
+    <div className="space-y-4">
+      <PageHeader
+        title="Quotations"
+        subtitle="Every hotel and client price list, with its current order status."
+        actions={
+          <Button asChild>
+            <Link to="/quotations/new">
+              <FilePlus size={16} aria-hidden />
+              New quotation
+            </Link>
           </Button>
-        </Link>
-      </div>
+        }
+      />
 
-      <Card>
-        <CardHeader className="border-b border-[#F2F4F7] pb-4">
-          <div className="flex w-full flex-col gap-3">
-            <CardTitle>
-              All Quotations
-              <span className="ml-2 font-normal text-[12px] text-[#98A2B3]">
-                ({data?.length ?? 0})
-              </span>
-            </CardTitle>
-            <div className="relative w-full">
-              <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[#9CA3AF]" />
-              <Input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by name, title or item…" className="pl-9" />
-            </div>
-            <div className="flex flex-wrap gap-1.5">
-              {(['all', ...ORDER_STATUSES] as const).map(s => {
-                const active = statusFilter === s
-                const cfg = s === 'all' ? null : STATUS_CONFIG[s]
-                return (
-                  <button
-                    key={s}
-                    type="button"
-                    onClick={() => setStatusFilter(s)}
-                    className={`rounded-md border px-2 py-1 text-[11px] font-semibold whitespace-nowrap transition cursor-pointer ${
-                      active
-                        ? cfg
-                          ? cfg.cls
-                          : 'bg-[#101828] text-white border-[#101828]'
-                        : 'bg-white text-[#6B7280] border-[#E4E7EC] hover:bg-[#F9FAFB]'
-                    }`}
-                  >
-                    {s === 'all' ? 'All' : cfg?.label ?? s}
-                  </button>
-                )
-              })}
-            </div>
-          </div>
-        </CardHeader>
+      <Toolbar>
+        <ToolbarGroup className="sm:max-w-xs">
+          <SearchInput
+            value={search}
+            onValueChange={setSearch}
+            placeholder="Search client, title or item…"
+          />
+        </ToolbarGroup>
 
-        <CardContent className="pt-4">
-          {isLoading ? (
-            <div className="space-y-2">{[1,2,3,4,5].map(i => <Skeleton key={i} className="h-[72px] sm:h-[60px]" />)}</div>
-          ) : isError ? (
-            <ErrorState description={error instanceof Error ? error.message : 'Unable to load quotations'} />
-          ) : filtered.length ? (
-            <div className="space-y-2">
-              {filtered.map((q, i) => (
-                <motion.div
-                  key={q.id}
-                  initial={{ opacity: 0, y: 4 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: Math.min(i * 0.025, 0.25) }}
-                  className="group flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 rounded-xl border border-[#E4E7EC] bg-white p-3 sm:p-4 hover:border-[#FECACA] hover:bg-[#FFF8F8] transition-all duration-100"
-                >
-                  <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#F3F4F6] border border-[#E4E7EC] text-[14px] font-bold text-[#6B7280] group-hover:bg-[#FFF1F1] group-hover:text-[#DC2626] group-hover:border-[#FECACA] transition-all">
-                      {(q.client_name ?? '?').charAt(0).toUpperCase()}
-                    </div>
-
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <p className="text-[14px] font-semibold text-[#101828] truncate">{q.client_name ?? '(no name)'}</p>
-                        {q.quotation_title && (
-                          <span className="hidden sm:inline text-[12px] text-[#98A2B3] truncate">· {q.quotation_title}</span>
-                        )}
-                        {q.status && (
-                          <span className={`rounded-md border px-1.5 py-0.5 text-[10px] font-semibold capitalize whitespace-nowrap ${STATUS_CONFIG[q.status]?.cls ?? STATUS_CONFIG.draft.cls}`}>
-                            {STATUS_CONFIG[q.status]?.label ?? q.status}
-                          </span>
-                        )}
-                      </div>
-                      <p className="text-[12px] text-[#98A2B3] mt-0.5 truncate">
-                        {q.line_items?.length ?? 0} line items · Updated {formatDate(q.updated_at ?? q.created_at)}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-1 shrink-0 justify-end sm:justify-start">
-                    <Button variant="ghost" size="icon" onClick={() => setPreview(q)} aria-label="Preview">
-                      <Eye className="h-4 w-4" />
-                    </Button>
-                    <Button variant="ghost" size="icon" onClick={() => navigate(`/quotations/${q.id}`)} aria-label="View">
-                      <FileText className="h-4 w-4" />
-                    </Button>
-                    <Button variant="ghost" size="icon" onClick={() => navigate(`/quotations/${q.id}/edit`)} aria-label="Edit">
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost" size="icon"
-                      onClick={() => setDeleteTarget(q)}
-                      aria-label="Delete"
-                      className="text-[#DC2626] hover:bg-[#FFF1F1]"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          ) : (
-            <EmptyState
-              title="No quotations found"
-              description={search ? `No results for "${search}"` : 'Create your first hotel quotation to get started.'}
-              action={!search ? <Link to="/quotations/new"><Button>Create quotation</Button></Link> : undefined}
+        <ToolbarGroup className="min-w-0 flex-1">
+          <FilterBar>
+            <FilterChip
+              label="All"
+              count={rows.length}
+              active={statusFilter === 'all'}
+              onClick={() => setStatusFilter('all')}
             />
-          )}
-        </CardContent>
-      </Card>
+            {ORDER_STATUSES.map((s) => (
+              <FilterChip
+                key={s}
+                label={label(s)}
+                count={counts.get(s) ?? 0}
+                active={statusFilter === s}
+                onClick={() => setStatusFilter(statusFilter === s ? 'all' : s)}
+              />
+            ))}
+          </FilterBar>
+        </ToolbarGroup>
 
-      <QuotationPreviewDialog quotation={preview} open={Boolean(preview)} onOpenChange={o => !o && setPreview(null)} />
+        <ToolbarGroup align="end">
+          <span className="text-[12px] tabular-nums whitespace-nowrap text-[var(--text-muted)]">
+            {isFiltered ? `${filtered.length} of ${rows.length}` : `${rows.length} total`}
+          </span>
+        </ToolbarGroup>
+      </Toolbar>
+
+      {isLoading ? (
+        <SkeletonTable rows={6} cols={5} />
+      ) : isError ? (
+        <ErrorState description={error instanceof Error ? error.message : 'Unable to load quotations'} />
+      ) : (
+        <DataTable
+          columns={columns}
+          data={filtered}
+          rowKey={(q) => String(q.id)}
+          onRowClick={(q) => navigate(`/quotations/${q.id}`)}
+          mobilePrimary={['client_name', 'status']}
+          mobileHidden={['_actions']}
+          caption={`${filtered.length} quotation${filtered.length === 1 ? '' : 's'}`}
+          emptyState={
+            isFiltered ? (
+              <EmptyState
+                icon={<FileText size={22} />}
+                title="No quotations match"
+                description="Clear the search or pick a different status."
+                action={
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => {
+                      setSearch('')
+                      setStatusFilter('all')
+                    }}
+                  >
+                    Clear filters
+                  </Button>
+                }
+              />
+            ) : (
+              <EmptyState
+                icon={<FileText size={22} />}
+                title="No quotations yet"
+                description="Create a price list for a client to get started."
+                action={
+                  <Button asChild size="sm">
+                    <Link to="/quotations/new">Create quotation</Link>
+                  </Button>
+                }
+              />
+            )
+          }
+        />
+      )}
+
+      <QuotationPreviewDialog
+        quotation={preview}
+        open={Boolean(preview)}
+        onOpenChange={(o) => !o && setPreview(null)}
+      />
 
       <ConfirmDialog
         open={Boolean(deleteTarget)}
-        title="Delete Quotation?"
+        title="Delete quotation?"
         message={
           deleteTarget
             ? `${deleteTarget.client_name}${deleteTarget.quotation_title ? ` — ${deleteTarget.quotation_title}` : ''} will be permanently deleted. This cannot be undone.`
@@ -197,7 +268,9 @@ export default function QuotationsPage() {
         loading={deleteMutation.isPending}
         onConfirm={() => {
           if (!deleteTarget) return
-          deleteMutation.mutate(String(deleteTarget.id), { onSettled: () => setDeleteTarget(null) })
+          deleteMutation.mutate(String(deleteTarget.id), {
+            onSettled: () => setDeleteTarget(null),
+          })
         }}
         onCancel={() => setDeleteTarget(null)}
       />

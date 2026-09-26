@@ -1,18 +1,22 @@
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { motion } from 'framer-motion'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import {
-  Activity, AlertTriangle, ArrowRight, CalendarCheck, CheckCircle2,
-  ChevronLeft, ChevronRight, ClipboardList, Clock, FileText, Flag,
-  Package, Plus, Receipt, RotateCcw, ShieldAlert, Truck, Undo2, Wallet, XCircle,
-} from 'lucide-react'
+  ArrowRight, CaretLeft, CaretRight, ClipboardText, Clock, Flag, Package, Plus, Receipt, CalendarBlank,
+  ArrowCounterClockwise, Truck, Wallet, CheckCircle, XCircle, WarningCircle, ShieldWarning,
+  FileText, Pulse,
+} from '@phosphor-icons/react'
+import { cn } from '../../../lib/utils'
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card'
 import { Button } from '../../../components/ui/button'
 import { Skeleton } from '../../../components/ui/skeleton'
 import { StatCard } from '../../../components/ui/stat-card'
 import { EmptyState } from '../../../components/ui/empty-state'
+import { Notice } from '../../../components/ui/notice'
+import { PageHeader } from '../../../components/ui/page-header'
+import { Badge } from '../../../components/ui/badge'
+import { Input, Select } from '../../../components/ui/input'
 import { SmartConfirm } from '../../../components/ops/smart-confirm'
 import { useGatePasses, useReopenLegacyBatch, invalidateDeliveryData } from '../../quotations/hooks/useGatePasses'
 import { useDeliveries } from '../../quotations/hooks/useDeliveries'
@@ -82,30 +86,55 @@ function eventLabel(type: string): string {
 
 // ── Quick actions ─────────────────────────────────────────────────────────────
 
-function QuickActions() {
-  const actions = [
-    { to: '/gate-passes/new', label: 'Receive', hint: 'New gate pass', icon: ClipboardList, cls: 'bg-[#DC2626] hover:bg-[#B91C1C] text-white border-transparent' },
-    { to: '/deliveries/new', label: 'Deliver', hint: 'Record delivery', icon: Truck, cls: 'bg-[#16A34A] hover:bg-[#15803D] text-white border-transparent' },
-    { to: '/bills/new', label: 'Bill', hint: 'Create bill', icon: FileText, cls: 'bg-white hover:bg-[var(--surface-hover)] text-[var(--text-primary)]' },
-    { to: '/returns/new', label: 'Return', hint: 'Record return', icon: RotateCcw, cls: 'bg-white hover:bg-[var(--surface-hover)] text-[var(--text-primary)]' },
-    { to: '/management/expenses', label: 'Expense', hint: 'Record expense', icon: Receipt, cls: 'bg-white hover:bg-[var(--surface-hover)] text-[var(--text-primary)]' },
-    { to: '/management/attendance-log', label: 'Attendance', hint: 'Log staff', icon: CalendarCheck, cls: 'bg-white hover:bg-[var(--surface-hover)] text-[var(--text-primary)]' },
-  ]
+/**
+ * QuickActions — the six things an operator does in a shift.
+ *
+ * One visual treatment for all six. Previously each action had its own fill
+ * colour, which meant the most important thing on the page was decided by hue
+ * rather than by use frequency, and the row read as five competing buttons.
+ * `Receive` and `Deliver` — the two that actually run the floor — are marked
+ * with a badge instead of a fill.
+ */
+const QUICK_ACTIONS = [
+  { to: '/gate-passes/new', label: 'Receive', hint: 'New gate pass', icon: ClipboardText, primary: true },
+  { to: '/deliveries/new', label: 'Deliver', hint: 'Record delivery', icon: Truck, primary: true },
+  { to: '/bills/new', label: 'Bill', hint: 'Create bill', icon: FileText },
+  { to: '/returns/new', label: 'Return', hint: 'Record return', icon: ArrowCounterClockwise },
+  { to: '/management/expenses', label: 'Expense', hint: 'Record expense', icon: Receipt },
+  { to: '/management/attendance-log', label: 'Attendance', hint: 'Log staff', icon: CalendarBlank },
+]
 
+function QuickActions() {
   return (
-    <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
-      {actions.map(a => (
-        <Button key={a.to} asChild className={`h-auto justify-start gap-3 border border-[var(--border)] px-3.5 py-3 ${a.cls}`}>
-          <Link to={a.to}>
-            <a.icon className="h-4 w-4 shrink-0" />
-            <span className="flex flex-col items-start leading-tight">
-              <span className="text-[13px] font-semibold">{a.label}</span>
-              <span className="text-[10px] font-normal opacity-80">{a.hint}</span>
-            </span>
-          </Link>
-        </Button>
-      ))}
-    </div>
+    <nav aria-label="Quick actions">
+      <ul className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
+        {QUICK_ACTIONS.map((a) => (
+          <li key={a.to}>
+            <Link
+              to={a.to}
+              className="flex h-full items-center gap-2.5 rounded-[8px] border border-[var(--border-2)] bg-[var(--surface)] px-3 py-2.5 transition-colors duration-100 hover:border-[var(--border-strong)] hover:bg-[var(--surface-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
+            >
+              <a.icon size={16} aria-hidden className="shrink-0 text-[var(--text-muted)]" />
+              <span className="min-w-0 flex-1 leading-tight">
+                <span className="flex items-center gap-1.5">
+                  <span className="truncate text-[12.5px] font-medium text-[var(--text-primary)]">
+                    {a.label}
+                  </span>
+                  {a.primary && (
+                    <Badge size="xs" tone="brand">
+                      Main
+                    </Badge>
+                  )}
+                </span>
+                <span className="mt-0.5 block truncate text-[11px] text-[var(--text-faint)]">
+                  {a.hint}
+                </span>
+              </span>
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </nav>
   )
 }
 
@@ -128,17 +157,15 @@ function AttentionQueue() {
   return (
     <Card>
       <CardHeader className="border-b border-[var(--border)] pb-3">
-        <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-2 text-[14px]">
-            <ShieldAlert className="h-4 w-4" style={{ color: 'var(--text-tertiary)' }} />
-            Needs Attention
-          </CardTitle>
-          {!clear && (
-            <span className="inline-flex items-center rounded-full bg-[#FFF1F1] border border-[#FECACA] px-2.5 py-0.5 text-[12px] font-bold text-[#DC2626]">
-              {pendingAdj.length + issues.length}
-            </span>
-          )}
-        </div>
+        <CardTitle className="flex items-center gap-2">
+          <ShieldWarning size={16} aria-hidden className="text-[var(--text-faint)]" />
+          Needs attention
+        </CardTitle>
+        {!clear && (
+          <Badge tone="danger" size="xs" dot>
+            {pendingAdj.length + issues.length} open
+          </Badge>
+        )}
       </CardHeader>
       <CardContent className="pt-4 space-y-4">
         {loadingAdj || loadingRecon ? (
@@ -147,40 +174,51 @@ function AttentionQueue() {
             <Skeleton className="h-12 w-full" />
           </div>
         ) : clear ? (
-          <div className="flex items-center gap-3 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3">
-            <CheckCircle2 className="h-5 w-5 shrink-0 text-emerald-600" />
-            <div>
-              <p className="text-[13px] font-semibold text-emerald-800">All clear</p>
-              <p className="text-[12px] text-emerald-700">No pending adjustments or reconciliation issues.</p>
-            </div>
-          </div>
+          <Notice tone="success" title="All clear">
+            No pending adjustments and no reconciliation issues.
+          </Notice>
         ) : (
           <>
             {pendingAdj.length > 0 && (
               <div>
-                <p className="mb-2 text-[11px] font-semibold uppercase tracking-wide" style={{ color: 'var(--text-tertiary)' }}>
-                  Quantity adjustments awaiting approval
-                </p>
-                <div className="divide-y divide-[var(--border)] rounded-lg border border-[var(--border)]">
+                <p className="section-label">Quantity adjustments awaiting approval</p>
+                <div className="divide-y divide-[var(--border)] overflow-hidden rounded-[7px] border border-[var(--border)]">
                   {pendingAdj.map(a => (
                     <div key={a.id} className="flex items-center gap-3 px-3 py-2.5">
                       <div className="min-w-0 flex-1">
-                        <p className="truncate text-[13px] font-medium" style={{ color: 'var(--text-primary)' }}>
+                        <p className="truncate text-[13px] font-medium text-[var(--text-primary)]">
                           {a.item_name}
-                          {a.specification && <span className="ml-1.5 text-[11px]" style={{ color: 'var(--text-tertiary)' }}>{a.specification}</span>}
+                          {a.specification && (
+                            <span className="ml-1.5 text-[11px] text-[var(--text-muted)]">
+                              {a.specification}
+                            </span>
+                          )}
                         </p>
-                        <p className="truncate text-[12px]" style={{ color: 'var(--text-tertiary)' }}>
-                          {a.original_qty} <ArrowRight className="inline h-3 w-3" /> {a.corrected_qty}
+                        <p className="truncate text-[12px] text-[var(--text-muted)]">
+                          <span className="tabular-nums">
+                            {a.original_qty} → {a.corrected_qty}
+                          </span>
                           {a.reason && ` · ${a.reason}`}
                           {a.requested_by && ` · by ${a.requested_by}`}
                         </p>
                       </div>
                       <div className="flex shrink-0 items-center gap-1.5">
-                        <Button size="sm" variant="outline" className="h-7 px-2" onClick={() => setConfirm({ adjustment: a, action: 'reject' })}>
-                          <XCircle className="h-3.5 w-3.5" />
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => setConfirm({ adjustment: a, action: 'reject' })}
+                          aria-label={`Reject adjustment for ${a.item_name}`}
+                        >
+                          <XCircle size={15} aria-hidden />
+                          Reject
                         </Button>
-                        <Button size="sm" className="h-7 px-2" onClick={() => setConfirm({ adjustment: a, action: 'approve' })}>
-                          <CheckCircle2 className="h-3.5 w-3.5" />
+                        <Button
+                          size="sm"
+                          onClick={() => setConfirm({ adjustment: a, action: 'approve' })}
+                          aria-label={`Approve adjustment for ${a.item_name}`}
+                        >
+                          <CheckCircle size={15} aria-hidden />
+                          Approve
                         </Button>
                       </div>
                     </div>
@@ -191,41 +229,43 @@ function AttentionQueue() {
 
             {issues.length > 0 && (
               <div>
-                <div className="mb-2 flex items-center justify-between">
-                  <p className="text-[11px] font-semibold uppercase tracking-wide" style={{ color: 'var(--text-tertiary)' }}>
-                    Reconciliation issues
-                  </p>
+                <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+                  <p className="section-label">Reconciliation issues</p>
                   {legacyCount > 0 && (
                     <Button
                       size="sm"
-                      variant="outline"
-                      className="h-7 px-2 text-[12px]"
+                      variant="secondary"
                       onClick={() => setBatchConfirm(true)}
                       disabled={batchReopen.isPending}
                       title="Reopen every pass closed by the old note flow with no delivery records"
                     >
-                      <Undo2 className="h-3.5 w-3.5" />
+                      <ArrowCounterClockwise size={14} aria-hidden />
                       {batchReopen.isPending ? 'Reopening…' : `Reopen ${legacyCount} legacy`}
                     </Button>
                   )}
                 </div>
-                <div className="divide-y divide-[var(--border)] rounded-lg border border-[var(--border)]">
-                  {issues.slice(0, 8).map(row => (
-                    <Link key={row.id} to={`/gate-passes/${row.id}`} className="flex items-center gap-3 px-3 py-2.5 hover:bg-[var(--surface-hover)] transition">
-                      <AlertTriangle className="h-4 w-4 shrink-0 text-[#D97706]" />
-                      <div className="min-w-0 flex-1">
-                        <p className="truncate text-[13px] font-medium" style={{ color: 'var(--text-primary)' }}>
-                          #{row.gate_pass_number} · {row.client_name}
-                        </p>
-                        <p className="truncate text-[12px]" style={{ color: 'var(--text-tertiary)' }}>
-                          {row.issues.map(i => i.code).join(', ')}
-                          {row.legacy_marked && ' · legacy marked'}
-                        </p>
-                      </div>
-                      <ChevronRight className="h-4 w-4 shrink-0" style={{ color: 'var(--text-tertiary)' }} />
-                    </Link>
+                <ul className="divide-y divide-[var(--border)] overflow-hidden rounded-[7px] border border-[var(--border)]">
+                  {issues.slice(0, 8).map((row) => (
+                    <li key={row.id}>
+                      <Link
+                        to={`/gate-passes/${row.id}`}
+                        className="flex items-center gap-3 px-3 py-2.5 transition-colors duration-100 hover:bg-[var(--surface-hover)]"
+                      >
+                        <WarningCircle size={15} aria-hidden className="shrink-0 text-[var(--warning-text)]" />
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-[13px] font-medium text-[var(--text-primary)]">
+                            #{row.gate_pass_number} · {row.client_name}
+                          </p>
+                          <p className="truncate text-[12px] text-[var(--text-muted)]">
+                            {row.issues.map((i) => i.code).join(', ')}
+                            {row.legacy_marked && ' · legacy marked'}
+                          </p>
+                        </div>
+                        <CaretRight size={14} aria-hidden className="shrink-0 text-[var(--text-faint)]" />
+                      </Link>
+                    </li>
                   ))}
-                </div>
+                </ul>
               </div>
             )}
           </>
@@ -281,51 +321,60 @@ function PendingDeliveries() {
   return (
     <Card>
       <CardHeader className="border-b border-[var(--border)] pb-3">
-        <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-2 text-[14px]">
-            <Package className="h-4 w-4" style={{ color: 'var(--text-tertiary)' }} />
-            Pending to Deliver
-          </CardTitle>
-          {rows.length > 0 && (
-            <Button asChild size="sm" className="h-7 bg-[#16A34A] hover:bg-[#15803D] text-white">
-              <Link to="/deliveries/new">
-                <Truck className="h-3.5 w-3.5" /> Deliver
-              </Link>
-            </Button>
-          )}
-        </div>
+        <CardTitle className="flex items-center gap-2">
+          <Package size={16} aria-hidden className="text-[var(--text-faint)]" />
+          Pending to deliver
+        </CardTitle>
+        {rows.length > 0 && (
+          <Button asChild size="sm">
+            <Link to="/deliveries/new">
+              <Truck size={14} aria-hidden />
+              Deliver
+            </Link>
+          </Button>
+        )}
       </CardHeader>
       <CardContent className="pt-0">
         {isLoading ? (
-          <div className="space-y-2 py-3">
-            <Skeleton className="h-12 w-full" />
-            <Skeleton className="h-12 w-full" />
+          <div className="space-y-2">
+            <Skeleton className="h-11 w-full" />
+            <Skeleton className="h-11 w-full" />
           </div>
         ) : rows.length === 0 ? (
           <EmptyState
-            icon={<Truck className="h-6 w-6 text-[#9CA3AF]" />}
+            bare
+            icon={<Truck size={18} />}
             title="Nothing pending"
             description="Every received item has been delivered."
           />
         ) : (
-          <div className="divide-y divide-[var(--border)]">
-            {rows.map(r => (
-              <Link key={r.gate_pass_id} to={`/gate-passes/${r.gate_pass_id}`} className="flex items-center gap-3 py-2.5 hover:bg-[var(--surface-hover)] transition">
-                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#FFF7ED] border border-[#FED7AA] text-[11px] font-bold text-[#C2410C]">
-                  {r.total_pending}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-[13px] font-medium" style={{ color: 'var(--text-primary)' }}>
-                    {r.client_name}
-                  </p>
-                  <p className="truncate text-[12px]" style={{ color: 'var(--text-tertiary)' }}>
-                    #{r.gate_pass_number} · {r.items.filter(i => i.pending_qty > 0).map(i => `${i.item_name} ×${i.pending_qty}`).join(', ')}
-                  </p>
-                </div>
-                <ChevronRight className="h-4 w-4 shrink-0" style={{ color: 'var(--text-tertiary)' }} />
-              </Link>
+          <ul className="divide-y divide-[var(--border)]">
+            {rows.map((r) => (
+              <li key={r.gate_pass_id}>
+                <Link
+                  to={`/gate-passes/${r.gate_pass_id}`}
+                  className="-mx-1 flex items-center gap-3 rounded-[6px] px-1 py-2.5 transition-colors duration-100 hover:bg-[var(--surface-hover)]"
+                >
+                  <span className="flex size-7 shrink-0 items-center justify-center rounded-[6px] border border-[var(--warning-border)] bg-[var(--warning-soft)] text-[11px] font-semibold tabular-nums text-[var(--warning-text)]">
+                    {r.total_pending}
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-[13px] font-medium text-[var(--text-primary)]">
+                      {r.client_name}
+                    </span>
+                    <span className="block truncate text-[12px] text-[var(--text-muted)]">
+                      #{r.gate_pass_number} ·{' '}
+                      {r.items
+                        .filter((i) => i.pending_qty > 0)
+                        .map((i) => `${i.item_name} ×${i.pending_qty}`)
+                        .join(', ')}
+                    </span>
+                  </span>
+                  <CaretRight size={14} aria-hidden className="shrink-0 text-[var(--text-faint)]" />
+                </Link>
+              </li>
             ))}
-          </div>
+          </ul>
         )}
       </CardContent>
     </Card>
@@ -334,16 +383,22 @@ function PendingDeliveries() {
 
 // ── Day money ─────────────────────────────────────────────────────────────────
 
+const MONEY_TONE: Record<string, string> = {
+  green: 'text-[var(--success-text)]',
+  amber: 'text-[var(--warning-text)]',
+  red: 'text-[var(--danger-text)]',
+}
+
+/**
+ * A figure, not a tile. Money is a ledger, so these read as label-over-value
+ * rows with a hairline frame rather than as coloured cards; the accent colour
+ * is only applied when the number itself is the message.
+ */
 function MoneyTile({ label, value, accent }: { label: string; value: number; accent?: 'green' | 'amber' | 'red' }) {
-  const color =
-    accent === 'green' ? '#16A34A' : accent === 'amber' ? '#D97706' : accent === 'red' ? '#DC2626' : undefined
   return (
-    <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 py-2.5">
-      <p className="text-[11px]" style={{ color: 'var(--text-tertiary)' }}>{label}</p>
-      <p
-        className="mt-0.5 text-[18px] font-bold tabular-nums"
-        style={color ? { color } : { color: 'var(--text-primary)' }}
-      >
+    <div className="rounded-[7px] border border-[var(--border)] bg-[var(--surface)] px-3 py-2.5">
+      <p className="text-[11px] text-[var(--text-muted)]">{label}</p>
+      <p className={cn('mt-0.5 text-[16px] font-semibold tabular-nums', accent ? MONEY_TONE[accent] : 'text-[var(--text-primary)]')}>
         {fmtMoney(value)}
       </p>
     </div>
@@ -362,8 +417,8 @@ function ReturnsOwedCard() {
   return (
     <Card>
       <CardHeader className="border-b border-[var(--border)] pb-3">
-        <CardTitle className="flex items-center gap-2 text-[14px]">
-          <RotateCcw className="h-4 w-4" style={{ color: outstandingColor(owedPieces) }} />
+        <CardTitle className="flex items-center gap-2">
+          <ArrowCounterClockwise size={16} aria-hidden className="text-[var(--text-faint)]" />
           Returns owed to clients
         </CardTitle>
       </CardHeader>
@@ -374,40 +429,37 @@ function ReturnsOwedCard() {
             <Skeleton className="h-10 w-full" />
           </div>
         ) : records.length === 0 ? (
-          <div className="flex items-center gap-2 py-4 text-[13px]" style={{ color: 'var(--text-tertiary)' }}>
-            <CheckCircle2 className="h-4 w-4 text-emerald-600" />
-            No pending resends — all return items are settled.
-          </div>
+          <Notice tone="success">No pending resends — every return item is settled.</Notice>
         ) : (
           <div className="space-y-3">
-            <p className="text-[13px]" style={{ color: 'var(--text-tertiary)' }}>
-              <span className="text-[18px] font-bold" style={{ color: 'var(--text-primary)' }}>{owedPieces}</span>
-              {' '}piece{owedPieces !== 1 ? 's' : ''} still owed across {records.length} return{records.length !== 1 ? 's' : ''}
+            <p className="text-[12.5px] text-[var(--text-muted)]">
+              <span className="text-[17px] font-semibold tabular-nums text-[var(--text-primary)]">
+                {owedPieces}
+              </span>{' '}
+              piece{owedPieces !== 1 ? 's' : ''} still owed across {records.length} return
+              {records.length !== 1 ? 's' : ''}
             </p>
-            <div className="space-y-1.5">
+            <ul className="divide-y divide-[var(--border)]">
               {records.slice(0, 4).map((r) => (
-                <div key={r.return_id} className="flex items-center justify-between gap-2 text-[12px]">
-                  <span className="truncate font-medium" style={{ color: 'var(--text-primary)' }}>{r.client_name}</span>
-                  <span className="shrink-0 tabular-nums" style={{ color: 'var(--text-tertiary)' }}>
+                <li key={r.return_id} className="flex items-center justify-between gap-2 py-1.5 text-[12px]">
+                  <span className="truncate font-medium text-[var(--text-primary)]">{r.client_name}</span>
+                  <span className="shrink-0 tabular-nums text-[var(--text-muted)]">
                     {Array.isArray(r.items) ? r.items.reduce((t, i) => t + (i.returned_qty || 0), 0) : 0} pcs
                   </span>
-                </div>
+                </li>
               ))}
-            </div>
-            <div>
-              <Link to="/returns" className="inline-flex items-center gap-1 text-[12px] font-semibold text-[#D97706] hover:text-[#B45309] transition-colors">
-                Review returns <ArrowRight className="h-3 w-3" />
+            </ul>
+            <Button asChild variant="link" size="sm">
+              <Link to="/returns">
+                Review returns
+                <ArrowRight size={13} aria-hidden />
               </Link>
-            </div>
+            </Button>
           </div>
         )}
       </CardContent>
     </Card>
   )
-}
-
-function outstandingColor(n: number): string {
-  return n > 0 ? '#D97706' : 'var(--text-tertiary)'
 }
 
 function TodayMoney({ date }: { date: string }) {
@@ -420,9 +472,9 @@ function TodayMoney({ date }: { date: string }) {
   return (
     <Card>
       <CardHeader className="border-b border-[var(--border)] pb-3">
-        <CardTitle className="flex items-center gap-2 text-[14px]">
-          <Wallet className="h-4 w-4" style={{ color: 'var(--text-tertiary)' }} />
-          Today's Money
+        <CardTitle className="flex items-center gap-2">
+          <Wallet size={16} aria-hidden className="text-[var(--text-faint)]" />
+          Money for the day
         </CardTitle>
       </CardHeader>
       <CardContent className="pt-4">
@@ -439,17 +491,27 @@ function TodayMoney({ date }: { date: string }) {
               <MoneyTile label="Expenses today" value={expenses} accent="red" />
               <MoneyTile label="Net for day" value={net} accent={net < 0 ? 'amber' : undefined} />
             </div>
-            <div className="flex flex-wrap items-center gap-x-5 gap-y-1 text-[12px]" style={{ color: 'var(--text-tertiary)' }}>
-              <span>
-                Outstanding receivable: <span className="font-semibold tabular-nums" style={{ color: outstanding > 0 ? '#D97706' : 'var(--text-primary)' }}>{fmtMoney(outstanding)}</span>
-                {' '}across {money?.open_bills_count ?? 0} open bills
-              </span>
+            <dl className="flex flex-wrap items-center gap-x-5 gap-y-1 border-t border-[var(--border)] pt-2.5 text-[12px] text-[var(--text-muted)]">
+              <div className="flex items-baseline gap-1.5">
+                <dt>Outstanding receivable</dt>
+                <dd className={cn('font-semibold tabular-nums', outstanding > 0 ? 'text-[var(--warning-text)]' : 'text-[var(--text-primary)]')}>
+                  {fmtMoney(outstanding)}
+                </dd>
+                <span>across {money?.open_bills_count ?? 0} open bills</span>
+              </div>
               {money && (
-                <span className="hidden sm:inline">
-                  {money.bills_created} bill{money.bills_created !== 1 ? 's' : ''} created · {money.payments_count} payment{money.payments_count !== 1 ? 's' : ''} recorded
-                </span>
+                <div className="hidden items-baseline gap-1.5 sm:flex">
+                  <dt>
+                    {money.bills_created} bill{money.bills_created !== 1 ? 's' : ''} created
+                  </dt>
+                  <dd aria-hidden>·</dd>
+                  <dt className="sr-only">Payments recorded</dt>
+                  <dd>
+                    {money.payments_count} payment{money.payments_count !== 1 ? 's' : ''} recorded
+                  </dd>
+                </div>
               )}
-            </div>
+            </dl>
           </div>
         )}
       </CardContent>
@@ -556,48 +618,48 @@ function FastReturnCard() {
   return (
     <Card>
       <CardHeader className="border-b border-[var(--border)] pb-3">
-        <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-2 text-[14px]">
-            <RotateCcw className="h-4 w-4" style={{ color: 'var(--text-tertiary)' }} />
-            Returns
-          </CardTitle>
-          <Button size="sm" variant="outline" className="h-8" onClick={() => setOpen(o => !o)}>
-            {open ? 'Close' : 'Quick return'}
-            <Plus className="h-3.5 w-3.5" />
-          </Button>
-        </div>
+        <CardTitle className="flex items-center gap-2">
+          <ArrowCounterClockwise size={16} aria-hidden className="text-[var(--text-faint)]" />
+          Fast return entry
+        </CardTitle>
+        <Button size="sm" variant={open ? 'ghost' : 'secondary'} onClick={() => setOpen((o) => !o)}>
+          {open ? 'Close' : 'Quick return'}
+          {!open && <Plus size={14} aria-hidden />}
+        </Button>
       </CardHeader>
       {open && (
         <CardContent className="pt-4 space-y-4">
           {!gp ? (
             <div>
-              <input
+              <Input
                 value={search}
-                onChange={e => setSearch(e.target.value)}
+                onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search gate pass number or client…"
-                className="h-9 w-full rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 text-[13px]"
-                style={{ color: 'var(--text-primary)' }}
+                aria-label="Search gate passes"
               />
-              <div className="mt-2 max-h-52 overflow-y-auto divide-y divide-[var(--border)] rounded-lg border border-[var(--border)]">
+              <div className="mt-2 max-h-52 divide-y divide-[var(--border)] overflow-y-auto rounded-[7px] border border-[var(--border)]">
                 {matches.map(g => (
                   <button
                     key={g.id}
                     type="button"
                     onClick={() => setGpId(g.id!)}
-                    className="flex w-full items-center justify-between px-3 py-2.5 text-left hover:bg-[var(--surface-hover)] transition"
-                    style={{ color: 'var(--text-primary)' }}
+                    className="flex w-full cursor-pointer items-center justify-between px-3 py-2.5 text-left transition-colors duration-100 hover:bg-[var(--surface-hover)]"
                   >
-                    <span>
-                      <span className="font-mono text-[12px]" style={{ color: 'var(--text-tertiary)' }}>#{g.gate_pass_number}</span>
-                      <span className="ml-2 text-[13px] font-medium">{g.client_name}</span>
+                    <span className="min-w-0">
+                      <span className="font-[family-name:var(--font-mono)] text-[12px] text-[var(--text-muted)]">
+                        #{g.gate_pass_number}
+                      </span>
+                      <span className="ml-2 truncate text-[13px] font-medium text-[var(--text-primary)]">
+                        {g.client_name}
+                      </span>
                     </span>
-                    <span className="text-[11px] tabular-nums" style={{ color: 'var(--text-tertiary)' }}>
+                    <span className="shrink-0 text-[11px] tabular-nums text-[var(--text-muted)]">
                       {(g.items ?? []).reduce((s, i) => s + (i.received_qty || 0), 0)} pcs
                     </span>
                   </button>
                 ))}
                 {matches.length === 0 && (
-                  <p className="px-3 py-4 text-center text-[12px]" style={{ color: 'var(--text-tertiary)' }}>
+                  <p className="px-3 py-4 text-center text-[12px] text-[var(--text-muted)]">
                     No gate passes match
                   </p>
                 )}
@@ -605,21 +667,21 @@ function FastReturnCard() {
             </div>
           ) : (
             <>
-              <div className="flex items-center justify-between rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 py-2.5">
+              <div className="flex items-center justify-between gap-2 rounded-[7px] border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2.5">
                 <div className="min-w-0">
-                  <p className="truncate text-[13px] font-medium" style={{ color: 'var(--text-primary)' }}>
+                  <p className="truncate text-[13px] font-medium text-[var(--text-primary)]">
                     #{gp.gate_pass_number} · {gp.client_name}
                   </p>
-                  <p className="text-[11px] tabular-nums" style={{ color: 'var(--text-tertiary)' }}>
+                  <p className="text-[11px] tabular-nums text-[var(--text-muted)]">
                     {(gp.items ?? []).reduce((s, i) => s + (i.received_qty || 0), 0)} pcs received
                   </p>
                 </div>
-                <Button size="sm" variant="ghost" className="h-7 text-[12px]" onClick={() => setGpId('')}>
+                <Button size="sm" variant="ghost" onClick={() => setGpId('')}>
                   Clear
                 </Button>
               </div>
 
-              <div className="divide-y divide-[var(--border)] rounded-lg border border-[var(--border)]">
+              <div className="divide-y divide-[var(--border)] overflow-hidden rounded-[7px] border border-[var(--border)]">
                 {(gp.items ?? []).filter(i => (i.received_qty || 0) > 0).map(it => {
                   const key = gpItemKey(it.item_name, it.specification)
                   const line = lines[key] ?? { qty: 0, action: 'RECEIVE_BACK', reason: 'OTHER' }
@@ -627,62 +689,65 @@ function FastReturnCard() {
                   return (
                     <div key={key} className="grid gap-2 px-3 py-2.5 sm:grid-cols-[1fr_auto] sm:items-center">
                       <div className="min-w-0">
-                        <p className="truncate text-[13px] font-medium" style={{ color: 'var(--text-primary)' }}>
+                        <p className="truncate text-[13px] font-medium text-[var(--text-primary)]">
                           {it.item_name}
-                          {it.specification && <span className="ml-1.5 text-[11px]" style={{ color: 'var(--text-tertiary)' }}>{it.specification}</span>}
+                          {it.specification && (
+                            <span className="ml-1.5 text-[11px] text-[var(--text-muted)]">
+                              {it.specification}
+                            </span>
+                          )}
                         </p>
-                        <p className="text-[11px] tabular-nums" style={{ color: 'var(--text-tertiary)' }}>
-                          {max} received
-                        </p>
+                        <p className="text-[11px] tabular-nums text-[var(--text-muted)]">{max} received</p>
                       </div>
                       <div className="flex items-center gap-1.5">
-                        <input
+                        <Input
                           type="number"
                           min={0}
                           max={max}
                           value={line.qty}
-                          onChange={e => updateLine(key, { qty: Math.min(max, parseInt(e.target.value) || 0) })}
-                          className="h-8 w-16 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-2 text-right text-[13px] tabular-nums"
-                          style={{ color: 'var(--text-primary)' }}
+                          onChange={(e) =>
+                            updateLine(key, { qty: Math.min(max, parseInt(e.target.value) || 0) })
+                          }
+                          aria-label={`Quantity to return for ${it.item_name}`}
+                          className="h-8 w-16 text-right"
                         />
-                        <select
+                        <Select
                           value={line.action}
-                          onChange={e => updateLine(key, { action: e.target.value })}
-                          className="h-8 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-1.5 text-[12px]"
-                          style={{ color: 'var(--text-primary)' }}
+                          onChange={(e) => updateLine(key, { action: e.target.value })}
+                          aria-label={`Action for ${it.item_name}`}
+                          className="h-8 w-[7.5rem] text-[12px]"
                         >
-                          {RETURN_ACTIONS_FAST.map(a => (
-                            <option key={a.value} value={a.value}>{a.label}</option>
+                          {RETURN_ACTIONS_FAST.map((a) => (
+                            <option key={a.value} value={a.value}>
+                              {a.label}
+                            </option>
                           ))}
-                        </select>
-                        <select
+                        </Select>
+                        <Select
                           value={line.reason}
-                          onChange={e => updateLine(key, { reason: e.target.value })}
-                          className="hidden h-8 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-1.5 text-[12px] sm:block"
-                          style={{ color: 'var(--text-primary)' }}
+                          onChange={(e) => updateLine(key, { reason: e.target.value })}
+                          aria-label={`Reason for ${it.item_name}`}
                           title="Reason"
+                          className="hidden h-8 w-[7.5rem] text-[12px] sm:block"
                         >
-                          {RETURN_REASONS_FAST.map(r => (
-                            <option key={r.value} value={r.value}>{r.label}</option>
+                          {RETURN_REASONS_FAST.map((r) => (
+                            <option key={r.value} value={r.value}>
+                              {r.label}
+                            </option>
                           ))}
-                        </select>
+                        </Select>
                       </div>
                     </div>
                   )
                 })}
               </div>
 
-              <div className="flex items-center justify-between">
-                <p className="text-[12px] tabular-nums" style={{ color: 'var(--text-tertiary)' }}>
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <p className="text-[12px] tabular-nums text-[var(--text-muted)]">
                   {totalQty} piece{totalQty !== 1 ? 's' : ''} to return
                 </p>
-                <Button
-                  className="h-9 text-white"
-                  style={{ backgroundColor: '#D97706' }}
-                  disabled={create.isPending || totalQty === 0}
-                  onClick={submit}
-                >
-                  <RotateCcw className="h-3.5 w-3.5" />
+                <Button variant="warning" disabled={create.isPending || totalQty === 0} onClick={submit}>
+                  <ArrowCounterClockwise size={15} aria-hidden />
                   {create.isPending ? 'Recording…' : 'Record return'}
                 </Button>
               </div>
@@ -703,9 +768,9 @@ function DailyTimeline({ date }: { date: string }) {
   return (
     <Card>
       <CardHeader className="border-b border-[var(--border)] pb-3">
-        <CardTitle className="flex items-center gap-2 text-[14px]">
-          <Activity className="h-4 w-4" style={{ color: 'var(--text-tertiary)' }} />
-          Activity Timeline
+        <CardTitle className="flex items-center gap-2">
+          <Pulse size={16} aria-hidden className="text-[var(--text-faint)]" />
+          Activity timeline
         </CardTitle>
       </CardHeader>
       <CardContent className="pt-4">
@@ -715,43 +780,48 @@ function DailyTimeline({ date }: { date: string }) {
           </div>
         ) : events.length === 0 ? (
           <EmptyState
-            icon={<Clock className="h-6 w-6 text-[#9CA3AF]" />}
+            bare
+            icon={<Clock size={18} />}
             title="No activity recorded"
             description="Movements for this day will appear here as they are entered."
           />
         ) : (
-          <div className="relative space-y-0.5">
+          <ol className="relative">
+            {/* A single hairline spine ties the entries together; each event is
+                a dot on it, so the column reads as one day rather than a stack
+                of unrelated rows. */}
+            <span aria-hidden className="absolute top-2 bottom-2 left-[3.25rem] w-px bg-[var(--border)]" />
             {events.map((e, i) => (
-              <motion.div
-                key={e.id || i}
-                initial={{ opacity: 0, x: -4 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: Math.min(i * 0.02, 0.3) }}
-                className="flex items-center gap-3 py-2"
-              >
-                <span className="w-12 shrink-0 text-right text-[11px] font-medium tabular-nums" style={{ color: 'var(--text-tertiary)' }}>
+              <li key={e.id || i} className="relative flex items-start gap-3 py-1.5">
+                <span className="w-11 shrink-0 pt-0.5 text-right text-[11px] font-medium tabular-nums text-[var(--text-faint)]">
                   {fmtTime(e.occurred_at)}
                 </span>
-                <span className="h-2 w-2 shrink-0 rounded-full bg-[#DC2626]" />
+                <span
+                  aria-hidden
+                  className="relative z-1 mt-1.5 size-1.5 shrink-0 rounded-full bg-[var(--brand)] ring-3 ring-[var(--surface)]"
+                />
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-[13px]" style={{ color: 'var(--text-primary)' }}>
+                  <p className="truncate text-[13px] text-[var(--text-primary)]">
                     <span className="font-medium">{eventLabel(e.event_type)}</span>
                     {e.item_deltas && e.item_deltas.length > 0 && (
-                      <span style={{ color: 'var(--text-tertiary)' }}>
+                      <span className="text-[var(--text-muted)]">
                         {' · '}
-                        {e.item_deltas.map(d => `${d.item_name} ${d.before ?? '—'}→${d.after ?? '—'}`).join(', ')}
+                        {e.item_deltas
+                          .map((d) => `${d.item_name} ${d.before ?? '—'}→${d.after ?? '—'}`)
+                          .join(', ')}
                       </span>
                     )}
                   </p>
                   {(e.user_name || e.reason) && (
-                    <p className="truncate text-[11px]" style={{ color: 'var(--text-tertiary)' }}>
-                      {e.user_name || 'system'}{e.reason ? ` · ${e.reason}` : ''}
+                    <p className="truncate text-[11px] text-[var(--text-faint)]">
+                      {e.user_name || 'system'}
+                      {e.reason ? ` · ${e.reason}` : ''}
                     </p>
                   )}
                 </div>
-              </motion.div>
+              </li>
             ))}
-          </div>
+          </ol>
         )}
       </CardContent>
     </Card>
@@ -859,18 +929,15 @@ function CloseDayCard({ date }: { date: string }) {
   return (
     <Card>
       <CardHeader className="border-b border-[var(--border)] pb-3">
-        <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-2 text-[14px]">
-            <Flag className="h-4 w-4" style={{ color: 'var(--text-tertiary)' }} />
-            Close Day
-          </CardTitle>
-          {closed && (
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 text-[12px] font-bold text-emerald-700">
-              <CheckCircle2 className="h-3.5 w-3.5" />
-              Closed{closedAt ? ` · ${fmtTime(closedAt)}` : ''}
-            </span>
-          )}
-        </div>
+        <CardTitle className="flex items-center gap-2">
+          <Flag size={16} aria-hidden className="text-[var(--text-faint)]" />
+          Close day
+        </CardTitle>
+        {closed && (
+          <Badge tone="success" size="xs" dot>
+            Closed{closedAt ? ` · ${fmtTime(closedAt)}` : ''}
+          </Badge>
+        )}
       </CardHeader>
       <CardContent className="pt-4 space-y-4">
         {loadingClosed ? (
@@ -879,78 +946,75 @@ function CloseDayCard({ date }: { date: string }) {
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-2 gap-x-3 gap-y-2 sm:grid-cols-3 lg:grid-cols-5">
-              {summaryRows.map(row => (
-                <div key={row.key} className="rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 py-2.5">
-                  <p className="text-[11px]" style={{ color: 'var(--text-tertiary)' }}>{row.label}</p>
-                  <p
-                    className="mt-0.5 text-[18px] font-bold tabular-nums"
-                    style={row.flag === 'warn' && row.value > 0 ? { color: '#D97706' } : { color: 'var(--text-primary)' }}
+            <dl className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
+              {summaryRows.map((row) => (
+                <div key={row.key} className="rounded-[7px] border border-[var(--border)] bg-[var(--surface)] px-3 py-2.5">
+                  <dt className="text-[11px] text-[var(--text-muted)]">{row.label}</dt>
+                  <dd
+                    className={cn(
+                      'mt-0.5 text-[16px] font-semibold tabular-nums',
+                      row.flag === 'warn' && row.value > 0
+                        ? 'text-[var(--warning-text)]'
+                        : 'text-[var(--text-primary)]',
+                    )}
                   >
                     {row.value}
-                  </p>
+                  </dd>
                 </div>
               ))}
-            </div>
+            </dl>
 
             <div>
-              <p className="mb-2 text-[11px] font-semibold uppercase tracking-wide" style={{ color: 'var(--text-tertiary)' }}>
-                Money for the day
-              </p>
-              <div className="grid grid-cols-2 gap-x-3 gap-y-2 sm:grid-cols-4">
-                {moneyTiles.map(tile => (
+              <p className="section-label mb-2">Money for the day</p>
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                {moneyTiles.map((tile) => (
                   <MoneyTile key={tile.key} label={tile.label} value={tile.value} accent={tile.accent} />
                 ))}
               </div>
             </div>
 
             {openFlags > 0 && (
-              <div className="flex items-center gap-2.5 rounded-lg border border-amber-200 bg-amber-50 px-3.5 py-2.5 text-[12px] text-amber-800">
-                <AlertTriangle className="h-4 w-4 shrink-0" />
-                <span>
-                  {totals.pending_adjustments} pending adjustment{totals.pending_adjustments !== 1 ? 's' : ''}
-                  {totals.pending_adjustments > 0 && totals.reconciliation_issues > 0 ? ' and ' : ''}
-                  {totals.reconciliation_issues > 0 ? `${totals.reconciliation_issues} reconciliation issue${totals.reconciliation_issues !== 1 ? 's' : ''}` : ''}
-                  {' '}still open. Resolve them in Needs Attention before closing.
-                </span>
-              </div>
+              <Notice tone="warning">
+                {totals.pending_adjustments} pending adjustment
+                {totals.pending_adjustments !== 1 ? 's' : ''}
+                {totals.pending_adjustments > 0 && totals.reconciliation_issues > 0 ? ' and ' : ''}
+                {totals.reconciliation_issues > 0
+                  ? `${totals.reconciliation_issues} reconciliation issue${totals.reconciliation_issues !== 1 ? 's' : ''}`
+                  : ''}{' '}
+                still open. Resolve them in Needs attention before closing.
+              </Notice>
             )}
 
             {closed && (
-              <div className="flex items-start gap-2.5 rounded-lg border border-emerald-200 bg-emerald-50 px-3.5 py-2.5 text-[12px] text-emerald-800">
-                <CheckCircle2 className="h-4 w-4 shrink-0" />
-                <span>
-                  Day already closed. Re-close to record a fresh snapshot of the current numbers.
-                  {closed.reason ? ` Note: “${closed.reason}”` : ''}
-                </span>
-              </div>
+              <Notice tone="success" title="Day already closed">
+                Re-close to record a fresh snapshot of the current numbers.
+                {closed.reason ? ` Note: “${closed.reason}”` : ''}
+              </Notice>
+            )}
+
+            {isFuture && (
+              <Notice tone="neutral">
+                This is a future day — pick today or an earlier day to close.
+              </Notice>
             )}
 
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-              <input
+              <Input
                 value={note}
-                onChange={e => setNote(e.target.value)}
-                placeholder="Optional note for this day's close (e.g. late deliveries due, staff note)"
-                className="h-9 flex-1 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 text-[13px]"
-                style={{ color: 'var(--text-primary)' }}
+                onChange={(e) => setNote(e.target.value)}
+                placeholder="Optional note for this day's close (e.g. late deliveries due)"
+                aria-label="Closing note"
+                className="flex-1"
               />
               <Button
-                className="h-9 bg-[#DC2626] hover:bg-[#B91C1C] text-white"
                 disabled={close.isPending || isFuture}
                 title={isFuture ? 'Can close past or today’s day — not a future day' : undefined}
                 onClick={() => setConfirm(true)}
               >
-                <Flag className="h-3.5 w-3.5" />
+                <Flag size={15} aria-hidden />
                 {closed ? 'Re-close day' : 'Close day'}
               </Button>
             </div>
-
-            {isFuture && (
-              <div className="flex items-center gap-2.5 rounded-lg border border-gray-200 bg-gray-50 px-3.5 py-2.5 text-[12px]" style={{ color: 'var(--text-tertiary)' }}>
-                <CalendarCheck className="h-4 w-4 shrink-0" />
-                This is a future day — pick today or an earlier day to close.
-              </div>
-            )}
           </>
         )}
       </CardContent>
@@ -1016,79 +1080,117 @@ export default function TodayPage() {
 
   return (
     <div className="space-y-5 pb-10">
-      {/* Header */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <div className="mb-1.5 inline-flex items-center gap-2">
-            <span className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
-            <p className="text-[11px] font-semibold uppercase tracking-wide sm:text-[12px]" style={{ color: 'var(--text-tertiary)' }}>
-              Love Laundry · Daily Operations
-            </p>
-          </div>
-          <h1 className="text-dashboard-title">Today</h1>
-          <p className="text-page-subtitle">{fmtDay(date)}</p>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="icon" onClick={() => setDate(d => shiftISO(d, -1))} aria-label="Previous day">
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-          <input
-            type="date"
-            value={date}
-            onChange={e => e.target.value && setDate(e.target.value)}
-            className="h-9 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 text-[13px]"
-            style={{ color: 'var(--text-primary)' }}
-          />
-          <Button variant="outline" size="icon" onClick={() => setDate(d => shiftISO(d, 1))} aria-label="Next day">
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-          {!isToday && (
-            <Button variant="secondary" size="sm" onClick={() => setDate(localISO())}>
-              Today
-            </Button>
-          )}
-        </div>
-      </div>
+      <PageHeader
+        title={isToday ? 'Today' : fmtDay(date)}
+        subtitle={
+          isToday
+            ? `${fmtDay(date)} · Love Laundry daily operations`
+            : 'Reviewing a past day'
+        }
+        actions={<DateStepper date={date} onChange={setDate} isToday={isToday} />}
+      />
 
       <QuickActions />
 
-      {/* KPIs */}
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-        <StatCard label="Gate Passes In" value={kpis.gatePasses} icon={<ClipboardList size={20} />} color="red" to="/gate-passes" className="p-4" />
-        <StatCard label="Items Received" value={kpis.itemsReceived} icon={<Package size={20} />} color="purple" to="/gate-passes" className="p-4" />
-        <StatCard label="Deliveries Out" value={kpis.deliveries} icon={<Truck size={20} />} color="green" to="/deliveries" className="p-4" />
-        <StatCard label="Items Delivered" value={kpis.itemsDelivered} icon={<Package size={20} />} color="blue" to="/deliveries" className="p-4" />
-        <StatCard label="Pending Adjustments" value={kpis.pendingAdjustments} icon={<AlertTriangle size={20} />} color="amber" className="p-4" />
-        <StatCard label="Reconciliation" value={kpis.reconIssues} icon={<ShieldAlert size={20} />} color={kpis.reconIssues > 0 ? 'red' : 'gray'} className="p-4" />
-      </div>
+      <section aria-label="Volume for the day" className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
+        <StatCard label="Gate passes in" value={kpis.gatePasses} to="/gate-passes" />
+        <StatCard label="Items received" value={kpis.itemsReceived} to="/gate-passes" />
+        <StatCard label="Deliveries out" value={kpis.deliveries} to="/deliveries" />
+        <StatCard label="Items delivered" value={kpis.itemsDelivered} to="/deliveries" />
+        <StatCard
+          label="Pending adjustments"
+          value={kpis.pendingAdjustments}
+          tone={kpis.pendingAdjustments > 0 ? 'warning' : 'neutral'}
+        />
+        <StatCard
+          label="Reconciliation issues"
+          value={kpis.reconIssues}
+          tone={kpis.reconIssues > 0 ? 'danger' : 'neutral'}
+        />
+      </section>
 
-      {/* Money */}
       <TodayMoney date={date} />
 
-      {/* Returns owed */}
       <ReturnsOwedCard />
 
-      {/* Attention + Pending */}
       <div className="grid gap-4 lg:grid-cols-2">
         <AttentionQueue />
         <PendingDeliveries />
       </div>
 
-      {/* Fast return entry */}
       <FastReturnCard />
 
       <DailyTimeline date={date} />
 
       <CloseDayCard date={date} />
 
-      <div className="flex items-center justify-end">
-        <Button asChild variant="ghost" size="sm">
-          <Link to="/dashboard">
-            <Plus className="h-3.5 w-3.5" /> Open full dashboard
-          </Link>
+      <div className="flex justify-end">
+        <Button asChild variant="secondary" size="sm">
+          <Link to="/dashboard">Open full dashboard</Link>
         </Button>
       </div>
+    </div>
+  )
+}
+
+/**
+ * DateStepper — previous / date / next, plus a way back to today.
+ *
+ * `max` is pinned to today because the daily-operations figures are a running
+ * ledger: there is no "future day" of movements to look at, and allowing one
+ * invites closing a day that has not happened. A disabled next button says
+ * that far better than a silent no-op.
+ */
+function DateStepper({
+  date,
+  onChange,
+  isToday,
+}: {
+  date: string
+  onChange: (d: string) => void
+  isToday: boolean
+}) {
+  const atToday = date >= localISO()
+
+  return (
+    <div className="flex flex-wrap items-center gap-1.5">
+      <Button
+        variant="secondary"
+        size="icon"
+        onClick={() => onChange(shiftISO(date, -1))}
+        aria-label="Previous day"
+      >
+        <CaretLeft size={15} aria-hidden />
+      </Button>
+
+      <label className="sr-only" htmlFor="ops-day">
+        Operating day
+      </label>
+      <Input
+        id="ops-day"
+        type="date"
+        value={date}
+        max={localISO()}
+        onChange={(e) => e.target.value && onChange(e.target.value)}
+        className="h-8 w-[9.5rem] text-[12.5px]"
+      />
+
+      <Button
+        variant="secondary"
+        size="icon"
+        onClick={() => onChange(shiftISO(date, 1))}
+        disabled={atToday}
+        aria-label="Next day"
+        title={atToday ? 'Already at today' : undefined}
+      >
+        <CaretRight size={15} aria-hidden />
+      </Button>
+
+      {!isToday && (
+        <Button variant="ghost" size="sm" onClick={() => onChange(localISO())}>
+          Today
+        </Button>
+      )}
     </div>
   )
 }

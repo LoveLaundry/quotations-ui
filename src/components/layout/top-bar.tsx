@@ -1,31 +1,45 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useId } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Search } from 'lucide-react'
-import { Bell, List, SignOut, User, UserCircle, PaperPlaneTilt, FileText } from '@phosphor-icons/react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { MagnifyingGlass, Bell, List, SignOut, User, UserCircle, PaperPlaneTilt, FileText } from '@phosphor-icons/react'
 import { cn } from '../../lib/utils'
 import { useAuth } from '../../context/AuthContext'
 import { useNotifications } from '../../features/quotations/hooks/useNotifications'
 import { NotificationDetailDialog } from '../../features/quotations/components/notification-detail-dialog'
 import { HotelSelector } from './hotel-selector'
+import { DropdownMenu, type MenuGroup } from '../ui/dropdown-menu'
 import type { Quotation } from '../../types/quotation'
 import type { GatePassPendingEntry, NotificationType } from '../../types/notification'
 
 interface TopBarProps {
   title?: string
   sidebarCollapsed: boolean
-  showSearch?: boolean
   onMobileMenuToggle: () => void
   onOpenSearch?: () => void
 }
 
-export function TopBar({ title, sidebarCollapsed, onMobileMenuToggle, onOpenSearch }: TopBarProps) {
+/**
+ * TopBar — page identity plus the four things reachable from anywhere.
+ *
+ * Opaque, not glass: a translucent bar over scrolling data makes text hard to
+ * read and looks like a consumer app. Height is 52px so it costs less vertical
+ * space than the 64px bar it replaces. Below `sm` the search control collapses
+ * to an icon and the user menu to an avatar, so nothing overlaps at 320px.
+ */
+export function TopBar({
+  title,
+  sidebarCollapsed,
+  onMobileMenuToggle,
+  onOpenSearch,
+}: TopBarProps) {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
-  const [showMenu, setShowMenu] = useState(false)
   const [showNotifications, setShowNotifications] = useState(false)
-  const [selectedNotification, setSelectedNotification] = useState<{ item: Quotation | GatePassPendingEntry; type: NotificationType } | null>(null)
+  const [
+    selectedNotification,
+    setSelectedNotification,
+  ] = useState<{ item: Quotation | GatePassPendingEntry; type: NotificationType } | null>(null)
   const notificationsRef = useRef<HTMLDivElement>(null)
+  const notifId = useId()
 
   const { totalCount, notificationItems, isLoading } = useNotifications()
 
@@ -34,286 +48,285 @@ export function TopBar({ title, sidebarCollapsed, onMobileMenuToggle, onOpenSear
     navigate('/login', { replace: true })
   }
 
-  const handleNotificationItemClick = (item: Quotation | GatePassPendingEntry, type: NotificationType) => {
-    setSelectedNotification({ item, type })
-  }
-
-  const handleNotificationGroupClick = (route: string) => {
-    setShowNotifications(false)
-    navigate(route)
-  }
-
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (notificationsRef.current && !notificationsRef.current.contains(event.target as Node)) {
+    if (!showNotifications) return
+    const onDown = (e: MouseEvent) => {
+      if (notificationsRef.current && !notificationsRef.current.contains(e.target as Node)) {
         setShowNotifications(false)
       }
     }
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [])
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setShowNotifications(false)
+    }
+    document.addEventListener('mousedown', onDown)
+    document.addEventListener('keydown', onKey)
+    return () => {
+      document.removeEventListener('mousedown', onDown)
+      document.removeEventListener('keydown', onKey)
+    }
+  }, [showNotifications])
 
-  const initials = user?.user_name
-    ? user.user_name.slice(0, 2).toUpperCase()
-    : 'U'
+  const initials = user?.user_name ? user.user_name.slice(0, 2).toUpperCase() : 'U'
+  const roleLabel = user?.role_id ? String(user.role_id).toLowerCase() : 'staff'
+
+  const iconBtn =
+    'inline-flex size-8 items-center justify-center rounded-[6px] border border-transparent text-[var(--text-muted)] transition-colors duration-100 hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]'
+
+  const userMenu: MenuGroup[] = [
+    {
+      items: [
+        {
+          id: 'profile',
+          label: 'My profile',
+          icon: <UserCircle size={16} />,
+          onSelect: () => navigate('/profile'),
+        },
+        { id: 'settings', label: 'Settings', icon: <User size={16} />, onSelect: () => navigate('/settings') },
+        {
+          id: 'logout',
+          label: 'Sign out',
+          icon: <SignOut size={16} />,
+          destructive: true,
+          onSelect: handleLogout,
+        },
+      ],
+    },
+  ]
 
   return (
     <>
       <header
         className={cn(
-        'fixed top-0 right-0 z-30 h-16',
-        'flex items-center justify-between px-6',
-        'bg-white/80 backdrop-blur-md border-b border-[var(--border)]',
-        'transition-[left] duration-200 select-none',
-        'shadow-sm',
-        sidebarCollapsed ? 'left-0 lg:left-[60px]' : 'left-0 lg:left-[232px]',
-      )}
-    >
-      <div className="flex items-center gap-4 min-w-0 flex-1">
-        <button
-          type="button"
-          onClick={onMobileMenuToggle}
-          className="flex h-9 w-9 items-center justify-center rounded-xl text-[var(--text-muted)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] transition-all duration-200 lg:hidden"
-          aria-label="Menu"
-        >
-          <List size={20} />
-        </button>
-
-        {title && (
-          <motion.p
-            key={title}
-            initial={{ opacity: 0, y: -4 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.2, ease: 'easeOut' }}
-            className="text-[15px] font-semibold text-[var(--text-primary)] tracking-tight truncate"
-          >
-            {title}
-          </motion.p>
+          'app-topbar fixed top-0 right-0 z-30 flex h-13 items-center gap-2 border-b border-[var(--border)] bg-[var(--surface)]',
+          'px-3 transition-[left] duration-150 ease-out sm:px-4',
+          sidebarCollapsed ? 'left-0 lg:left-[60px]' : 'left-0 lg:left-[236px]',
         )}
-      </div>
-
-      <div className="flex items-center gap-3 shrink-0">
-        {/* Hotel scope */}
-        <HotelSelector />
-
-        {/* Search trigger */}
-        <button
-          type="button"
-          onClick={() => onOpenSearch?.()}
-          className="flex h-9 items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3 text-[var(--text-muted)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] hover:border-[var(--border-2)] transition-all duration-200 cursor-pointer shadow-sm"
-          aria-label="Search"
-          title="Search (Ctrl+K)"
-        >
-          <Search size={16} />
-          <span className="hidden sm:inline text-[12px] font-medium">Search</span>
-          <kbd className="hidden lg:inline-flex items-center rounded-md border border-[var(--border)] bg-white px-1.5 py-0.5 text-[10px] font-semibold text-[var(--text-muted)]">
-            Ctrl K
-          </kbd>
-        </button>
-
-        {/* Notifications */}
-        <div className="relative" ref={notificationsRef}>
+      >
+        {/* Left: menu + page identity */}
+        <div className="flex min-w-0 flex-1 items-center gap-2">
           <button
             type="button"
-            onClick={() => setShowNotifications(v => !v)}
-            className="relative flex h-9 w-9 items-center justify-center rounded-xl border border-[var(--border)] bg-[var(--surface)] text-[var(--text-muted)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] hover:border-[var(--border-2)] transition-all duration-200 cursor-pointer shadow-sm"
-            aria-label={isLoading ? 'Loading notifications...' : `Notifications${totalCount > 0 ? ` (${totalCount})` : ''}`}
-            title={isLoading ? 'Loading notifications...' : totalCount > 0 ? `${totalCount} notification${totalCount !== 1 ? 's' : ''}` : 'No new notifications'}
+            onClick={onMobileMenuToggle}
+            className={cn(iconBtn, '-ml-1 lg:hidden')}
+            aria-label="Open navigation"
           >
-            <Bell size={18} />
-            {totalCount > 0 && !isLoading && (
-              <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-[#DC2626] text-white text-[10px] font-bold border-2 border-white">
-                {totalCount > 99 ? '99+' : totalCount}
-              </span>
-            )}
-            {isLoading && (
-              <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-[#16A34A] text-white text-[10px] font-bold border-2 border-white animate-pulse">
-                …
-              </span>
-            )}
+            <List size={19} aria-hidden />
           </button>
 
-          <AnimatePresence>
-            {showNotifications && (
-              <>
-                <div className="fixed inset-0 z-40" onClick={() => setShowNotifications(false)} />
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.95, y: -8 }}
-                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.95, y: -8 }}
-                  transition={{ duration: 0.15 }}
-                  className="absolute right-0 top-full mt-2 z-50 w-96 rounded-xl border bg-[var(--surface)] shadow-[0_16px_40px_-4px_rgba(16,24,40,0.15)] overflow-hidden"
-                >
-                  {/* Header */}
-                  <div className="px-4 py-3 border-b border-[var(--border)] flex items-center justify-between">
-                    <h3 className="text-[13px] font-semibold text-[var(--text-primary)]">
-                      Notifications {totalCount > 0 && (
-                        <span className="ml-2 inline-flex items-center justify-center w-5 h-5 rounded-full bg-[#DC2626] text-white text-[10px] font-bold">
-                          {totalCount}
-                        </span>
-                      )}
-                    </h3>
-                    {totalCount > 0 && (
-                      <button
-                        onClick={() => { setShowNotifications(false); navigate('/notifications'); }}
-                        className="text-[11px] font-medium text-[#DC2626] hover:text-[#B91C1C] hover:underline"
-                      >
-                        View all
-                      </button>
-                    )}
-                  </div>
+          {title && (
+            <h1 className="min-w-0 truncate text-[14px] font-semibold tracking-[-0.012em] text-[var(--text-primary)]">
+              {title}
+            </h1>
+          )}
+        </div>
 
-                  {/* Content */}
-                  <div className="max-h-[400px] overflow-y-auto">
-                    {isLoading ? (
-                      <div className="px-4 py-8 text-center text-[var(--text-faint)]">
-                        <div className="animate-spin inline-block w-5 h-5 border-2 border-[#16A34A] border-t-transparent rounded-full mb-2" />
-                        <p className="text-[13px]">Loading notifications...</p>
-                      </div>
-                    ) : notificationItems.length === 0 ? (
-                      <div className="px-4 py-8 text-center text-[var(--text-faint)]">
-                        <Bell size={32} className="mx-auto mb-2 opacity-50" />
-                        <p className="text-[13px] font-medium text-[var(--text-primary)]">No notifications</p>
-                        <p className="text-[11px] text-[var(--text-faint)] mt-1">You're all caught up!</p>
-                      </div>
-                    ) : (
-                      <div className="divide-y divide-[var(--border)] p-2">
-                        {notificationItems.map((notification) => (
-                          <div
-                            key={notification.id}
-                            className="px-3 py-3 hover:bg-[var(--surface-hover)] transition-colors cursor-pointer"
-                            onClick={() => handleNotificationGroupClick('/notifications')}
-                          >
-                            <div className="flex items-start gap-3">
-                              <div className={`flex h-8 w-8 items-center justify-center rounded-lg shrink-0 ${
-                                 notification.type === 'gatepass_pending'
-                                  ? 'bg-[#FEF2F2] text-[#DC2626]' 
-                                  : 'bg-[#F0FDF4] text-[#16A34A]'
-                              }`}>
-                                 {notification.type === 'gatepass_pending' ? (
-                                   <PaperPlaneTilt size={16} />
-                                 ) : (
-                                   <FileText size={16} />
-                                 )}
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <p className="text-[13px] font-semibold text-[var(--text-primary)] truncate">
-                                  {notification.title}
-                                </p>
-                                <p className="text-[11px] text-[var(--text-muted)] mt-0.5 truncate">
-                                  {notification.message}
-                                </p>
-                                 {((notification.type === 'gatepass_pending' ? notification.gatePassItems : notification.quotations) ?? []).length > 0 && (
-                                   <div className="mt-2 flex flex-wrap gap-1">
-                                     {((notification.type === 'gatepass_pending' ? notification.gatePassItems : notification.quotations) ?? []).slice(0, 3).map((item: Quotation | GatePassPendingEntry, idx: number) => (
-                                       <button
-                                         key={idx}
-                                         onClick={(e) => {
-                                           e.stopPropagation()
-                                           handleNotificationItemClick(item, notification.type)
-                                         }}
-                                         className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-[var(--surface-2)] text-[10px] font-medium text-[var(--text-secondary)] border border-[var(--border)] hover:bg-[var(--surface-hover)] transition-colors cursor-pointer"
+        {/* Right: scope, search, notifications, account */}
+        <div className="flex shrink-0 items-center gap-1.5">
+          <HotelSelector />
+
+          <button
+            type="button"
+            onClick={() => onOpenSearch?.()}
+            aria-label="Search (Ctrl+K)"
+            title="Search (Ctrl+K)"
+            className={cn(
+              iconBtn,
+              'sm:h-8 sm:w-auto sm:gap-1.5 sm:border-[var(--border-2)] sm:px-2.5',
+            )}
+          >
+            <MagnifyingGlass size={16} aria-hidden />
+            <span className="hidden text-[12.5px] font-medium sm:inline">Search</span>
+            <kbd className="ml-1 hidden rounded-[3px] border border-[var(--border)] bg-[var(--surface-2)] px-1 py-px text-[10px] font-semibold text-[var(--text-faint)] lg:inline">
+              Ctrl K
+            </kbd>
+          </button>
+
+          {/* Notifications */}
+          <div className="relative" ref={notificationsRef}>
+            <button
+              type="button"
+              onClick={() => setShowNotifications((v) => !v)}
+              className={cn(iconBtn, 'relative')}
+              aria-label={
+                isLoading
+                  ? 'Loading notifications'
+                  : totalCount > 0
+                    ? `Notifications, ${totalCount} new`
+                    : 'Notifications, none new'
+              }
+              aria-expanded={showNotifications}
+              aria-controls={notifId}
+            >
+              <Bell size={17} aria-hidden />
+              {totalCount > 0 && !isLoading && (
+                <span
+                  aria-hidden
+                  className="absolute -top-0.5 -right-0.5 inline-flex min-w-4 items-center justify-center rounded-full border-2 border-[var(--surface)] bg-[var(--brand)] px-0.5 text-[9.5px] leading-[14px] font-bold text-white tabular-nums"
+                >
+                  {totalCount > 99 ? '99+' : totalCount}
+                </span>
+              )}
+            </button>
+
+            {showNotifications && (
+              <div
+                id={notifId}
+                className="absolute right-0 z-50 mt-1.5 w-[min(360px,calc(100vw-24px))] overflow-hidden rounded-[10px] border border-[var(--border-2)] bg-[var(--surface)] shadow-[var(--shadow-pop)]"
+              >
+                <div className="flex min-h-11 items-center justify-between gap-2 border-b border-[var(--border)] px-3.5 py-2">
+                  <h2 className="text-[13px] font-semibold text-[var(--text-primary)]">
+                    Notifications
+                  </h2>
+                  {totalCount > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowNotifications(false)
+                        navigate('/notifications')
+                      }}
+                      className="text-[12px] font-medium text-[var(--brand-text)] hover:underline"
+                    >
+                      View all
+                    </button>
+                  )}
+                </div>
+
+                <div className="max-h-[min(400px,60dvh)] overflow-y-auto">
+                  {isLoading ? (
+                    <p className="px-4 py-8 text-center text-[12.5px] text-[var(--text-muted)]">
+                      Loading…
+                    </p>
+                  ) : notificationItems.length === 0 ? (
+                    <div className="px-4 py-8 text-center">
+                      <p className="text-[13px] font-medium text-[var(--text-primary)]">
+                        No notifications
+                      </p>
+                      <p className="mt-0.5 text-[12px] text-[var(--text-muted)]">
+                        Nothing needs your attention.
+                      </p>
+                    </div>
+                  ) : (
+                    <ul className="divide-y divide-[var(--border)]">
+                      {notificationItems.map((notification) => {
+                        const entries = (
+                          (notification.type === 'gatepass_pending'
+                            ? notification.gatePassItems
+                            : notification.quotations) ?? []
+                        ) as Array<Quotation | GatePassPendingEntry>
+                        return (
+                          <li key={notification.id}>
+                            <div
+                              role="button"
+                              tabIndex={0}
+                              onClick={() => {
+                                setShowNotifications(false)
+                                navigate('/notifications')
+                              }}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter' || e.key === ' ') {
+                                  e.preventDefault()
+                                  setShowNotifications(false)
+                                  navigate('/notifications')
+                                }
+                              }}
+                              className="cursor-pointer px-3.5 py-2.5 transition-colors hover:bg-[var(--surface-hover)]"
+                            >
+                              <div className="flex items-start gap-2.5">
+                                <span
+                                  aria-hidden
+                                  className={cn(
+                                    'mt-px flex size-7 shrink-0 items-center justify-center rounded-[6px] border',
+                                    notification.type === 'gatepass_pending'
+                                      ? 'border-[var(--brand-border)] bg-[var(--brand-soft)] text-[var(--brand-text)]'
+                                      : 'border-[var(--info-border)] bg-[var(--info-soft)] text-[var(--info-text)]',
+                                  )}
+                                >
+                                  {notification.type === 'gatepass_pending' ? (
+                                    <PaperPlaneTilt size={15} />
+                                  ) : (
+                                    <FileText size={15} />
+                                  )}
+                                </span>
+                                <div className="min-w-0 flex-1">
+                                  <p className="truncate text-[12.5px] font-semibold text-[var(--text-primary)]">
+                                    {notification.title}
+                                  </p>
+                                  <p className="mt-0.5 line-clamp-2 text-[11.5px] text-[var(--text-muted)]">
+                                    {notification.message}
+                                  </p>
+                                  {entries.length > 0 && (
+                                    <div className="mt-1.5 flex flex-wrap gap-1">
+                                      {entries.slice(0, 3).map((item, idx) => (
+                                        <button
+                                          key={idx}
+                                          type="button"
+                                          onClick={(e) => {
+                                            e.stopPropagation()
+                                            setSelectedNotification({ item, type: notification.type })
+                                          }}
+                                          className="max-w-[9rem] truncate rounded-[4px] border border-[var(--border)] bg-[var(--surface-2)] px-1.5 py-0.5 text-[10.5px] font-medium text-[var(--text-tertiary)] transition-colors hover:bg-[var(--surface-hover)]"
                                         >
                                           {item.client_name}
                                         </button>
                                       ))}
-                                      {((notification.type === 'gatepass_pending' ? notification.gatePassItems : notification.quotations) ?? []).length > 3 && (
-                                        <button
-                             onClick={() => handleNotificationGroupClick('/notifications')}
-                                         className="inline-flex items-center px-2 py-0.5 rounded bg-[var(--surface-2)] text-[10px] font-medium text-[var(--text-muted)] border border-[var(--border)] hover:bg-[var(--surface-hover)] transition-colors cursor-pointer"
-                                       >
-                                         +{((notification.type === 'gatepass_pending' ? notification.gatePassItems : notification.quotations) ?? []).length - 3} more
-                                       </button>
-                                     )}
-                                  </div>
-                                )}
+                                      {entries.length > 3 && (
+                                        <span className="px-1 text-[10.5px] text-[var(--text-faint)]">
+                                          +{entries.length - 3} more
+                                        </span>
+                                      )}
+                                    </div>
+                                  )}
+                                </div>
                               </div>
                             </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </motion.div>
-              </>
+                          </li>
+                        )
+                      })}
+                    </ul>
+                  )}
+                </div>
+              </div>
             )}
-          </AnimatePresence>
-        </div>
+          </div>
 
-        {/* User menu */}
-        <div className="relative">
-          <button
-            type="button"
-            onClick={() => setShowMenu(v => !v)}
-            className="flex items-center gap-2.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3 py-2 cursor-pointer hover:bg-[var(--surface-hover)] hover:border-[var(--border-2)] transition-all duration-200 shadow-sm max-w-[220px]"
-          >
-            <div className="flex h-7 w-7 items-center justify-center rounded-lg overflow-hidden bg-gradient-to-br from-[#16A34A] to-[#15803D] text-white shadow-sm text-[11px] font-bold shrink-0">
-              {user?.user_dp ? (
-                <img src={user.user_dp} alt={user.user_name} className="h-full w-full object-cover" />
-              ) : user ? (
-                initials
-              ) : (
-                <User size={14} />
-              )}
-            </div>
-            <div className="hidden sm:block leading-none text-left min-w-0">
-              <p className="text-[13px] font-semibold text-[var(--text-primary)] truncate">
-                {user?.user_name ?? 'User'}
-              </p>
-              <p className="text-[11px] text-[var(--text-muted)] mt-0.5 capitalize truncate">
-                {user?.role_id?.toLowerCase() ?? 'staff'}
-              </p>
-            </div>
-          </button>
-
-          <AnimatePresence>
-            {showMenu && (
-              <>
-                <div className="fixed inset-0 z-40" onClick={() => setShowMenu(false)} />
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.95, y: -8 }}
-                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.95, y: -8 }}
-                  transition={{ duration: 0.15 }}
-                  className="absolute right-0 top-full mt-2 z-50 w-64 rounded-xl border bg-[var(--surface)] shadow-[0_16px_40px_-4px_rgba(16,24,40,0.15)] py-1.5"
-                >
-                  <div className="px-4 py-3 border-b border-[var(--border)]">
-                    <p className="text-[13px] font-semibold text-[var(--text-primary)] truncate">
-                      {user?.user_name ?? 'User'}
-                    </p>
-                    <p className="text-[12px] text-[var(--text-muted)] mt-0.5 truncate" title={user?.email ?? user?.auth_id ?? ''}>
-                      {user?.email ?? user?.auth_id ?? ''}
-                    </p>
-                  </div>
-
-                  <div className="p-1.5">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setShowMenu(false)
-                        navigate('/profile')
-                      }}
-                      className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2.5 text-[13px] font-medium text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] transition-colors cursor-pointer"
-                    >
-                      <UserCircle size={16} />
-                      My Profile
-                    </button>
-                    <button
-                      type="button"
-                      onClick={handleLogout}
-                      className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2.5 text-[13px] font-medium text-[#DC2626] hover:bg-[#FEF2F2] transition-colors cursor-pointer"
-                    >
-                      <SignOut size={16} />
-                      Sign Out
-                    </button>
-                  </div>
-                </motion.div>
-              </>
+          {/* Account */}
+          <DropdownMenu
+            label="Account"
+            groups={userMenu}
+            trigger={(p) => (
+              <button
+                {...(p as any)}
+                type="button"
+                aria-label={`Account menu for ${user?.user_name ?? 'user'}`}
+                className={cn(
+                  'flex max-w-[168px] items-center gap-2 rounded-[6px] border border-transparent py-1 pr-1 pl-1',
+                  'transition-colors duration-100 hover:bg-[var(--surface-hover)]',
+                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]',
+                )}
+              >
+                <span className="flex size-7 shrink-0 items-center justify-center overflow-hidden rounded-[6px] bg-[var(--surface-3)] text-[11px] font-semibold text-[var(--text-secondary)]">
+                  {user?.user_dp ? (
+                    <img src={user.user_dp} alt="" className="size-full object-cover" />
+                  ) : user ? (
+                    initials
+                  ) : (
+                    <User size={14} aria-hidden />
+                  )}
+                </span>
+                <span className="hidden min-w-0 text-left leading-tight sm:block">
+                  <span className="block truncate text-[12.5px] font-medium text-[var(--text-primary)]">
+                    {user?.user_name ?? 'User'}
+                  </span>
+                  <span className="block truncate text-[11px] text-[var(--text-muted)] capitalize">
+                    {roleLabel}
+                  </span>
+                </span>
+              </button>
             )}
-          </AnimatePresence>
+          />
         </div>
-      </div>
-    </header>
+      </header>
+
       <NotificationDetailDialog
         open={!!selectedNotification}
         onOpenChange={(open) => !open && setSelectedNotification(null)}

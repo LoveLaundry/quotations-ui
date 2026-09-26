@@ -1,31 +1,85 @@
 import { cn } from '../../lib/utils'
 
+export type BadgeTone =
+  | 'neutral'
+  | 'success'
+  | 'warning'
+  | 'danger'
+  | 'info'
+  | 'brand'
+  | 'purple'
+
 interface BadgeProps {
   children: React.ReactNode
   className?: string
-  variant?: 'success' | 'warning' | 'danger' | 'info' | 'neutral' | 'purple' | 'default' | 'secondary'
+  tone?: BadgeTone
+  /** Pre-rename prop name. */
+  variant?: BadgeTone | 'default' | 'secondary'
+  /** Small filled dot — lets a status be recognised without reading the word. */
+  dot?: boolean
+  /** Monospace, for reference numbers rather than states. */
+  mono?: boolean
+  /** `xs` inside table cells and dense lists, `sm` for standalone chips. */
+  size?: 'xs' | 'sm'
 }
 
-const variantMap: Record<string, string> = {
-  default: 'border-[var(--red-100)] bg-[var(--red-50)] text-[var(--red-600)]',
-  secondary: 'border-[var(--border)] bg-[var(--surface-2)] text-[var(--text-secondary)]',
-  success: 'border-emerald-100 bg-emerald-50 text-emerald-700',
-  warning: 'border-amber-100 bg-amber-50 text-amber-700',
-  danger: 'border-red-100 bg-red-50 text-red-700',
-  info: 'border-blue-100 bg-blue-50 text-blue-700',
-  neutral: 'border-gray-200 bg-gray-100 text-gray-600',
-  purple: 'border-purple-100 bg-purple-50 text-purple-700',
+const TONE: Record<BadgeTone, string> = {
+  neutral: 'border-[var(--border-2)] bg-[var(--surface-2)] text-[var(--text-tertiary)]',
+  brand: 'border-[var(--brand-border)] bg-[var(--brand-soft)] text-[var(--brand-text)]',
+  success: 'border-[var(--success-border)] bg-[var(--success-soft)] text-[var(--success-text)]',
+  warning: 'border-[var(--warning-border)] bg-[var(--warning-soft)] text-[var(--warning-text)]',
+  danger: 'border-[var(--danger-border)] bg-[var(--danger-soft)] text-[var(--danger-text)]',
+  info: 'border-[var(--info-border)] bg-[var(--info-soft)] text-[var(--info-text)]',
+  purple: 'border-violet-200 bg-violet-50 text-violet-700',
 }
 
-export function Badge({ children, className, variant = 'neutral' }: BadgeProps) {
+const DOT: Record<BadgeTone, string> = {
+  neutral: 'bg-[var(--text-faint)]',
+  brand: 'bg-[var(--brand)]',
+  success: 'bg-[var(--success-text)]',
+  warning: 'bg-[var(--warning-text)]',
+  danger: 'bg-[var(--danger-text)]',
+  info: 'bg-[var(--info-text)]',
+  purple: 'bg-violet-500',
+}
+
+/** Pre-rename names mapped onto the current tones. */
+const ALIASES: Record<string, BadgeTone> = {
+  default: 'brand',
+  secondary: 'neutral',
+}
+
+/**
+ * Badge — a status or a short qualifier. Deliberately squared (4px) and quiet:
+ * pills read as decoration, rectangles read as data. Use `dot` when the badge
+ * is a state, and no dot when it is a category.
+ */
+export function Badge({
+  children,
+  className,
+  tone,
+  variant,
+  dot,
+  mono,
+  size = 'sm',
+  ...rest
+}: BadgeProps & Record<string, unknown>) {
+  const resolved = (tone ?? (variant ? ALIASES[variant] ?? (variant as BadgeTone) : 'neutral')) as BadgeTone
   return (
-    <span className={cn(
-      'inline-flex items-center rounded-full border px-2.5 py-0.5',
-      'text-[11px] font-semibold tracking-wide',
-      variantMap[variant],
-      className,
-    )}>
-      {children}
+    <span
+      className={cn(
+        'inline-flex max-w-full items-center rounded-[4px] border whitespace-nowrap',
+        size === 'xs'
+          ? 'gap-1 px-1.5 py-px text-[10.5px] leading-[1.5]'
+          : 'gap-1.5 px-1.5 py-0.5 text-[11.5px] leading-[1.45]',
+        mono && 'font-[family-name:var(--font-mono)] text-[11px] tabular-nums',
+        TONE[resolved],
+        className,
+      )}
+      {...rest}
+    >
+      {dot && <span aria-hidden className={cn('status-dot', DOT[resolved])} />}
+      <span className="truncate">{children}</span>
     </span>
   )
 }

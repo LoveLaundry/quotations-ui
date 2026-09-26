@@ -1,151 +1,196 @@
-import { useState, type FormEvent } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { Eye, EyeOff, Loader2 } from 'lucide-react'
-import { motion } from 'framer-motion'
+import { useState, useRef, useEffect, type FormEvent } from 'react'
+import { useNavigate, useLocation } from 'react-router-dom'
+import { Eye, EyeSlash, ArrowRight, WarningCircle } from '@phosphor-icons/react'
 import { useAuth } from '../../../context/AuthContext'
 import { authService } from '../services/auth.service'
+import { Logo } from '../../../components/brand/logo'
+import { Button } from '../../../components/ui/button'
+import { Input } from '../../../components/ui/input'
+import { Field } from '../../../components/ui/field'
 
+/**
+ * Login — a single column form on a neutral surface.
+ *
+ * The error is a live region tied to the submit, so a screen reader announces a
+ * failed sign-in rather than the user discovering a silent no-op. The submit
+ * stays disabled until both fields have content, but `required` on the inputs
+ * still guards a paste-and-submit, and the reason is stated rather than implied
+ * by a greyed button.
+ */
 export default function LoginPage() {
-    const { login } = useAuth()
-    const navigate = useNavigate()
+  const { login } = useAuth()
+  const navigate = useNavigate()
+  const location = useLocation()
+  const errorRef = useRef<HTMLDivElement>(null)
+  const usernameRef = useRef<HTMLInputElement>(null)
 
-    const [username, setUsername] = useState('')
-    const [password, setPassword] = useState('')
-    const [showPw, setShowPw] = useState(false)
-    const [error, setError] = useState('')
-    const [loading, setLoading] = useState(false)
+  const [username, setUsername] = useState('')
+  const [password, setPassword] = useState('')
+  const [showPw, setShowPw] = useState(false)
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
 
-    const handleSubmit = async (e: FormEvent) => {
-        e.preventDefault()
-        setError('')
-        setLoading(true)
-        try {
-            const res = await authService.login({ username: username.trim(), password })
-            login(res.access_token, res.user)
-            navigate('/', { replace: true })
-        } catch (err: any) {
-            setError(err.message || 'Invalid username or password')
-        } finally {
-            setLoading(false)
-        }
+  const from = (location.state as { from?: { pathname?: string } } | null)?.from?.pathname ?? '/'
+
+  useEffect(() => {
+    if (error) errorRef.current?.focus()
+  }, [error])
+
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault()
+    setError('')
+    setLoading(true)
+    try {
+      const res = await authService.login({ username: username.trim(), password })
+      login(res.access_token, res.user)
+      navigate(from, { replace: true })
+    } catch (err: any) {
+      setError(err?.message || 'Invalid username or password')
+      // Put focus back where the correction happens.
+      usernameRef.current?.select()
+    } finally {
+      setLoading(false)
     }
+  }
 
-    const inputClass =
-        'h-11 w-full rounded-xl border border-[#E4E7EC] bg-white px-4 text-[14px] text-[#101828] placeholder:text-[#98A2B3] outline-none focus:border-[#101828] focus:ring-1 focus:ring-[#101828] transition-all duration-150'
+  const canSubmit = Boolean(username.trim() && password) && !loading
 
-    return (
-        <div className="min-h-screen bg-[#F9FAFB] flex flex-col items-center justify-center p-4">
-            <motion.div
-                initial={{ opacity: 0, scale: 0.98 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-                className="w-full max-w-[400px]"
-            >
-                <div className="rounded-2xl border border-[#E4E7EC] bg-white shadow-sm p-8">
-                    {/* Logo & Brand */}
-                    <div className="flex flex-col items-center mb-8">
-                        <img
-                            src="/icon.png"
-                            alt="LoveLaundry Logo"
-                            className="h-16 w-16 object-contain mb-4"
-                        />
-                        <h1 className="text-[22px] font-bold text-[#101828] tracking-tight">
-                            Welcome back
-                        </h1>
-                        <p className="text-[14px] text-[#6B7280] mt-1">
-                            Sign in to your account
-                        </p>
-                    </div>
+  return (
+    <div className="flex min-h-dvh flex-col bg-[var(--bg)]">
+      <main className="flex flex-1 items-center justify-center px-4 py-10 sm:px-6">
+        <div className="w-full max-w-[380px]">
+          <div className="mb-7 flex justify-center">
+            <Logo size="lg" />
+          </div>
 
-                    {/* Form */}
-                    <form onSubmit={handleSubmit} className="space-y-4">
-                        <div>
-                            <label className="block text-[13px] font-medium text-[#374151] mb-1.5">
-                                Username or Email
-                            </label>
-                            <input
-                                id="username"
-                                type="text"
-                                autoComplete="username"
-                                placeholder="Enter your username"
-                                value={username}
-                                onChange={e => setUsername(e.target.value)}
-                                className={inputClass}
-                                required
-                                autoFocus
-                            />
-                        </div>
+          <div className="rounded-[10px] border border-[var(--border-2)] bg-[var(--surface)] p-5 sm:p-6">
+            <div className="mb-5">
+              <h1 className="text-[17px] font-semibold tracking-[-0.015em] text-[var(--text-primary)]">
+                Sign in
+              </h1>
+              <p className="mt-0.5 text-[12.5px] text-[var(--text-muted)]">
+                Use the account your administrator gave you.
+              </p>
+            </div>
 
-                        <div>
-                            <div className="flex items-center justify-between mb-1.5">
-                                <label className="block text-[13px] font-medium text-[#374151]">
-                                    Password
-                                </label>
-                            </div>
-                            <div className="relative">
-                                <input
-                                    id="password"
-                                    type={showPw ? 'text' : 'password'}
-                                    autoComplete="current-password"
-                                    placeholder="Enter your password"
-                                    value={password}
-                                    onChange={e => setPassword(e.target.value)}
-                                    className={`${inputClass} pr-11`}
-                                    required
-                                />
-                                <button
-                                    type="button"
-                                    onClick={() => setShowPw(v => !v)}
-                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#98A2B3] hover:text-[#374151] transition-colors cursor-pointer"
-                                    tabIndex={-1}
-                                    aria-label={showPw ? 'Hide password' : 'Show password'}
-                                >
-                                    {showPw ? <EyeOff className="h-4.5 w-4.5" /> : <Eye className="h-4.5 w-4.5" />}
-                                </button>
-                            </div>
-                        </div>
+            <form onSubmit={handleSubmit} noValidate className="space-y-3.5">
+              <Field
+                id="username"
+                label="Username or email"
+                hint={error ? undefined : 'Case-insensitive.'}
+              >
+                <Input
+                  ref={usernameRef}
+                  id="username"
+                  name="username"
+                  type="text"
+                  autoComplete="username"
+                  autoCapitalize="none"
+                  spellCheck={false}
+                  placeholder="e.g. dulshan"
+                  value={username}
+                  onChange={(e) => {
+                    setUsername(e.target.value)
+                    if (error) setError('')
+                  }}
+                  required
+                  autoFocus
+                  invalid={Boolean(error)}
+                  className="h-10"
+                />
+              </Field>
 
-                        {/* Error */}
-                        {error && (
-                            <motion.div
-                                initial={{ opacity: 0, y: -4 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                className="rounded-lg bg-[#FEF2F2] px-4 py-3 text-[13px] text-[#DC2626] font-medium"
-                            >
-                                {error}
-                            </motion.div>
-                        )}
-
-                        {/* Submit Button */}
-                        <button
-                            id="login-submit"
-                            type="submit"
-                            disabled={loading || !username || !password}
-                            className="mt-6 flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-[#101828] text-[14px] font-medium text-white hover:bg-[#1D2939] transition-colors duration-150 disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
-                        >
-                            {loading ? (
-                                <>
-                                    <Loader2 className="h-4 w-4 animate-spin" />
-                                    Signing in...
-                                </>
-                            ) : (
-                                'Sign in'
-                            )}
-                        </button>
-                    </form>
-
-                    {/* Guest Pass */}
-                    <div className="mt-6 border-t border-[#E4E7EC] pt-6">
-                        <button
-                            type="button"
-                            onClick={() => navigate('/guest/shop')}
-                            className="flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-[#E4E7EC] bg-white text-[14px] font-semibold text-[#101828] shadow-sm hover:bg-[#F9FAFB] hover:border-[#D0D5DD] transition-all duration-150 cursor-pointer"
-                        >
-                            Guest Pass
-                        </button>
-                    </div>
+              <Field id="password" label="Password">
+                <div className="relative">
+                  <Input
+                    id="password"
+                    name="password"
+                    type={showPw ? 'text' : 'password'}
+                    autoComplete="current-password"
+                    placeholder="Enter your password"
+                    value={password}
+                    onChange={(e) => {
+                      setPassword(e.target.value)
+                      if (error) setError('')
+                    }}
+                    required
+                    invalid={Boolean(error)}
+                    className="h-10 pr-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPw((v) => !v)}
+                    aria-label={showPw ? 'Hide password' : 'Show password'}
+                    aria-pressed={showPw}
+                    className="absolute top-1/2 right-1 flex size-8 -translate-y-1/2 cursor-pointer items-center justify-center rounded-[5px] text-[var(--text-faint)] transition-colors duration-100 hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
+                  >
+                    {showPw ? <EyeSlash size={16} aria-hidden /> : <Eye size={16} aria-hidden />}
+                  </button>
                 </div>
-            </motion.div>
+              </Field>
+
+              <div
+                ref={errorRef}
+                role="alert"
+                tabIndex={-1}
+                aria-live="assertive"
+                className="empty:hidden"
+              >
+                {error && (
+                  <div className="flex items-start gap-2 rounded-[7px] border border-[var(--danger-border)] bg-[var(--danger-soft)] px-3 py-2.5 text-[12.5px] text-[var(--danger-text)] outline-none">
+                    <WarningCircle size={15} aria-hidden className="mt-px shrink-0" />
+                    <span className="min-w-0 flex-1">{error}</span>
+                  </div>
+                )}
+              </div>
+
+              <Button
+                id="login-submit"
+                type="submit"
+                disabled={!canSubmit}
+                loading={loading}
+                className="mt-1 w-full"
+                size="lg"
+              >
+                {loading ? 'Signing in' : 'Sign in'}
+              </Button>
+
+              <p className="pt-1 text-center text-[11.5px] text-[var(--text-faint)]">
+                Password forgotten? Ask an administrator to reset it.
+              </p>
+            </form>
+          </div>
+
+          {/* Guest pass is a different audience, not a lesser login: it is a
+              separate surface with its own purpose, so it sits outside the
+              credential card. */}
+          <div className="mt-4">
+            <button
+              type="button"
+              onClick={() => navigate('/guest/shop')}
+              className="group flex w-full cursor-pointer items-center justify-between gap-3 rounded-[10px] border border-[var(--border-2)] bg-[var(--surface)] px-4 py-3 text-left transition-colors duration-100 hover:bg-[var(--surface-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
+            >
+              <span className="min-w-0">
+                <span className="block text-[13px] font-medium text-[var(--text-primary)]">
+                  Guest bill pass
+                </span>
+                <span className="mt-0.5 block text-[11.5px] text-[var(--text-muted)]">
+                  Look up a bill with a pass code — no account needed.
+                </span>
+              </span>
+              <ArrowRight
+                size={16}
+                aria-hidden
+                className="shrink-0 text-[var(--text-faint)] transition-colors group-hover:text-[var(--text-tertiary)]"
+              />
+            </button>
+          </div>
         </div>
-    )
+      </main>
+
+      <footer className="px-4 pb-6 text-center text-[11px] text-[var(--text-faint)]">
+        Love Laundry · Operations system
+      </footer>
+    </div>
+  )
 }

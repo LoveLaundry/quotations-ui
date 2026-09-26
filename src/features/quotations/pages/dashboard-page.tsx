@@ -1,21 +1,25 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
-  Plus, DollarSign, Wallet, AlertTriangle, TrendingUp,
-  ClipboardList, Users, Package, Clock,
+  Plus, AlertTriangle, TrendingUp, Users, Package, Clock,
   Download, Activity, ArrowUpRight, ArrowDownRight,
   BarChart3, Target, Layers, Timer, Eye, Truck,
 } from 'lucide-react'
-import { motion } from 'framer-motion'
 import {
-  ResponsiveContainer, AreaChart, Area, Bar,
-  PieChart, Pie, Cell, Legend, ComposedChart,
+  ResponsiveContainer, AreaChart, Area, Bar, Legend, ComposedChart,
   XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip,
 } from 'recharts'
 import {
   Card, CardContent, CardHeader, CardTitle,
 } from '../../../components/ui/card'
 import { Button } from '../../../components/ui/button'
+import { Avatar } from '../../../components/ui/avatar'
+import { Badge } from '../../../components/ui/badge'
+import { Notice } from '../../../components/ui/notice'
+import { Tabs } from '../../../components/ui/tabs'
+import { DataTable } from '../../../components/ui/data-table'
+import { DropdownMenu } from '../../../components/ui/dropdown-menu'
+import { PageHeader } from '../../../components/ui/page-header'
 import { Skeleton } from '../../../components/ui/skeleton'
 import { StatCard } from '../../../components/ui/stat-card'
 import { SyncStatusBar } from '../../../components/ui/sync-status-bar'
@@ -23,6 +27,21 @@ import { useDashboardOverview, type DashboardOverviewData, type DashboardPeriod 
 import { reports } from '../services/reports.service'
 import { BalancesPopup } from '../components/balances-popup'
 import { toast } from 'sonner'
+
+const TOOLTIP_STYLE = {
+  borderRadius: 6,
+  border: '1px solid var(--border)',
+  background: 'var(--surface)',
+  color: 'var(--text-primary)',
+  fontSize: 12,
+  boxShadow: '0 4px 12px rgb(16 24 40 / 0.08)',
+} as const
+
+const EXPORT_TARGETS = [
+  ['gatepasses', 'Gate Passes'],
+  ['bills', 'Bills'],
+  ['deliveries', 'Deliveries'],
+] as const
 
 const PERIODS: { value: DashboardPeriod; label: string }[] = [
   { value: 'day', label: 'Today' },
@@ -43,18 +62,14 @@ function fmt(lkr: number) {
   return lkr.toFixed(0)
 }
 
-function ActionIcon({ action }: { action: string }) {
+function ActionBadge({ action }: { action: string }) {
   const a = (action || '').toUpperCase()
-  const cfg = a.includes('CREATE') || a.includes('ADD')
-    ? 'bg-[#F0FDF4] text-[#16A34A] border-[#BBF7D0]'
-    : a.includes('UPDATE') || a.includes('EDIT') || a.includes('BILL_EDIT')
-      ? 'bg-[#EFF6FF] text-[#2563EB] border-[#BFDBFE]'
-      : a.includes('DELETE') || a.includes('REMOVE') || a.includes('CANCEL')
-        ? 'bg-[#FFF1F1] text-[#DC2626] border-[#FECACA]'
-        : a.includes('PAYMENT')
-          ? 'bg-[#F0FDF4] text-[#16A34A] border-[#BBF7D0]'
-          : 'bg-[#F9FAFB] text-[#6B7280] border-[#E4E7EC]'
-  return <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-semibold ${cfg}`}>{a}</span>
+  const tone = a.includes('DELETE') || a.includes('REMOVE') || a.includes('CANCEL')
+    ? 'danger'
+    : a.includes('CREATE') || a.includes('ADD') || a.includes('PAYMENT')
+      ? 'success'
+      : 'neutral'
+  return <Badge size="xs" tone={tone} mono>{a.replace(/_/g, ' ')}</Badge>
 }
 
 function fmtTimeAgo(ts: string | null) {
@@ -74,25 +89,18 @@ function fmtTimeAgo(ts: string | null) {
 function KpiCards({ data }: { data: DashboardOverviewData }) {
   const { current: c, previous: p } = data
   const kpis = [
-    { label: 'Revenue', value: `LKR ${fmt(c.revenue)}`, trend: pctNum(c.revenue, p.revenue), icon: <DollarSign size={20} />, color: 'red' as const, to: '/bills' },
-    { label: 'Collected', value: `LKR ${fmt(c.collected)}`, trend: pctNum(c.collected, c.collected), icon: <Wallet size={20} />, color: 'green' as const, to: '/bills' },
-    { label: 'Outstanding', value: `LKR ${fmt(c.outstanding)}`, trend: pctNum(c.outstanding, c.outstanding), icon: <AlertTriangle size={20} />, color: 'amber' as const, to: '/bills' },
-    { label: 'Collection Rate', value: `${c.collectionRate.toFixed(1)}%`, trend: pctNum(c.collectionRate, c.collectionRate), icon: <TrendingUp size={20} />, color: 'blue' as const, to: '/bills' },
-    { label: 'Gate Passes', value: c.gatePasses, trend: pctNum(c.gatePasses, p.gatePasses), icon: <ClipboardList size={20} />, color: 'purple' as const, to: '/gate-passes' },
-    { label: 'Active Clients', value: c.activeClients, trend: pctNum(c.activeClients, c.activeClients), icon: <Users size={20} />, color: 'blue' as const, to: '/customers' },
+    { label: 'Revenue', value: `LKR ${fmt(c.revenue)}`, trend: pctNum(c.revenue, p.revenue), to: '/bills' },
+    { label: 'Collected', value: `LKR ${fmt(c.collected)}`, trend: pctNum(c.collected, c.collected), to: '/bills' },
+    { label: 'Outstanding', value: `LKR ${fmt(c.outstanding)}`, trend: pctNum(c.outstanding, c.outstanding), to: '/bills' },
+    { label: 'Collection Rate', value: `${c.collectionRate.toFixed(1)}%`, trend: pctNum(c.collectionRate, c.collectionRate), to: '/bills' },
+    { label: 'Gate Passes', value: c.gatePasses, trend: pctNum(c.gatePasses, p.gatePasses), to: '/gate-passes' },
+    { label: 'Active Clients', value: c.activeClients, trend: pctNum(c.activeClients, c.activeClients), to: '/customers' },
   ]
 
   return (
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-      {kpis.map((k, i) => (
-        <motion.div
-          key={k.label}
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: i * 0.05 }}
-        >
-          <StatCard label={k.label} value={k.value} trend={k.trend} icon={k.icon} color={k.color} to={k.to} className="p-4" />
-        </motion.div>
+      {kpis.map((k) => (
+        <StatCard key={k.label} label={k.label} value={k.value} trend={k.trend} to={k.to} />
       ))}
     </div>
   )
@@ -111,70 +119,82 @@ function ChartsRow({ data }: { data: DashboardOverviewData }) {
         <CardHeader className="border-b border-[var(--border)] pb-3">
           <CardTitle className="text-[14px]">Revenue vs Collection</CardTitle>
         </CardHeader>
-        <CardContent className="pt-4" style={{ height: 260 }}>
+        <CardContent className="h-[240px] pt-4">
           {series.length === 0 ? (
-            <div className="flex items-center justify-center h-full text-[13px]" style={{ color: 'var(--text-tertiary)' }}>No data for this period</div>
+            <div className="flex items-center justify-center h-full text-[13px]" style={{ color: 'var(--text-muted)' }}>No data for this period</div>
           ) : (
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={series}>
                 <defs>
                   <linearGradient id="gradRevenue" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#DC2626" stopOpacity={0.2} />
-                    <stop offset="100%" stopColor="#DC2626" stopOpacity={0} />
+                    <stop offset="0%" stopColor="var(--brand)" stopOpacity={0.2} />
+                    <stop offset="100%" stopColor="var(--brand)" stopOpacity={0} />
                   </linearGradient>
                   <linearGradient id="gradCollected" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#16A34A" stopOpacity={0.2} />
-                    <stop offset="100%" stopColor="#16A34A" stopOpacity={0} />
+                    <stop offset="0%" stopColor="var(--success-text)" stopOpacity={0.2} />
+                    <stop offset="100%" stopColor="var(--success-text)" stopOpacity={0} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                <XAxis dataKey="label" tick={{ fontSize: 11, fill: 'var(--text-tertiary)' }} />
-                <YAxis tick={{ fontSize: 11, fill: 'var(--text-tertiary)' }} />
+                <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="var(--border)" />
+                <XAxis
+                  dataKey="label"
+                  tickLine={false}
+                  axisLine={{ stroke: 'var(--border)' }}
+                  tick={{ fontSize: 10.5, fill: 'var(--text-muted)' }}
+                />
+                <YAxis
+                  tickLine={false}
+                  axisLine={false}
+                  width={52}
+                  tick={{ fontSize: 10.5, fill: 'var(--text-muted)' }}
+                  tickFormatter={(v: number) => fmt(v)}
+                />
                 <RechartsTooltip
-                  contentStyle={{ borderRadius: 8, border: '1px solid var(--border)', fontSize: 12 }}
+                  cursor={{ stroke: 'var(--border-strong)' }}
+                  contentStyle={TOOLTIP_STYLE}
                   formatter={(v: number) => [`LKR ${v.toLocaleString()}`, '']}
                 />
-                <Area type="monotone" dataKey="revenue" stroke="#DC2626" fill="url(#gradRevenue)" strokeWidth={2} name="Revenue" />
-                <Area type="monotone" dataKey="collected" stroke="#16A34A" fill="url(#gradCollected)" strokeWidth={2} name="Collected" />
-                <Legend wrapperStyle={{ fontSize: 11 }} />
+                <Area type="monotone" dataKey="revenue" stroke="var(--brand)" fill="url(#gradRevenue)" strokeWidth={2} name="Revenue" />
+                <Area type="monotone" dataKey="collected" stroke="var(--success-text)" fill="url(#gradCollected)" strokeWidth={2} name="Collected" />
+                <Legend wrapperStyle={{ fontSize: 11.5, color: 'var(--text-muted)' }} iconType="plainline" />
               </AreaChart>
             </ResponsiveContainer>
           )}
         </CardContent>
       </Card>
 
-      {/* Payment Status Donut */}
+      {/* Payment status breakdown */}
       <Card>
         <CardHeader className="border-b border-[var(--border)] pb-3">
           <CardTitle className="text-[14px]">Payment Status</CardTitle>
         </CardHeader>
-        <CardContent className="pt-4" style={{ height: 260 }}>
+        <CardContent flush className="py-2">
           {pieData.length === 0 ? (
-            <div className="flex items-center justify-center h-full text-[13px]" style={{ color: 'var(--text-tertiary)' }}>No bills yet</div>
+            <p className="py-8 text-center text-[13px] text-[var(--text-muted)]">No bills yet</p>
           ) : (
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={pieData}
-                  cx="50%"
-                  cy="45%"
-                  innerRadius={50}
-                  outerRadius={80}
-                  dataKey="value"
-                  nameKey="name"
-                  paddingAngle={2}
-                >
-                  {pieData.map((s, i) => (
-                    <Cell key={i} fill={s.color} />
-                  ))}
-                </Pie>
-                <RechartsTooltip
-                  contentStyle={{ borderRadius: 8, border: '1px solid var(--border)', fontSize: 12 }}
-                  formatter={(v: number) => [`LKR ${v.toLocaleString()}`, '']}
-                />
-                <Legend wrapperStyle={{ fontSize: 11 }} />
-              </PieChart>
-            </ResponsiveContainer>
+            <ul className="divide-y divide-[var(--border)]">
+              {pieData.map((s) => {
+                const total = pieData.reduce((a, b) => a + b.value, 0)
+                const pct = total > 0 ? (s.value / total) * 100 : 0
+                return (
+                  <li key={s.name} className="px-3.5 py-2.5">
+                    <div className="flex items-baseline justify-between gap-3">
+                      <span className="text-[12.5px] font-medium">{s.name}</span>
+                      <span className="text-[12.5px] font-semibold tabular-nums">
+                        LKR {fmt(s.value)}
+                        <span className="ml-1.5 font-normal text-[var(--text-muted)]">{pct.toFixed(0)}%</span>
+                      </span>
+                    </div>
+                    <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-[var(--surface-3)]">
+                      <div
+                        className="h-full rounded-full"
+                        style={{ width: `${pct}%`, backgroundColor: s.color || 'var(--info-text)' }}
+                      />
+                    </div>
+                  </li>
+                )
+              })}
+            </ul>
           )}
         </CardContent>
       </Card>
@@ -210,64 +230,83 @@ function TablesRow({ data }: { data: DashboardOverviewData }) {
       <Card>
         <CardHeader className="border-b border-[var(--border)] pb-3">
           <CardTitle className="flex items-center gap-2 text-[14px]">
-            <Users className="h-4 w-4" style={{ color: 'var(--text-tertiary)' }} /> Top Clients
+            <Users className="h-4 w-4" style={{ color: 'var(--text-muted)' }} /> Top Clients
           </CardTitle>
         </CardHeader>
-        <CardContent className="pt-0 overflow-x-auto">
-          {topClients.length === 0 ? (
-            <div className="py-8 text-center text-[13px]" style={{ color: 'var(--text-tertiary)' }}>No client data yet</div>
-          ) : (
-            <table className="w-full text-[13px]">
-              <thead className="border-b border-[var(--border)]">
-                <tr>
-                  {['Client', 'Revenue', 'Outstanding', 'Bills'].map(h => (
-                    <th key={h} className="px-3 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wide" style={{ color: 'var(--text-tertiary)' }}>{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-[var(--border)]">
-                {topClients.map((c, i) => (
-                  <motion.tr key={c.client_name} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.04 }} className="hover:bg-[var(--surface-hover)]">
-                    <td className="px-3 py-2.5">
-                      <div className="flex items-center gap-2">
-                        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#FFF1F1] border border-[#FECACA] text-[11px] font-bold text-[#DC2626]">
-                          {c.client_name.charAt(0).toUpperCase()}
-                        </div>
-                        <span className="font-medium truncate max-w-[140px]">{c.client_name}</span>
-                      </div>
-                    </td>
-                    <td className="px-3 py-2.5">
-                      <div className="flex items-center gap-2">
-                        <span className="font-semibold">LKR {fmt(c.revenue)}</span>
-                        <div className="h-1.5 flex-1 bg-[var(--border)] rounded-full overflow-hidden max-w-[80px]">
-                          <div className="h-full bg-[#DC2626] rounded-full" style={{ width: `${(c.revenue / maxRevenue) * 100}%` }} />
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-3 py-2.5 text-[#D97706] font-semibold">LKR {fmt(c.outstanding)}</td>
-                    <td className="px-3 py-2.5" style={{ color: 'var(--text-tertiary)' }}>{c.bills}</td>
-                  </motion.tr>
-                ))}
-              </tbody>
-            </table>
-          )}
+        <CardContent flush>
+          <DataTable
+            data={topClients}
+            rowKey={(c) => c.client_name}
+            stickyHeader={false}
+            mobilePrimary={['client']}
+            columns={[
+              {
+                key: 'client',
+                header: 'Client',
+                render: (c) => (
+                  <div className="flex min-w-0 items-center gap-2">
+                    <Avatar name={c.client_name} />
+                    <span className="truncate font-medium">{c.client_name}</span>
+                  </div>
+                ),
+              },
+              {
+                key: 'revenue',
+                header: 'Revenue',
+                numeric: true,
+                render: (c) => (
+                  <div className="flex items-center justify-end gap-2">
+                    <span className="font-semibold">LKR {fmt(c.revenue)}</span>
+                    <div className="h-1.5 w-[60px] overflow-hidden rounded-full bg-[var(--surface-3)]">
+                      <div
+                        className="h-full rounded-full bg-[var(--brand)]"
+                        style={{ width: `${(c.revenue / maxRevenue) * 100}%` }}
+                      />
+                    </div>
+                  </div>
+                ),
+              },
+              {
+                key: 'outstanding',
+                header: 'Outstanding',
+                numeric: true,
+                render: (c) => (
+                  <span
+                    className={
+                      c.outstanding > 0
+                        ? 'font-semibold text-[var(--warning-text)]'
+                        : 'text-[var(--text-faint)]'
+                    }
+                  >
+                    LKR {fmt(c.outstanding)}
+                  </span>
+                ),
+              },
+              {
+                key: 'bills',
+                header: 'Bills',
+                numeric: true,
+                render: (c) => <span className="text-[var(--text-muted)]">{c.bills}</span>,
+              },
+            ]}
+          />
         </CardContent>
       </Card>
 
       {/* Pending Balance */}
-      <Card className={totalPending > 0 ? 'border-[#FED7AA]' : ''}>
+      <Card className={totalPending > 0 ? 'border-[var(--warning-border)]' : ''}>
         <CardHeader className="border-b border-[var(--border)] pb-3">
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center gap-2 text-[14px]">
-              <Package className="h-4 w-4" style={{ color: 'var(--text-tertiary)' }} /> Pending Balance
+              <Package className="h-4 w-4" style={{ color: 'var(--text-muted)' }} /> Pending Balance
             </CardTitle>
             {totalPending > 0 && (
               <div className="flex items-center gap-2">
-                <span className="inline-flex items-center rounded-full bg-[#D97706] px-3 py-1 text-[16px] font-bold text-white shadow-sm">
+                <span className="text-[16px] font-bold text-[var(--warning-text)] tabular-nums">
                   {totalPending}
                 </span>
                 <Link to="/deliveries/new">
-                  <Button size="sm" className="bg-[#16A34A] hover:bg-[#15803D] text-white text-[11px] gap-1 cursor-pointer">
+                  <Button size="sm" variant="primary">
                     <Truck className="h-3 w-3" /> Deliver
                   </Button>
                 </Link>
@@ -277,25 +316,17 @@ function TablesRow({ data }: { data: DashboardOverviewData }) {
         </CardHeader>
         <CardContent className="pt-0 overflow-x-auto">
           {pendingClients.length === 0 ? (
-            <div className="py-8 text-center text-[13px]" style={{ color: 'var(--text-tertiary)' }}>All deliveries are up to date</div>
+            <div className="py-8 text-center text-[13px]" style={{ color: 'var(--text-muted)' }}>All deliveries are up to date</div>
           ) : (
             <div className="divide-y divide-[var(--border)]">
-              {pendingClients.map(([client, data], i) => (
-                <motion.div
-                  key={client}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: i * 0.04 }}
-                  className="py-3 first:pt-0 last:pb-0"
-                >
+              {pendingClients.map(([client, data]) => (
+                <div key={client} className="py-3 first:pt-0 last:pb-0">
                   <div className="flex items-center justify-between mb-1.5">
                     <div className="flex items-center gap-2">
-                      <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#D97706] text-white text-[10px] font-bold">
-                        {client.charAt(0).toUpperCase()}
-                      </div>
+                      <Avatar name={client} size="sm" />
                       <span className="text-[13px] font-semibold" style={{ color: 'var(--text-primary)' }}>{client}</span>
                     </div>
-                    <span className="inline-flex items-center rounded-full bg-[#FFF7ED] border border-[#FED7AA] px-2.5 py-0.5 text-[13px] font-bold text-[#C2410C]">
+                    <span className="text-[13px] font-bold tabular-nums text-[var(--warning-text)]">
                       {data.total}
                     </span>
                   </div>
@@ -304,15 +335,15 @@ function TablesRow({ data }: { data: DashboardOverviewData }) {
                       <div key={`${item.item_name}-${j}`} className="flex items-center gap-2 text-[12px]">
                         <span className="font-medium" style={{ color: 'var(--text-secondary)' }}>{item.item_name}</span>
                         {item.specification && (
-                          <span className="inline-flex items-center rounded bg-[#FFF7ED] border border-[#FED7AA] px-1.5 py-0.5 text-[10px] font-semibold text-[#EA580C]">
+                          <Badge size="xs" tone="neutral">
                             {item.specification}
-                          </span>
+                          </Badge>
                         )}
-                        <span className="font-semibold text-[#D97706]">{item.pending} pending</span>
+                        <span className="font-semibold text-[var(--warning-text)]">{item.pending} pending</span>
                       </div>
                     ))}
                   </div>
-                </motion.div>
+                </div>
               ))}
             </div>
           )}
@@ -329,18 +360,14 @@ function AlertBanners({ data }: { data: DashboardOverviewData }) {
 
   return (
     <div className="space-y-2">
-      {data.alerts.map(a => (
-        <div
+      {data.alerts.map((a) => (
+        <Notice
           key={a.id}
-          className={`flex items-start gap-3 rounded-xl border px-4 py-3 text-[13px] ${
-            a.severity === 'high' ? 'bg-[#FFF1F1] border-[#FECACA] text-[#991B1B]' :
-            a.severity === 'medium' ? 'bg-[#FFFBEB] border-[#FDE68A] text-[#92400E]' :
-            'bg-[#EFF6FF] border-[#BFDBFE] text-[#1E40AF]'
-          }`}
+          tone={a.severity === 'high' ? 'danger' : a.severity === 'medium' ? 'warning' : 'info'}
+          icon={<AlertTriangle className="size-4" />}
         >
-          <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" />
-          <span>{a.message}</span>
-        </div>
+          {a.message}
+        </Notice>
       ))}
     </div>
   )
@@ -356,9 +383,9 @@ function ActivityTimeline({ data }: { data: DashboardOverviewData }) {
       <CardHeader className="border-b border-[var(--border)] pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2 text-[14px]">
-            <Activity className="h-4 w-4" style={{ color: 'var(--text-tertiary)' }} /> Recent Activity
+            <Activity className="h-4 w-4" style={{ color: 'var(--text-muted)' }} /> Recent Activity
           </CardTitle>
-          <Link to="/reports" className="text-[12px] font-medium hover:underline" style={{ color: 'var(--text-tertiary)' }}>
+          <Link to="/reports" className="text-[12px] font-medium hover:underline" style={{ color: 'var(--text-muted)' }}>
             View all
           </Link>
         </div>
@@ -366,28 +393,22 @@ function ActivityTimeline({ data }: { data: DashboardOverviewData }) {
       <CardContent className="pt-0">
         <div className="divide-y divide-[var(--border)]">
           {data.activity.map((a, i) => (
-            <motion.div
-              key={a.id || i}
-              initial={{ opacity: 0, x: -4 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: i * 0.03 }}
-              className="flex items-center gap-3 py-2.5"
-            >
-              <ActionIcon action={a.action} />
+            <div key={a.id || i} className="flex items-center gap-3 py-2.5">
+              <ActionBadge action={a.action} />
               <div className="min-w-0 flex-1">
                 <p className="text-[13px] truncate">
                   <span className="font-medium">{a.user_id}</span>
                   {' '}
-                  <span style={{ color: 'var(--text-tertiary)' }}>{a.action.toLowerCase().replace(/_/g, ' ')}</span>
+                  <span style={{ color: 'var(--text-muted)' }}>{a.action.toLowerCase().replace(/_/g, ' ')}</span>
                   {' '}
                   {a.entity && <span className="font-medium">{a.entity}</span>}
                 </p>
               </div>
-              <span className="text-[11px] shrink-0 flex items-center gap-1" style={{ color: 'var(--text-tertiary)' }}>
+              <span className="text-[11px] shrink-0 flex items-center gap-1" style={{ color: 'var(--text-muted)' }}>
                 <Clock className="h-3 w-3" />
                 {fmtTimeAgo(a.timestamp)}
               </span>
-            </motion.div>
+            </div>
           ))}
         </div>
       </CardContent>
@@ -413,63 +434,51 @@ function BalancesOverview({ data, onShowDetails }: { data: DashboardOverviewData
 
   return (
     <Card className="overflow-hidden">
-      {/* Hero banner */}
-      <div className="px-6 py-5 bg-gray-50">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="border-b border-[var(--border)] bg-[var(--surface-2)] px-4 py-4 sm:px-5">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <p className="text-[12px] font-semibold uppercase tracking-wide text-gray-500">Total Outstanding</p>
-            <p className="text-[36px] font-extrabold leading-tight tracking-tight text-gray-900">
-              LKR {totalOutstanding.toLocaleString('en', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+            <p className="section-label">Total outstanding</p>
+            <p className="mt-1 text-[28px] font-bold leading-none tabular-nums tracking-tight sm:text-[32px]">
+              <span className="mr-1 text-[14px] font-semibold text-[var(--text-muted)]">LKR</span>
+              {totalOutstanding.toLocaleString('en', { maximumFractionDigits: 0 })}
             </p>
           </div>
-          <div className="flex gap-4 sm:gap-6">
-            <div className="text-center">
-              <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-500">Collected</p>
-              <p className="text-[20px] font-bold text-gray-900">LKR {fmt(totalCollected)}</p>
-              <p className="text-[11px] text-gray-500 font-semibold">{collectedPct.toFixed(0)}%</p>
-            </div>
-            <div className="text-center">
-              <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-500">Pending</p>
-              <p className="text-[20px] font-bold text-gray-900">LKR {fmt(totalOutstanding)}</p>
-              <p className="text-[11px] text-gray-500 font-semibold">{outstandingPct.toFixed(0)}%</p>
-            </div>
-            <div className="text-center">
-              <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-500">Bills</p>
-              <p className="text-[20px] font-bold text-gray-900">{c.billCount}</p>
-              <p className="text-[11px] text-gray-500">{c.paidBills} paid</p>
-            </div>
+          <div className="grid grid-cols-3 gap-4 sm:gap-6">
+            {[
+              { label: 'Collected', value: `LKR ${fmt(totalCollected)}`, sub: `${collectedPct.toFixed(0)}%` },
+              { label: 'Pending', value: `LKR ${fmt(totalOutstanding)}`, sub: `${outstandingPct.toFixed(0)}%` },
+              { label: 'Bills', value: String(c.billCount), sub: `${c.paidBills} paid` },
+            ].map((m) => (
+              <div key={m.label}>
+                <p className="section-label">{m.label}</p>
+                <p className="mt-0.5 text-[15px] font-semibold tabular-nums">{m.value}</p>
+                <p className="text-[11px] text-[var(--text-muted)]">{m.sub}</p>
+              </div>
+            ))}
           </div>
         </div>
-        {/* Visual bar */}
-        <div className="mt-4 h-3 rounded-full overflow-hidden flex bg-gray-200">
-          <motion.div
-            initial={{ width: 0 }}
-            animate={{ width: `${collectedPct}%` }}
-            transition={{ duration: 0.8, ease: 'easeOut' }}
-            className="h-full bg-gray-600 rounded-l-full"
-            title="Collected"
+        <div className="mt-4 flex h-2 overflow-hidden rounded-full bg-[var(--surface-3)]">
+          <div
+            className="h-full bg-[var(--brand)]"
+            style={{ width: `${collectedPct}%` }}
+            title={`Collected ${collectedPct.toFixed(0)}%`}
           />
-          <motion.div
-            initial={{ width: 0 }}
-            animate={{ width: `${outstandingPct}%` }}
-            transition={{ duration: 0.8, ease: 'easeOut', delay: 0.3 }}
-            className="h-full bg-gray-400"
-            title="Outstanding"
+          <div
+            className="h-full bg-[var(--border-2)]"
+            style={{ width: `${outstandingPct}%` }}
+            title={`Outstanding ${outstandingPct.toFixed(0)}%`}
           />
         </div>
-        <div className="flex justify-between mt-1.5 text-[10px] font-semibold text-gray-500">
+        <div className="mt-1.5 flex justify-between text-[10.5px] text-[var(--text-muted)]">
           <span>Collected {collectedPct.toFixed(0)}%</span>
           <span>Outstanding {outstandingPct.toFixed(0)}%</span>
         </div>
         {totalOutstanding > 0 && (
           <div className="mt-3 flex justify-end">
-            <button
-              onClick={onShowDetails}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[12px] font-medium text-gray-600 bg-white hover:bg-gray-100 rounded-lg border border-gray-200 transition cursor-pointer"
-            >
+            <Button size="xs" variant="secondary" onClick={onShowDetails}>
               <Eye className="h-3.5 w-3.5" />
-              View Full Details
-            </button>
+              Full details
+            </Button>
           </div>
         )}
       </div>
@@ -477,70 +486,56 @@ function BalancesOverview({ data, onShowDetails }: { data: DashboardOverviewData
       {/* Per-client breakdown */}
       {clients.length > 0 && (
         <CardContent className="pt-4">
-          <p className="text-[13px] font-semibold mb-3 text-gray-500">Outstanding by Client</p>
+          <p className="section-label mb-3">Outstanding by client</p>
           <div className="space-y-4">
-            {clients.map((cl, i) => {
+            {clients.map((cl) => {
               const barPct = (cl.outstanding / maxClientOutstanding) * 100
-              const specColors = ['#7C3AED', '#0891B2', '#059669', '#D946EF', '#EA580C', '#4F46E5']
               return (
-                <motion.div
+                <div
                   key={cl.client_name}
-                  initial={{ opacity: 0, x: -8 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: i * 0.04 }}
-                  className="pb-3 border-b border-gray-100 last:border-0 last:pb-0"
+                  className="border-b border-[var(--border)] pb-3 last:border-0 last:pb-0"
                 >
                   <div className="flex items-center justify-between mb-1">
                     <div className="flex items-center gap-2 min-w-0">
-                      <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[11px] font-bold text-white bg-gray-600">
-                        {cl.client_name.charAt(0).toUpperCase()}
-                      </div>
-                      <span className="text-[13px] font-semibold truncate text-gray-900">{cl.client_name}</span>
+                      <Avatar name={cl.client_name} />
+                      <span className="truncate text-[13px] font-medium">{cl.client_name}</span>
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
-                      <span className="text-[13px] font-bold text-gray-900">
+                      <span className="text-[13px] font-semibold tabular-nums">
                         LKR {cl.outstanding.toLocaleString()}
                       </span>
                       {cl.total_billed > 0 && (
-                        <span className="rounded-full px-2 py-0.5 text-[10px] font-semibold bg-gray-100 text-gray-600">
+                        <span className="text-[11px] text-[var(--text-muted)] tabular-nums">
                           {((cl.outstanding / Math.max(1, cl.total_billed)) * 100).toFixed(0)}% of bill
                         </span>
                       )}
                     </div>
                   </div>
-                  <div className="h-2 bg-gray-100 rounded-full overflow-hidden mb-2">
-                    <motion.div
-                      initial={{ width: 0 }}
-                      animate={{ width: `${barPct}%` }}
-                      transition={{ duration: 0.5, delay: i * 0.05 }}
-                      className="h-full rounded-full bg-gray-500"
-                    />
+                  <div className="mb-2 h-1.5 overflow-hidden rounded-full bg-[var(--surface-3)]">
+                    <div className="h-full rounded-full bg-[var(--brand)]" style={{ width: `${barPct}%` }} />
                   </div>
                   {/* Pending items with specs */}
                   {cl.items && cl.items.length > 0 && (
                     <div className="ml-9 space-y-1">
-                      {cl.items.map((item, j) => (
+                      {cl.items.map((item) => (
                         <div key={`${item.item_name}-${item.specification}`} className="flex items-center gap-2 text-[12px]">
                           <span className="font-medium">{item.item_name}</span>
                           {item.specification && (
-                            <span
-                              className="inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-semibold text-white"
-                              style={{ backgroundColor: specColors[j % specColors.length] }}
-                            >
+                            <Badge size="xs" tone="neutral" mono>
                               {item.specification}
-                            </span>
+                            </Badge>
                           )}
-                          <span className="text-[11px]" style={{ color: 'var(--text-tertiary)' }}>
+                          <span className="text-[11px] text-[var(--text-muted)] tabular-nums">
                             {item.delivered}/{item.received}
                           </span>
-                          <span className="text-[11px] font-semibold text-gray-600">
+                          <span className="text-[11px] font-semibold text-[var(--warning-text)]">
                             {item.pending} pending
                           </span>
                         </div>
                       ))}
                     </div>
                   )}
-                </motion.div>
+                </div>
               )
             })}
           </div>
@@ -552,8 +547,6 @@ function BalancesOverview({ data, onShowDetails }: { data: DashboardOverviewData
 
 // ── Today's Deliveries ────────────────────────────────────────────────────────
 
-const SPEC_COLORS = ['#7C3AED', '#0891B2', '#059669', '#D946EF', '#EA580C', '#4F46E5', '#DC2626', '#0D9488']
-
 function TodayDeliveries({ data }: { data: DashboardOverviewData }) {
   const clients = data.todayDeliveries || []
   const totalDelivered = clients.reduce((s, c) => s + c.total_qty, 0)
@@ -561,23 +554,25 @@ function TodayDeliveries({ data }: { data: DashboardOverviewData }) {
   if (clients.length === 0) {
     return (
       <Card>
-        <CardHeader className="border-b border-gray-100 pb-3">
-          <CardTitle className="text-[15px] font-semibold text-gray-900">Today's Deliveries</CardTitle>
+        <CardHeader className="border-b border-[var(--border)] pb-3">
+          <CardTitle className="text-[14px]">Today's Deliveries</CardTitle>
         </CardHeader>
-        <CardContent className="pt-6 pb-6 text-center">
-          <p className="text-[13px] text-gray-400">No deliveries today yet.</p>
+        <CardContent className="py-6 text-center">
+          <p className="text-[13px] text-[var(--text-muted)]">No deliveries recorded today.</p>
         </CardContent>
       </Card>
     )
   }
 
   return (
-    <div className="space-y-5">
-      <div className="flex items-center justify-between">
-        <h3 className="text-[15px] font-semibold text-gray-900">Today's Deliveries</h3>
-        <span className="text-[12px] font-semibold text-gray-900">{totalDelivered.toLocaleString()} pcs delivered</span>
+    <section className="space-y-3">
+      <div className="flex items-center justify-between gap-3">
+        <h2 className="text-[14px] font-semibold">Today's Deliveries</h2>
+        <span className="text-[12px] text-[var(--text-muted)] tabular-nums">
+          <span className="font-semibold text-[var(--text-primary)]">{totalDelivered.toLocaleString()}</span> pcs sent
+        </span>
       </div>
-      {clients.map((client, i) => {
+      {clients.map((client) => {
         const totalPending = client.pending_items?.reduce((s, p) => s + p.pending, 0) || 0
         const allItems = new Map<string, { item_name: string; specification: string; sentToday: number; pending: number; returned: number }>()
         for (const item of client.delivered_items) {
@@ -599,81 +594,93 @@ function TodayDeliveries({ data }: { data: DashboardOverviewData }) {
         const rows = Array.from(allItems.values())
 
         return (
-          <motion.div
-            key={client.client_name}
-            initial={{ opacity: 0, y: 4 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.04 }}
-          >
-            <Card className="overflow-hidden">
-              {/* Client header */}
-              <div className="flex items-center justify-between px-5 py-3 bg-gray-50/80 border-b border-gray-200">
-                <div className="flex items-center gap-2.5">
-                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[11px] font-bold text-white bg-gray-700">
-                    {client.client_name.charAt(0).toUpperCase()}
-                  </div>
-                  <span className="text-[14px] font-semibold text-gray-900">{client.client_name}</span>
-                </div>
-                <div className="flex items-center gap-4 text-[12px]">
-                  {client.has_note_delivery && (
-                    <span className="inline-flex items-center rounded-full bg-amber-50 border border-amber-200 px-2 py-0.5 text-[11px] font-semibold text-amber-700">
-                      Marked by note
-                    </span>
-                  )}
-                  <span className="text-gray-500">Sent today: <span className="font-semibold text-gray-900">{client.total_qty}</span></span>
-                  {totalPending > 0 && (
-                    <span className="text-gray-500">Pending: <span className="font-semibold text-gray-900">{totalPending}</span></span>
-                  )}
-                </div>
+          <Card key={client.client_name} className="overflow-hidden">
+            <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 border-b border-[var(--border)] bg-[var(--surface-2)] px-4 py-2.5">
+              <div className="flex min-w-0 items-center gap-2">
+                <Avatar name={client.client_name} />
+                <span className="truncate text-[13.5px] font-semibold">{client.client_name}</span>
               </div>
-              {(client.note_deliveries ?? []).map((n) => (
-                <div key={n.gate_pass_number} className="px-5 py-2 bg-amber-50/60 border-b border-amber-100 text-[12px] text-amber-800">
-                  <span className="font-mono font-semibold">#{n.gate_pass_number}</span> — {n.note || 'Marked delivered (note)'}
-                </div>
-              ))}
-              {/* Table */}
-              <table className="w-full text-left">
-                <thead>
-                  <tr className="border-b border-gray-100">
-                    <th className="px-5 py-2.5 text-[11px] font-semibold text-gray-400 uppercase tracking-wide w-[40%]">Item</th>
-                    <th className="px-5 py-2.5 text-[11px] font-semibold text-gray-400 uppercase tracking-wide w-[18%]">Specification</th>
-                    <th className="px-5 py-2.5 text-[11px] font-semibold text-gray-400 uppercase tracking-wide w-[14%] text-center">Sent Today</th>
-                    <th className="px-5 py-2.5 text-[11px] font-semibold text-gray-400 uppercase tracking-wide w-[14%] text-center">Returned</th>
-                    <th className="px-5 py-2.5 text-[11px] font-semibold text-gray-400 uppercase tracking-wide w-[14%] text-center">Pending</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {rows.map((row, j) => (
-                    <tr key={`${row.item_name}-${row.specification}`} className="border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition">
-                      <td className="px-5 py-2.5 text-[13px] font-medium text-gray-900">{row.item_name}</td>
-                      <td className="px-5 py-2.5">
-                        {row.specification ? (
-                          <span
-                            className="inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-bold text-white"
-                            style={{ backgroundColor: SPEC_COLORS[j % SPEC_COLORS.length] }}
-                          >
-                            {row.specification}
-                          </span>
-                        ) : (
-                          <span className="text-[12px] text-gray-400">—</span>
-                        )}
-                      </td>
-                      <td className="px-5 py-2.5 text-[13px] font-semibold text-gray-900 text-center">{row.sentToday > 0 ? row.sentToday : '—'}</td>
-                      <td className={`px-5 py-2.5 text-[13px] font-semibold text-center ${row.returned > 0 ? 'text-orange-600' : 'text-gray-400'}`}>
-                        {row.returned > 0 ? row.returned : '—'}
-                      </td>
-                      <td className={`px-5 py-2.5 text-[13px] font-semibold text-center ${row.pending > 0 ? 'text-gray-900' : 'text-gray-400'}`}>
-                        {row.pending > 0 ? row.pending : '—'}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </Card>
-          </motion.div>
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[12px] text-[var(--text-muted)]">
+                {client.has_note_delivery && (
+                  <Badge size="xs" tone="warning">Marked by note</Badge>
+                )}
+                <span className="tabular-nums">
+                  Sent <span className="font-semibold text-[var(--text-primary)]">{client.total_qty}</span>
+                </span>
+                {totalPending > 0 && (
+                  <span className="tabular-nums">
+                    Pending{' '}
+                    <span className="font-semibold text-[var(--warning-text)]">{totalPending}</span>
+                  </span>
+                )}
+              </div>
+            </div>
+            {(client.note_deliveries ?? []).map((n) => (
+              <div
+                key={n.gate_pass_number}
+                className="border-b border-[var(--warning-border)] bg-[var(--warning-soft)] px-4 py-2 text-[12px] text-[var(--warning-text)]"
+              >
+                <span className="font-[family-name:var(--font-mono)] font-semibold">
+                  #{n.gate_pass_number}
+                </span>{' '}
+                — {n.note || 'Marked delivered (note)'}
+              </div>
+            ))}
+            <DataTable
+              data={rows}
+              rowKey={(r) => `${r.item_name}-${r.specification}`}
+              stickyHeader={false}
+              className="[&_th]:px-4 [&_td]:px-4"
+              columns={[
+                { key: 'item', header: 'Item', width: '38%', render: (r) => <span className="font-medium">{r.item_name}</span> },
+                {
+                  key: 'specification',
+                  header: 'Specification',
+                  width: '18%',
+                  render: (r) =>
+                    r.specification ? (
+                      <Badge size="xs" tone="neutral">{r.specification}</Badge>
+                    ) : (
+                      <span className="text-[var(--text-faint)]">—</span>
+                    ),
+                },
+                {
+                  key: 'sentToday',
+                  header: 'Sent',
+                  align: 'right',
+                  numeric: true,
+                  render: (r) => (r.sentToday > 0 ? r.sentToday : <span className="text-[var(--text-faint)]">—</span>),
+                },
+                {
+                  key: 'returned',
+                  header: 'Returned',
+                  align: 'right',
+                  numeric: true,
+                  render: (r) =>
+                    r.returned > 0 ? (
+                      <span className="text-[var(--warning-text)]">{r.returned}</span>
+                    ) : (
+                      <span className="text-[var(--text-faint)]">—</span>
+                    ),
+                },
+                {
+                  key: 'pending',
+                  header: 'Pending',
+                  align: 'right',
+                  numeric: true,
+                  render: (r) =>
+                    r.pending > 0 ? (
+                      <span className="font-semibold">{r.pending}</span>
+                    ) : (
+                      <span className="text-[var(--text-faint)]">—</span>
+                    ),
+                },
+              ]}
+            />
+          </Card>
         )
       })}
-    </div>
+    </section>
   )
 }
 
@@ -694,27 +701,32 @@ function PeriodComparison({ data }: { data: DashboardOverviewData }) {
     <Card>
       <CardHeader className="border-b border-[var(--border)] pb-3">
         <CardTitle className="flex items-center gap-2 text-[14px]">
-          <Timer className="h-4 w-4" style={{ color: 'var(--text-tertiary)' }} /> Period Comparison
+          <Timer className="h-4 w-4" style={{ color: 'var(--text-muted)' }} /> Period Comparison
         </CardTitle>
       </CardHeader>
-      <CardContent className="pt-4">
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+      <CardContent flush>
+        <ul className="grid grid-cols-2 divide-x divide-y divide-[var(--border)] border-b border-[var(--border)] sm:grid-cols-3 lg:grid-cols-6 lg:divide-y-0">
           {comparisons.map((cmp) => {
             const diff = cmp.prev === 0 ? (cmp.cur > 0 ? 100 : 0) : ((cmp.cur - cmp.prev) / Math.max(1, cmp.prev)) * 100
             const improved = cmp.invert ? diff < 0 : diff > 0
             const val = cmp.format === 'lkr' ? `LKR ${fmt(cmp.cur)}` : cmp.cur.toString()
             return (
-              <div key={cmp.label} className="text-center">
-                <p className="text-[11px] font-semibold uppercase tracking-wide mb-1" style={{ color: 'var(--text-tertiary)' }}>{cmp.label}</p>
-                <p className="text-[16px] font-bold" style={{ color: 'var(--text-primary)' }}>{val}</p>
-                <div className={`inline-flex items-center gap-0.5 mt-1 text-[11px] font-semibold ${improved ? 'text-[#16A34A]' : 'text-[#DC2626]'}`}>
+              <li key={cmp.label} className="px-3.5 py-3">
+                <p className="section-label">{cmp.label}</p>
+                <p className="mt-1 text-[15px] font-semibold tabular-nums">{val}</p>
+                <p
+                  className={`mt-0.5 inline-flex items-center gap-0.5 text-[11px] font-semibold tabular-nums ${
+                    improved ? 'text-[var(--success-text)]' : 'text-[var(--danger-text)]'
+                  }`}
+                >
                   {improved ? <ArrowUpRight className="h-3 w-3" /> : <ArrowDownRight className="h-3 w-3" />}
-                  {Math.abs(diff).toFixed(0)}% vs prev
-                </div>
-              </div>
+                  {Math.abs(diff).toFixed(0)}%
+                  <span className="font-normal text-[var(--text-faint)]">vs prev</span>
+                </p>
+              </li>
             )
           })}
-        </div>
+        </ul>
       </CardContent>
     </Card>
   )
@@ -730,47 +742,63 @@ function ItemAnalytics({ data }: { data: DashboardOverviewData }) {
     <Card>
       <CardHeader className="border-b border-[var(--border)] pb-3">
         <CardTitle className="flex items-center gap-2 text-[14px]">
-          <Layers className="h-4 w-4" style={{ color: 'var(--text-tertiary)' }} /> Item Analytics
+          <Layers className="h-4 w-4" style={{ color: 'var(--text-muted)' }} /> Item Analytics
         </CardTitle>
       </CardHeader>
-      <CardContent className="pt-0 overflow-x-auto">
-        {items.length === 0 ? (
-          <div className="py-8 text-center text-[13px]" style={{ color: 'var(--text-tertiary)' }}>No item data yet</div>
-        ) : (
-          <table className="w-full text-[13px]">
-            <thead className="border-b border-[var(--border)]">
-              <tr>
-                {['Item', 'Received', 'Delivered', 'Pending', 'Clients'].map(h => (
-                  <th key={h} className="px-3 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wide" style={{ color: 'var(--text-tertiary)' }}>{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-[var(--border)]">
-              {items.map((item, i) => (
-                <motion.tr key={item.item_name} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.03 }} className="hover:bg-[var(--surface-hover)]">
-                  <td className="px-3 py-2.5 font-medium">{item.item_name}</td>
-                  <td className="px-3 py-2.5">
-                    <div className="flex items-center gap-2">
-                      <span className="font-semibold">{item.total_received}</span>
-                      <div className="h-1.5 flex-1 bg-[var(--border)] rounded-full overflow-hidden max-w-[60px]">
-                        <div className="h-full bg-[#2563EB] rounded-full" style={{ width: `${(item.total_received / maxReceived) * 100}%` }} />
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-3 py-2.5 text-[#16A34A] font-semibold">{item.total_delivered}</td>
-                  <td className="px-3 py-2.5">
-                    {item.pending > 0 ? (
-                      <span className="inline-flex items-center rounded-full bg-[#FFF7ED] border border-[#FED7AA] px-2 py-0.5 text-[11px] font-semibold text-[#C2410C]">{item.pending}</span>
-                    ) : (
-                      <span className="text-[#16A34A]">—</span>
-                    )}
-                  </td>
-                  <td className="px-3 py-2.5" style={{ color: 'var(--text-tertiary)' }}>{item.client_count}</td>
-                </motion.tr>
-              ))}
-            </tbody>
-          </table>
-        )}
+      <CardContent flush>
+        <DataTable
+          data={items}
+          rowKey={(i) => i.item_name}
+          stickyHeader={false}
+          mobilePrimary={['item']}
+          emptyState={<p className="py-8 text-center text-[13px] text-[var(--text-muted)]">No item data yet</p>}
+          columns={[
+            { key: 'item', header: 'Item', render: (i) => <span className="font-medium">{i.item_name}</span> },
+            {
+              key: 'received',
+              header: 'Received',
+              numeric: true,
+              render: (i) => (
+                <div className="flex items-center justify-end gap-2">
+                  <span className="font-semibold">{i.total_received}</span>
+                  <div className="h-1.5 w-[50px] overflow-hidden rounded-full bg-[var(--surface-3)]">
+                    <div
+                      className="h-full rounded-full bg-[var(--info-text)]"
+                      style={{ width: `${(i.total_received / maxReceived) * 100}%` }}
+                    />
+                  </div>
+                </div>
+              ),
+            },
+            {
+              key: 'delivered',
+              header: 'Delivered',
+              numeric: true,
+              render: (i) => (
+                <span className={i.total_delivered > 0 ? 'text-[var(--success-text)]' : 'text-[var(--text-faint)]'}>
+                  {i.total_delivered > 0 ? i.total_delivered : '—'}
+                </span>
+              ),
+            },
+            {
+              key: 'pending',
+              header: 'Pending',
+              numeric: true,
+              render: (i) =>
+                i.pending > 0 ? (
+                  <span className="font-semibold text-[var(--warning-text)]">{i.pending}</span>
+                ) : (
+                  <span className="text-[var(--text-faint)]">—</span>
+                ),
+            },
+            {
+              key: 'clients',
+              header: 'Clients',
+              numeric: true,
+              render: (i) => <span className="text-[var(--text-muted)]">{i.client_count}</span>,
+            },
+          ]}
+        />
       </CardContent>
     </Card>
   )
@@ -783,11 +811,11 @@ function OutstandingAgingChart({ data }: { data: DashboardOverviewData }) {
   const total = aging.current + aging['30_day'] + aging['60_day'] + aging['90_day'] + aging.over_90
 
   const bars = [
-    { label: 'Current', value: aging.current, color: '#16A34A' },
-    { label: '1-30 days', value: aging['30_day'], color: '#F59E0B' },
-    { label: '31-60 days', value: aging['60_day'], color: '#F97316' },
-    { label: '61-90 days', value: aging['90_day'], color: '#EF4444' },
-    { label: '90+ days', value: aging.over_90, color: '#991B1B' },
+    { label: 'Current', value: aging.current, color: 'var(--success-text)' },
+    { label: '1-30 days', value: aging['30_day'], color: 'var(--warning-text)' },
+    { label: '31-60 days', value: aging['60_day'], color: 'var(--warning-text)' },
+    { label: '61-90 days', value: aging['90_day'], color: 'var(--danger-text)' },
+    { label: '90+ days', value: aging.over_90, color: 'var(--danger-text)' },
   ]
 
   return (
@@ -795,31 +823,31 @@ function OutstandingAgingChart({ data }: { data: DashboardOverviewData }) {
       <CardHeader className="border-b border-[var(--border)] pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2 text-[14px]">
-            <BarChart3 className="h-4 w-4" style={{ color: 'var(--text-tertiary)' }} /> Outstanding Aging
+            <BarChart3 className="h-4 w-4" style={{ color: 'var(--text-muted)' }} /> Outstanding Aging
           </CardTitle>
           <span className="text-[13px] font-semibold" style={{ color: 'var(--text-primary)' }}>LKR {fmt(total)}</span>
         </div>
       </CardHeader>
       <CardContent className="pt-4">
         {total === 0 ? (
-          <div className="py-8 text-center text-[13px]" style={{ color: 'var(--text-tertiary)' }}>No outstanding bills</div>
+          <div className="py-8 text-center text-[13px] text-[var(--text-muted)]">Nothing outstanding</div>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-2.5">
             {bars.map((b) => {
               const pct = total > 0 ? (b.value / total) * 100 : 0
               return (
                 <div key={b.label}>
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-[12px] font-medium">{b.label}</span>
-                    <span className="text-[12px] font-semibold">LKR {fmt(b.value)} <span className="font-normal" style={{ color: 'var(--text-tertiary)' }}>({pct.toFixed(0)}%)</span></span>
+                    <span className="text-[12px] font-semibold tabular-nums">
+                      LKR {fmt(b.value)}{' '}
+                      <span className="font-normal text-[var(--text-muted)]">{pct.toFixed(0)}%</span>
+                    </span>
                   </div>
-                  <div className="h-2.5 bg-[var(--border)] rounded-full overflow-hidden">
-                    <motion.div
-                      initial={{ width: 0 }}
-                      animate={{ width: `${pct}%` }}
-                      transition={{ duration: 0.6, ease: 'easeOut' }}
+                  <div className="h-1.5 overflow-hidden rounded-full bg-[var(--surface-3)]">
+                    <div
                       className="h-full rounded-full"
-                      style={{ backgroundColor: b.color }}
+                      style={{ width: `${pct}%`, backgroundColor: b.color }}
                     />
                   </div>
                 </div>
@@ -838,51 +866,54 @@ function QuotationFunnel({ data }: { data: DashboardOverviewData }) {
   const { current: c } = data
   const total = c.quotationsDraft + c.quotationsSent + c.quotationsAccepted
   const stages = [
-    { label: 'Draft', count: c.quotationsDraft, color: '#6B7280', bg: '#F9FAFB' },
-    { label: 'Sent', count: c.quotationsSent, color: '#2563EB', bg: '#EFF6FF' },
-    { label: 'Accepted', count: c.quotationsAccepted, color: '#16A34A', bg: '#F0FDF4' },
+    { label: 'Draft', count: c.quotationsDraft, color: 'var(--text-muted)', bg: 'var(--surface-2)' },
+    { label: 'Sent', count: c.quotationsSent, color: 'var(--info-text)', bg: 'var(--info-soft)' },
+    { label: 'Accepted', count: c.quotationsAccepted, color: 'var(--success-text)', bg: 'var(--success-soft)' },
   ]
 
   return (
     <Card>
       <CardHeader className="border-b border-[var(--border)] pb-3">
         <CardTitle className="flex items-center gap-2 text-[14px]">
-          <Target className="h-4 w-4" style={{ color: 'var(--text-tertiary)' }} /> Quotation Funnel
+          <Target className="h-4 w-4" style={{ color: 'var(--text-muted)' }} /> Quotation Funnel
         </CardTitle>
       </CardHeader>
-      <CardContent className="pt-4">
+      <CardContent flush>
         {total === 0 ? (
-          <div className="py-8 text-center text-[13px]" style={{ color: 'var(--text-tertiary)' }}>No quotations yet</div>
+          <p className="py-8 text-center text-[13px] text-[var(--text-muted)]">No quotations yet</p>
         ) : (
-          <div className="space-y-3">
-            {stages.map((s, i) => {
-              const pct = total > 0 ? (s.count / total) * 100 : 0
-              const width = Math.max(pct, 8)
-              return (
-                <div key={s.label} className="flex items-center gap-3">
-                  <span className="w-16 text-right text-[12px] font-medium" style={{ color: s.color }}>{s.label}</span>
-                  <div className="flex-1 flex items-center">
-                    <motion.div
-                      initial={{ width: 0 }}
-                      animate={{ width: `${width}%` }}
-                      transition={{ duration: 0.5, delay: i * 0.1 }}
-                      className="h-8 rounded-lg flex items-center px-3"
-                      style={{ backgroundColor: s.bg, border: `1px solid ${s.color}20` }}
-                    >
-                      <span className="text-[13px] font-bold" style={{ color: s.color }}>{s.count}</span>
-                    </motion.div>
-                  </div>
-                  <span className="text-[12px] w-12 text-right" style={{ color: 'var(--text-tertiary)' }}>{pct.toFixed(0)}%</span>
-                </div>
-              )
-            })}
+          <>
+            <ul className="divide-y divide-[var(--border)]">
+              {stages.map((s) => {
+                const pct = total > 0 ? (s.count / total) * 100 : 0
+                return (
+                  <li key={s.label} className="px-3.5 py-2.5">
+                    <div className="flex items-baseline justify-between gap-3">
+                      <span className="text-[12.5px] font-medium">{s.label}</span>
+                      <span className="text-[12.5px] font-semibold tabular-nums">
+                        {s.count}
+                        <span className="ml-1.5 font-normal text-[var(--text-muted)]">{pct.toFixed(0)}%</span>
+                      </span>
+                    </div>
+                    <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-[var(--surface-3)]">
+                      <div
+                        className="h-full rounded-full"
+                        style={{ width: `${Math.max(pct, 2)}%`, backgroundColor: s.color }}
+                      />
+                    </div>
+                  </li>
+                )
+              })}
+            </ul>
             {c.quotationAcceptedValue > 0 && (
-              <div className="pt-2 border-t border-[var(--border)] text-center">
-                <span className="text-[12px]" style={{ color: 'var(--text-tertiary)' }}>Accepted Value: </span>
-                <span className="text-[14px] font-bold text-[#16A34A]">LKR {fmt(c.quotationAcceptedValue)}</span>
+              <div className="flex items-center justify-between border-t border-[var(--border)] px-3.5 py-2.5">
+                <span className="text-[12px] text-[var(--text-muted)]">Accepted value</span>
+                <span className="text-[13px] font-semibold tabular-nums text-[var(--success-text)]">
+                  LKR {fmt(c.quotationAcceptedValue)}
+                </span>
               </div>
             )}
-          </div>
+          </>
         )}
       </CardContent>
     </Card>
@@ -898,36 +929,36 @@ function YearlyTrendChart({ data }: { data: DashboardOverviewData }) {
     <Card>
       <CardHeader className="border-b border-[var(--border)] pb-3">
         <CardTitle className="flex items-center gap-2 text-[14px]">
-          <TrendingUp className="h-4 w-4" style={{ color: 'var(--text-tertiary)' }} /> 12-Month Trend
+          <TrendingUp className="h-4 w-4" style={{ color: 'var(--text-muted)' }} /> 12-Month Trend
         </CardTitle>
       </CardHeader>
-      <CardContent className="pt-4" style={{ height: 280 }}>
+      <CardContent className="h-[260px] pt-4">
         {trend.length === 0 ? (
-          <div className="flex items-center justify-center h-full text-[13px]" style={{ color: 'var(--text-tertiary)' }}>No data yet</div>
+          <div className="flex items-center justify-center h-full text-[13px]" style={{ color: 'var(--text-muted)' }}>No data yet</div>
         ) : (
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart data={trend}>
               <defs>
                 <linearGradient id="gradYearRevenue" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#DC2626" stopOpacity={0.15} />
-                  <stop offset="100%" stopColor="#DC2626" stopOpacity={0} />
+                  <stop offset="0%" stopColor="var(--brand)" stopOpacity={0.15} />
+                  <stop offset="100%" stopColor="var(--brand)" stopOpacity={0} />
                 </linearGradient>
                 <linearGradient id="gradYearCollected" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#16A34A" stopOpacity={0.15} />
-                  <stop offset="100%" stopColor="#16A34A" stopOpacity={0} />
+                  <stop offset="0%" stopColor="var(--success-text)" stopOpacity={0.15} />
+                  <stop offset="100%" stopColor="var(--success-text)" stopOpacity={0} />
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-              <XAxis dataKey="label" tick={{ fontSize: 10, fill: 'var(--text-tertiary)' }} />
-              <YAxis tick={{ fontSize: 10, fill: 'var(--text-tertiary)' }} />
+              <XAxis dataKey="label" tick={{ fontSize: 10, fill: 'var(--text-muted)' }} />
+              <YAxis tick={{ fontSize: 10, fill: 'var(--text-muted)' }} />
               <RechartsTooltip
                 contentStyle={{ borderRadius: 8, border: '1px solid var(--border)', fontSize: 12 }}
                 formatter={(v: number, name: string) => [`LKR ${v.toLocaleString()}`, name]}
               />
-              <Area type="monotone" dataKey="revenue" stroke="#DC2626" fill="url(#gradYearRevenue)" strokeWidth={2} name="Revenue" />
-              <Area type="monotone" dataKey="collected" stroke="#16A34A" fill="url(#gradYearCollected)" strokeWidth={2} name="Collected" />
-              <Bar dataKey="bills" fill="#E5E7EB" radius={[3, 3, 0, 0]} name="Bills" barSize={16} />
-              <Legend wrapperStyle={{ fontSize: 11 }} />
+              <Area type="monotone" dataKey="revenue" stroke="var(--brand)" fill="url(#gradYearRevenue)" strokeWidth={2} name="Revenue" />
+              <Area type="monotone" dataKey="collected" stroke="var(--success-text)" fill="url(#gradYearCollected)" strokeWidth={2} name="Collected" />
+              <Bar dataKey="bills" fill="var(--border-2)" radius={[3, 3, 0, 0]} name="Bills" barSize={16} />
+              <Legend wrapperStyle={{ fontSize: 11.5, color: 'var(--text-muted)' }} iconType="plainline" />
             </ComposedChart>
           </ResponsiveContainer>
         )}
@@ -941,22 +972,12 @@ function YearlyTrendChart({ data }: { data: DashboardOverviewData }) {
 export default function DashboardPage() {
   const [period, setPeriod] = useState<DashboardPeriod>('month')
   const { data, isLoading } = useDashboardOverview(period)
-  const [showExport, setShowExport] = useState(false)
   const [showBalances, setShowBalances] = useState(false)
-  const exportRef = useRef<HTMLDivElement>(null)
 
-  useEffect(() => {
-    if (!showExport) return
-    const handler = (e: MouseEvent) => {
-      if (exportRef.current && !exportRef.current.contains(e.target as Node)) {
-        setShowExport(false)
-      }
-    }
-    document.addEventListener('mousedown', handler)
-    return () => document.removeEventListener('mousedown', handler)
-  }, [showExport])
-
-  const handleExport = async (type: 'gatepasses' | 'bills' | 'deliveries', format: 'csv' | 'xlsx' = 'csv') => {
+  const handleExport = async (
+    type: 'gatepasses' | 'bills' | 'deliveries',
+    format: 'csv' | 'xlsx' = 'csv',
+  ) => {
     try {
       if (format === 'xlsx') {
         await reports.exportExcel(type)
@@ -967,71 +988,52 @@ export default function DashboardPage() {
     } catch {
       toast.error('Export failed')
     }
-    setShowExport(false)
   }
 
   return (
-    <div className="space-y-5 pb-10 select-none">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <div>
-          <div className="inline-flex items-center gap-2 mb-1.5">
-            <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
-            <p className="text-[11px] sm:text-[12px] font-semibold uppercase tracking-wide" style={{ color: 'var(--text-tertiary)' }}>
-              Love Laundry · Medagama, Panirendawa
-            </p>
-          </div>
-          <h1 className="text-dashboard-title">Dashboard</h1>
-          <p className="text-page-subtitle">
-            Business overview — Registration No: 40-3064
-          </p>
-          <SyncStatusBar queryKey={['dashboard']} label="Dashboard" className="mt-2" />
-        </div>
-        <div className="flex items-center gap-2 shrink-0">
-          <div className="relative" ref={exportRef}>
-            <Button variant="outline" size="sm" onClick={() => setShowExport(!showExport)}>
-              <Download className="h-3.5 w-3.5 mr-1.5" /> Export
+    <div className="space-y-4">
+      <PageHeader
+        title="Dashboard"
+        subtitle="Business overview — Love Laundry, Medagama · Reg. No. 40-3064"
+        actions={
+          <>
+            <DropdownMenu
+              label="Export options"
+              groups={[
+                {
+                  label: 'Server export',
+                  items: EXPORT_TARGETS.flatMap(([type, label]) => [
+                    { id: `${type}-csv`, label: `${label} · CSV`, onSelect: () => handleExport(type, 'csv') },
+                    { id: `${type}-xlsx`, label: `${label} · Excel`, onSelect: () => handleExport(type, 'xlsx') },
+                  ]),
+                },
+              ]}
+              trigger={(p) => (
+                <Button {...(p as any)} variant="secondary" size="sm">
+                  <Download aria-hidden />
+                  Export
+                </Button>
+              )}
+            />
+            <Button asChild size="sm" variant="primary">
+              <Link to="/quotations/new">
+                <Plus aria-hidden />
+                New Quotation
+              </Link>
             </Button>
-            {showExport && (
-              <div className="absolute right-0 top-full mt-1 z-50 bg-[var(--surface)] border border-[var(--border)] rounded-xl shadow-lg py-1 min-w-[200px]">
-                {([['gatepasses', 'Gate Passes'], ['bills', 'Bills'], ['deliveries', 'Deliveries']] as const).map(([type, label]) => (
-                  <div key={type} className="flex border-b border-[var(--border)] last:border-0">
-                    <button onClick={() => handleExport(type, 'csv')} className="flex-1 text-left px-4 py-2 text-[13px] hover:bg-[var(--surface-hover)] transition font-medium">
-                      {label} <span className="text-[10px] text-[var(--text-tertiary)]">CSV</span>
-                    </button>
-                    <button onClick={() => handleExport(type, 'xlsx')} className="flex-1 text-left px-4 py-2 text-[13px] hover:bg-[var(--surface-hover)] transition font-medium">
-                      {label} <span className="text-[10px] text-[var(--text-tertiary)]">Excel</span>
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-          <Link to="/quotations/new">
-            <Button size="sm" className="shadow-sm">
-              <Plus className="h-3.5 w-3.5 mr-1" /> New Quotation
-            </Button>
-          </Link>
-        </div>
-      </div>
+          </>
+        }
+      >
+        <SyncStatusBar queryKey={['dashboard']} label="Dashboard" />
+      </PageHeader>
 
-      {/* Period Selector */}
-      <div className="flex gap-1 overflow-x-auto pb-0.5">
-        {PERIODS.map(p => (
-          <button
-            key={p.value}
-            onClick={() => setPeriod(p.value)}
-            className={`rounded-xl px-4 py-2 text-[13px] font-medium whitespace-nowrap transition cursor-pointer ${
-              period === p.value
-                ? 'bg-[#DC2626] text-white shadow-sm'
-                : 'hover:bg-[var(--surface-hover)]'
-            }`}
-            style={period !== p.value ? { color: 'var(--text-secondary)' } : {}}
-          >
-            {p.label}
-          </button>
-        ))}
-      </div>
+      {/* Period selector */}
+      <Tabs
+        aria-label="Dashboard period"
+        value={period}
+        onValueChange={(v) => setPeriod(v as DashboardPeriod)}
+        items={PERIODS.map((p) => ({ value: p.value, label: p.label }))}
+      />
 
       {/* Content */}
       {isLoading ? (
@@ -1049,12 +1051,7 @@ export default function DashboardPage() {
           </div>
         </div>
       ) : data ? (
-        <motion.div
-          key={period}
-          initial={{ opacity: 0, y: 4 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="space-y-4"
-        >
+        <div key={period} className="space-y-4">
           <AlertBanners data={data} />
           <KpiCards data={data} />
           <BalancesOverview data={data} onShowDetails={() => setShowBalances(true)} />
@@ -1071,9 +1068,9 @@ export default function DashboardPage() {
             <YearlyTrendChart data={data} />
           </div>
           <ActivityTimeline data={data} />
-        </motion.div>
+        </div>
       ) : (
-        <div className="text-center py-20 text-[13px]" style={{ color: 'var(--text-tertiary)' }}>
+        <div className="text-center py-20 text-[13px]" style={{ color: 'var(--text-muted)' }}>
           No data available. Start by creating a gate pass or bill.
         </div>
       )}
