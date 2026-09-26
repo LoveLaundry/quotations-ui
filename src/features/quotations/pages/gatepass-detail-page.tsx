@@ -16,14 +16,17 @@ import { Skeleton } from '../../../components/ui/skeleton'
 import { Breadcrumb } from '../../../components/ui/breadcrumb'
 import { formatDate } from '../../../lib/utils'
 import { DATE_CORRECTION_REASONS } from '../../../lib/date-corrections'
-import { useGatePass, useUpdateGatePassStatus, useAdjustGatePass, useUpdateGatePassDate, useCreateBillFromGatePass, useUpdateGatePass, useMarkGatePassDelivered, useReopenLegacyGatePass } from '../hooks/useGatePasses'
-import { useDeliveries, useUpdateDeliveryDate } from '../hooks/useDeliveries'
+import { useGatePass, useGatePassBalance, useGatePassDeliveries, useUpdateGatePassStatus, useAdjustGatePass, useUpdateGatePassDate, useCreateBillFromGatePass, useUpdateGatePass, useMarkGatePassDelivered, useReopenLegacyGatePass } from '../hooks/useGatePasses'
+import { useUpdateDeliveryDate } from '../hooks/useDeliveries'
 import { useQuotation } from '../hooks/useQuotations'
 import { returns as returnsApi } from '../services/returns.service'
 import { SearchableSelect } from '../../../components/ui'
 import { toQuotationOptions, type QuotationOption } from './create-gatepass-page'
-import type { Return, ReturnItem } from '../../../types/operations'
+import type { GatePassBalanceItem, Return } from '../../../types/operations'
 import { ops, type TransactionEvent } from '../../today/services/ops.service'
+
+/** Stable empty array so `?? NO_ITEMS` doesn't invalidate memos on every render. */
+const NO_ITEMS: never[] = []
 
 const STATUS_CONFIG: Record<string, { label: string; bg: string; text: string; border: string; dot: string }> = {
     RECEIVED: { label: 'Received', bg: '#EFF6FF', text: '#2563EB', border: '#BFDBFE', dot: '#3B82F6' },
@@ -142,7 +145,11 @@ export default function GatePassDetailPage() {
     const { id } = useParams()
     
     const { data: gp, isLoading, isError, error } = useGatePass(id)
-    const { data: deliveries = [] } = useDeliveries({ gate_pass_id: id })
+    // The server's canonical balance for THIS pass, and the deliveries that drew
+    // lines from it (each carrying only its own lines for this pass).
+    const { data: balance } = useGatePassBalance(id)
+    const { data: gpDeliveries } = useGatePassDeliveries(id)
+    const deliveries = useMemo(() => gpDeliveries?.deliveries ?? [], [gpDeliveries])
     const updateStatus = useUpdateGatePassStatus()
     const adjust = useAdjustGatePass()
     const markDelivered = useMarkGatePassDelivered()
@@ -202,26 +209,24 @@ export default function GatePassDetailPage() {
         !!quotationQuery.data && name.trim() !== '' &&
         !allQuotationItemNames.has(name.trim().toLowerCase())
 
-    const deliveredMap = useMemo(() => {
-        const map: Record<string, number> = {}
-        if (gp?.marked_delivered) {
-            // Completed via catch-up note when the dispatch was never recorded —
-            // every received item counts as delivered so nothing stays pending.
-            for (const it of gp.items) {
-                const key = `${it.item_name}||${it.specification || ''}`
-                map[key] = it.received_qty
-            }
-            return map
-        }
-        for (const d of deliveries) {
-            if (d.status === 'CANCELLED') continue
-            for (const it of d.items) {
-                const key = `${it.item_name}||${it.specification || ''}`
-                map[key] = (map[key] || 0) + it.quantity
-            }
-        }
+    /**
+     * Canonical per-item balance, straight from the server.
+     *
+     * This page used to build `deliveredMap` and `returnedMap` itself and then
+     * subtract per item. That had three problems: a delivery spanning two gate
+     * passes charged all its lines to whichever pass this screen asked about,
+     * a legacy `marked_delivered` pass had its received quantity faked as
+     * delivered, and the resulting number could disagree with the delivery
+     * form's view of the same linen. The server owns this arithmetic now.
+     */
+    const balanceItems = balance?.items ?? NO_ITEMS
+    const balanceByKey = useMemo(() => {
+        const map: Record<string, GatePassBalanceItem> = {}
+        for (const row of balanceItems) map[row.item_key] = row
         return map
-    }, [deliveries, gp])
+    }, [balanceItems])
+
+    const itemKey = (name: string, spec?: string | null) => `${name}||${spec || ''}`
 
     const { data: returnsList = [] } = useQuery({
         queryKey: ['returns', 'detail', id],
@@ -233,23 +238,6 @@ export default function GatePassDetailPage() {
         enabled: Boolean(id),
         staleTime: 60_000,
     })
-
-    const returnedMap = useMemo(() => {
-// Returns carry their own gate_pass_id, so only returns raised on THIS
-        // gate pass count towards its pending balance.
-        const gpId = (gp as { _id?: string } | null)?._id ?? gp?.id
-        const map: Record<string, number> = {}
-        for (const ret of returnsList) {
-            if (String(ret.gate_pass_id ?? '') !== String(gpId ?? '')) continue
-            for (const item of (ret.items ?? []) as ReturnItem[]) {
-                if ((item.action === 'RECEIVE_BACK' || item.action === 'RE_WASH') && item.resend_status !== 'SENT') {
-                    const key = `${item.item_name}||${item.specification || ''}`
-                    map[key] = (map[key] || 0) + (Number(item.returned_qty) || 0)
-                }
-            }
-        }
-        return map
-    }, [returnsList, gp])
 
     // ── Activity journal (append-only timeline from the event service) ───────
     const { data: journal = [] } = useQuery({
@@ -285,9 +273,11 @@ export default function GatePassDetailPage() {
     const totalReceived = (gp.items ?? []).reduce((s: number, i: any) => s + i.received_qty, 0)
     const mismatches = (gp.items ?? []).filter((i: any) => i.difference !== 0)
 
-    const totalDelivered = (gp.items ?? []).reduce((s: number, i: any) => s + (deliveredMap[`${i.item_name}||${i.specification || ''}`] || 0), 0)
-    const totalReturned = (gp.items ?? []).reduce((s: number, i: any) => s + (returnedMap[`${i.item_name}||${i.specification || ''}`] || 0), 0)
-    const totalPending = totalReceived - totalDelivered + totalReturned
+    // Totals come from the server's balance document, never from a local sum.
+    // While it is still loading we fall back to the raw received total rather
+    // than showing a pending figure derived from a half-populated map.
+    const totalDelivered = balance?.totals.delivered_qty ?? 0
+    const totalPending = balance?.totals.outstanding_delivery_qty ?? 0
 
     const handleAdjust = (itemName: string, spec = '') => {
         const item = gp.items.find((i: any) => i.item_name === itemName && (i.specification || '') === spec)
@@ -625,7 +615,7 @@ export default function GatePassDetailPage() {
 
             {/* Completed by note (delivery was never recorded) */}
             {gp.marked_delivered && (
-                deliveries.some(d => d.status !== 'CANCELLED') ? (
+                deliveries.some((d: { status?: string }) => d.status !== 'CANCELLED') ? (
                     <Card className="border-[#BBF7D0] bg-[#F0FDF4] p-4">
                         <div className="flex items-start gap-2.5">
                             <CheckCircle2 className="h-4 w-4 text-[#16A34A] mt-0.5 shrink-0" />
@@ -926,14 +916,14 @@ export default function GatePassDetailPage() {
                                             <td className="py-3 pr-3 text-[#6B7280]">{item.category || '—'}</td>
                                             <td className="py-3 pr-3 text-[#6B7280]">{item.client_qty}</td>
                                             <td className="py-3 pr-3 font-semibold text-[#101828]">{item.received_qty}</td>
-                                            <td className="py-3 pr-3 text-[#6B7280]">{deliveredMap[`${item.item_name}||${item.specification || ''}`] || 0}</td>
-                                            <td className="py-3 pr-3 text-[#6B7280]">{returnedMap[`${item.item_name}||${item.specification || ''}`] || 0}</td>
+                                            <td className="py-3 pr-3 text-[#6B7280]">{balanceByKey[itemKey(item.item_name, item.specification)]?.delivered_qty ?? 0}</td>
+                                            <td className="py-3 pr-3 text-[#6B7280]">{balanceByKey[itemKey(item.item_name, item.specification)]?.returned_back_qty ?? 0}</td>
                                             <td className="py-3 pr-3">
                                                 {(() => {
-                                                    const dKey = `${item.item_name}||${item.specification || ''}`
-                                                    const delivered = deliveredMap[dKey] || 0
-                                                    const retQty = returnedMap[dKey] || 0
-                                                    const pending = item.received_qty - delivered + retQty
+                                                    // Server-computed outstanding, including
+                                                    // returns awaiting a re-send.
+                                                    const row = balanceByKey[itemKey(item.item_name, item.specification)]
+                                                    const pending = row?.outstanding_delivery_qty ?? 0
                                                     return pending > 0 ? (
                                                         <span className="font-semibold text-[#EA580C]">{pending}</span>
                                                     ) : (

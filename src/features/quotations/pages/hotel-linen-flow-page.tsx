@@ -18,9 +18,9 @@ import { Skeleton } from '../../../components/ui/skeleton'
 import { Breadcrumb } from '../../../components/ui/breadcrumb'
 import { SyncStatusBar } from '../../../components/ui/sync-status-bar'
 import { formatDate } from '../../../lib/utils'
-import { useGatePasses } from '../hooks/useGatePasses'
+import { useLinenFlow } from '../hooks/useLinenFlow'
 import { useDeliveries } from '../hooks/useDeliveries'
-import type { GatePass, Delivery } from '../../../types/operations'
+import type { GatePass, Delivery, LinenFlowResponse } from '../../../types/operations'
 
 // ── Tree scene constants ──────────────────────────────────────────────────────
 const W = 1000
@@ -56,9 +56,15 @@ function gpKey(gp: GatePass) {
 type Period = 'all' | 'month' | 'quarter' | 'year'
 
 interface GpNode {
+  /** The gate pass document, for identity and navigation only. */
   gp: GatePass
+  /** Server-computed. Never derived in the browser. */
   received: number
   delivered: number
+  pending: number
+  /** Only the lines still owing linen, from the server's balance. */
+  outstandingItems: LinenFlowResponse['hotels'][number]['gate_passes'][number]['outstanding_items']
+  /** Delivery rows that drew from this pass, for the leaf chips. */
   deliveries: Delivery[]
 }
 
@@ -68,6 +74,8 @@ interface HotelNode {
   unlinked: Delivery[]
   received: number
   delivered: number
+  /** Server-computed, and it accounts for returns. */
+  pending: number
 }
 
 interface Fruit {
@@ -139,79 +147,90 @@ export default function HotelLinenFlowPage() {
   const [hotelSearch, setHotelSearch] = useState('')
   const [period, setPeriod] = useState<Period>('all')
 
-  const { data: rawGatePasses = [], isLoading: gpLoading, isError: gpError, error: gpErrorObj } = useGatePasses()
+  // Every quantity on this screen comes from the server's balance engine.
+  // Deliveries are still fetched, but only to render the leaf chips — the
+  // numbers are never derived from them here.
+  const { data: flow, isLoading: flowLoading, isError: flowError, error: flowErrorObj } = useLinenFlow(period)
   const { data: rawDeliveries = [], isLoading: delLoading, isError: delError, error: delErrorObj } = useDeliveries()
 
-  const isLoading = gpLoading || delLoading
-  const isError = gpError || delError
-  const errorMessage = (gpErrorObj ?? delErrorObj) instanceof Error
-    ? ((gpErrorObj ?? delErrorObj) as Error).message
+  const isLoading = flowLoading || delLoading
+  const isError = flowError || delError
+  const errorMessage = (flowErrorObj ?? delErrorObj) instanceof Error
+    ? ((flowErrorObj ?? delErrorObj) as Error).message
     : 'Unable to load linen flow data'
 
   const hotels = useMemo<HotelNode[]>(() => {
-    let cutoff = ''
-    if (period !== 'all') {
-      const now = new Date()
-      const year = now.getFullYear()
-      const month = now.getMonth()
-      const start =
-        period === 'month'
-          ? new Date(year, month, 1)
-          : period === 'quarter'
-            ? new Date(year, Math.floor(month / 3) * 3, 1)
-            : new Date(year, 0, 1)
-      cutoff = start.toISOString().slice(0, 10)
-    }
-    const inPeriod = (date: string) => {
-      const day = (date ?? '').slice(0, 10)
-      return !day || !cutoff || day >= cutoff
-    }
-
     const byHotel = new Map<string, HotelNode>()
     const pushHotel = (name: string) => {
       const key = name || 'Unknown'
       if (!byHotel.has(key)) {
-        byHotel.set(key, { name: key, gatePasses: [], unlinked: [], received: 0, delivered: 0 })
+        byHotel.set(key, {
+          name: key,
+          gatePasses: [],
+          unlinked: [],
+          received: 0,
+          delivered: 0,
+          pending: 0,
+        })
       }
       return byHotel.get(key)!
     }
 
-    const gpById = new Map<string, GatePass>()
-    for (const gp of rawGatePasses) {
-      if (!inPeriod(gp.receiving_date)) continue
-      gpById.set(gpKey(gp), gp)
+    // Index deliveries by every pass they drew from, so a delivery spanning two
+    // passes shows up under both. The old code matched on the delivery's own
+    // gate_pass_id only, which hung all of its pieces off the primary pass and
+    // left the other pass looking untouched.
+    const deliveriesByGp = new Map<string, Delivery[]>()
+    const linkedIds = new Set<string>()
+    for (const d of rawDeliveries ?? []) {
+      if (d.status === 'CANCELLED') continue
+      const ids = (d.source_gate_pass_ids?.length ? d.source_gate_pass_ids : [d.gate_pass_id])
+        .filter(Boolean)
+        .map(String)
+      if (ids.length === 0) continue
+      linkedIds.add(d.id)
+      for (const id of ids) {
+        const bucket = deliveriesByGp.get(id)
+        if (bucket) bucket.push(d)
+        else deliveriesByGp.set(id, [d])
+      }
     }
 
-    for (const gp of gpById.values()) {
-      const hotel = pushHotel(gp.client_name)
-      const received = pieces(gp.items)
-      const deliveries = rawDeliveries.filter(d => d.gate_pass_id === gpKey(gp))
-      const recorded = deliveries.reduce((sum, d) => sum + pieces(d.items), 0)
-      // A gate pass catch-up marked as delivered counts as fully delivered
-      // even when the dispatch was never recorded, so it must not show pending.
-      const markedDelivered = Boolean((gp as { marked_delivered?: unknown }).marked_delivered)
-      const delivered = markedDelivered ? Math.max(received, recorded) : recorded
-      hotel.gatePasses.push({ gp, received, delivered, deliveries })
-      hotel.received += received
-      hotel.delivered += delivered
-    }
+    for (const hotelRow of flow?.hotels ?? []) {
+      const hotel = pushHotel(hotelRow.client_name)
+      hotel.received = hotelRow.totals.received_qty
+      hotel.delivered = hotelRow.totals.delivered_qty
+      // Server-computed, so a piece the client gave back stops showing as owed.
+      hotel.pending = hotelRow.totals.outstanding_delivery_qty
 
-    for (const d of rawDeliveries) {
-      if (!inPeriod(d.delivery_date)) continue
-      const gp = gpById.get(d.gate_pass_id)
-      if (!gp) {
-        const hotel = pushHotel(d.client_name)
-        hotel.unlinked.push(d)
-        hotel.delivered += pieces(d.items)
+      for (const gpRow of hotelRow.gate_passes) {
+        // The pass document is only needed for its id / number here; every
+        // number comes from the server's balance.
+        const gp = { id: gpRow.gate_pass_id, gate_pass_number: gpRow.gate_pass_number } as GatePass
+        hotel.gatePasses.push({
+          gp,
+          received: gpRow.totals.received_qty,
+          delivered: gpRow.totals.delivered_qty,
+          pending: gpRow.totals.outstanding_delivery_qty,
+          outstandingItems: gpRow.outstanding_items,
+          deliveries: deliveriesByGp.get(gpRow.gate_pass_id) ?? [],
+        })
+      }
+
+      for (const u of hotelRow.unlinked_deliveries ?? []) {
+        const d = (rawDeliveries ?? []).find(x => x.id === u.delivery_id)
+        if (d) hotel.unlinked.push(d)
       }
     }
 
     const list = [...byHotel.values()]
     for (const hotel of list) {
-      hotel.gatePasses.sort((a, b) => (b.gp.receiving_date ?? '').localeCompare(a.gp.receiving_date ?? ''))
+      hotel.gatePasses.sort((a, b) =>
+        String(b.gp.gate_pass_number ?? '').localeCompare(String(a.gp.gate_pass_number ?? ''))
+      )
     }
     return list.sort((a, b) => a.name.localeCompare(b.name))
-  }, [rawGatePasses, rawDeliveries, period])
+  }, [flow, rawDeliveries])
 
   const query = hotelSearch.trim().toLowerCase()
   const filteredHotels = query
@@ -222,12 +241,16 @@ export default function HotelLinenFlowPage() {
     let gatePassCount = 0
     let received = 0
     let delivered = 0
+    let pending = 0
     for (const h of filteredHotels) {
       gatePassCount += h.gatePasses.length
       received += h.received
       delivered += h.delivered
+      pending += h.pending
     }
-    return { gatePassCount, received, delivered, pending: received - delivered }
+    // Summed per hotel rather than computed as `received - delivered`, so
+    // returns and count corrections are reflected.
+    return { gatePassCount, received, delivered, pending }
   }, [filteredHotels])
 
   return (
@@ -377,7 +400,7 @@ function HotelTreeCard({ hotel }: { hotel: HotelNode }) {
     const gps: GpSpot[] = []
     const unlinked: Fruit[] = []
     let leafBudget = MAX_LEAVES
-    const pending = hotel.received - hotel.delivered
+    const pending = hotel.pending
 
     for (const g of hotel.gatePasses) {
       if (gps.length >= MAX_GPS) break
@@ -392,7 +415,10 @@ function HotelTreeCard({ hotel }: { hotel: HotelNode }) {
         chips: (d.items ?? []).map(i => `${i.item_name}${i.specification ? ` (${i.specification})` : ''} ×${i.quantity}`),
         to: d.id ? `/deliveries/${d.id}` : undefined,
       }))
-      const gpPending = g.received - g.delivered
+      // Server-computed shortfall. Previously this was `received - delivered`
+      // computed in the browser, and the chips listed every line the pass was
+      // received with — including lines already fully delivered.
+      const gpPending = g.pending
       if (gpPending > 0) {
         leaves.push({
           key: `p-${gpKey(g.gp)}`,
@@ -402,9 +428,11 @@ function HotelTreeCard({ hotel }: { hotel: HotelNode }) {
           label: 'pending',
           title: `Pending pieces`,
           sub: `${gpPending} pcs not delivered yet`,
-          chips: (g.gp.items ?? [])
-            .filter(i => (i.received_qty ?? 0) > 0)
-            .map(i => `${i.item_name} ×${i.received_qty}`),
+          chips: g.outstandingItems.map(
+            i =>
+              `${i.item_name}${i.specification ? ` (${i.specification})` : ''} ×${i.outstanding_delivery_qty}`
+                + (i.returned_back_qty > 0 ? ` (${i.returned_back_qty} returned)` : '')
+          ),
         })
       }
       const count = leaves.length > 0 ? leaves.length : 1

@@ -1,4 +1,4 @@
-import type { Delivery, GatePass } from '../../../types/operations'
+import type { Delivery } from '../../../types/operations'
 
 export interface StatusStyle {
     label: string
@@ -37,12 +37,45 @@ export const DELIVERY_STATUS_ORDER: DeliveryStatus[] = [
     'CANCELLED',
 ]
 
-export function deriveDeliveryStatus(delivery: Delivery, gp?: GatePass): DeliveryStatus {
+/**
+ * A delivery's status, derived from the state of EVERY gate pass it drew from.
+ *
+ * Previously this looked at a single gate pass (the delivery's own
+ * `gate_pass_id`), so a delivery that returned 2 pieces from one pass and 30
+ * from another inherited one pass's status wholesale — showing "delivered" while
+ * most of the linen was still outstanding, or vice versa. A delivery is only
+ * fully delivered when all of its origin passes are.
+ *
+ * Accepts either the server-supplied per-pass summaries (preferred) or a
+ * single gate pass, for callers that only have one.
+ */
+export function deriveDeliveryStatus(
+    delivery: Delivery,
+    sourcePasses?: Array<{ derived_status?: string; status?: string }>,
+): DeliveryStatus {
     const raw = (delivery.status || '').toUpperCase()
     if (raw === 'CANCELLED') return 'CANCELLED'
-    if (raw === 'DELIVERED') return 'DELIVERED'
-    if (!gp) return 'PENDING'
-    switch (gp.status) {
+    if (raw === 'DELIVERED' && !sourcePasses?.length) return 'DELIVERED'
+    if (!sourcePasses?.length) return 'PENDING'
+
+    // Worst-case wins: the delivery is only as complete as its least-complete
+    // origin pass.
+    const rank: Record<string, number> = {
+        DELIVERED: 0,
+        PARTIALLY_DELIVERED: 1,
+        READY_FOR_DELIVERY: 2,
+        PROCESSING: 3,
+        RECEIVED: 4,
+        CANCELLED: 5,
+    }
+    let worst = 'DELIVERED'
+    for (const p of sourcePasses) {
+        const status = (p.derived_status || p.status || '').toUpperCase()
+        if (status === 'CANCELLED') continue
+        if (rank[status] === undefined) continue
+        if (rank[status] > rank[worst]) worst = status
+    }
+    switch (worst) {
         case 'DELIVERED':
             return 'DELIVERED'
         case 'PARTIALLY_DELIVERED':

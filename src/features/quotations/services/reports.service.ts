@@ -1,9 +1,22 @@
 import billsApi from '../../../api/bills-api'
 import { idempotencyKey } from '../../../lib/idempotency'
 import type { Payment, PaymentCreate } from '../../../types/operations'
-import type { ClientSummary } from '../../../types/operations'
+import type { ClientSummary, LinenFlowResponse } from '../../../types/operations'
 
 export const reports = {
+    /**
+     * Per-hotel linen flow with server-computed quantities.
+     *
+     * The hotel linen flow screen used to fetch every gate pass and every
+     * delivery and rebuild the balance in the browser, crediting a
+     * multi-pass delivery entirely to its primary gate pass. Period filtering
+     * happened there too, so drawing one quarter loaded the whole collection.
+     */
+    linenFlow: (period: 'all' | 'month' | 'quarter' | 'year' = 'all') =>
+        billsApi
+            .get<LinenFlowResponse>('/dashboard/linen-flow', { params: { period } })
+            .then((r: any) => r.data),
+
     clientSummary: (client_name: string) =>
         billsApi.get<ClientSummary>('/dashboard/client-summary', { params: { client_name } }).then((r: any) => r.data),
 

@@ -7,6 +7,8 @@ export const gatepassKeys = {
     all: ['gatepasses'] as const,
     list: (params?: object) => [...gatepassKeys.all, 'list', params] as const,
     detail: (id: string) => [...gatepassKeys.all, id] as const,
+    balance: (id: string) => [...gatepassKeys.all, id, 'balance'] as const,
+    deliveries: (id: string) => [...gatepassKeys.all, id, 'deliveries'] as const,
 }
 
 /**
@@ -42,6 +44,31 @@ export function useGatePass(id?: string) {
     return useQuery({
         queryKey: gatepassKeys.detail(id ?? ''),
         queryFn: () => gatepasses.get(id ?? ''),
+        enabled: Boolean(id),
+    })
+}
+
+/**
+ * The server's canonical balance for this pass.
+ *
+ * This replaces the local `received - delivered + returned` arithmetic that
+ * this screen used to run over the delivery list. The server attributes each
+ * delivered line to the pass it came from, so a delivery spanning two passes no
+ * longer makes one of them look short.
+ */
+export function useGatePassBalance(id?: string) {
+    return useQuery({
+        queryKey: gatepassKeys.balance(id ?? ''),
+        queryFn: () => gatepasses.balance(id ?? ''),
+        enabled: Boolean(id),
+    })
+}
+
+/** Every delivery that drew lines from this pass, with per-pass line slices. */
+export function useGatePassDeliveries(id?: string) {
+    return useQuery({
+        queryKey: gatepassKeys.deliveries(id ?? ''),
+        queryFn: () => gatepasses.deliveries(id ?? ''),
         enabled: Boolean(id),
     })
 }

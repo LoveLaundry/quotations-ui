@@ -261,58 +261,59 @@ export default function CreateDeliveryPage() {
     }
 
     // ── Validation ────────────────────────────────────────────────────────────
+    // The client-side `quantity <= pending_qty` check is a convenience only.
+    // The server re-validates every line against the balance it sees at write
+    // time and rejects the whole document if anything no longer fits, so a
+    // stale form can never half-apply.
     const isValid =
         form.selectedIds.length > 0 &&
         form.deliveryDate &&
         form.deliveredBy.trim() &&
         form.receivedBy.trim() &&
         activeItems.length > 0 &&
-        activeItems.every(i => i.quantity <= i.pending_qty)
+        activeItems.every(i => i.quantity <= i.pending_qty) &&
+        // One delivery belongs to exactly one hotel. A selection spanning two
+        // hotels cannot be recorded as a single document, so say so before the
+        // request instead of after it fails.
+        new Set(activeItems.map(i => i.client_name.trim().toLowerCase())).size === 1
+
+    const hotelsSelected = useMemo(
+        () => Array.from(new Set(activeItems.map(i => i.client_name.trim()).filter(Boolean))),
+        [activeItems],
+    )
 
     // ── Submission ────────────────────────────────────────────────────────────
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault()
         if (!isValid) return
 
-        const byGP = new Map<string, { client_name: string; items: SelectedItem[] }>()
-        for (const item of activeItems) {
-            const existing = byGP.get(item.gate_pass_id)
-            if (existing) {
-                existing.items.push(item)
-            } else {
-                byGP.set(item.gate_pass_id, { client_name: item.client_name, items: [item] })
-            }
-        }
-
-        const promises: Promise<any>[] = []
-        for (const [gpId, data] of byGP) {
-            promises.push(
-                createDelivery.mutateAsync({
-                    gate_pass_id: gpId,
-                    client_name: data.client_name,
-                    delivery_date: new Date(form.deliveryDate).toISOString(),
-                    delivered_by: form.deliveredBy.trim(),
-                    received_by: form.receivedBy.trim(),
-                    notes: form.notes.trim() || undefined,
-                    items: data.items.map(i => ({
-                        item_name: i.item_name,
-                        specification: i.specification || undefined,
-                        quantity: Math.floor(i.quantity),
-                    })),
-                })
-            )
-        }
-
+        // ONE delivery document, one POST. It used to be one POST per gate pass
+        // fired in parallel, which meant a failure part-way through left some
+        // passes delivered and others not, with nothing to undo it. The server
+        // now validates and stores the whole multi-pass delivery atomically.
+        const clientName = activeItems[0].client_name
         try {
-            const created = await Promise.all(promises)
+            const created = await createDelivery.mutateAsync({
+                client_name: clientName,
+                delivery_date: new Date(form.deliveryDate).toISOString(),
+                delivered_by: form.deliveredBy.trim(),
+                received_by: form.receivedBy.trim(),
+                notes: form.notes.trim() || undefined,
+                items: activeItems.map(i => ({
+                    item_name: i.item_name,
+                    specification: i.specification || undefined,
+                    quantity: Math.floor(i.quantity),
+                    // Explicit per-line source: this is what lets a single
+                    // delivery draw from several gate passes and still be
+                    // attributed correctly afterwards.
+                    gate_pass_id: i.gate_pass_id,
+                })),
+            })
             defaults.set('gp_delivered_by', form.deliveredBy.trim())
             defaults.set('gp_received_by', form.receivedBy.trim())
             clearDraft()
-            const createdIds = created
-                .map((r: any) => (r && r.id != null ? String(r.id) : ''))
-                .filter(Boolean)
-            if (createdIds.length === 1) navigate(`/deliveries/${createdIds[0]}`)
-            else navigate('/deliveries')
+            const createdId = created && created.id != null ? String(created.id) : ''
+            navigate(createdId ? `/deliveries/${createdId}` : '/deliveries')
         } catch (err) {
             console.error('Delivery creation failed', err)
         }
@@ -773,6 +774,17 @@ export default function CreateDeliveryPage() {
                     {/* Submit */}
                     <Card>
                         <CardContent className="pt-4">
+                            {hotelsSelected.length > 1 && (
+                                <div className="mb-3 flex items-start gap-2 rounded-lg border border-[#FECACA] bg-[#FEF2F2] px-3 py-2.5">
+                                    <AlertCircle size={16} className="mt-0.5 shrink-0 text-[#DC2626]" />
+                                    <p className="text-[13px] text-[#991B1B]">
+                                        A single delivery cannot mix hotels. This selection
+                                        spans <span className="font-semibold">{hotelsSelected.join(', ')}</span>{' '}
+                                        — deselect the other hotel&apos;s gate passes, or record
+                                        one delivery per hotel.
+                                    </p>
+                                </div>
+                            )}
                             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                                 <div className="text-[13px] text-[#6B7280]">
                                     Delivering{' '}
@@ -782,6 +794,9 @@ export default function CreateDeliveryPage() {
                                     item{itemCount !== 1 ? 's' : ''} from{' '}
                                     <span className="font-semibold text-[#101828]">{form.selectedIds.length}</span>{' '}
                                     gate pass{form.selectedIds.length !== 1 ? 'es' : ''}
+                                    {hotelsSelected.length === 1 && (
+                                        <> for <span className="font-semibold text-[#101828]">{hotelsSelected[0]}</span></>
+                                    )}
                                 </div>
                                 <div className="flex gap-2 w-full sm:w-auto">
                                     <Link to="/deliveries" className="flex-1 sm:flex-none">

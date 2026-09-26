@@ -20,6 +20,7 @@ import { Input, Select } from '../../../components/ui/input'
 import { SmartConfirm } from '../../../components/ops/smart-confirm'
 import { useGatePasses, useReopenLegacyBatch, invalidateDeliveryData } from '../../quotations/hooks/useGatePasses'
 import { useDeliveries } from '../../quotations/hooks/useDeliveries'
+import { usePendingGatePassItems } from '../../quotations/hooks/useNotifications'
 import { returns as returnsApi } from '../../quotations/services/returns.service'
 import type { ReturnCreate, ReturnItem } from '../../../types/operations'
 import {
@@ -837,6 +838,7 @@ function useDayTotals(date: string) {
   const { data: recon } = useReconciliationIssues()
   const { data: money } = useDayMoney(date)
   const { data: expenseRows } = useDayExpenses(date)
+  const { data: pendingItems } = usePendingGatePassItems()
 
   return useMemo<DayCloseTotals>(() => {
     const gps = (gatepasses ?? []).filter(
@@ -853,28 +855,15 @@ function useDayTotals(date: string) {
       (sum, d) => sum + (d.items ?? []).reduce((s, it) => s + (it.quantity || 0), 0),
       0,
     )
-    const deliveredByGP = new Map<string, Map<string, number>>()
-    for (const d of deliveries ?? []) {
-      if (d.status === 'CANCELLED') continue
-      let byItem = deliveredByGP.get(d.gate_pass_id)
-      if (!byItem) {
-        byItem = new Map<string, number>()
-        deliveredByGP.set(d.gate_pass_id, byItem)
-      }
-      for (const it of d.items ?? []) {
-        const key = `${it.item_name}||${it.specification ?? ''}`
-        byItem.set(key, (byItem.get(key) ?? 0) + (it.quantity || 0))
-      }
-    }
-    const piecesOutstanding = gps.reduce(
-      (sum, gp) =>
-        sum + (gp.items ?? []).reduce((s, it) => {
-          const key = `${it.item_name}||${it.specification ?? ''}`
-          const delivered = deliveredByGP.get(gp.id)?.get(key) ?? 0
-          return s + Math.max(0, (it.received_qty || 0) - delivered)
-        }, 0),
-      0,
-    )
+    // Outstanding is a *balance* figure, so it comes from the server rather than
+    // being rebuilt here. This used to credit every delivery line to the
+    // delivery's own gate_pass_id, so a delivery spanning two passes put every
+    // piece on one of them and made the other look fully outstanding — and it
+    // ignored returns, so pieces already given back still looked owed.
+    const piecesOutstanding = (pendingItems ?? []).reduce((sum, e) => {
+      if (dayOf(e.receiving_date) !== date) return sum
+      return sum + (e.pending || 0)
+    }, 0)
     const expenses = ((expenseRows ?? []) as any[]).reduce((sum, item) => sum + (item.total || 0), 0)
     return {
       gate_pass_count: gps.length,
@@ -889,7 +878,7 @@ function useDayTotals(date: string) {
       expenses_amount: expenses,
       outstanding_amount: money?.outstanding_amount ?? 0,
     }
-  }, [gatepasses, deliveries, adjustments, recon, date, money, expenseRows])
+  }, [gatepasses, deliveries, adjustments, recon, date, money, expenseRows, pendingItems])
 }
 
 const DAY_TOTAL_ROWS: { key: keyof DayCloseTotals; label: string; flag?: 'ok' | 'warn' }[] = [

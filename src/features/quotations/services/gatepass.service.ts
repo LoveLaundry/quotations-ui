@@ -1,5 +1,11 @@
 import billsApi from '../../../api/bills-api'
-import type { GatePass, GatePassCreate, GatePassMarkDelivered } from '../../../types/operations'
+import type {
+    GatePass,
+    GatePassBalanceResponse,
+    GatePassCreate,
+    GatePassDeliveriesResponse,
+    GatePassMarkDelivered,
+} from '../../../types/operations'
 
 function toISODatetime(dateStr: string): string {
     if (dateStr.includes('T')) return dateStr
@@ -69,5 +75,28 @@ export const gatepasses = {
             quotation_id: data.quotation_id,
             client_name: data.client_name,
         }).then((r: any) => r.data),
+
+    /**
+     * The canonical balance for this gate pass, computed by the server.
+     *
+     * Every screen showing pending/remaining/delivered for a pass must consume
+     * this instead of subtracting quantities locally. Delivered lines are
+     * attributed to the pass they actually came from, so a delivery spanning
+     * two passes cannot make one of them look short.
+     */
+    balance: (id: string) =>
+        billsApi
+            .get<GatePassBalanceResponse>(`/gatepasses/${id}/balance`)
+            .then((r: any) => r.data),
+
+    /**
+     * Every delivery that drew lines from this pass. Each delivery carries a
+     * `lines_from_this_gate_pass` array so the page can show the delivery's
+     * contribution to THIS pass without re-deriving attribution.
+     */
+    deliveries: (id: string) =>
+        billsApi
+            .get<GatePassDeliveriesResponse>(`/gatepasses/${id}/deliveries`)
+            .then((r: any) => r.data),
 }
 

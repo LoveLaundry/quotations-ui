@@ -37,7 +37,7 @@ import { EntityCardActions } from '../components/entity-card-actions'
 import { HotelBadge } from '../components/hotel-badge'
 import { StatusSectionList, type StatusSection } from '../components/status-section-list'
 import { useHotelScope } from '../../../context/HotelContext'
-import type { Delivery, GatePass } from '../../../types/operations'
+import type { Delivery } from '../../../types/operations'
 
 const SECTION_ORDER = ['pending', 'partial', 'completed', 'history'] as const
 type SectionKey = (typeof SECTION_ORDER)[number]
@@ -56,17 +56,6 @@ function sectionKeyFor(status: DeliveryStatus): SectionKey {
 }
 
 type DeliveryRow = { delivery: Delivery; status: DeliveryStatus }
-
-function progressFor(delivery: Delivery, gp: GatePass | undefined, deliveredByGp: Map<string, number>) {
-    const expected = (gp?.items ?? []).reduce((sum, item) => sum + (item.received_qty || 0), 0)
-    if (gp?.status === 'DELIVERED') {
-        return { delivered: expected, expected, pct: expected > 0 ? 100 : 0 }
-    }
-    const delivered = deliveredByGp.get(delivery.gate_pass_id)
-        ?? (delivery.items ?? []).reduce((sum, item) => sum + (item.quantity || 0), 0)
-    const pct = expected > 0 ? Math.min(100, Math.round((delivered / expected) * 100)) : 0
-    return { delivered, expected, pct }
-}
 
 export default function DeliveriesPage() {
     const navigate = useNavigate()
@@ -93,19 +82,12 @@ export default function DeliveriesPage() {
 
     const gpMap = useMemo(() => new Map(gatePasses.map(gp => [gp.id, gp])), [gatePasses])
 
-    const deliveredByGp = useMemo(() => {
-        const map = new Map<string, number>()
-        for (const delivery of deliveries) {
-            const qty = (delivery.items ?? []).reduce((sum, item) => sum + (item.quantity || 0), 0)
-            map.set(delivery.gate_pass_id, (map.get(delivery.gate_pass_id) ?? 0) + qty)
-        }
-        return map
-    }, [deliveries])
-
     const gpOptions = useMemo(
         () =>
             [...gpMap.values()]
-                .filter(gp => deliveries.some(d => d.gate_pass_id === gp.id))
+                .filter(gp => deliveries.some(d =>
+                    (d.source_gate_passes ?? []).some(p => p.gate_pass_id === gp.id)
+                    || d.gate_pass_id === gp.id))
                 .sort((a, b) => a.gate_pass_number.localeCompare(b.gate_pass_number)),
         [gpMap, deliveries],
     )
@@ -114,9 +96,11 @@ export default function DeliveriesPage() {
         () =>
             deliveries.map(delivery => ({
                 delivery,
-                status: deriveDeliveryStatus(delivery, gpMap.get(delivery.gate_pass_id)),
+                // Derived from EVERY source pass, not just the primary one: a
+                // delivery is only complete when all of its origin passes are.
+                status: deriveDeliveryStatus(delivery, delivery.source_gate_passes),
             })),
-        [deliveries, gpMap],
+        [deliveries],
     )
 
     const searchQuery = searchInput.trim().toLowerCase()
@@ -201,32 +185,93 @@ export default function DeliveriesPage() {
 
     const requestPrint = (delivery: Delivery) => setPrintTarget(delivery)
 
+    /**
+     * Progress per source gate pass, from the server's balance totals.
+     *
+     * The list used to show one bar computed as `delivered / received` against a
+     * SINGLE gate pass — meaningless for a delivery drawing from several, and
+     * quietly wrong whenever it wasn't the primary pass. Each source pass is
+     * now listed with the numbers the server reports for it.
+     */
     const renderProgress = (delivery: Delivery) => {
-        const gp = gpMap.get(delivery.gate_pass_id)
-        const { delivered, expected, pct } = progressFor(delivery, gp, deliveredByGp)
-        return (
-            <div className="flex items-center gap-2">
-                <div className="h-1.5 w-16 overflow-hidden rounded-full bg-[#E4E7EC]">
-                    <div className="h-full rounded-full bg-[#16A34A]" style={{ width: `${pct}%` }} />
-                </div>
-                <span className="whitespace-nowrap text-[11px] font-medium text-[#6B7280]">
-                    {delivered} / {expected} pcs
+        const passes = delivery.source_gate_passes ?? []
+        if (passes.length === 0) {
+            const qty = (delivery.items ?? []).reduce((sum, i) => sum + (i.quantity || 0), 0)
+            return (
+                <span className="whitespace-nowrap text-[11px] font-medium text-[#98A2B3]">
+                    {qty} pcs
                 </span>
+            )
+        }
+        if (passes.length === 1) {
+            const p = passes[0]
+            const received = p.totals?.received_qty ?? 0
+            const delivered = p.totals?.delivered_qty ?? 0
+            const pct = received > 0 ? Math.min(100, Math.round((delivered / received) * 100)) : 0
+            return (
+                <div className="flex items-center gap-2">
+                    <div className="h-1.5 w-16 overflow-hidden rounded-full bg-[#E4E7EC]">
+                        <div className="h-full rounded-full bg-[#16A34A]" style={{ width: `${pct}%` }} />
+                    </div>
+                    <span className="whitespace-nowrap text-[11px] font-medium text-[#6B7280]">
+                        {delivered} / {received} pcs
+                    </span>
+                </div>
+            )
+        }
+        return (
+            <div className="flex flex-wrap items-center gap-1.5">
+                {passes.map(p => {
+                    const remaining = p.totals?.outstanding_delivery_qty ?? 0
+                    return (
+                        <span
+                            key={p.gate_pass_id}
+                            title={`${p.gate_pass_number}: ${p.totals?.delivered_qty ?? 0}/${p.totals?.received_qty ?? 0} delivered, ${remaining} still owed`}
+                            className="whitespace-nowrap rounded-md border border-[#E4E7EC] bg-white px-1.5 py-0.5 font-mono text-[10px] font-semibold text-[#475467]"
+                        >
+                            {p.gate_pass_number ?? `GP-${p.gate_pass_id.slice(-6).toUpperCase()}`}
+                            <span className={remaining > 0 ? 'ml-1 text-[#EA580C]' : 'ml-1 text-[#16A34A]'}>
+                                {remaining > 0 ? `${remaining} due` : 'done'}
+                            </span>
+                        </span>
+                    )
+                })}
             </div>
         )
     }
 
     const renderGatePassCell = (delivery: Delivery) => {
-        const gp = gpMap.get(delivery.gate_pass_id)
-        if (gp) {
+        const passes = delivery.source_gate_passes ?? []
+        const numbers = passes
+            .map(p => p.gate_pass_number)
+            .filter(Boolean) as string[]
+        if (numbers.length === 0) {
+            const short = String(delivery.gate_pass_id ?? '').slice(-8).toUpperCase()
+            return <span className="font-mono text-[11px] text-[#98A2B3]">GP-{short}</span>
+        }
+        if (numbers.length === 1) {
+            const p = passes[0]
             return (
-                <Link to={`/gate-passes/${gp.id}`} className="font-mono text-[11px] font-semibold text-[#10B981] transition-colors hover:text-[#047857]">
-                    {gp.gate_pass_number}
+                <Link to={`/gate-passes/${p.gate_pass_id}`} className="font-mono text-[11px] font-semibold text-[#10B981] transition-colors hover:text-[#047857]">
+                    {numbers[0]}
                 </Link>
             )
         }
-        const short = delivery.gate_pass_id.slice(-8).toUpperCase()
-        return <span className="font-mono text-[11px] text-[#98A2B3]">GP-{short}</span>
+        // More than one origin: every one is linked, because a delivery is only
+        // traceable if you can reach each pass it drew from.
+        return (
+            <div className="flex flex-col gap-0.5">
+                {passes.map(p => (
+                    <Link
+                        key={p.gate_pass_id}
+                        to={`/gate-passes/${p.gate_pass_id}`}
+                        className="font-mono text-[11px] font-semibold text-[#10B981] transition-colors hover:text-[#047857]"
+                    >
+                        {p.gate_pass_number ?? `GP-${p.gate_pass_id.slice(-6).toUpperCase()}`}
+                    </Link>
+                ))}
+            </div>
+        )
     }
 
     const renderCard = (row: DeliveryRow) => {
