@@ -103,25 +103,50 @@ const VARIANT_ALIASES: Record<string, string> = {
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   (
-    { className, variant, size, block, asChild = false, loading, children, type, ...props },
+    {
+      className,
+      variant,
+      size,
+      block,
+      asChild = false,
+      loading,
+      children,
+      type,
+      disabled,
+      ...props
+    },
     ref,
   ) => {
-    const Comp: any = asChild ? Slot : 'button'
     const resolved = (variant && VARIANT_ALIASES[variant]) || variant
+    const classes = cn(
+      buttonVariants({ variant: resolved as any, size, block }),
+      // The label stays visible while pending, so reserve the widest of the
+      // two states and let the spinner occupy the leading slot.
+      loading && 'cursor-progress',
+      className,
+    )
+
+    // `asChild` hands styling to one child element (usually a router <Link>),
+    // so that child must stay the ONLY node in the slot. Rendering the pending
+    // spinner as a sibling gave Slot two children and made it throw
+    // "Slot failed to slot onto its children". `type`/`disabled` are dropped
+    // here because they are meaningless on an anchor.
+    if (asChild) {
+      return (
+        <Slot ref={ref} aria-busy={loading || undefined} className={classes} {...props}>
+          {children}
+        </Slot>
+      )
+    }
+
     return (
-      <Comp
+      <button
         ref={ref}
         // A bare <button> inside a form defaults to submit; be explicit instead.
-        type={asChild ? undefined : (type ?? 'button')}
-        disabled={loading || props.disabled}
+        type={type ?? 'button'}
+        disabled={loading || disabled}
         aria-busy={loading || undefined}
-        className={cn(
-          buttonVariants({ variant: resolved as any, size, block }),
-          // The label stays visible while pending, so reserve the widest of the
-          // two states and let the spinner occupy the leading slot.
-          loading && 'cursor-progress',
-          className,
-        )}
+        className={classes}
         {...props}
       >
         {loading && (
@@ -141,7 +166,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
           </svg>
         )}
         {children}
-      </Comp>
+      </button>
     )
   },
 )
