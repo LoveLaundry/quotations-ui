@@ -128,6 +128,66 @@ export interface BalanceAdjustmentCreate {
     delivery_id?: string | null
 }
 
+// ── Gate-pass balance (the "balanced items" figures) ───────────────────────────
+// GET /gatepasses/{id}/balance. This is the ONLY source for received / delivered
+// / returned / corrected / outstanding on a pass. Re-deriving them in the browser
+// is how a credited piece ended up showing as 0 pending on the detail screen
+// while the delivery form still offered it.
+//
+//   outstanding = received - delivered + returned + correction   (floored at 0)
+//
+// A pass with a non-zero outstanding and proof something already went out —
+// a delivery, a pending return, or a credit — is PARTIALLY_DELIVERED.
+export interface GatePassBalanceItem {
+    /** Canonical identity: `name||spec`. Must match `balanceItemKey`. */
+    item_key: string
+    item_name: string
+    specification: string
+    category: string
+    rewashed: boolean
+    /** What the waybill said the client handed over. */
+    expected_qty: number
+    /** What we physically counted at receiving. */
+    received_qty: number
+    /** What recorded delivery documents say went out. */
+    delivered_qty: number
+    /** Poses the client sent back and that have not been re-sent. */
+    returned_back_qty: number
+    /** Signed correction. Positive credits the client, negative debits them. */
+    balance_adjustment_qty: number
+    /** Still owed to the client. */
+    outstanding_delivery_qty: number
+    /** expected - received: the short receipt. */
+    not_received_qty: number
+    /** received - expected: the over-receipt. */
+    extra_received_qty: number
+    flags: string[]
+}
+
+export interface GatePassBalance {
+    gate_pass_id: string
+    gate_pass_number: string | null
+    client_name: string | null
+    receiving_date: string | null
+    /** The status currently stored on the pass. */
+    status: string
+    /** The status the engine derives from quantities. Can differ after a balance. */
+    derived_status: string
+    marked_delivered: boolean
+    items: GatePassBalanceItem[]
+    totals: {
+        expected_qty: number
+        received_qty: number
+        delivered_qty: number
+        effective_delivered_qty: number
+        returned_back_qty: number
+        outstanding_delivery_qty: number
+        not_received_qty: number
+        balance_adjustment_qty: number
+    }
+    flags: string[]
+}
+
 /** One line of the running balance printed on a delivery note. */
 export interface DeliveryBalanceItem {
     item_key: string
@@ -278,7 +338,16 @@ export interface ClientSummary {
     gatepasses: GatePass[]
     deliveries: Delivery[]
     mismatches: object[]
-    pending_balances: { item_name: string; received: number; delivered: number; pending: number }[]
+    pending_balances: {
+        item_name: string
+        received: number
+        delivered: number
+        /** Pieces the client sent back that still have to go out. */
+        returned: number
+        /** Signed corrections folded into `pending`. */
+        balance_adjusted: number
+        pending: number
+    }[]
     bills: object[]
     payments: Payment[]
     shop_bills: object[]

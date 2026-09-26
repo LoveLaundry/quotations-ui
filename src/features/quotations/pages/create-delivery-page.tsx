@@ -23,6 +23,10 @@ interface SelectedItem {
     specification: string
     category: string
     pending_qty: number
+    /** Pieces the client sent back that are still with us. */
+    returned_qty: number
+    /** Signed correction folded into `pending_qty`. */
+    balance_adjustment_qty: number
     quantity: number
 }
 
@@ -32,6 +36,9 @@ interface AutoItemTotal {
     specification: string
     category: string
     total_pending: number
+    /** Balances aggregated across the selected passes for this item type. */
+    total_returned: number
+    total_balance_adjusted: number
     total_qty: number
 }
 
@@ -64,6 +71,57 @@ const labelClass = 'block text-[11px] font-semibold uppercase tracking-wide text
 
 function itemKey(name: string, spec: string) {
     return spec ? `${name}||${spec}` : name
+}
+
+/**
+ * Why a row is pending more than a plain receipt would suggest.
+ *
+ * A pass is only offered here because the balance engine says pieces are still
+ * owed. This spells out the reason, because "4 pending" on a pass whose
+ * client_qty was only 2 looks like a bug to the operator filling the form.
+ * Returns and corrections are shown, never re-derived here.
+ */
+function BalanceBreakdown({
+    returned,
+    adjusted,
+    className = '',
+}: {
+    returned: number
+    adjusted: number
+    className?: string
+}) {
+    if (!returned && !adjusted) return null
+    return (
+        <span className={`inline-flex flex-wrap items-center gap-1.5 ${className}`}>
+            {returned > 0 && (
+                <span
+                    className="inline-flex items-center gap-1 rounded border border-[#FDE68A] bg-[#FFFBEB] px-1.5 py-0.5 text-[10.5px] font-semibold text-[#B45309]"
+                    title="The client sent these back — they are with us again and still have to go out"
+                >
+                    <RotateCcw className="h-2.5 w-2.5" />
+                    {returned} returned
+                </span>
+            )}
+            {adjusted !== 0 && (
+                <span
+                    className="inline-flex items-center rounded border px-1.5 py-0.5 text-[10.5px] font-semibold tabular-nums"
+                    style={
+                        adjusted > 0
+                            ? { background: '#ECFDF5', borderColor: '#A7F3D0', color: '#047857' }
+                            : { background: '#F9FAFB', borderColor: '#E4E7EC', color: '#6B7280' }
+                    }
+                    title={
+                        adjusted > 0
+                            ? 'Credited — these pieces are owed to the client on top of the undelivered ones'
+                            : 'Debited — these pieces are no longer outstanding'
+                    }
+                >
+                    balance {adjusted > 0 ? '+' : ''}
+                    {adjusted}
+                </span>
+            )}
+        </span>
+    )
 }
 
 export default function CreateDeliveryPage() {
@@ -120,6 +178,8 @@ export default function CreateDeliveryPage() {
                     specification: item.specification,
                     category: item.category,
                     pending_qty: item.pending_qty,
+                    returned_qty: item.returned_qty,
+                    balance_adjustment_qty: item.balance_adjustment_qty,
                     quantity: 0,
                 })
             }
@@ -136,6 +196,8 @@ export default function CreateDeliveryPage() {
             const existing = map.get(key)
             if (existing) {
                 existing.total_pending += item.pending_qty
+                existing.total_returned += item.returned_qty
+                existing.total_balance_adjusted += item.balance_adjustment_qty
             } else {
                 map.set(key, {
                     item_key: key,
@@ -143,6 +205,8 @@ export default function CreateDeliveryPage() {
                     specification: item.specification,
                     category: item.category,
                     total_pending: item.pending_qty,
+                    total_returned: item.returned_qty,
+                    total_balance_adjusted: item.balance_adjustment_qty,
                     total_qty: 0,
                 })
             }
@@ -478,6 +542,11 @@ export default function CreateDeliveryPage() {
                                                 <div className="text-right shrink-0">
                                                     <p className="text-[13px] font-bold text-[#EA580C]">{gp.total_pending} pending</p>
                                                     <p className="text-[11px] text-[#98A2B3]">{gp.items.length} item type{gp.items.length !== 1 ? 's' : ''}</p>
+                                                    <BalanceBreakdown
+                                                        returned={gp.items.reduce((s, i) => s + (i.returned_qty || 0), 0)}
+                                                        adjusted={gp.total_balance_adjusted}
+                                                        className="mt-1 justify-end"
+                                                    />
                                                 </div>
                                             </button>
                                         )
@@ -615,6 +684,11 @@ export default function CreateDeliveryPage() {
                                                 </p>
                                                 <p className="text-[11px] text-[#98A2B3]">
                                                     Available: {total.total_pending} across {allItems.filter(i => itemKey(i.item_name, i.specification) === total.item_key).length} GP{allItems.filter(i => itemKey(i.item_name, i.specification) === total.item_key).length !== 1 ? 's' : ''}
+                                                    <BalanceBreakdown
+                                                        returned={total.total_returned}
+                                                        adjusted={total.total_balance_adjusted}
+                                                        className="ml-1.5 align-middle"
+                                                    />
                                                 </p>
                                             </div>
                                             <div className="flex items-center gap-2 shrink-0">
@@ -736,7 +810,14 @@ export default function CreateDeliveryPage() {
                                                                         </span>
                                                                     )}
                                                                 </p>
-                                                                <p className="text-[11px] text-[#98A2B3]">Pending: {item.pending_qty}</p>
+                                                                <p className="text-[11px] text-[#98A2B3]">
+                                                                    Pending: {item.pending_qty}
+                                                                    <BalanceBreakdown
+                                                                        returned={item.returned_qty}
+                                                                        adjusted={item.balance_adjustment_qty}
+                                                                        className="ml-1.5 align-middle"
+                                                                    />
+                                                                </p>
                                                             </div>
                                                             <div className="flex items-center gap-2 shrink-0">
                                                                 <input

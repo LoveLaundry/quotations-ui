@@ -23,6 +23,8 @@ export interface PendingGatePassItem {
     delivered_qty: number
     returned_qty: number
     pending_qty: number
+    /** Signed correction folded into `pending_qty`. */
+    balance_adjustment_qty: number
 }
 
 export interface PendingGatePass {
@@ -30,8 +32,13 @@ export interface PendingGatePass {
     gate_pass_number: string
     client_name: string
     receiving_date: string
+    /** The status the balance engine derives. Never a stale stored label. */
     status: string
+    /** What is currently persisted, kept only to surface a mismatch. */
+    stored_status: string
     total_pending: number
+    /** Signed corrections across the listed items. */
+    total_balance_adjusted: number
     items: PendingGatePassItem[]
 }
 

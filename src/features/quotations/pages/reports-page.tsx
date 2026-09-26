@@ -151,12 +151,16 @@ function ClientSearch() {
                   <Clock className="h-4 w-4 text-[#D97706]" />
                   <CardTitle>Pending Item Balances</CardTitle>
                 </div>
+                <p className="mt-1.5 text-[12px]" style={{ color: 'var(--text-tertiary)' }}>
+                  Pending = received − delivered + returned + balance correction. A returned or
+                  credited piece is still owed to the client and has to be sent.
+                </p>
               </CardHeader>
               <CardContent className="pt-0 overflow-x-auto">
                 <table className="w-full text-[13px]">
                   <thead className="bg-[#F9FAFB] border-b border-[#E4E7EC]">
                     <tr>
-                      {['Item Name', 'Received', 'Delivered', 'Pending'].map(h => (
+                      {['Item Name', 'Received', 'Delivered', 'Returned', 'Balance', 'Pending'].map(h => (
                         <th key={h} className="px-4 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wide" style={{ color: 'var(--text-tertiary)' }}>{h}</th>
                       ))}
                     </tr>
@@ -167,6 +171,29 @@ function ClientSearch() {
                         <td className="px-4 py-3 font-medium text-[#101828]">{b.item_name}</td>
                         <td className="px-4 py-3" style={{ color: 'var(--text-secondary)' }}>{b.received}</td>
                         <td className="px-4 py-3" style={{ color: 'var(--text-secondary)' }}>{b.delivered}</td>
+                        <td className="px-4 py-3" style={{ color: 'var(--text-secondary)' }}>{b.returned || 0}</td>
+                        <td className="px-4 py-3">
+                          {b.balance_adjusted ? (
+                            <span
+                              className="inline-flex items-center rounded border px-1.5 py-0.5 text-[11px] font-semibold tabular-nums"
+                              style={
+                                b.balance_adjusted > 0
+                                  ? { background: '#ECFDF5', borderColor: '#A7F3D0', color: '#047857' }
+                                  : { background: '#F9FAFB', borderColor: '#E4E7EC', color: '#6B7280' }
+                              }
+                              title={
+                                b.balance_adjusted > 0
+                                  ? 'Credited — these pieces are owed to the client on top of the undelivered ones'
+                                  : 'Debited — these pieces are no longer outstanding'
+                              }
+                            >
+                              {b.balance_adjusted > 0 ? '+' : ''}
+                              {b.balance_adjusted}
+                            </span>
+                          ) : (
+                            <span style={{ color: 'var(--text-tertiary)' }}>—</span>
+                          )}
+                        </td>
                         <td className="px-4 py-3">
                           <span className={`font-bold ${b.pending > 0 ? 'text-[#D97706]' : 'text-[#16A34A]'}`}>
                             {b.pending > 0 ? b.pending : '✓ 0'}

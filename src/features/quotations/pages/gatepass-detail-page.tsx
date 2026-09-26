@@ -3,7 +3,7 @@ import { useParams, Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import {
     ArrowLeft, ClipboardList, Calendar, User, AlertCircle, AlertTriangle,
-    ChevronDown, Truck, CheckCircle2, Pencil, X, Check, Receipt,
+    ChevronDown, Truck, CheckCircle2, Pencil, X, Check, Receipt, Scale,
     Plus, Save, Trash2, History, RefreshCw, Undo2, Settings2, Flag, RotateCcw
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -16,13 +16,14 @@ import { Skeleton } from '../../../components/ui/skeleton'
 import { Breadcrumb } from '../../../components/ui/breadcrumb'
 import { formatDate } from '../../../lib/utils'
 import { DATE_CORRECTION_REASONS } from '../../../lib/date-corrections'
-import { useGatePass, useUpdateGatePassStatus, useAdjustGatePass, useUpdateGatePassDate, useCreateBillFromGatePass, useUpdateGatePass, useMarkGatePassDelivered, useReopenLegacyGatePass } from '../hooks/useGatePasses'
+import { useGatePass, useGatePassBalance, useUpdateGatePassStatus, useAdjustGatePass, useUpdateGatePassDate, useCreateBillFromGatePass, useUpdateGatePass, useMarkGatePassDelivered, useReopenLegacyGatePass } from '../hooks/useGatePasses'
 import { useDeliveries, useUpdateDeliveryDate } from '../hooks/useDeliveries'
 import { useQuotation } from '../hooks/useQuotations'
 import { returns as returnsApi } from '../services/returns.service'
 import { SearchableSelect } from '../../../components/ui'
 import { toQuotationOptions, type QuotationOption } from './create-gatepass-page'
-import type { Return, ReturnItem } from '../../../types/operations'
+import { balanceItemKey } from '../../../lib/balance-adjustments'
+import type { GatePassBalanceItem, Return } from '../../../types/operations'
 import { ops, type TransactionEvent } from '../../today/services/ops.service'
 
 const STATUS_CONFIG: Record<string, { label: string; bg: string; text: string; border: string; dot: string }> = {
@@ -45,6 +46,37 @@ function StatusBadge({ status }: { status: string }) {
         >
             <span className="h-1.5 w-1.5 rounded-full" style={{ background: cfg.dot }} />
             {cfg.label}
+        </span>
+    )
+}
+
+/**
+ * One signed balance correction.
+ *
+ * Positive means the client is owed that many more pieces, negative means fewer
+ * are outstanding than we thought. The sign is never shown bare — a coloured
+ * +/- with a tooltip is the only way an operator can tell a credit from a debit
+ * at a glance.
+ */
+function BalanceCell({ amount }: { amount: number }) {
+    if (!amount) return <span className="text-[#D0D5DD]">—</span>
+    const credit = amount > 0
+    return (
+        <span
+            className="inline-flex items-center rounded border px-1.5 py-0.5 text-[11px] font-semibold tabular-nums"
+            style={
+                credit
+                    ? { background: '#ECFDF5', borderColor: '#A7F3D0', color: '#047857' }
+                    : { background: '#F9FAFB', borderColor: '#E4E7EC', color: '#6B7280' }
+            }
+            title={
+                credit
+                    ? 'Credited — these pieces are owed to the client on top of the undelivered ones'
+                    : 'Debited — these pieces are no longer outstanding'
+            }
+        >
+            {credit ? '+' : ''}
+            {amount}
         </span>
     )
 }
@@ -202,26 +234,40 @@ export default function GatePassDetailPage() {
         !!quotationQuery.data && name.trim() !== '' &&
         !allQuotationItemNames.has(name.trim().toLowerCase())
 
-    const deliveredMap = useMemo(() => {
-        const map: Record<string, number> = {}
-        if (gp?.marked_delivered) {
-            // Completed via catch-up note when the dispatch was never recorded —
-            // every received item counts as delivered so nothing stays pending.
-            for (const it of gp.items) {
-                const key = `${it.item_name}||${it.specification || ''}`
-                map[key] = it.received_qty
-            }
-            return map
-        }
-        for (const d of deliveries) {
-            if (d.status === 'CANCELLED') continue
-            for (const it of d.items) {
-                const key = `${it.item_name}||${it.specification || ''}`
-                map[key] = (map[key] || 0) + it.quantity
-            }
-        }
+    // ── The balance engine is the only source for these figures ─────────────
+    // Delivered / returned / corrected / outstanding all come from
+    // GET /gatepasses/{id}/balance. Re-deriving them here from the raw records
+    // silently dropped corrections, so a credited piece read as settled on this
+    // screen while the delivery form was still offering it.
+    const { data: balanceData } = useGatePassBalance(id)
+    const balanceByKey = useMemo(() => {
+        const map: Record<string, GatePassBalanceItem> = {}
+        for (const row of balanceData?.items ?? []) map[row.item_key] = row
         return map
-    }, [deliveries, gp])
+    }, [balanceData])
+
+    // The balanced items themselves: anything returned back or corrected. This
+    // is what an operator needs to see — the reason a pass that reads "delivered"
+    // still owes the client pieces.
+    const balancedItems = useMemo(
+        () =>
+            (balanceData?.items ?? []).filter(
+                (b) => b.returned_back_qty > 0 || b.balance_adjustment_qty !== 0,
+            ),
+        [balanceData],
+    )
+
+    const totalDelivered = balanceData?.totals.effective_delivered_qty ?? 0
+    const totalReturned = balanceData?.totals.returned_back_qty ?? 0
+    const totalAdjusted = balanceData?.totals.balance_adjustment_qty ?? 0
+    const totalPending = balanceData?.totals.outstanding_delivery_qty ?? 0
+    // What the engine says the status should be. A pass balanced after it was
+    // last written can still carry a stale stored label, and showing DELIVERED
+    // for a pass that still owes pieces is the exact confusion this avoids.
+    const derivedStatus = balanceData?.derived_status ?? gp?.status
+    const statusIsStale = Boolean(
+        balanceData && derivedStatus && balanceData.status && derivedStatus !== balanceData.status,
+    )
 
     const { data: returnsList = [] } = useQuery({
         queryKey: ['returns', 'detail', id],
@@ -233,23 +279,6 @@ export default function GatePassDetailPage() {
         enabled: Boolean(id),
         staleTime: 60_000,
     })
-
-    const returnedMap = useMemo(() => {
-// Returns carry their own gate_pass_id, so only returns raised on THIS
-        // gate pass count towards its pending balance.
-        const gpId = (gp as { _id?: string } | null)?._id ?? gp?.id
-        const map: Record<string, number> = {}
-        for (const ret of returnsList) {
-            if (String(ret.gate_pass_id ?? '') !== String(gpId ?? '')) continue
-            for (const item of (ret.items ?? []) as ReturnItem[]) {
-                if ((item.action === 'RECEIVE_BACK' || item.action === 'RE_WASH') && item.resend_status !== 'SENT') {
-                    const key = `${item.item_name}||${item.specification || ''}`
-                    map[key] = (map[key] || 0) + (Number(item.returned_qty) || 0)
-                }
-            }
-        }
-        return map
-    }, [returnsList, gp])
 
     // ── Activity journal (append-only timeline from the event service) ───────
     const { data: journal = [] } = useQuery({
@@ -284,10 +313,6 @@ export default function GatePassDetailPage() {
 
     const totalReceived = (gp.items ?? []).reduce((s: number, i: any) => s + i.received_qty, 0)
     const mismatches = (gp.items ?? []).filter((i: any) => i.difference !== 0)
-
-    const totalDelivered = (gp.items ?? []).reduce((s: number, i: any) => s + (deliveredMap[`${i.item_name}||${i.specification || ''}`] || 0), 0)
-    const totalReturned = (gp.items ?? []).reduce((s: number, i: any) => s + (returnedMap[`${i.item_name}||${i.specification || ''}`] || 0), 0)
-    const totalPending = totalReceived - totalDelivered + totalReturned
 
     const handleAdjust = (itemName: string, spec = '') => {
         const item = gp.items.find((i: any) => i.item_name === itemName && (i.specification || '') === spec)
@@ -453,7 +478,12 @@ export default function GatePassDetailPage() {
                 </div>
 
                 <div className="flex items-center gap-2 flex-wrap">
-                    <StatusBadge status={gp.status} />
+                    <StatusBadge status={derivedStatus ?? gp.status} />
+                    {statusIsStale && (
+                        <span className="text-[11px] text-[#B45309]" title="The stored status is out of date; the balance engine derives a different one">
+                            stored: {balanceData?.status}
+                        </span>
+                    )}
 
                     {/* Status Transition Dropdown */}
                     {!['PARTIALLY_DELIVERED', 'DELIVERED'].includes(gp.status) && (
@@ -622,6 +652,83 @@ export default function GatePassDetailPage() {
                     </Card>
                 ))}
             </div>
+
+            {/* Balance panel — the "balanced items" figures, straight from the engine */}
+            {balanceData && (
+                <Card>
+                    <CardHeader className="border-b border-[#F2F4F7] pb-3">
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                            <CardTitle className="flex items-center gap-2">
+                                <Scale className="h-4 w-4 text-[#2563EB]" />
+                                Balance
+                            </CardTitle>
+                            {statusIsStale && (
+                                <span className="inline-flex items-center gap-1.5 rounded-full border border-[#FDE68A] bg-[#FFFBEB] px-2.5 py-0.5 text-[11px] font-semibold text-[#B45309]">
+                                    <AlertTriangle className="h-3 w-3" />
+                                    Stored status “{balanceData.status}” is out of date — this pass is {STATUS_CONFIG[derivedStatus]?.label ?? derivedStatus}
+                                </span>
+                            )}
+                        </div>
+                        <p className="mt-1.5 text-[12px] text-[#6B7280]">
+                            Outstanding = received − delivered + returned + balance correction. Corrections are a piece
+                            count only and never change what is billed.
+                        </p>
+                    </CardHeader>
+                    <CardContent className="pt-3">
+                        <dl className="grid grid-cols-2 gap-px overflow-hidden rounded-[6px] border border-[#E4E7EC] bg-[#E4E7EC] sm:grid-cols-3 lg:grid-cols-6">
+                            {[
+                                { label: 'Received', value: balanceData.totals.received_qty },
+                                { label: 'Delivered', value: balanceData.totals.effective_delivered_qty },
+                                { label: 'Returned', value: balanceData.totals.returned_back_qty, tone: totalReturned > 0 ? 'amber' : '' },
+                                { label: 'Balance correction', value: totalAdjusted, signed: true, tone: totalAdjusted !== 0 ? 'green' : '' },
+                                { label: 'Short received', value: balanceData.totals.not_received_qty, tone: balanceData.totals.not_received_qty > 0 ? 'red' : '' },
+                                { label: 'Outstanding', value: balanceData.totals.outstanding_delivery_qty, tone: totalPending > 0 ? 'amber' : 'green' },
+                            ].map((m) => (
+                                <div key={m.label} className="bg-white px-3 py-2">
+                                    <dt className="text-[10.5px] font-semibold uppercase tracking-wide text-[#98A2B3]">{m.label}</dt>
+                                    <dd
+                                        className={`mt-0.5 text-[15px] font-semibold tabular-nums ${
+                                            m.tone === 'amber' ? 'text-[#D97706]'
+                                                : m.tone === 'red' ? 'text-[#DC2626]'
+                                                    : m.tone === 'green' ? 'text-[#16A34A]'
+                                                        : 'text-[#101828]'
+                                        }`}
+                                    >
+                                        {m.signed && m.value > 0 ? '+' : ''}
+                                        {m.value}
+                                    </dd>
+                                </div>
+                            ))}
+                        </dl>
+
+                        {balancedItems.length > 0 && (
+                            <ul className="mt-3 space-y-1.5">
+                                {balancedItems.map((b) => (
+                                    <li
+                                        key={b.item_key}
+                                        className="flex flex-wrap items-center justify-between gap-2 rounded-[6px] border border-[#E4E7EC] bg-[#F9FAFB] px-3 py-2"
+                                    >
+                                        <span className="flex min-w-0 items-center gap-2">
+                                            <Scale className="h-3.5 w-3.5 shrink-0 text-[#98A2B3]" />
+                                            <span className="truncate text-[12.5px] font-medium text-[#101828]">{b.item_name}</span>
+                                            {b.specification && (
+                                                <span className="inline-flex items-center rounded bg-[#FFF7ED] border border-[#FED7AA] px-1.5 py-0.5 text-[11px] font-semibold text-[#EA580C]">
+                                                    {b.specification}
+                                                </span>
+                                            )}
+                                        </span>
+                                        <span className="flex shrink-0 items-center gap-3 text-[11.5px] text-[#6B7280] tabular-nums">
+                                            {b.returned_back_qty > 0 && <span>{b.returned_back_qty} returned</span>}
+                                            <BalanceCell amount={b.balance_adjustment_qty} />
+                                            <span className="font-semibold text-[#D97706]">{b.outstanding_delivery_qty} owed</span>
+                                        </span>
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
+                    </CardContent>
+                </Card>
+            )}
 
             {/* Completed by note (delivery was never recorded) */}
             {gp.marked_delivered && (
@@ -895,7 +1002,7 @@ export default function GatePassDetailPage() {
                         <table className="w-full text-[13px]">
                             <thead>
                                 <tr className="border-b border-[#F2F4F7]">
-                                    {['Item', 'Spec', 'Category', 'Client Qty', 'Received', 'Delivered', 'Returned', 'Pending', 'Diff', 'Reason', ''].map(h => (
+                                    {['Item', 'Spec', 'Category', 'Client Qty', 'Received', 'Delivered', 'Returned', 'Balance', 'Pending', 'Diff', 'Reason', ''].map(h => (
                                         <th key={h} className="py-3 pr-3 text-left text-[11px] font-semibold uppercase tracking-wide text-[#98A2B3] first:pl-0">
                                             {h}
                                         </th>
@@ -903,9 +1010,12 @@ export default function GatePassDetailPage() {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-[#F9FAFB]">
-                                {gp.items.map((item: any) => (
-                                    <Fragment key={`${item.item_name}||${item.specification || ''}`}>
-                                        <tr key={`${item.item_name}||${item.specification || ''}`} className="group">
+                                {gp.items.map((item: any) => {
+                                    const key = balanceItemKey(item.item_name, item.specification)
+                                    const bal = balanceByKey[key]
+                                    return (
+                                    <Fragment key={key}>
+                                        <tr className="group">
                                             <td className="py-3 pr-3 font-medium text-[#101828]">
                                                 {item.item_name}
                                                 {item.rewashed && (
@@ -926,14 +1036,14 @@ export default function GatePassDetailPage() {
                                             <td className="py-3 pr-3 text-[#6B7280]">{item.category || '—'}</td>
                                             <td className="py-3 pr-3 text-[#6B7280]">{item.client_qty}</td>
                                             <td className="py-3 pr-3 font-semibold text-[#101828]">{item.received_qty}</td>
-                                            <td className="py-3 pr-3 text-[#6B7280]">{deliveredMap[`${item.item_name}||${item.specification || ''}`] || 0}</td>
-                                            <td className="py-3 pr-3 text-[#6B7280]">{returnedMap[`${item.item_name}||${item.specification || ''}`] || 0}</td>
+                                            <td className="py-3 pr-3 text-[#6B7280]">{bal?.delivered_qty ?? 0}</td>
+                                            <td className="py-3 pr-3 text-[#6B7280]">{bal?.returned_back_qty ?? 0}</td>
+                                            <td className="py-3 pr-3">
+                                                <BalanceCell amount={bal?.balance_adjustment_qty ?? 0} />
+                                            </td>
                                             <td className="py-3 pr-3">
                                                 {(() => {
-                                                    const dKey = `${item.item_name}||${item.specification || ''}`
-                                                    const delivered = deliveredMap[dKey] || 0
-                                                    const retQty = returnedMap[dKey] || 0
-                                                    const pending = item.received_qty - delivered + retQty
+                                                    const pending = bal?.outstanding_delivery_qty ?? 0
                                                     return pending > 0 ? (
                                                         <span className="font-semibold text-[#EA580C]">{pending}</span>
                                                     ) : (
@@ -968,7 +1078,7 @@ export default function GatePassDetailPage() {
                                         <AnimatePresence>
                                             {adjustingItem === item.item_name && adjustingSpec === (item.specification || '') && (
                                                 <tr key={`${item.item_name}-adj`}>
-                                                    <td colSpan={10} className="pb-3">
+                                                    <td colSpan={12} className="pb-3">
                                                         <motion.div
                                                             initial={{ opacity: 0, height: 0 }}
                                                             animate={{ opacity: 1, height: 'auto' }}
@@ -1021,7 +1131,8 @@ export default function GatePassDetailPage() {
                                             )}
                                         </AnimatePresence>
                                     </Fragment>
-                                ))}
+                                    )
+                                })}
                             </tbody>
                         </table>
                     </div>

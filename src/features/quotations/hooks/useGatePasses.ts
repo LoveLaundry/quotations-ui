@@ -1,12 +1,18 @@
 import { useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { gatepasses } from '../services/gatepass.service'
-import type { GatePass, GatePassCreate, GatePassMarkDelivered } from '../../../types/operations'
+import type {
+    GatePass,
+    GatePassBalance,
+    GatePassCreate,
+    GatePassMarkDelivered,
+} from '../../../types/operations'
 
 export const gatepassKeys = {
     all: ['gatepasses'] as const,
     list: (params?: object) => [...gatepassKeys.all, 'list', params] as const,
     detail: (id: string) => [...gatepassKeys.all, id] as const,
+    balance: (id: string) => [...gatepassKeys.all, id, 'balance'] as const,
 }
 
 /**
@@ -43,6 +49,24 @@ export function useGatePass(id?: string) {
         queryKey: gatepassKeys.detail(id ?? ''),
         queryFn: () => gatepasses.get(id ?? ''),
         enabled: Boolean(id),
+    })
+}
+
+/**
+ * The engine's balance for one gate pass — received, delivered, returned,
+ * corrected and outstanding per item.
+ *
+ * Screens must render these figures from here rather than subtracting their own
+ * numbers from the raw records. A local `received - delivered` silently drops
+ * returns and corrections, which is how a balanced piece could read as settled
+ * on one screen while the delivery form still offered it on another.
+ */
+export function useGatePassBalance(id?: string) {
+    return useQuery({
+        queryKey: gatepassKeys.balance(id ?? ''),
+        queryFn: () => gatepasses.balance(id ?? ''),
+        enabled: Boolean(id),
+        staleTime: 30_000,
     })
 }
 
