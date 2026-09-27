@@ -297,7 +297,7 @@ export default function BillDetailPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-[#F2F4F7] bg-white">
-                    {bill.items.map((item, i) => (
+                    {(bill.items ?? []).map((item, i) => (
                       <tr key={i}>
                         <td className="px-4 py-3 font-medium text-[#101828]">{item.item_name}</td>
                         <td className="px-4 py-3 text-right text-[#374151]">{item.quantity}</td>

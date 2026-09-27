@@ -159,7 +159,7 @@ export default function ManagementTransactions() {
                 </tr>
               </thead>
               <tbody>
-                {viewTxn.items.map((item: any) => (
+                {(viewTxn.items ?? []).map((item: any) => (
                   <tr key={item.id} className="border-t">
                     <td className="px-2 py-1.5">{item.item_name}</td>
                     <td className="px-2 py-1.5"><span className="text-xs bg-gray-100 dark:bg-gray-700 px-1.5 rounded">{item.category_name}</span></td>

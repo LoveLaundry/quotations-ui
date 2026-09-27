@@ -113,7 +113,7 @@ export default function ManagementItems() {
                 </tr>
               </thead>
               <tbody>
-                {itemsData.items.map((item: any) => (
+                {(itemsData.items ?? []).map((item: any) => (
                   <tr key={item.id} className="border-t hover:bg-gray-50 dark:hover:bg-gray-800/50">
                     <td className="px-3 py-2 font-medium">{item.name}</td>
                     <td className="px-3 py-2"><span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-700">{item.category_name}</span></td>

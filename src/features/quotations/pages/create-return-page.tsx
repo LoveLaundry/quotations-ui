@@ -140,7 +140,7 @@ export default function CreateReturnPage() {
 
   // Selected gate-pass items (in GP item order) — the rows of the GP entry grid.
   const selectedGPItems = useMemo(
-    () => (selectedGP ? selectedGP.items.map((it, gi) => ({ it, gi })).filter(({ gi }) => gi in gpSelections) : []),
+    () => (selectedGP ? (selectedGP.items ?? []).map((it, gi) => ({ it, gi })).filter(({ gi }) => gi in gpSelections) : []),
     [selectedGP, gpSelections],
   )
 

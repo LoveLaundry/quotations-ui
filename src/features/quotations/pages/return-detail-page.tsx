@@ -117,7 +117,9 @@ export default function ReturnDetailPage() {
   const sc = STATUS_CONFIG[returnData.status] || STATUS_CONFIG.PENDING
   const StatusIcon = sc.icon
   const transitions = STATUS_TRANSITIONS[returnData.status] || []
-  const totalReturned = returnData.items.reduce((s, i) => s + i.returned_qty, 0)
+  // See delivery-detail-page: the type says non-optional, the API can disagree.
+  const items = returnData.items ?? []
+  const totalReturned = items.reduce((s, i) => s + i.returned_qty, 0)
 
   return (
     <div className="space-y-5 pb-10 max-w-4xl">
@@ -209,7 +211,7 @@ export default function ReturnDetailPage() {
       <Card>
         <CardHeader className="border-b border-gray-100 pb-3">
           <CardTitle className="text-[15px] font-semibold text-gray-900">
-            Returned Items ({returnData.items.length})
+            Returned Items ({items.length})
           </CardTitle>
         </CardHeader>
         <CardContent className="pt-0">
@@ -226,7 +228,7 @@ export default function ReturnDetailPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
-              {returnData.items.map((item, i) => (
+              {items.map((item, i) => (
                 <tr key={i} className="hover:bg-gray-50/50 transition">
                   <td className="px-4 py-3 font-medium text-gray-900">{item.item_name}</td>
                   <td className="px-4 py-3">

@@ -1,8 +1,9 @@
-import { useRouteError, isRouteErrorResponse, Link } from 'react-router-dom'
+import { useRouteError, isRouteErrorResponse, Link, useLocation } from 'react-router-dom'
 import { AlertTriangle, RefreshCw, Home, Unplug } from 'lucide-react'
 
 export default function ErrorPage() {
     const error = useRouteError()
+    const location = useLocation()
 
     let status = 500
     let title = 'Unexpected Error'
@@ -45,7 +46,15 @@ export default function ErrorPage() {
                     Error {status}
                 </p>
                 <h1 className="text-[20px] font-bold text-[#101828] mb-2">{title}</h1>
-                <p className="text-[13px] text-[#6B7280] mb-8 leading-relaxed">{description}</p>
+                <p className="text-[13px] text-[#6B7280] mb-6 leading-relaxed">{description}</p>
+
+                {/* Which page blew up is the single most useful thing to know and
+                    it was the one thing missing. Without it a report is just the
+                    message, which is not enough to locate the failing render. */}
+                <div className="mb-6 rounded-lg border border-[#E4E7EC] bg-[#F9FAFB] px-3 py-2 text-left">
+                    <p className="text-[10px] font-semibold uppercase tracking-wider text-[#98A2B3]">Page</p>
+                    <code className="block break-all text-[12px] text-[#344054]">{location.pathname}</code>
+                </div>
 
                 <div className="flex gap-3 justify-center">
                     <Link

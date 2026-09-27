@@ -280,7 +280,7 @@ export default function GatePassDetailPage() {
     const totalPending = balance?.totals.outstanding_delivery_qty ?? 0
 
     const handleAdjust = (itemName: string, spec = '') => {
-        const item = gp.items.find((i: any) => i.item_name === itemName && (i.specification || '') === spec)
+        const item = (gp.items ?? []).find((i: any) => i.item_name === itemName && (i.specification || '') === spec)
         if (!item) return
         setAdjustingItem(itemName)
         setAdjustingSpec(spec)
@@ -351,7 +351,7 @@ export default function GatePassDetailPage() {
         setEditClientName(gp.client_name)
         setEditReceivedBy(gp.received_by)
         setEditNotes(gp.notes ?? '')
-        setEditItems(gp.items.map((i: any) => ({ ...i })))
+        setEditItems((gp.items ?? []).map((i: any) => ({ ...i })))
         setEditing(true)
     }
 
@@ -893,7 +893,7 @@ export default function GatePassDetailPage() {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-[#F9FAFB]">
-                                {gp.items.map((item: any) => (
+                                {(gp.items ?? []).map((item: any) => (
                                     <Fragment key={`${item.item_name}||${item.specification || ''}`}>
                                         <tr key={`${item.item_name}||${item.specification || ''}`} className="group">
                                             <td className="py-3 pr-3 font-medium text-[#101828]">

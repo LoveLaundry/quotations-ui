@@ -331,7 +331,7 @@ function TablesRow({ data }: { data: DashboardOverviewData }) {
                     </span>
                   </div>
                   <div className="ml-8 space-y-1">
-                    {data.items.map((item, j) => (
+                    {(data.items ?? []).map((item, j) => (
                       <div key={`${item.item_name}-${j}`} className="flex items-center gap-2 text-[12px]">
                         <span className="font-medium" style={{ color: 'var(--text-secondary)' }}>{item.item_name}</span>
                         {item.specification && (

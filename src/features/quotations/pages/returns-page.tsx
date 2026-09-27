@@ -47,7 +47,7 @@ function ReturnCard({ r, onResent }: { r: Return; onResent: (returnId: string, i
         </div>
 
         <div className="flex flex-wrap gap-1 mb-3">
-          {r.items.map((item, j) => (
+          {items.map((item, j) => (
             <span key={j} className="inline-flex items-center gap-1 rounded-md bg-gray-50 border border-gray-200 px-2 py-0.5 text-[11px]">
               <span className="font-medium text-gray-700">{item.item_name}</span>
               {item.specification && (

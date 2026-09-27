@@ -37,7 +37,10 @@ export default function DeliveryDetailPage() {
         return <EmptyState title="Delivery not found" description="It may have been removed." />
     }
 
-    const totalPieces = delivery.items.reduce((s: number, i: any) => s + i.quantity, 0)
+    // `items` is declared non-optional on the type, but the API can omit it
+    // for a document with no lines — so normalise once instead of trusting it.
+    const items = delivery.items ?? []
+    const totalPieces = items.reduce((s: number, i: any) => s + i.quantity, 0)
 
     const startEditDate = () => {
         setDateValue((delivery.delivery_date || '').slice(0, 10))
@@ -164,7 +167,7 @@ export default function DeliveryDetailPage() {
                 </CardHeader>
                 <CardContent className="pt-0">
                     <div className="divide-y divide-[#F9FAFB]">
-                        {delivery.items.map((item: any, i: number) => (
+                        {items.map((item: any, i: number) => (
                             <div key={i} className="flex items-center justify-between gap-3 py-3.5">
                                 <div className="flex items-center gap-3">
                                     <div className="h-8 w-8 flex items-center justify-center rounded-lg bg-[#F0FDF4] border border-[#BBF7D0] text-[#16A34A] font-bold text-[12px]">
