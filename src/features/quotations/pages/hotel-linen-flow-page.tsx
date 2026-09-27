@@ -198,21 +198,27 @@ export default function HotelLinenFlowPage() {
 
     for (const hotelRow of flow?.hotels ?? []) {
       const hotel = pushHotel(hotelRow.client_name)
-      hotel.received = hotelRow.totals.received_qty
-      hotel.delivered = hotelRow.totals.delivered_qty
+      // Every field below comes off a newly added endpoint, so normalise the
+      // nested objects rather than trusting the type. A missing `totals` or
+      // `gate_passes` used to throw from deep inside this memo and take the
+      // whole page down with it.
+      const totals = hotelRow.totals ?? ({} as LinenFlowResponse['hotels'][number]['totals'])
+      hotel.received = Number(totals.received_qty ?? 0)
+      hotel.delivered = Number(totals.delivered_qty ?? 0)
       // Server-computed, so a piece the client gave back stops showing as owed.
-      hotel.pending = hotelRow.totals.outstanding_delivery_qty
+      hotel.pending = Number(totals.outstanding_delivery_qty ?? 0)
 
-      for (const gpRow of hotelRow.gate_passes) {
+      for (const gpRow of hotelRow.gate_passes ?? []) {
         // The pass document is only needed for its id / number here; every
         // number comes from the server's balance.
         const gp = { id: gpRow.gate_pass_id, gate_pass_number: gpRow.gate_pass_number } as GatePass
+        const gpTotals = gpRow.totals ?? ({} as LinenFlowResponse['hotels'][number]['gate_passes'][number]['totals'])
         hotel.gatePasses.push({
           gp,
-          received: gpRow.totals.received_qty,
-          delivered: gpRow.totals.delivered_qty,
-          pending: gpRow.totals.outstanding_delivery_qty,
-          outstandingItems: gpRow.outstanding_items,
+          received: Number(gpTotals.received_qty ?? 0),
+          delivered: Number(gpTotals.delivered_qty ?? 0),
+          pending: Number(gpTotals.outstanding_delivery_qty ?? 0),
+          outstandingItems: gpRow.outstanding_items ?? [],
           deliveries: deliveriesByGp.get(gpRow.gate_pass_id) ?? [],
         })
       }
