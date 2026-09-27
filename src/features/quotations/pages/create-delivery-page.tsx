@@ -106,6 +106,18 @@ export default function CreateDeliveryPage() {
         [pendingGPs, selectedIds],
     )
 
+    const selectedClientNames = useMemo(
+        () => Array.from(new Set(selectedGPs.map(gp => gp.client_name.trim()).filter(Boolean))),
+        [selectedGPs],
+    )
+
+    const selectionIssue =
+        selectedClientNames.length > 1
+            ? 'A single delivery cannot mix clients or hotels. Please keep the selection to one client at a time.'
+            : null
+
+    const canContinueSelection = form.selectedIds.length > 0 && selectedClientNames.length <= 1
+
     // ── All items from selected GPs (sorted oldest first) ────────────────────
     const allItems: SelectedItem[] = useMemo(() => {
         const items: SelectedItem[] = []
@@ -382,7 +394,11 @@ export default function CreateDeliveryPage() {
                     </p>
                 </div>
                 {form.step === 'select' && form.selectedIds.length > 0 && (
-                    <Button onClick={() => setForm(prev => ({ ...prev, step: 'fill' }))} className="bg-[#16A34A] hover:bg-[#15803D] text-white gap-2 cursor-pointer">
+                    <Button
+                        onClick={() => setForm(prev => ({ ...prev, step: 'fill' }))}
+                        disabled={!canContinueSelection}
+                        className="bg-[#16A34A] hover:bg-[#15803D] text-white gap-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
                         <Package size={16} /> Continue ({form.selectedIds.length} GP{form.selectedIds.length !== 1 ? 's' : ''})
                     </Button>
                 )}
@@ -439,6 +455,13 @@ export default function CreateDeliveryPage() {
                                     </button>
                                 )}
                             </div>
+
+                            {selectionIssue && form.selectedIds.length > 0 && (
+                                <div className="flex items-start gap-2 rounded-xl border border-[#FECACA] bg-[#FEF2F2] px-3 py-2.5 text-[12px] text-[#991B1B]">
+                                    <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+                                    <span>{selectionIssue}</span>
+                                </div>
+                            )}
 
                             {isLoading ? (
                                 <div className="space-y-2">
