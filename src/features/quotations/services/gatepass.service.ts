@@ -1,4 +1,5 @@
 import billsApi from '../../../api/bills-api'
+import { withItems } from '../../../lib/api-normalise'
 import type {
     GatePass,
     GatePassBalanceResponse,
@@ -14,7 +15,7 @@ function toISODatetime(dateStr: string): string {
 
 export const gatepasses = {
     list: (params?: { client_name?: string; status?: string }): Promise<GatePass[]> =>
-        billsApi.get<GatePass[]>('/gatepasses', { params }).then(r => r.data),
+        billsApi.get<GatePass[]>('/gatepasses', { params }).then(r => withItems(r.data)),
 
     get: (id: string) =>
         billsApi.get<GatePass>(`/gatepasses/${id}`).then((r: any) => r.data),

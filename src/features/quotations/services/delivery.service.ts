@@ -1,5 +1,6 @@
 import billsApi from '../../../api/bills-api'
 import { idempotencyKey } from '../../../lib/idempotency'
+import { withItems } from '../../../lib/api-normalise'
 import type {
     AvailabilityResponse,
     Delivery,
@@ -44,7 +45,7 @@ export const deliveries = {
         date_to?: string
         include_cancelled?: boolean
     }): Promise<Delivery[]> =>
-        billsApi.get<Delivery[]>('/deliveries', { params }).then(r => r.data),
+        billsApi.get<Delivery[]>('/deliveries', { params }).then(r => withItems(r.data)),
 
     get: (id: string) =>
         billsApi.get<Delivery>(`/deliveries/${id}`).then((r: any) => r.data),

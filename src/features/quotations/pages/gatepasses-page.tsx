@@ -171,7 +171,7 @@ export default function GatePassesPage() {
                 </div>
 
                 <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-[#F2F4F7] pt-3 text-[12px] text-[#6B7280]">
-                    <span><span className="font-semibold text-[#374151]">{gp.items.length}</span> types</span>
+                    <span><span className="font-semibold text-[#374151]">{(gp.items ?? []).length}</span> types</span>
                     <span><span className="font-semibold text-[#374151]">{total}</span> pcs</span>
                     <span>by <span className="font-medium text-[#374151]">{gp.received_by || '—'}</span></span>
                     {mismatches > 0 && (
