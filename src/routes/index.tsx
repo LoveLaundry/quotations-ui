@@ -3,6 +3,7 @@ import { createBrowserRouter, Navigate } from 'react-router-dom'
 import { AppShell } from '../components/layout/app-shell'
 import { ProtectedRoute } from '../components/layout/protected-route'
 import { AdminRoute } from '../components/layout/admin-route'
+import { ManagerRoute } from '../components/layout/manager-route'
 // Eager: must always be available to render if a lazy chunk fails to load.
 import ErrorPage from '../features/quotations/pages/error-page'
 
@@ -192,22 +193,31 @@ export const router = createBrowserRouter([
           // Management Module
           { path: 'management', element: <ManagementDashboard /> },
           { path: 'management/transactions', element: <ManagementTransactions /> },
-          { path: 'management/historical-entry', element: <HistoricalEntry /> },
-          { path: 'management/import', element: <ImportWizard /> },
           { path: 'management/customers', element: <ManagementCustomers /> },
           { path: 'management/items', element: <ManagementItems /> },
-          { path: 'management/expenses', element: <ManagementExpenses /> },
-          { path: 'management/employees', element: <ManagementEmployees /> },
-          { path: 'management/salary-slip', element: <SalarySlipPage /> },
-          { path: 'management/salary-history', element: <SalaryHistoryPage /> },
-          { path: 'management/advances', element: <AdvancesPage /> },
-          { path: 'management/holidays', element: <HolidaysPage /> },
-          { path: 'management/extra-work', element: <ExtraWorkPage /> },
-          { path: 'management/attendance', element: <AttendancePage /> },
-          { path: 'management/attendance-log', element: <AttendanceLogPage /> },
-          { path: 'management/company-settings', element: <CompanySettingsPage /> },
           { path: 'management/payments', element: <ManagementPayments /> },
-          { path: 'management/reports', element: <ManagementReports /> },
+
+          // Payroll, HR, expenses and reporting. Guarded because a STAFF
+          // session can reach every URL in the app, and the sidebar is only a
+          // set of links — hiding a link is not access control.
+          {
+            element: <ManagerRoute />,
+            children: [
+              { path: 'management/historical-entry', element: <HistoricalEntry /> },
+              { path: 'management/import', element: <ImportWizard /> },
+              { path: 'management/expenses', element: <ManagementExpenses /> },
+              { path: 'management/employees', element: <ManagementEmployees /> },
+              { path: 'management/salary-slip', element: <SalarySlipPage /> },
+              { path: 'management/salary-history', element: <SalaryHistoryPage /> },
+              { path: 'management/advances', element: <AdvancesPage /> },
+              { path: 'management/holidays', element: <HolidaysPage /> },
+              { path: 'management/extra-work', element: <ExtraWorkPage /> },
+              { path: 'management/attendance', element: <AttendancePage /> },
+              { path: 'management/attendance-log', element: <AttendanceLogPage /> },
+              { path: 'management/company-settings', element: <CompanySettingsPage /> },
+              { path: 'management/reports', element: <ManagementReports /> },
+            ],
+          },
 
           // Analytics
           { path: 'reports', element: <ReportsPage /> },

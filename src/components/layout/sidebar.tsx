@@ -78,15 +78,16 @@ const navGroups: { label: string; items: NavItem[] }[] = [
     items: [
       { to: '/management', label: 'Dashboard', icon: House },
       { to: '/management/transactions', label: 'Transactions', icon: ListChecks },
-      { to: '/management/historical-entry', label: 'Data Entry', icon: ClipboardText },
-      { to: '/management/import', label: 'Import Data', icon: Upload },
+      { to: '/management/historical-entry', label: 'Data Entry', icon: ClipboardText, roles: ['ADMIN', 'MANAGER'] },
+      { to: '/management/import', label: 'Import Data', icon: Upload, roles: ['ADMIN', 'MANAGER'] },
       { to: '/management/customers', label: 'Customers', icon: Users },
       { to: '/management/items', label: 'Items & Categories', icon: Package },
-      { to: '/management/expenses', label: 'Expenses', icon: Receipt },
+      { to: '/management/expenses', label: 'Expenses', icon: Receipt, roles: ['ADMIN', 'MANAGER'] },
       {
         to: '/management/employees',
         label: 'Employees',
         icon: UserCircle,
+        roles: ['ADMIN', 'MANAGER'],
         children: [
           { to: '/management/salary-slip', label: 'Generate Slip', icon: Money },
           { to: '/management/salary-history', label: 'Salary History', icon: ListChecks },
@@ -97,9 +98,9 @@ const navGroups: { label: string; items: NavItem[] }[] = [
           { to: '/management/attendance-log', label: 'Log Attendance', icon: CalendarPlus },
         ],
       },
-      { to: '/management/company-settings', label: 'Company Settings', icon: GearSix },
+      { to: '/management/company-settings', label: 'Company Settings', icon: GearSix, roles: ['ADMIN', 'MANAGER'] },
       { to: '/management/payments', label: 'Payments', icon: Wallet },
-      { to: '/management/reports', label: 'Management Reports', icon: ChartBar },
+      { to: '/management/reports', label: 'Management Reports', icon: ChartBar, roles: ['ADMIN', 'MANAGER'] },
     ],
   },
   {
