@@ -33,19 +33,26 @@ export function withItems<T extends { items?: unknown }>(data: T[] | null | unde
  * that reach a render unguarded, so a single top-level pass leaves the same
  * `null.items` crash in place. Depth is capped so a self-referential payload
  * cannot spin here.
+ *
+ * Null *entries* inside a collection are dropped for the same reason a null row
+ * is dropped at the top level: a null line carries no quantity, so it cannot
+ * affect a balance, but `items.map(i => i.item_name)` throws on it. Dropping
+ * it removes a crash without inventing or altering any real figure.
  */
 const NESTED_KEYS = ['items', 'gate_passes', 'rows', 'results', 'data'] as const
 
 export function withNestedItems<T>(value: T, depth = 0): T {
     if (depth > 6 || value == null || typeof value !== 'object') return value
     if (Array.isArray(value)) {
-        return value.map((row) => withNestedItems(row, depth + 1)) as unknown as T
+        return value
+            .filter((row) => row != null)
+            .map((row) => withNestedItems(row, depth + 1)) as unknown as T
     }
     const out: Record<string, unknown> = { ...(value as Record<string, unknown>) }
     for (const key of NESTED_KEYS) {
         const child = out[key]
         if (Array.isArray(child)) {
-            out[key] = child.map((row) => withNestedItems(row, depth + 1))
+            out[key] = child.filter((row) => row != null).map((row) => withNestedItems(row, depth + 1))
         } else if (child == null && key === 'items') {
             out[key] = []
         }

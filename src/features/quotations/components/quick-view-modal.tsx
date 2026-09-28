@@ -90,9 +90,23 @@ export function QuickViewModal({ open, onOpenChange, type, entity, deliveryStatu
                 </DialogHeader>
 
                 <DialogBody className="space-y-4">
-                    {type === 'gatepass' && <GatePassQuickView gp={entity as GatePass} />}
-                    {type === 'delivery' && <DeliveryQuickView delivery={entity as Delivery} />}
-                    {type === 'bill' && <BillQuickView bill={entity as Bill} />}
+                    {/* The body must be gated on `entity`, not just on `type`.
+                        `type` is a stable literal for the lifetime of the modal,
+                        but the pages null `entity` the instant the dialog starts
+                        closing (`onOpenChange={open => !open && setQuickView(null)}`).
+                        Radix keeps DialogContent mounted through its exit
+                        animation, so the body used to re-render once with
+                        `entity === null` and GatePassQuickView/DeliveryQuickView
+                        threw on `gp.items` / `delivery.items` -- reported as
+                        "Cannot read properties of null (reading 'items')".
+                        The `as GatePass` casts hid this from the compiler. */}
+                    {!entity ? null : type === 'gatepass' ? (
+                        <GatePassQuickView gp={entity as GatePass} />
+                    ) : type === 'delivery' ? (
+                        <DeliveryQuickView delivery={entity as Delivery} />
+                    ) : (
+                        <BillQuickView bill={entity as Bill} />
+                    )}
                 </DialogBody>
 
                 <DialogFooter className="flex-row items-center justify-end gap-2">

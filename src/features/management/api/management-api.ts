@@ -62,6 +62,31 @@ export const itemsApi = {
 }
 
 // ── Transactions ──────────────────────────────────────────────────────────
+/**
+ * Forces a list endpoint's payload into the `{items, total, limit, offset}`
+ * envelope the pages are written against.
+ *
+ * `GET /api/transactions` shipped as a bare array while every sibling paginated
+ * route used the envelope, so the page's `data.items` was `undefined` and
+ * `items.reduce(...)` threw. The backend now answers with the envelope; this
+ * keeps the page correct during a rolling deploy, where the frontend can be
+ * newer than the API. A bare array is not "broken" — it is wrapped, with
+ * `total` set to the rows actually returned so paging degrades to a single
+ * full page instead of an empty pager.
+ */
+function asPage<T>(data: unknown, limit: number, offset: number): Paginated<T> {
+  if (Array.isArray(data)) {
+    return { items: data as T[], total: data.length, limit, offset }
+  }
+  const obj = (data ?? {}) as Partial<Paginated<T>>
+  return {
+    items: Array.isArray(obj.items) ? obj.items : [],
+    total: typeof obj.total === 'number' ? obj.total : 0,
+    limit: typeof obj.limit === 'number' ? obj.limit : limit,
+    offset: typeof obj.offset === 'number' ? obj.offset : offset,
+  }
+}
+
 export const transactionsApi = {
   list: (params?: any) => {
     const q = new URLSearchParams()
@@ -70,9 +95,13 @@ export const transactionsApi = {
     if (params?.customer_id) q.set('customer_id', params.customer_id)
     if (params?.search) q.set('search', params.search)
     if (params?.source) q.set('source', params.source)
+    const limit = params?.limit ?? 200
+    const offset = params?.offset ?? 0
     if (params?.limit) q.set('limit', String(params.limit))
     if (params?.offset) q.set('offset', String(params.offset))
-    return mgmtApi.get(`/api/transactions?${q}`)
+    return mgmtApi
+      .get(`/api/transactions?${q}`)
+      .then((r) => ({ ...r, data: asPage<any>(r.data, limit, offset) }))
   },
   get: (id: string) => mgmtApi.get(`/api/transactions/${id}`),
   create: (data: any) => mgmtApi.post('/api/transactions', data),
