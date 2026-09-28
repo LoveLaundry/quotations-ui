@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { dashboardApi } from '../api/management-api'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, Legend } from 'recharts'
-import { TrendingUp, TrendingDown, Users, Package, Wallet, AlertCircle, DollarSign, ShoppingCart, UserCheck, FileText, HeartHandshake, UserCircle, Banknote, ListChecks, CalendarPlus, Sun, Zap, Settings, ArrowRight } from 'lucide-react'
+import { TrendingUp, TrendingDown, Users, Package, Wallet, AlertCircle, Banknote, ShoppingCart, UserCheck, FileText, HeartHandshake, UserCircle, ListChecks, CalendarPlus, Sun, Zap, Settings, ArrowRight } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { StatCard } from '../../../components/ui/stat-card'
 import { PageHeader } from '../../../components/ui/page-header'
@@ -28,7 +28,7 @@ export default function ManagementDashboard() {
   if (isLoading) return <div className="flex items-center justify-center h-64"><LoadingSpinner /></div>
 
   const d = data || {}
-  const fmt = (n: number) => `Rs. ${(n || 0).toLocaleString()}`
+  const fmt = (n: number) => `LKR ${(n || 0).toLocaleString()}`
 
   return (
     <div className="space-y-6">
@@ -36,7 +36,7 @@ export default function ManagementDashboard() {
       <SyncStatusBar queryKey={['mgmt-dashboard']} label="Mgmt dashboard" />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard label="Today's Revenue" value={fmt(d.today_revenue)} icon={<DollarSign size={20} />} color="green" to="/management/transactions" />
+        <StatCard label="Today's Revenue" value={fmt(d.today_revenue)} icon={<Banknote size={20} />} color="green" to="/management/transactions" />
         <StatCard label="Monthly Revenue" value={fmt(d.month_revenue)} icon={<TrendingUp size={20} />} color="blue" to="/management/transactions" />
         <StatCard label="6-Month Revenue" value={fmt(d.six_month_revenue)} icon={<ShoppingCart size={20} />} color="purple" to="/management/transactions" />
         <StatCard label="Net Profit" value={fmt(d.net_profit)} icon={<Wallet size={20} />} color={d.net_profit >= 0 ? 'green' : 'red'} to="/management/transactions" />
@@ -83,7 +83,7 @@ export default function ManagementDashboard() {
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="month" />
               <YAxis />
-              <Tooltip formatter={(v: number) => `Rs. ${v.toLocaleString()}`} />
+              <Tooltip formatter={(v: number) => `LKR ${v.toLocaleString()}`} />
               <Legend />
               <Bar dataKey="revenue" fill="#22c55e" name="Revenue" />
               <Bar dataKey="expenses" fill="#ef4444" name="Expenses" />
@@ -98,7 +98,7 @@ export default function ManagementDashboard() {
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="month" />
               <YAxis />
-              <Tooltip formatter={(v: number) => `Rs. ${v.toLocaleString()}`} />
+              <Tooltip formatter={(v: number) => `LKR ${v.toLocaleString()}`} />
               <Line type="monotone" dataKey="profit" stroke="#8b5cf6" strokeWidth={2} />
             </LineChart>
           </ResponsiveContainer>

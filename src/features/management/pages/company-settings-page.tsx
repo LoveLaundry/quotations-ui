@@ -99,7 +99,7 @@ export default function CompanySettingsPage() {
             <p className="text-xs text-gray-400 mt-1">Monthly salary is divided by this to get the per-day rate.</p>
           </div>
           <div>
-            <label className="text-sm font-medium text-gray-600 dark:text-gray-400">Default Overtime Rate (Rs./hr)</label>
+            <label className="text-sm font-medium text-gray-600 dark:text-gray-400">Default Overtime Rate (LKR/hr)</label>
             <input
               type="number"
               min="0"

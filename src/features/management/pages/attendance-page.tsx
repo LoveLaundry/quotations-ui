@@ -454,7 +454,7 @@ export default function AttendancePage() {
                           <td className="px-3 py-2 text-center text-red-700 dark:text-red-400">{s.unpaid_days}</td>
                           <td className="px-3 py-2 text-center text-indigo-700 dark:text-indigo-400">{s.overtime_hours || 0}</td>
                           <td className="px-3 py-2 text-center">
-                            <span className="font-bold tabular-nums">Rs. {forecast.projected.toLocaleString()}</span>
+                            <span className="font-bold tabular-nums">LKR {forecast.projected.toLocaleString()}</span>
                             <span className="block text-[10px] text-gray-400" title={`Base ${forecast.base.toLocaleString()} + allowance ${forecast.allowance.toLocaleString()} + OT ${forecast.overtime.toLocaleString()} − EPF ${forecast.epf.toLocaleString()} (${forecast.method})`}>
                               if all remaining days attended
                             </span>

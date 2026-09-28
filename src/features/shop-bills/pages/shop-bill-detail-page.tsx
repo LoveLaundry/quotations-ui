@@ -29,7 +29,7 @@ const PAYMENT_COLORS: Record<string, string> = {
   CANCELLED: 'bg-gray-100 text-gray-500 border border-gray-200',
 }
 
-const fmt = (v: number) => `Rs. ${v.toLocaleString('en-LK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+const fmt = (v: number) => `LKR ${v.toLocaleString('en-LK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
 
 function RecordPaymentModal({ isOpen, onClose, billId, outstanding }: { isOpen: boolean; onClose: () => void; billId: string; outstanding: number }) {
   const recordPayment = useRecordShopBillPayment()

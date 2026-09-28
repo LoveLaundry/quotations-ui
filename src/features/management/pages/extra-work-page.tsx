@@ -97,7 +97,7 @@ export default function ExtraWorkPage() {
           {categories.map((c: any) => (
             <span key={c.id} className="inline-flex items-center gap-2 px-3 py-1.5 bg-gray-100 dark:bg-gray-700 rounded-lg text-sm">
               {c.name}
-              <span className="text-xs text-gray-500">Rs. {Number(c.rate || 0).toLocaleString()}/{c.unit || 'unit'}</span>
+              <span className="text-xs text-gray-500">LKR {Number(c.rate || 0).toLocaleString()}/{c.unit || 'unit'}</span>
               {c.calculation_method && <span className="text-xs text-gray-400">({c.calculation_method})</span>}
               <button onClick={() => setDeleteCatTarget(c.id)} className="text-red-500 hover:text-red-700">
                 <Trash2 size={13} />
@@ -134,8 +134,8 @@ export default function ExtraWorkPage() {
                     <td className="py-2 pr-4">{r.date}</td>
                     <td className="py-2 pr-4">{r.category_name || r.category_id}</td>
                     <td className="py-2 pr-4 text-right">{r.units}</td>
-                    <td className="py-2 pr-4 text-right">Rs. {Number(r.rate || 0).toLocaleString()}</td>
-                    <td className="py-2 pr-4 text-right font-medium">Rs. {Number(r.amount || 0).toLocaleString()}</td>
+                    <td className="py-2 pr-4 text-right">LKR {Number(r.rate || 0).toLocaleString()}</td>
+                    <td className="py-2 pr-4 text-right font-medium">LKR {Number(r.amount || 0).toLocaleString()}</td>
                     <td className="py-2">
                       <button onClick={() => setDeleteRecTarget(r.id)} className="text-red-500 hover:text-red-700">
                         <Trash2 size={14} />
@@ -174,7 +174,7 @@ export default function ExtraWorkPage() {
                 <input name="name" required autoFocus className="w-full px-3 py-2 border rounded-lg text-sm" placeholder="e.g. Ironing" />
               </div>
               <div>
-                <label className="text-xs text-gray-500">Rate per unit (Rs.) *</label>
+                <label className="text-xs text-gray-500">Rate per unit (LKR) *</label>
                 <input name="rate" type="number" step="0.01" min="0" required className="w-full px-3 py-2 border rounded-lg text-sm" />
               </div>
               <div>
@@ -239,7 +239,7 @@ export default function ExtraWorkPage() {
                 <select name="category_id" required className="w-full px-3 py-2 border rounded-lg text-sm">
                   <option value="">Select Category</option>
                   {categories.map((c: any) => (
-                    <option key={c.id} value={c.id}>{c.name} — Rs. {Number(c.rate || 0).toLocaleString()}/unit</option>
+                    <option key={c.id} value={c.id}>{c.name} — LKR {Number(c.rate || 0).toLocaleString()}/unit</option>
                   ))}
                 </select>
               </div>

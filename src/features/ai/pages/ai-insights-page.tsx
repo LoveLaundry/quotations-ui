@@ -2,15 +2,15 @@ import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import {
   TrendingUp, TrendingDown, Wallet, ShieldCheck, BrainCircuit,
-  DollarSign, Receipt, Banknote, Sparkles,
+  Banknote, Receipt, Sparkles,
 } from 'lucide-react'
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts'
 import { loveAi } from '../api/ai-api'
 
-const fmt = (n: number) => `Rs. ${(n || 0).toLocaleString('en-LK', { maximumFractionDigits: 0 })}`
+const fmt = (n: number) => `LKR ${(n || 0).toLocaleString('en-LK', { maximumFractionDigits: 0 })}`
 const fmtShort = (n: number) =>
-  Math.abs(n) >= 1_000_000 ? `Rs. ${(n / 1_000_000).toFixed(1)}M` :
-  Math.abs(n) >= 1_000 ? `Rs. ${(n / 1_000).toFixed(1)}K` : `Rs. ${Math.round(n)}`
+  Math.abs(n) >= 1_000_000 ? `LKR ${(n / 1_000_000).toFixed(1)}M` :
+  Math.abs(n) >= 1_000 ? `LKR ${(n / 1_000).toFixed(1)}K` : `LKR ${Math.round(n)}`
 
 function StatCard({ title, value, sub, icon: Icon, color, trend }: {
   title: string; value: string; sub?: string; icon: any; color: string; trend?: 'up' | 'down' | 'flat'
@@ -139,7 +139,7 @@ export default function AiInsightsPage() {
       {!loading && !error && (
         <>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <StatCard title="Total Revenue" value={fmtShort(d.total_revenue)} sub={`${d.period?.start} → ${d.period?.end}`} icon={DollarSign} color="bg-emerald-500" trend={(d.revenue?.forecast?.growth_pct ?? 0) >= 0 ? 'up' : 'down'} />
+            <StatCard title="Total Revenue" value={fmtShort(d.total_revenue)} sub={`${d.period?.start} → ${d.period?.end}`} icon={Banknote} color="bg-emerald-500" trend={(d.revenue?.forecast?.growth_pct ?? 0) >= 0 ? 'up' : 'down'} />
             <StatCard title="Total Expenses" value={fmtShort(d.total_expenses)} sub="Last N months" icon={Receipt} color="bg-red-500" trend={(d.expenses?.forecast?.growth_pct ?? 0) >= 0 ? 'up' : 'down'} />
             <StatCard title="Total Payroll" value={fmtShort(d.total_payroll)} sub="Net paid" icon={Banknote} color="bg-violet-500" />
             <StatCard title="Avg Monthly Net" value={fmtShort(d.avg_monthly_net)} sub="Revenue − Expenses" icon={Wallet} color={`${d.avg_monthly_net >= 0 ? 'bg-teal-500' : 'bg-rose-500'}`} />

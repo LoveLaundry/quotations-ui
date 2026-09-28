@@ -95,7 +95,7 @@ export default function ManagementCustomers() {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
         <StatCard label="Total Customers" value={totalCustomers} icon={<Users size={20} />} color="blue" />
-        <StatCard label="Outstanding" value={`Rs. ${totalOutstanding.toLocaleString()}`} icon={<AlertTriangle size={20} />} color="amber" />
+        <StatCard label="Outstanding" value={`LKR ${totalOutstanding.toLocaleString()}`} icon={<AlertTriangle size={20} />} color="amber" />
         <StatCard label="Active" value={pageCustomers.filter((c: any) => c.is_active !== false).length} icon={<Users size={20} />} color="green" />
         <StatCard label="Inactive" value={pageCustomers.filter((c: any) => c.is_active === false).length} icon={<Users size={20} />} color="gray" />
       </div>
@@ -150,7 +150,7 @@ export default function ManagementCustomers() {
                   </div>
                   <div>
                     <p className="text-gray-400">Revenue</p>
-                    <p className="font-medium">Rs. {(sum.total_revenue || 0).toLocaleString()}</p>
+                    <p className="font-medium">LKR {(sum.total_revenue || 0).toLocaleString()}</p>
                   </div>
                   <div>
                     <p className="text-gray-400">Items</p>
@@ -158,7 +158,7 @@ export default function ManagementCustomers() {
                   </div>
                   <div>
                     <p className="text-gray-400">Outstanding</p>
-                    <p className="font-medium text-red-600">Rs. {(sum.outstanding_payments || 0).toLocaleString()}</p>
+                    <p className="font-medium text-red-600">LKR {(sum.outstanding_payments || 0).toLocaleString()}</p>
                   </div>
                 </div>
               </div>

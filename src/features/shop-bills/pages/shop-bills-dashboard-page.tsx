@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowLeft, TrendingUp, DollarSign, AlertTriangle, Receipt, CreditCard, Users } from 'lucide-react'
+import { ArrowLeft, TrendingUp, Banknote, AlertTriangle, Receipt, CreditCard, Users } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card'
 import { Breadcrumb } from '../../../components/ui/breadcrumb'
 import { Skeleton } from '../../../components/ui/skeleton'
@@ -8,7 +8,7 @@ import { ErrorState } from '../../../components/ui/error-state'
 import { SyncStatusBar } from '../../../components/ui/sync-status-bar'
 import { useShopBillDashboard, useStatusCounts, usePaymentSummary } from '../hooks/useShopBills'
 
-const fmt = (v: number) => `Rs. ${v.toLocaleString('en-LK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+const fmt = (v: number) => `LKR ${v.toLocaleString('en-LK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
 
 const STATUS_COLORS: Record<string, string> = {
   PENDING: 'bg-amber-50 text-amber-700 border border-amber-200',
@@ -72,7 +72,7 @@ export default function ShopBillsDashboardPage() {
             <Link to="/shop-bills" className="block group">
               <Card className="p-4 group-hover:border-[#DC2626]/40 transition-colors">
                 <div className="flex items-center gap-2 mb-2">
-                  <DollarSign className="h-4 w-4 text-[#DC2626]" />
+                  <Banknote className="h-4 w-4 text-[#DC2626]" />
                   <p className="text-[11px] font-semibold uppercase text-[#6B7280]">Outstanding</p>
                 </div>
                 {loadingSummary ? <Skeleton className="h-7 w-24" /> : <p className="text-[22px] font-bold text-[#DC2626]">{fmt(summary?.total_outstanding ?? 0)}</p>}

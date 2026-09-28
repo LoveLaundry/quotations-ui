@@ -5,7 +5,7 @@ import { employeesApi, attendanceApi, holidaysApi } from '../api/management-api'
 import { buildStaffSummary } from '../utils/attendance-summary'
 import { buildSalaryForecast } from '../utils/salary-forecast'
 import { toast } from 'sonner'
-import { Plus, Pencil, Trash2, X, DollarSign, UserCheck, Filter, FileText, Users } from 'lucide-react'
+import { Plus, Pencil, Trash2, X, Banknote, UserCheck, Filter, FileText, Users } from 'lucide-react'
 import { PageHeader } from '../../../components/ui/page-header'
 import { StatCard } from '../../../components/ui/stat-card'
 import { FilterBar } from '../../../components/ui/filter-bar'
@@ -144,7 +144,7 @@ export default function ManagementEmployees() {
         <StatCard label="Total Employees" value={employees.length} icon={<Users size={20} />} color="blue" />
         <StatCard label="Active" value={employees.filter((e: any) => e.is_active !== false).length} icon={<UserCheck size={20} />} color="green" />
         <StatCard label="Inactive" value={employees.filter((e: any) => e.is_active === false).length} icon={<Users size={20} />} color="gray" />
-        <StatCard label="Total Salary" value={`Rs. ${totalSalary.toLocaleString()}`} icon={<DollarSign size={20} />} color="amber" />
+        <StatCard label="Total Salary" value={`LKR ${totalSalary.toLocaleString()}`} icon={<Banknote size={20} />} color="amber" />
       </div>
 
       <FilterBar>
@@ -227,11 +227,11 @@ export default function ManagementEmployees() {
               <div className="grid grid-cols-2 gap-2 text-sm">
                 <div>
                   <p className="text-gray-400">Basic Salary</p>
-                  <p className="font-medium">Rs. {emp.basic_salary.toLocaleString()}</p>
+                  <p className="font-medium">LKR {emp.basic_salary.toLocaleString()}</p>
                 </div>
                 <div>
                   <p className="text-gray-400">Configured Pay</p>
-                  <p className="font-medium">Rs. {(payAmount || 0).toLocaleString()}{emp.salary_type === 'WEEKLY' ? ' / week' : emp.salary_type === 'DAILY' ? ' / day' : ''}</p>
+                  <p className="font-medium">LKR {(payAmount || 0).toLocaleString()}{emp.salary_type === 'WEEKLY' ? ' / week' : emp.salary_type === 'DAILY' ? ' / day' : ''}</p>
                 </div>
                 <div>
                   <p className="text-gray-400">Department</p>
@@ -259,7 +259,7 @@ export default function ManagementEmployees() {
                 </div>
                 <div>
                   <p className="text-gray-400">Allowance</p>
-                  <p className="font-medium">Rs. {(emp.allowance || 0).toLocaleString()}{emp.allowance_type === 'ATTENDANCE' ? ' · Attd.' : emp.allowance_type === 'ADJUSTED' || emp.allowance_type === 'DAYS' ? ' · Adj.' : ''}</p>
+                  <p className="font-medium">LKR {(emp.allowance || 0).toLocaleString()}{emp.allowance_type === 'ATTENDANCE' ? ' · Attd.' : emp.allowance_type === 'ADJUSTED' || emp.allowance_type === 'DAYS' ? ' · Adj.' : ''}</p>
                 </div>
                 {hasLeft && (
                   <div className="col-span-2">
@@ -287,10 +287,10 @@ export default function ManagementEmployees() {
                   const f = buildSalaryForecast(emp, s?.overtime_hours ?? 0, { year: attYear, month: attMonth, holidays: holidaysData })
                   return (
                     <p className="mt-1.5 border-t border-gray-100 dark:border-gray-800 pt-1.5 text-[11px] text-gray-500 flex items-center justify-between gap-2">
-                      <span title={`Base Rs.${f.base.toLocaleString()} + allowance Rs.${f.allowance.toLocaleString()} + OT Rs.${f.overtime.toLocaleString()} − EPF Rs.${f.epf.toLocaleString()} (${f.method})`}>
+                      <span title={`Base LKR ${f.base.toLocaleString()} + allowance LKR ${f.allowance.toLocaleString()} + OT LKR ${f.overtime.toLocaleString()} − EPF LKR ${f.epf.toLocaleString()} (${f.method})`}>
                         Month earning if all days attend
                       </span>
-                      <span className="font-bold tabular-nums text-red-700 dark:text-red-400">Rs. {f.projected.toLocaleString()}</span>
+                      <span className="font-bold tabular-nums text-red-700 dark:text-red-400">LKR {f.projected.toLocaleString()}</span>
                     </p>
                   )
                 })()}
@@ -305,7 +305,7 @@ export default function ManagementEmployees() {
                 </button>
                 <button onClick={() => setShowSalary(emp)}
                   className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-sm bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/40">
-                  <DollarSign size={14} /> Salary
+                  <Banknote size={14} /> Salary
                 </button>
               </div>
             </div>
@@ -378,29 +378,29 @@ export default function ManagementEmployees() {
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs text-gray-500">Basic Salary (Rs. / month)</label>
+                  <label className="text-xs text-gray-500">Basic Salary (LKR / month)</label>
                   <input name="basic_salary" type="number" step="0.01" defaultValue={editing?.basic_salary} className="w-full px-3 py-2 border rounded-lg text-sm" />
                 </div>
                 <div>
-                  <label className="text-xs text-gray-500">Daily Rate (Rs. / day)</label>
+                  <label className="text-xs text-gray-500">Daily Rate (LKR / day)</label>
                   <input name="daily_rate" type="number" step="0.01" defaultValue={editing?.daily_rate} className="w-full px-3 py-2 border rounded-lg text-sm" />
                 </div>
                 <div>
-                  <label className="text-xs text-gray-500">Weekly Rate (Rs. / week)</label>
+                  <label className="text-xs text-gray-500">Weekly Rate (LKR / week)</label>
                   <input name="weekly_rate" type="number" step="0.01" defaultValue={editing?.weekly_rate} className="w-full px-3 py-2 border rounded-lg text-sm" />
                 </div>
                 <div>
-                  <label className="text-xs text-gray-500">Contract Amount (Rs. / period)</label>
+                  <label className="text-xs text-gray-500">Contract Amount (LKR / period)</label>
                   <input name="contract_amount" type="number" step="0.01" defaultValue={editing?.contract_amount} className="w-full px-3 py-2 border rounded-lg text-sm" />
                 </div>
                 <div>
-                  <label className="text-xs text-gray-500">Overtime Rate (Rs. / hr)</label>
+                  <label className="text-xs text-gray-500">Overtime Rate (LKR / hr)</label>
                   <input name="overtime_rate" type="number" step="0.01" defaultValue={editing?.overtime_rate} className="w-full px-3 py-2 border rounded-lg text-sm" />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs text-gray-500">Allowance (Rs.)</label>
+                  <label className="text-xs text-gray-500">Allowance (LKR)</label>
                   <input name="allowance" type="number" step="0.01" defaultValue={editing?.allowance} className="w-full px-3 py-2 border rounded-lg text-sm" />
                 </div>
                 <div>
@@ -501,12 +501,12 @@ export default function ManagementEmployees() {
                   <input name="overtime_hours" type="number" step="0.5" defaultValue={0} className="w-full px-3 py-2 border rounded-lg text-sm" />
                 </div>
                 <div>
-                  <label className="text-xs text-gray-500">OT Rate (Rs./hr)</label>
+                  <label className="text-xs text-gray-500">OT Rate (LKR/hr)</label>
                   <input name="overtime_rate" type="number" step="0.01" defaultValue={0} className="w-full px-3 py-2 border rounded-lg text-sm" />
                 </div>
               </div>
               <div>
-                <label className="text-xs text-gray-500">Allowances (Rs.)</label>
+                <label className="text-xs text-gray-500">Allowances (LKR)</label>
                 <input name="allowances" type="number" step="0.01" defaultValue={0} className="w-full px-3 py-2 border rounded-lg text-sm" />
               </div>
               <div className="grid grid-cols-2 gap-3">

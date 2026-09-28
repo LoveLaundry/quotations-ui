@@ -1,6 +1,6 @@
 ﻿import { useState, type ElementType, type SyntheticEvent } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { Search, BarChart3, Users, Package, ClipboardList, DollarSign, History, TrendingUp, AlertTriangle, CheckCircle, Clock, Download } from 'lucide-react'
+import { Search, BarChart3, Users, Package, ClipboardList, Banknote, History, TrendingUp, AlertTriangle, CheckCircle, Clock, Download } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card'
 import { Skeleton } from '../../../components/ui/skeleton'
@@ -15,7 +15,7 @@ const TABS: { id: ReportTab; label: string; icon: ElementType }[] = [
   { id: 'client', label: 'Client-Wise', icon: Users },
   { id: 'item', label: 'Item-Wise', icon: Package },
   { id: 'gatepass', label: 'Gate Pass', icon: ClipboardList },
-  { id: 'billing', label: 'Billing', icon: DollarSign },
+  { id: 'billing', label: 'Billing', icon: Banknote },
   { id: 'audit', label: 'Audit Log', icon: History },
 ]
 
@@ -138,8 +138,8 @@ function ClientSearch() {
             <StatCard label="Items Delivered" value={data.stats.total_items_delivered} icon={TrendingUp} accent="#16A34A" />
             <StatCard label="Pending Items" value={data.stats.pending_items} icon={Clock} accent="#D97706" />
             <StatCard label="Open Mismatches" value={data.stats.open_mismatches} icon={AlertTriangle} accent="#DC2626" />
-            <StatCard label="Pending Bills" value={data.stats.pending_bills} icon={DollarSign} accent="#C2410C" />
-            <StatCard label="Total Billed" value={`LKR ${data.stats.total_billed.toLocaleString()}`} icon={DollarSign} accent="#2563EB" />
+            <StatCard label="Pending Bills" value={data.stats.pending_bills} icon={Banknote} accent="#C2410C" />
+            <StatCard label="Total Billed" value={`LKR ${data.stats.total_billed.toLocaleString()}`} icon={Banknote} accent="#2563EB" />
             <StatCard label="Outstanding" value={`LKR ${data.stats.outstanding_amount.toLocaleString()}`} icon={AlertTriangle} accent="#DC2626" />
           </div>
 
@@ -219,7 +219,7 @@ function ClientSearch() {
             <Card>
               <CardHeader className="border-b border-[#F2F4F7] pb-3">
                 <div className="flex items-center gap-2">
-                  <DollarSign className="h-4 w-4 text-[#16A34A]" />
+                  <Banknote className="h-4 w-4 text-[#16A34A]" />
                   <CardTitle>Recent Bills</CardTitle>
                 </div>
               </CardHeader>

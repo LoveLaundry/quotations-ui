@@ -309,11 +309,11 @@ export default function SalarySlipPage() {
               <div className="flex justify-between"><span className="text-gray-500">Absent Days</span><span className="font-medium text-red-600">{calculation.absent_days}</span></div>
               <div className="flex justify-between"><span className="text-gray-500">Holidays</span><span className="font-medium text-purple-600">{calculation.holiday_count || 0}</span></div>
               <div className="flex justify-between"><span className="text-gray-500">Weekends</span><span className="font-medium text-purple-600">{calculation.weekend_count || 0}</span></div>
-              <div className="flex justify-between"><span className="text-gray-500">Basic Salary</span><span className="font-medium">Rs. {calculation.basic_salary.toLocaleString()}</span></div>
-              <div className="flex justify-between"><span className="text-gray-500">Adjusted Base</span><span className="font-medium">Rs. {calculation.adjusted_base_salary.toLocaleString()}</span></div>
+              <div className="flex justify-between"><span className="text-gray-500">Basic Salary</span><span className="font-medium">LKR {calculation.basic_salary.toLocaleString()}</span></div>
+              <div className="flex justify-between"><span className="text-gray-500">Adjusted Base</span><span className="font-medium">LKR {calculation.adjusted_base_salary.toLocaleString()}</span></div>
               <div className="col-span-2 flex justify-between border-t pt-2">
                 <span className="font-semibold">Base for Period</span>
-                <span className="font-bold">Rs. {calculation.base_salary_for_period.toLocaleString()}</span>
+                <span className="font-bold">LKR {calculation.base_salary_for_period.toLocaleString()}</span>
               </div>
                 </div>
               </>
@@ -323,8 +323,8 @@ export default function SalarySlipPage() {
                 <div className="grid grid-cols-2 gap-3 text-sm">
                   <div className="flex justify-between"><span className="text-gray-500">Salary Type</span><span className="font-medium">{calculation.salary_type}</span></div>
                   <div className="flex justify-between"><span className="text-gray-500">Method</span><span className="font-medium">{calMethodLabel(calculation.calculation_method)}</span></div>
-                  <div className="flex justify-between"><span className="text-gray-500">Configured Amount</span><span className="font-medium">Rs. {calculation.basic_salary.toLocaleString()}</span></div>
-                  <div className="flex justify-between"><span className="text-gray-500">Base for Period</span><span className="font-medium">Rs. {calculation.base_salary_for_period.toLocaleString()}</span></div>
+                  <div className="flex justify-between"><span className="text-gray-500">Configured Amount</span><span className="font-medium">LKR {calculation.basic_salary.toLocaleString()}</span></div>
+                  <div className="flex justify-between"><span className="text-gray-500">Base for Period</span><span className="font-medium">LKR {calculation.base_salary_for_period.toLocaleString()}</span></div>
                 </div>
                 <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 rounded-lg p-3 text-sm text-amber-700 dark:text-amber-300">
                   Fixed salary arrangement — attendance is not required and does not affect this employee's pay. Prorated only for mid-period joins/leaves.
@@ -353,23 +353,23 @@ export default function SalarySlipPage() {
             <div className="space-y-3">
               <div className="text-sm font-medium text-gray-600 dark:text-gray-400">Earnings</div>
               <div className="space-y-2 text-sm">
-                <div className="flex justify-between"><span>Base Salary (Period)</span><span>Rs. {calculation.base_salary_for_period.toLocaleString()}</span></div>
+                <div className="flex justify-between"><span>Base Salary (Period)</span><span>LKR {calculation.base_salary_for_period.toLocaleString()}</span></div>
                 {calculation.overtime_pay > 0 && (
-                  <div className="flex justify-between"><span>Overtime ({calculation.overtime_hours} hrs)</span><span>Rs. {calculation.overtime_pay.toLocaleString()}</span></div>
+                  <div className="flex justify-between"><span>Overtime ({calculation.overtime_hours} hrs)</span><span>LKR {calculation.overtime_pay.toLocaleString()}</span></div>
                 )}
                 {calculation.extra_work_total > 0 && (
-                  <div className="flex justify-between"><span>Extra Work</span><span>Rs. {calculation.extra_work_total.toLocaleString()}</span></div>
+                  <div className="flex justify-between"><span>Extra Work</span><span>LKR {calculation.extra_work_total.toLocaleString()}</span></div>
                 )}
                 {calculation.bonus > 0 && (
-                  <div className="flex justify-between text-green-700"><span>Bonus</span><span>Rs. {calculation.bonus.toLocaleString()}</span></div>
+                  <div className="flex justify-between text-green-700"><span>Bonus</span><span>LKR {calculation.bonus.toLocaleString()}</span></div>
                 )}
                 {calculation.other_payments > 0 && (
-                  <div className="flex justify-between text-green-700"><span>Other Payments</span><span>Rs. {calculation.other_payments.toLocaleString()}</span></div>
+                  <div className="flex justify-between text-green-700"><span>Other Payments</span><span>LKR {calculation.other_payments.toLocaleString()}</span></div>
                 )}
                 {calculation.allowance > 0 && (
                   <div className="flex justify-between text-gray-500">
-                    <span>Allowance ({calculation.allowance_type === 'ADJUSTED' || calculation.allowance_type === 'DAYS' ? 'adjusted' : calculation.allowance_type === 'ATTENDANCE' ? 'attendance base' : 'fixed'} {calculation.allowance_for_period > 0 && <>{calculation.allowance_for_period !== calculation.allowance ? `— Rs. ${calculation.allowance} × ${((calculation.allowance_for_period / calculation.allowance) * 100).toFixed(1)}%` : ''}</>})</span>
-                    <span>Rs. {(calculation.allowance_for_period || 0).toLocaleString()}</span>
+                    <span>Allowance ({calculation.allowance_type === 'ADJUSTED' || calculation.allowance_type === 'DAYS' ? 'adjusted' : calculation.allowance_type === 'ATTENDANCE' ? 'attendance base' : 'fixed'} {calculation.allowance_for_period > 0 && <>{calculation.allowance_for_period !== calculation.allowance ? `— LKR ${calculation.allowance} × ${((calculation.allowance_for_period / calculation.allowance) * 100).toFixed(1)}%` : ''}</>})</span>
+                    <span>LKR {(calculation.allowance_for_period || 0).toLocaleString()}</span>
                   </div>
                 )}
                 <div className="flex items-center gap-2">
@@ -386,13 +386,13 @@ export default function SalarySlipPage() {
               <div className="border-t pt-3 text-sm font-medium text-gray-600 dark:text-gray-400">Deductions</div>
               <div className="space-y-2 text-sm">
                 {calculation.epf_employee > 0 && (
-                  <div className="flex justify-between"><span>EPF (Employee, {calculation.epf_base === 'FULL' ? 'full base' : calculation.epf_base === 'ATTENDANCE' ? 'attendance base' : 'adjusted base'})</span><span className="text-red-600">- Rs. {calculation.epf_employee.toLocaleString()}</span></div>
+                  <div className="flex justify-between"><span>EPF (Employee, {calculation.epf_base === 'FULL' ? 'full base' : calculation.epf_base === 'ATTENDANCE' ? 'attendance base' : 'adjusted base'})</span><span className="text-red-600">- LKR {calculation.epf_employee.toLocaleString()}</span></div>
                 )}
                 {calculation.advance_deductions > 0 && (
-                  <div className="flex justify-between"><span>Advances</span><span className="text-red-600">- Rs. {calculation.advance_deductions.toLocaleString()}</span></div>
+                  <div className="flex justify-between"><span>Advances</span><span className="text-red-600">- LKR {calculation.advance_deductions.toLocaleString()}</span></div>
                 )}
                 {calculation.other_deductions > 0 && (
-                  <div className="flex justify-between"><span>Configured Deductions (components)</span><span className="text-red-600">- Rs. {calculation.other_deductions.toLocaleString()}</span></div>
+                  <div className="flex justify-between"><span>Configured Deductions (components)</span><span className="text-red-600">- LKR {calculation.other_deductions.toLocaleString()}</span></div>
                 )}
                 <div className="flex items-center gap-2">
                   <span className="text-gray-500">Loan Deduction</span>
@@ -416,9 +416,9 @@ export default function SalarySlipPage() {
             </div>
 
             <div className="border-t pt-3 space-y-2">
-              <div className="flex justify-between text-lg"><span className="font-semibold">Total Earnings</span><span className="font-bold">Rs. {totalEarnings.toLocaleString()}</span></div>
-              <div className="flex justify-between text-lg"><span className="font-semibold">Total Deductions</span><span className="font-bold text-red-600">Rs. {totalDeductions.toLocaleString()}</span></div>
-              <div className="flex justify-between text-xl border-t pt-2"><span className="font-bold">Net Salary</span><span className="font-bold text-green-600">Rs. {netSalary.toLocaleString()}</span></div>
+              <div className="flex justify-between text-lg"><span className="font-semibold">Total Earnings</span><span className="font-bold">LKR {totalEarnings.toLocaleString()}</span></div>
+              <div className="flex justify-between text-lg"><span className="font-semibold">Total Deductions</span><span className="font-bold text-red-600">LKR {totalDeductions.toLocaleString()}</span></div>
+              <div className="flex justify-between text-xl border-t pt-2"><span className="font-bold">Net Salary</span><span className="font-bold text-green-600">LKR {netSalary.toLocaleString()}</span></div>
             </div>
           </div>
         </div>

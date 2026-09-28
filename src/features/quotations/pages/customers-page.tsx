@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Users, FileText, ClipboardCheck, Truck, CircleDollarSign, Search, ShoppingBag } from 'lucide-react'
+import { Users, FileText, ClipboardCheck, Truck, Banknote, Search, ShoppingBag } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
 import { Button } from '../../../components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card'
@@ -131,7 +131,7 @@ export default function CustomersPage() {
               value={clientSummary?.stats?.total_shop_bills ?? 0}
             />
             <Stat
-              icon={<CircleDollarSign className="h-4 w-4" />}
+              icon={<Banknote className="h-4 w-4" />}
               label="Outstanding"
               value={`LKR ${(clientSummary?.stats?.outstanding_amount ?? 0 + (clientSummary?.stats?.shop_outstanding ?? 0)).toLocaleString()}`}
             />
@@ -142,7 +142,7 @@ export default function CustomersPage() {
               <CardContent className="flex flex-wrap items-center justify-between gap-3 pt-5">
                 <div className="flex items-center gap-4">
                   <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#FFF7ED] text-[#C2410C]">
-                    <CircleDollarSign className="h-6 w-6" />
+                    <Banknote className="h-6 w-6" />
                   </div>
                   <div>
                     <p className="text-[11px] uppercase tracking-wide text-[#98A2B3]">

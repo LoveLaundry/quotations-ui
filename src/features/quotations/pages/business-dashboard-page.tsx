@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
-  DollarSign,
+  Banknote,
   Wallet,
   Percent,
   Receipt,
@@ -184,7 +184,7 @@ export default function BusinessDashboardPage() {
     {
       label: 'Revenue',
       value: fmtMoney(current.revenue),
-      icon: <DollarSign size={20} />,
+      icon: <Banknote size={20} />,
       accent: 'bg-[#FEF2F2] text-[#DC2626]',
       cur: current.revenue,
       prev: previous.revenue,

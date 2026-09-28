@@ -35,7 +35,7 @@ export function tone(color: string | undefined): string {
 export function money(n: number): string {
   const v = Number.isFinite(n) ? n : 0
   const sign = v < 0 ? '-' : ''
-  return `${sign}Rs. ${Math.abs(v).toLocaleString('en-LK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+  return `${sign}LKR ${Math.abs(v).toLocaleString('en-LK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
 }
 
 export function count(n: number): string {

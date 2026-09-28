@@ -279,9 +279,9 @@ export default function HistoricalEntry() {
 
       <div className="text-sm text-gray-500 flex gap-4">
         <span>Rows: {rows.length}</span>
-        <span>Total Amount: Rs. {totalAmt.toLocaleString()}</span>
-        <span>Total Cost: Rs. {totalCost.toLocaleString()}</span>
-        <span>Profit: Rs. {(totalAmt - totalCost).toLocaleString()}</span>
+        <span>Total Amount: LKR {totalAmt.toLocaleString()}</span>
+        <span>Total Cost: LKR {totalCost.toLocaleString()}</span>
+        <span>Profit: LKR {(totalAmt - totalCost).toLocaleString()}</span>
       </div>
     </div>
   )

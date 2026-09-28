@@ -30,7 +30,7 @@ interface InvoiceRow {
 const inputClass = 'h-10 w-full rounded-lg border border-[#E4E7EC] bg-white px-3 text-[13px] text-[#101828] outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/10 transition'
 const cellInputClass = 'h-9 w-full rounded-lg border border-[#E4E7EC] bg-white px-2 text-[13px] outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/10 transition'
 
-const fmtMoney = (v: number) => `Rs. ${(Number(v) || 0).toLocaleString('en-LK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+const fmtMoney = (v: number) => `LKR ${(Number(v) || 0).toLocaleString('en-LK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
 
 const legacyPrintStyles = `
   @media print {
@@ -271,7 +271,7 @@ onSuccess: invoice => {
                   <th className="py-2 pr-3 text-left font-semibold text-[#6B7280] w-[40px]">#</th>
                   <th className="py-2 pr-3 text-left font-semibold text-[#6B7280]">Date</th>
                   <th className="py-2 pr-3 text-left font-semibold text-[#6B7280]">Bill Number</th>
-                  <th className="py-2 pr-3 text-right font-semibold text-[#6B7280]">Amount (Rs.)</th>
+                  <th className="py-2 pr-3 text-right font-semibold text-[#6B7280]">Amount (LKR)</th>
                   <th className="py-2 w-[40px]"></th>
                 </tr>
               </thead>
@@ -428,7 +428,7 @@ onSuccess: invoice => {
                     <th style={{ width: 40 }}>No.</th>
                     <th>Bill Date</th>
                     <th>Bill Number</th>
-                    <th className="right" style={{ width: 110 }}>Amount (Rs.)</th>
+                    <th className="right" style={{ width: 110 }}>Amount (LKR)</th>
                     <th className="center" style={{ width: 50 }}>CTs.</th>
                   </tr>
                 </thead>

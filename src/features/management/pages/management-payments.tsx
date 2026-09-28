@@ -80,7 +80,7 @@ export default function ManagementPayments() {
         </select>
         <div className="bg-white dark:bg-gray-800 rounded-xl border p-4">
           <p className="text-sm text-gray-500">Total Payments</p>
-          <p className="text-xl font-bold">Rs. {totalPaid.toLocaleString()}</p>
+          <p className="text-xl font-bold">LKR {totalPaid.toLocaleString()}</p>
         </div>
       </div>
 
@@ -102,7 +102,7 @@ export default function ManagementPayments() {
               <tr key={p.id} className="border-t hover:bg-gray-50 dark:hover:bg-gray-800/50">
                 <td className="px-3 py-2">{p.payment_date}</td>
                 <td className="px-3 py-2 font-medium">{p.customer_name}</td>
-                <td className="px-3 py-2 text-right font-medium text-green-600">Rs. {p.amount.toLocaleString()}</td>
+                <td className="px-3 py-2 text-right font-medium text-green-600">LKR {p.amount.toLocaleString()}</td>
                 <td className="px-3 py-2"><span className="text-xs px-2 py-0.5 rounded bg-gray-100 dark:bg-gray-700">{p.payment_method}</span></td>
                 <td className="px-3 py-2 text-gray-400">{p.reference}</td>
                 <td className="px-3 py-2 text-gray-400">{p.notes}</td>
@@ -157,7 +157,7 @@ export default function ManagementPayments() {
       <ConfirmDialog
         open={!!deleteTarget}
         title="Delete Payment"
-        message={`Delete this payment of Rs. ${deleteTarget?.amount?.toLocaleString() ?? ''}?`}
+        message={`Delete this payment of LKR ${deleteTarget?.amount?.toLocaleString() ?? ''}?`}
         confirmLabel="Delete"
         loading={deleteMut.isPending}
         onConfirm={() => deleteTarget && deleteMut.mutate(deleteTarget.id)}

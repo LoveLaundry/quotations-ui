@@ -620,7 +620,7 @@ function StatBox({ label, value, tone }: { label: string; value: string; tone: '
 }
 
 function fmtMoney(n: number): string {
-  return `Rs. ${n.toLocaleString('en-LK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+  return `LKR ${n.toLocaleString('en-LK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
 }
 
 function downloadBlob(blob: Blob, filename: string) {

@@ -101,7 +101,7 @@ export default function SalaryHistoryPage() {
   })
 
   const handleMarkPaid = (slip: any) => {
-    const amount = prompt('Payment amount (Rs.):', String(slip.net_salary ?? slip.total_earnings ?? 0))
+    const amount = prompt('Payment amount (LKR):', String(slip.net_salary ?? slip.total_earnings ?? 0))
     if (amount === null) return
     const n = Number(amount)
     if (!n || n <= 0) { toast.error('Enter a valid amount'); return }
@@ -233,19 +233,19 @@ export default function SalaryHistoryPage() {
           <div className="mt-4 border-t pt-4 space-y-4">
             <div className="grid grid-cols-2 md:grid-cols-5 gap-3 text-sm">
               <div><div className="text-2xl font-bold">{preview.count}</div><div className="text-xs text-gray-400">Employees</div></div>
-              <div><div className="text-2xl font-bold text-red-600">Rs. {(preview.total_gross || 0).toLocaleString()}</div><div className="text-xs text-gray-400">Gross Total</div></div>
-              <div><div className="text-2xl font-bold text-red-600">Rs. {(preview.total_deductions || 0).toLocaleString()}</div><div className="text-xs text-gray-400">Deductions</div></div>
-              <div><div className="text-2xl font-bold text-green-600">Rs. {(preview.total_net || 0).toLocaleString()}</div><div className="text-xs text-gray-400">Net Payroll</div></div>
+              <div><div className="text-2xl font-bold text-red-600">LKR {(preview.total_gross || 0).toLocaleString()}</div><div className="text-xs text-gray-400">Gross Total</div></div>
+              <div><div className="text-2xl font-bold text-red-600">LKR {(preview.total_deductions || 0).toLocaleString()}</div><div className="text-xs text-gray-400">Deductions</div></div>
+              <div><div className="text-2xl font-bold text-green-600">LKR {(preview.total_net || 0).toLocaleString()}</div><div className="text-xs text-gray-400">Net Payroll</div></div>
               <div className="text-xs text-gray-400">Missing slips will be created on Run Payroll. Existing slips are skipped.</div>
             </div>
 
             <div className="rounded-xl border border-indigo-200 bg-indigo-50/60 dark:border-indigo-800/60 dark:bg-indigo-900/10 p-3">
               <div className="text-xs font-semibold text-indigo-600 dark:text-indigo-300 mb-2">Projection — if every employee attends all remaining working days</div>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-                <div><div className="text-xl font-bold text-indigo-700 dark:text-indigo-200">Rs. {(preview.projected_total_gross || 0).toLocaleString()}</div><div className="text-xs text-gray-400">Gross Total</div></div>
-                <div><div className="text-xl font-bold text-indigo-700 dark:text-indigo-200">Rs. {(preview.projected_total_deductions || 0).toLocaleString()}</div><div className="text-xs text-gray-400">Deductions</div></div>
-                <div><div className="text-xl font-bold text-indigo-700 dark:text-indigo-200">Rs. {(preview.projected_total_net || 0).toLocaleString()}</div><div className="text-xs text-gray-400">Net Payroll</div></div>
-                <div><div className="text-xl font-bold text-green-700 dark:text-green-300">+ Rs. {(preview.projected_total_net_variance || 0).toLocaleString()}</div><div className="text-xs text-gray-400">Additional if all attend</div></div>
+                <div><div className="text-xl font-bold text-indigo-700 dark:text-indigo-200">LKR {(preview.projected_total_gross || 0).toLocaleString()}</div><div className="text-xs text-gray-400">Gross Total</div></div>
+                <div><div className="text-xl font-bold text-indigo-700 dark:text-indigo-200">LKR {(preview.projected_total_deductions || 0).toLocaleString()}</div><div className="text-xs text-gray-400">Deductions</div></div>
+                <div><div className="text-xl font-bold text-indigo-700 dark:text-indigo-200">LKR {(preview.projected_total_net || 0).toLocaleString()}</div><div className="text-xs text-gray-400">Net Payroll</div></div>
+                <div><div className="text-xl font-bold text-green-700 dark:text-green-300">+ LKR {(preview.projected_total_net_variance || 0).toLocaleString()}</div><div className="text-xs text-gray-400">Additional if all attend</div></div>
               </div>
             </div>
 
@@ -272,17 +272,17 @@ export default function SalaryHistoryPage() {
                       <td className="px-3 py-2">{row.salary_type || 'MONTHLY'}</td>
                       <td className="px-3 py-2 text-xs">{CALC_METHOD_LABELS[row.calculation_method] || row.calculation_method || '—'}</td>
                       <td className="px-3 py-2">{row.attendance_required !== false ? 'Required' : <span className="text-amber-600 font-medium">Not required (fixed)</span>}</td>
-                      <td className="px-3 py-2 text-right">Rs. {(row.base_salary_for_period || 0).toLocaleString()}</td>
-                      <td className="px-3 py-2 text-right font-semibold">Rs. {(row.net_salary || 0).toLocaleString()}</td>
+                      <td className="px-3 py-2 text-right">LKR {(row.base_salary_for_period || 0).toLocaleString()}</td>
+                      <td className="px-3 py-2 text-right font-semibold">LKR {(row.net_salary || 0).toLocaleString()}</td>
                       <td className="px-3 py-2 text-right" title={`Projection if all remaining working days are attended (base + allowance + OT so far − EPF)`}>
                         {(() => {
                           const f = projectRow(row)
                           const extra = f.projected - (row.net_salary || 0)
                           return (
                             <>
-                              <span className="font-semibold text-indigo-700 dark:text-indigo-300 tabular-nums">Rs. {f.projected.toLocaleString()}</span>
+                              <span className="font-semibold text-indigo-700 dark:text-indigo-300 tabular-nums">LKR {f.projected.toLocaleString()}</span>
                               {extra > 0 && (
-                                <span className="block text-[10px] text-green-600 dark:text-green-400">+ Rs. {extra.toLocaleString()} if all attend</span>
+                                <span className="block text-[10px] text-green-600 dark:text-green-400">+ LKR {extra.toLocaleString()} if all attend</span>
                               )}
                             </>
                           )
@@ -295,7 +295,7 @@ export default function SalaryHistoryPage() {
                           const r = remainingRow(row)
                           return (
                             <>
-                              <span className="font-semibold text-emerald-700 dark:text-emerald-300 tabular-nums">+ Rs. {r.remaining_amount.toLocaleString()}</span>
+                              <span className="font-semibold text-emerald-700 dark:text-emerald-300 tabular-nums">+ LKR {r.remaining_amount.toLocaleString()}</span>
                               <span className="block text-[10px] text-gray-400">{r.remaining_working_days} working days left</span>
                             </>
                           )
@@ -387,17 +387,17 @@ export default function SalaryHistoryPage() {
                       {slip.attendance_required === false && <span className="ml-1 text-amber-600 font-medium">· fixed</span>}
                     </td>
                     <td className="px-4 py-3">{slip.period_start}</td>
-                    <td className="px-4 py-3 text-right">Rs. {(slip.total_earnings || 0).toLocaleString()}</td>
-                    <td className="px-4 py-3 text-right text-red-600">Rs. {(slip.total_deductions || 0).toLocaleString()}</td>
-                    <td className="px-4 py-3 text-right font-semibold">Rs. {(slip.net_salary || 0).toLocaleString()}</td>
+                    <td className="px-4 py-3 text-right">LKR {(slip.total_earnings || 0).toLocaleString()}</td>
+                    <td className="px-4 py-3 text-right text-red-600">LKR {(slip.total_deductions || 0).toLocaleString()}</td>
+                    <td className="px-4 py-3 text-right font-semibold">LKR {(slip.net_salary || 0).toLocaleString()}</td>
                     <td className="px-4 py-3 text-center">
                       <div className="flex items-center justify-center gap-1">
                         <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${STATUS_COLORS[slip.status] || ''}`}>
                           {slip.status}
                         </span>
                         {slip.paid && (
-                          <span className="inline-block px-2 py-0.5 rounded text-xs font-medium bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300" title={`Paid ${slip.paid_date} — Rs. ${slip.amount_paid}`}>
-                            Paid Rs. {(slip.amount_paid || 0).toLocaleString()}
+                          <span className="inline-block px-2 py-0.5 rounded text-xs font-medium bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300" title={`Paid ${slip.paid_date} — LKR ${slip.amount_paid}`}>
+                            Paid LKR {(slip.amount_paid || 0).toLocaleString()}
                           </span>
                         )}
                       </div>
@@ -494,7 +494,7 @@ export default function SalaryHistoryPage() {
                   <input name="contract_amount" type="number" step="0.01" defaultValue={overrideEmp.contract_amount} className="w-full px-3 py-2 border rounded-lg text-sm" />
                 </div>
                 <div>
-                  <label className="text-xs text-gray-500">Overtime Rate (Rs./hr)</label>
+                  <label className="text-xs text-gray-500">Overtime Rate (LKR/hr)</label>
                   <input name="overtime_rate" type="number" step="0.01" defaultValue={overrideEmp.overtime_rate} className="w-full px-3 py-2 border rounded-lg text-sm" />
                 </div>
                 <div>

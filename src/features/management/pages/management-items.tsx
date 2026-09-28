@@ -117,11 +117,11 @@ export default function ManagementItems() {
                   <tr key={item.id} className="border-t hover:bg-gray-50 dark:hover:bg-gray-800/50">
                     <td className="px-3 py-2 font-medium">{item.name}</td>
                     <td className="px-3 py-2"><span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-700">{item.category_name}</span></td>
-                    <td className="px-3 py-2 text-right">Rs. {item.default_rate}</td>
-                    <td className="px-3 py-2 text-right">Rs. {item.standard_cost}</td>
+                    <td className="px-3 py-2 text-right">LKR {item.default_rate}</td>
+                    <td className="px-3 py-2 text-right">LKR {item.standard_cost}</td>
                     <td className="px-3 py-2 text-right">{(item.total_quantity || 0).toLocaleString()}</td>
-                    <td className="px-3 py-2 text-right">Rs. {(item.total_revenue || 0).toLocaleString()}</td>
-                    <td className="px-3 py-2 text-right text-green-600">Rs. {((item.total_revenue || 0) - (item.total_cost || 0)).toLocaleString()}</td>
+                    <td className="px-3 py-2 text-right">LKR {(item.total_revenue || 0).toLocaleString()}</td>
+                    <td className="px-3 py-2 text-right text-green-600">LKR {((item.total_revenue || 0) - (item.total_cost || 0)).toLocaleString()}</td>
                     <td className="px-3 py-2 text-center">
                       <button onClick={() => { setEditing(item); setShowForm(true) }} className="p-1 hover:bg-gray-100 rounded"><Pencil size={14} /></button>
                       <button onClick={() => setDeleteItemTarget(item)} className="p-1 hover:bg-red-100 text-red-500 rounded"><Trash2 size={14} /></button>
@@ -174,11 +174,11 @@ export default function ManagementItems() {
                 </select>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="text-xs text-gray-500">Default Rate (Rs.)</label>
+                    <label className="text-xs text-gray-500">Default Rate (LKR)</label>
                     <input name="default_rate" type="number" step="0.01" defaultValue={editing?.default_rate} className="w-full px-3 py-2 border rounded-lg text-sm" />
                   </div>
                   <div>
-                    <label className="text-xs text-gray-500">Washing Cost (Rs.)</label>
+                    <label className="text-xs text-gray-500">Washing Cost (LKR)</label>
                     <input name="standard_cost" type="number" step="0.01" defaultValue={editing?.standard_cost} className="w-full px-3 py-2 border rounded-lg text-sm" />
                   </div>
                 </div>

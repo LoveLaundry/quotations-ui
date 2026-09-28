@@ -83,7 +83,7 @@ export default function AdvancesPage() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="bg-white dark:bg-gray-800 rounded-xl border p-4">
           <div className="text-sm text-gray-500">Total Outstanding</div>
-          <div className="text-2xl font-bold text-red-600">Rs. {totalOutstanding.toLocaleString()}</div>
+          <div className="text-2xl font-bold text-red-600">LKR {totalOutstanding.toLocaleString()}</div>
         </div>
         <div className="bg-white dark:bg-gray-800 rounded-xl border p-4">
           <div className="text-sm text-gray-500">Records Shown</div>
@@ -148,9 +148,9 @@ export default function AdvancesPage() {
                   <tr key={adv.id} className="border-b hover:bg-gray-50 dark:hover:bg-gray-700/30">
                     <td className="px-4 py-3">{adv.date}</td>
                     <td className="px-4 py-3">{emp?.name || adv.employee_id}</td>
-                    <td className="px-4 py-3 text-right">Rs. {adv.amount.toLocaleString()}</td>
-                    <td className="px-4 py-3 text-right text-green-600">Rs. {adv.total_deducted.toLocaleString()}</td>
-                    <td className="px-4 py-3 text-right font-semibold text-red-600">Rs. {adv.outstanding.toLocaleString()}</td>
+                    <td className="px-4 py-3 text-right">LKR {adv.amount.toLocaleString()}</td>
+                    <td className="px-4 py-3 text-right text-green-600">LKR {adv.total_deducted.toLocaleString()}</td>
+                    <td className="px-4 py-3 text-right font-semibold text-red-600">LKR {adv.outstanding.toLocaleString()}</td>
                     <td className="px-4 py-3 text-gray-500">{adv.reason || '—'}</td>
                     <td className="px-4 py-3 text-center">
                       <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${
@@ -209,7 +209,7 @@ export default function AdvancesPage() {
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs text-gray-500">Amount (Rs.) *</label>
+                  <label className="text-xs text-gray-500">Amount (LKR) *</label>
                   <input name="amount" type="number" step="0.01" min="0.01" required className="w-full px-3 py-2 border rounded-lg text-sm" />
                 </div>
                 <div>

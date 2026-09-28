@@ -46,7 +46,7 @@ export default function ManagementReports() {
     enabled: report === 'outstanding',
   })
 
-  const fmt = (n: number) => `Rs. ${(n || 0).toLocaleString()}`
+  const fmt = (n: number) => `LKR ${(n || 0).toLocaleString()}`
 
   return (
     <div className="space-y-4">
@@ -130,7 +130,7 @@ export default function ManagementReports() {
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis type="number" />
                   <YAxis type="category" dataKey="name" width={120} />
-                  <Tooltip formatter={(v: number) => `Rs. ${v.toLocaleString()}`} />
+                  <Tooltip formatter={(v: number) => `LKR ${v.toLocaleString()}`} />
                   <Bar dataKey="value" fill="#22c55e" />
                 </BarChart>
               </ResponsiveContainer>
@@ -145,7 +145,7 @@ export default function ManagementReports() {
                       <Cell key={i} fill={COLORS[i % COLORS.length]} />
                     ))}
                   </Pie>
-                  <Tooltip formatter={(v: number) => `Rs. ${v.toLocaleString()}`} />
+                  <Tooltip formatter={(v: number) => `LKR ${v.toLocaleString()}`} />
                   <Legend />
                 </PieChart>
               </ResponsiveContainer>

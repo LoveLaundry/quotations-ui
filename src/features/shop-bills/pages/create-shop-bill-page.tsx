@@ -175,7 +175,7 @@ export default function CreateShopBillPage() {
     )
   }
 
-  const fmt = (v: number) => `Rs. ${v.toLocaleString('en-LK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+  const fmt = (v: number) => `LKR ${v.toLocaleString('en-LK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
 
   return (
     <div className="space-y-5 pb-10">

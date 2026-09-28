@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { transactionsApi, customersApi } from '../api/management-api'
 import { toast } from 'sonner'
-import { Eye, Trash2, X, Search, ListChecks, DollarSign, TrendingUp } from 'lucide-react'
+import { Eye, Trash2, X, Search, ListChecks, Banknote, TrendingUp } from 'lucide-react'
 import { PageHeader } from '../../../components/ui/page-header'
 import { StatCard } from '../../../components/ui/stat-card'
 import { FilterBar } from '../../../components/ui/filter-bar'
@@ -58,9 +58,9 @@ export default function ManagementTransactions() {
     { key: 'customer_name', header: 'Customer', render: (t: any) => <span className="font-medium">{t.customer_name}</span> },
     { key: 'invoice_number', header: 'Invoice', render: (t: any) => <span className="text-gray-500">{t.invoice_number || '—'}</span> },
     { key: 'total_quantity', header: 'Qty', align: 'right' as const, render: (t: any) => t.total_quantity },
-    { key: 'total_amount', header: 'Amount', align: 'right' as const, render: (t: any) => `Rs. ${t.total_amount.toLocaleString()}` },
-    { key: 'total_cost', header: 'Cost', align: 'right' as const, render: (t: any) => `Rs. ${t.total_cost.toLocaleString()}` },
-    { key: 'total_profit', header: 'Profit', align: 'right' as const, render: (t: any) => <span className="text-green-600">Rs. {t.total_profit.toLocaleString()}</span> },
+    { key: 'total_amount', header: 'Amount', align: 'right' as const, render: (t: any) => `LKR ${t.total_amount.toLocaleString()}` },
+    { key: 'total_cost', header: 'Cost', align: 'right' as const, render: (t: any) => `LKR ${t.total_cost.toLocaleString()}` },
+    { key: 'total_profit', header: 'Profit', align: 'right' as const, render: (t: any) => <span className="text-green-600">LKR {t.total_profit.toLocaleString()}</span> },
     {
       key: 'source', header: 'Source', align: 'center' as const,
       render: (t: any) => <Badge variant={t.source === 'IMPORT' ? 'info' : 'neutral'}>{t.source}</Badge>,
@@ -97,8 +97,8 @@ export default function ManagementTransactions() {
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <StatCard label="Transactions" value={transactions.total} icon={<ListChecks size={20} />} color="blue" />
-        <StatCard label="Total Amount" value={`Rs. ${totalAmount.toLocaleString()}`} icon={<DollarSign size={20} />} color="amber" />
-        <StatCard label="Total Profit" value={`Rs. ${totalProfit.toLocaleString()}`} icon={<TrendingUp size={20} />} color="green" />
+        <StatCard label="Total Amount" value={`LKR ${totalAmount.toLocaleString()}`} icon={<Banknote size={20} />} color="amber" />
+        <StatCard label="Total Profit" value={`LKR ${totalProfit.toLocaleString()}`} icon={<TrendingUp size={20} />} color="green" />
       </div>
 
       <FilterBar>
@@ -165,16 +165,16 @@ export default function ManagementTransactions() {
                     <td className="px-2 py-1.5"><span className="text-xs bg-gray-100 dark:bg-gray-700 px-1.5 rounded">{item.category_name}</span></td>
                     <td className="px-2 py-1.5 text-right">{item.quantity_received}</td>
                     <td className="px-2 py-1.5 text-right">{item.quantity_washed}</td>
-                    <td className="px-2 py-1.5 text-right">Rs. {item.rate}</td>
-                    <td className="px-2 py-1.5 text-right font-medium">Rs. {item.line_total.toLocaleString()}</td>
+                    <td className="px-2 py-1.5 text-right">LKR {item.rate}</td>
+                    <td className="px-2 py-1.5 text-right font-medium">LKR {item.line_total.toLocaleString()}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
             <div className="flex justify-end gap-6 text-sm font-semibold border-t pt-3">
-              <span>Total: Rs. {viewTxn.total_amount.toLocaleString()}</span>
-              <span>Cost: Rs. {viewTxn.total_cost.toLocaleString()}</span>
-              <span className="text-green-600">Profit: Rs. {viewTxn.total_profit.toLocaleString()}</span>
+              <span>Total: LKR {viewTxn.total_amount.toLocaleString()}</span>
+              <span>Cost: LKR {viewTxn.total_cost.toLocaleString()}</span>
+              <span className="text-green-600">Profit: LKR {viewTxn.total_profit.toLocaleString()}</span>
             </div>
           </div>
         </div>

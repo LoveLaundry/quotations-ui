@@ -85,7 +85,7 @@ export default function ManagementExpenses() {
     { key: 'date', header: 'Date' },
     { key: 'category_name', header: 'Category', render: (e: any) => <span className="text-xs px-2 py-0.5 rounded-full bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300">{e.category_name}</span> },
     { key: 'description', header: 'Description' },
-    { key: 'amount', header: 'Amount', align: 'right' as const, render: (e: any) => <span className="font-medium">Rs. {e.amount.toLocaleString()}</span> },
+    { key: 'amount', header: 'Amount', align: 'right' as const, render: (e: any) => <span className="font-medium">LKR {e.amount.toLocaleString()}</span> },
     { key: 'payment_method', header: 'Payment', render: (e: any) => <span className="text-xs px-2 py-0.5 rounded bg-gray-100 dark:bg-gray-700">{e.payment_method}</span> },
     { key: 'reference', header: 'Reference', render: (e: any) => <span className="text-gray-400">{e.reference}</span> },
     {
@@ -112,7 +112,7 @@ export default function ManagementExpenses() {
     <div className="space-y-4">
       <PageHeader
         title="Expense Management"
-        subtitle={`${expensesData.total} expenses · Rs. ${totalExpenses.toLocaleString()} total`}
+        subtitle={`${expensesData.total} expenses · LKR ${totalExpenses.toLocaleString()} total`}
         actions={
           <>
             <ExportButton data={pageExpenses} filename="expenses" columns={exportCols} />
@@ -142,12 +142,12 @@ export default function ManagementExpenses() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <div className="bg-white dark:bg-gray-800 rounded-xl border p-4">
           <p className="text-sm text-gray-500">Total Expenses</p>
-          <p className="text-xl font-bold">Rs. {totalExpenses.toLocaleString()}</p>
+          <p className="text-xl font-bold">LKR {totalExpenses.toLocaleString()}</p>
         </div>
         {summary.slice(0, 3).map((s: any, i: number) => (
           <div key={i} className="bg-white dark:bg-gray-800 rounded-xl border p-4">
             <p className="text-sm text-gray-500">{s.category}</p>
-            <p className="text-xl font-bold">Rs. {s.total.toLocaleString()}</p>
+            <p className="text-xl font-bold">LKR {s.total.toLocaleString()}</p>
             <p className="text-xs text-gray-400">{s.count} entries</p>
           </div>
         ))}
@@ -207,7 +207,7 @@ export default function ManagementExpenses() {
       <ConfirmDialog
         open={!!deleteTarget}
         title="Delete Expense"
-        message={`Delete this expense (Rs. ${deleteTarget?.amount?.toLocaleString() ?? ''})?`}
+        message={`Delete this expense (LKR ${deleteTarget?.amount?.toLocaleString() ?? ''})?`}
         confirmLabel="Delete"
         loading={deleteMut.isPending}
         onConfirm={() => deleteTarget && deleteMut.mutate(deleteTarget.id)}
