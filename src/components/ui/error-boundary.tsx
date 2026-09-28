@@ -1,5 +1,6 @@
 import { Component, type ReactNode } from 'react'
 import { AlertTriangle, RefreshCw, Home } from 'lucide-react'
+import { Button } from './button'
 
 interface Props {
     children: ReactNode
@@ -36,44 +37,43 @@ export class ErrorBoundary extends Component<Props, State> {
         if (!this.state.hasError) return this.props.children
 
         return (
-            <div className="min-h-screen bg-[#F9FAFB] flex items-center justify-center p-4">
-                <div className="max-w-md w-full rounded-2xl border border-[#E4E7EC] bg-white shadow-lg p-8 text-center">
-                    <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-[#FEF2F2] border border-[#FECACA]">
-                        <AlertTriangle className="h-7 w-7 text-[#DC2626]" />
+            <div className="flex min-h-screen items-center justify-center bg-[var(--bg)] px-4 py-10">
+                <div className="w-full max-w-md rounded-[10px] border border-[var(--border)] bg-[var(--surface)] p-6 shadow-[var(--shadow-md)] sm:p-7">
+                    <div className="flex items-start gap-3.5">
+                        <div className="flex size-9 shrink-0 items-center justify-center rounded-[8px] border border-[var(--danger-border)] bg-[var(--danger-soft)]">
+                            <AlertTriangle className="size-[18px] text-[var(--danger-text)]" aria-hidden />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                            <h1 className="text-[15px] font-semibold text-[var(--text-primary)]">
+                                Something went wrong
+                            </h1>
+                            <p className="mt-1 text-[13px] leading-[1.55] text-[var(--text-muted)]">
+                                This screen failed to load. Reloading usually clears it. If it keeps
+                                happening, send the details below to your administrator.
+                            </p>
+                        </div>
                     </div>
-                    <h1 className="text-[18px] font-bold text-[#101828] mb-2">
-                        Something went wrong
-                    </h1>
-                    <p className="text-[13px] text-[#6B7280] mb-6 leading-relaxed">
-                        An unexpected error occurred. Try reloading the page. If the problem persists, contact your system administrator.
-                    </p>
 
-                    {this.state.error && (
-                        <details className="mb-6 text-left rounded-lg border border-[#E4E7EC] bg-[#F9FAFB] p-3">
-                            <summary className="text-[12px] font-semibold text-[#374151] cursor-pointer select-none">
+                    {this.state.error?.message && (
+                        <details className="mt-5 rounded-[8px] border border-[var(--border)] bg-[var(--surface-2)]">
+                            <summary className="cursor-pointer select-none px-3 py-2 text-[12.5px] font-medium text-[var(--text-secondary)]">
                                 Error details
                             </summary>
-                            <pre className="mt-2 text-[11px] text-[#DC2626] whitespace-pre-wrap break-all leading-relaxed">
+                            <pre className="max-h-40 overflow-auto border-t border-[var(--border)] px-3 py-2.5 text-[11.5px] leading-[1.5] whitespace-pre-wrap break-words text-[var(--text-muted)]">
                                 {this.state.error.message}
                             </pre>
                         </details>
                     )}
 
-                    <div className="flex gap-3 justify-center">
-                        <button
-                            onClick={this.handleHome}
-                            className="flex items-center gap-2 rounded-xl border border-[#E4E7EC] bg-white px-4 py-2.5 text-[13px] font-semibold text-[#374151] hover:bg-[#F9FAFB] hover:border-[#D1D5DB] transition cursor-pointer"
-                        >
-                            <Home className="h-4 w-4" />
+                    <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+                        <Button variant="secondary" onClick={this.handleHome}>
+                            <Home aria-hidden />
                             Dashboard
-                        </button>
-                        <button
-                            onClick={this.handleReload}
-                            className="flex items-center gap-2 rounded-xl bg-[#101828] px-4 py-2.5 text-[13px] font-semibold text-white hover:bg-[#1D2939] transition cursor-pointer"
-                        >
-                            <RefreshCw className="h-4 w-4" />
-                            Reload Page
-                        </button>
+                        </Button>
+                        <Button variant="primary" onClick={this.handleReload}>
+                            <RefreshCw aria-hidden />
+                            Reload page
+                        </Button>
                     </div>
                 </div>
             </div>

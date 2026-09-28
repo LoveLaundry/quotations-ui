@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { employeesApi, attendanceApi } from '../api/management-api'
 import { toast } from 'sonner'
 import { Save, CalendarDays, CheckCircle2, UserRound } from 'lucide-react'
+import { EmptyState } from '../../../components/ui/empty-state'
 
 const STATUSES = ['PRESENT', 'HALF_DAY', 'PAID_LEAVE', 'UNPAID_LEAVE', 'ABSENT'] as const
 const STATUS_COLORS: Record<string, string> = {
@@ -178,7 +179,12 @@ export default function AttendanceLogPage() {
           </table>
         </div>
         {activeEmployees.length === 0 && (
-          <div className="text-center py-10 text-gray-400">No attendance-based active employees found.</div>
+          <EmptyState
+            bare
+            kind="search"
+            title="No employees found"
+            description="No active employees match the current search or filters."
+          />
         )}
       </div>
 

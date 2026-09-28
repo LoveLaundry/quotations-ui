@@ -253,8 +253,8 @@ function ItemsTable({
         return <p className="text-[12px] text-[var(--text-faint)]">No items recorded.</p>
     }
     return (
-        <div className="overflow-hidden rounded-lg border border-[var(--border)]">
-            <table className="w-full text-left text-[12px]">
+        <div className="overflow-x-auto rounded-[8px] border border-[var(--border)]">
+            <table className="w-full min-w-[420px] text-left text-[12px]">
                 <thead className="bg-[var(--surface-2)] text-[10px] font-semibold uppercase tracking-wide text-[var(--text-faint)]">
                     <tr>
                         <th className="px-3 py-2">Item</th>

@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { paymentsApi, customersApi } from '../api/management-api'
 import { toast } from 'sonner'
 import { Plus, Trash2, X } from 'lucide-react'
+import { TableEmptyRow } from '../../../components/ui/empty-state'
 import { Pagination } from '../../../components/ui/pagination'
 import { ConfirmDialog } from '../../../components/ui/confirm-dialog'
 import { useEnterFlow } from '../../../hooks/use-enter-flow'
@@ -111,7 +112,9 @@ export default function ManagementPayments() {
                 </td>
               </tr>
             ))}
-            {payments.length === 0 && <tr><td colSpan={7} className="px-3 py-8 text-center text-gray-400">No payments recorded</td></tr>}
+            {payments.length === 0 && (
+              <TableEmptyRow colSpan={7} title="No payments recorded" description="Payments recorded for staff will appear here." />
+            )}
           </tbody>
         </table>
       </div>

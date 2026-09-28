@@ -68,6 +68,19 @@
   --color-info-soft: var(--info-soft);
   --color-info-border: var(--info-border);
 
+  /* Type scale — one role per step. The document base is 14px, but the workhorse
+     for tables, forms and controls is 13px, so the scale is centred there and
+     the small steps carry metadata. Declared here so the role is explicit even
+     though most call sites still address it by pixel value (see the type
+     normalisation in layer 4). */
+  --text-micro: 10px;
+  --text-xs: 11px;
+  --text-sm: 12px;
+  --text-base: 13px;
+  --text-md: 14px;
+  --text-lg: 15px;
+  --text-xl: 16px;
+
   --radius-xs: 3px;
   --radius-sm: 4px;
   --radius-DEFAULT: 6px;
@@ -917,6 +930,25 @@
   background-color: var(--surface-3);
 }
 
+/* ── Off-scale type sizes ─────────────────────────────────────────────────────
+   The app addresses font size directly (text-[13px] and friends — ~1,440 call
+   sites), which is fine, but a handful of half-pixel values crept in. At 11–13px
+   a 0.5px step is invisible yet it fragments the scale, so each is pulled onto
+   the nearest whole step. Applied with the same `:root`-prefixed specificity
+   trick the colour normalisation above relies on. */
+:root .text-\[10\.5px\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)) {
+  font-size: var(--text-micro);
+}
+:root .text-\[11\.5px\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)) {
+  font-size: var(--text-xs);
+}
+:root .text-\[12\.5px\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)) {
+  font-size: var(--text-sm);
+}
+:root .text-\[13\.5px\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)) {
+  font-size: var(--text-base);
+}
+
 /* ── Hover / active surfaces ───────────────────────────────────────────────── */
 :root .hover\:bg-\[\#F9FAFB\]:hover:not(:is(.quotation-print-page *, .bill-print-page *, #printable-receipt *)),
 :root .hover\:bg-\[\#FAFAFA\]:hover:not(:is(.quotation-print-page *, .bill-print-page *, #printable-receipt *)),
@@ -983,15 +1015,17 @@
 
 :root .text-\[\#667085\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
 :root .text-\[\#6B7280\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
-:root .text-gray-500:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)) {
-  color: var(--text-muted);
-}
-
+/* gray-400 / #98A2B3 / #9CA3AF / slate-500 land on --text-muted, not on
+   --text-faint. These ~115 call sites are readable copy — form labels, helper
+   text, table metadata — not decoration. --text-faint measures 3.16:1 on a
+   white surface, which fails WCAG AA (4.5:1) for body text; --text-muted
+   measures 5.67:1. A deliberate one-step loss of granularity between gray-400
+   and gray-500 is the price for making all of that text legible. */
 :root .text-\[\#98A2B3\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
 :root .text-\[\#9CA3AF\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
 :root .text-gray-400:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
 :root .text-slate-500:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)) {
-  color: var(--text-faint);
+  color: var(--text-muted);
 }
 
 :root .placeholder\:text-\[\#98A2B3\]::placeholder,
@@ -1273,7 +1307,7 @@
 .text-dashboard-title,
 .text-dashboard {
   font-size: 22px !important;
-  font-weight: 650 !important;
+  font-weight: 600 !important;
   letter-spacing: -0.021em !important;
   line-height: 1.25 !important;
   color: var(--text-primary) !important;

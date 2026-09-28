@@ -34,7 +34,7 @@ export function Tooltip({
       <span
         role="tooltip"
         className={cn(
-          'pointer-events-none absolute z-50 w-max max-w-[220px] rounded-[5px] px-2 py-1',
+          'pointer-events-none absolute z-50 w-max max-w-[220px] rounded-[6px] px-2 py-1',
           'text-[11.5px] leading-[1.4] font-medium text-white',
           'bg-[var(--text-primary)] shadow-[var(--shadow-md)]',
           'opacity-0 transition-opacity duration-100 group-hover/tt:opacity-100 group-focus-within/tt:opacity-100',

@@ -1,12 +1,12 @@
 import { cn } from '../../lib/utils'
 
 const CONFIG: Record<string, { label: string; cls: string; dot: string }> = {
-  PAID: { label: 'Paid', cls: 'bg-[#F0FDF4] text-[#16A34A] border-[#BBF7D0]', dot: '#16A34A' },
-  PARTIALLY_PAID: { label: 'Partial', cls: 'bg-[#FFFBEB] text-[#D97706] border-[#FDE68A]', dot: '#F59E0B' },
-  PENDING: { label: 'Pending', cls: 'bg-[#FEF2F2] text-[#DC2626] border-[#FECACA]', dot: '#DC2626' },
-  ISSUED: { label: 'Issued', cls: 'bg-[#FFF7ED] text-[#C2410C] border-[#FED7AA]', dot: '#F97316' },
-  DRAFT: { label: 'Draft', cls: 'bg-[#F9FAFB] text-[#374151] border-[#E5E7EB]', dot: '#9CA3AF' },
-  CANCELLED: { label: 'Cancelled', cls: 'bg-[#F3F4F6] text-[#4B5563] border-[#E5E7EB]', dot: '#6B7280' },
+  PAID: { label: 'Paid', cls: 'bg-[var(--success-soft)] text-[var(--success-text)] border-[var(--success-border)]', dot: 'var(--success-text)' },
+  PARTIALLY_PAID: { label: 'Partial', cls: 'bg-[var(--warning-soft)] text-[var(--warning-text)] border-[var(--warning-border)]', dot: 'var(--warning-text)' },
+  PENDING: { label: 'Pending', cls: 'bg-[var(--danger-soft)] text-[var(--danger-text)] border-[var(--danger-border)]', dot: 'var(--danger-text)' },
+  ISSUED: { label: 'Issued', cls: 'bg-[var(--brand-soft)] text-[var(--brand-text)] border-[var(--brand-border)]', dot: 'var(--warning-text)' },
+  DRAFT: { label: 'Draft', cls: 'bg-[var(--surface-2)] text-[var(--text-secondary)] border-[var(--border)]', dot: 'var(--text-faint)' },
+  CANCELLED: { label: 'Cancelled', cls: 'bg-[var(--surface-3)] text-[var(--text-tertiary)] border-[var(--border)]', dot: 'var(--text-tertiary)' },
 }
 
 /**
@@ -23,7 +23,7 @@ export function BillStatusBadge({
   className?: string
 }) {
   if (!status) return null
-  const cfg = CONFIG[status] ?? { label: status, cls: 'bg-[#F9FAFB] text-[#374151] border-[#E4E7EC]', dot: '#9CA3AF' }
+  const cfg = CONFIG[status] ?? { label: status, cls: 'bg-[var(--surface-2)] text-[var(--text-secondary)] border-[var(--border)]', dot: 'var(--text-faint)' }
   return (
     <span
       className={cn(

@@ -75,6 +75,48 @@ export function EmptyState({
   )
 }
 
+interface TableEmptyRowProps {
+  colSpan: number
+  title?: string
+  description?: string
+  icon?: React.ReactNode
+  className?: string
+}
+
+/**
+ * TableEmptyRow — the in-table form of <EmptyState>.
+ *
+ * Real <table> markup cannot host a block panel inside a cell, so the same
+ * visual language is rendered into a single full-width row. Use this instead of
+ * an ad-hoc `<td className="py-8 text-center text-gray-400">No rows</td>` so
+ * every table in the system empties the same way.
+ */
+export function TableEmptyRow({
+  colSpan,
+  title = 'Nothing to show yet',
+  description,
+  icon,
+  className,
+}: TableEmptyRowProps) {
+  return (
+    <tr>
+      <td colSpan={colSpan} className={cn('px-4 py-10 text-center', className)}>
+        <div className="flex flex-col items-center justify-center">
+          <div className="mb-2.5 flex size-9 items-center justify-center rounded-[8px] border border-[var(--border)] bg-[var(--surface)] text-[var(--text-faint)]">
+            {icon ?? <Inbox className="size-[18px]" aria-hidden />}
+          </div>
+          <p className="text-[13.5px] font-semibold text-[var(--text-primary)]">{title}</p>
+          {description && (
+            <p className="mt-1 max-w-sm text-[12.5px] leading-[1.55] text-[var(--text-muted)]">
+              {description}
+            </p>
+          )}
+        </div>
+      </td>
+    </tr>
+  )
+}
+
 interface ErrorStateProps {
   title?: string
   description?: string

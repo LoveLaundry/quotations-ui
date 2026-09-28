@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { employeesApi, advancesApi } from '../api/management-api'
 import { toast } from 'sonner'
 import { Plus, X, Trash2 } from 'lucide-react'
+import { TableEmptyRow } from '../../../components/ui/empty-state'
 import { Pagination } from '../../../components/ui/pagination'
 import { LoadingSpinner } from '../../../components/ui/loading-spinner'
 import { ConfirmDialog } from '../../../components/ui/confirm-dialog'
@@ -122,8 +123,8 @@ export default function AdvancesPage() {
         </div>
       </div>
 
-      <div className="bg-white dark:bg-gray-800 rounded-xl border overflow-hidden">
-        <table className="w-full text-sm">
+      <div className="overflow-x-auto rounded-[10px] border border-[var(--border)] bg-[var(--surface)]">
+        <table className="w-full min-w-[720px] text-sm">
           <thead>
             <tr className="border-b bg-gray-50 dark:bg-gray-700/50">
               <th className="text-left px-4 py-3 font-medium">Date</th>
@@ -140,7 +141,7 @@ export default function AdvancesPage() {
             {isLoading ? (
               <tr><td colSpan={8} className="text-center py-8"><LoadingSpinner size="sm" /></td></tr>
             ) : advances.length === 0 ? (
-              <tr><td colSpan={8} className="text-center py-8 text-gray-400">No advances found</td></tr>
+              <TableEmptyRow colSpan={8} title="No advances found" description="Advances recorded for staff will appear here." />
             ) : (
               advances.map((adv: any) => {
                 const emp = employees.find((e: any) => e.id === adv.employee_id)

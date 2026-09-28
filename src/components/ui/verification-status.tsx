@@ -12,22 +12,22 @@ const STATUS_CONFIG: Record<string, { label: string; icon: string; className: st
   VERIFIED: {
     label: 'Verified',
     icon: '✓',
-    className: 'bg-[#F0FDF4] text-[#16A34A] border-[#BBF7D0]',
+    className: 'bg-[var(--success-soft)] text-[var(--success-text)] border-[var(--success-border)]',
   },
   SYNCING: {
     label: 'Syncing',
     icon: '⏳',
-    className: 'bg-[#EFF6FF] text-[#2563EB] border-[#BFDBFE]',
+    className: 'bg-[var(--info-soft)] text-[var(--info-text)] border-[var(--info-border)]',
   },
   PENDING: {
     label: 'Pending',
     icon: '⏳',
-    className: 'bg-[#FFFBEB] text-[#D97706] border-[#FDE68A]',
+    className: 'bg-[var(--warning-soft)] text-[var(--warning-text)] border-[var(--warning-border)]',
   },
   FAILED: {
     label: 'Sync Failed',
     icon: '⚠',
-    className: 'bg-[#FEF2F2] text-[#DC2626] border-[#FECACA]',
+    className: 'bg-[var(--danger-soft)] text-[var(--danger-text)] border-[var(--danger-border)]',
   },
 }
 

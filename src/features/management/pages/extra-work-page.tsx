@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { extraWorkApi, employeesApi } from '../api/management-api'
 import { toast } from 'sonner'
 import { Plus, X, Trash2, Tag, Zap } from 'lucide-react'
+import { TableEmptyRow } from '../../../components/ui/empty-state'
 import { Pagination } from '../../../components/ui/pagination'
 import { LoadingSpinner } from '../../../components/ui/loading-spinner'
 import { ConfirmDialog } from '../../../components/ui/confirm-dialog'
@@ -126,7 +127,7 @@ export default function ExtraWorkPage() {
               {isLoading ? (
                 <tr><td colSpan={7} className="py-8 text-center"><LoadingSpinner size="sm" /></td></tr>
               ) : records.length === 0 ? (
-                <tr><td colSpan={7} className="py-8 text-center text-gray-400">No extra work records.</td></tr>
+                <TableEmptyRow colSpan={7} title="No extra work records" description="Overtime and one-off tasks will appear here." />
               ) : (
                 records.map((r: any) => (
                   <tr key={r.id} className="border-b last:border-0">

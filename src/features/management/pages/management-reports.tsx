@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { TableEmptyRow } from '../../../components/ui/empty-state'
 import { useQuery } from '@tanstack/react-query'
 import { reportsApi, customersApi } from '../api/management-api'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts'
@@ -229,7 +230,9 @@ export default function ManagementReports() {
                   <td className="px-3 py-2 text-right font-bold text-red-600">{fmt(o.outstanding)}</td>
                 </tr>
               ))}
-              {outstandingData.length === 0 && <tr><td colSpan={4} className="px-3 py-8 text-center text-gray-400">No outstanding payments</td></tr>}
+              {outstandingData.length === 0 && (
+                <TableEmptyRow colSpan={4} title="No outstanding payments" description="Every client is settled up." />
+              )}
             </tbody>
           </table>
         </div>

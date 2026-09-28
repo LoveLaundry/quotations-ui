@@ -1,4 +1,5 @@
 import * as React from 'react'
+import { Inbox } from 'lucide-react'
 import { cn } from '../../lib/utils'
 import { TableFrame } from './table'
 
@@ -279,7 +280,15 @@ export function DataTable<T extends Record<string, any>>({
 
 function TableEmpty() {
   return (
-    <p className="px-4 py-10 text-center text-[13px] text-[var(--text-muted)]">No records found</p>
+    <div className="flex flex-col items-center justify-center px-4 py-10 text-center">
+      <div className="mb-2.5 flex size-9 items-center justify-center rounded-[8px] border border-[var(--border)] bg-[var(--surface)] text-[var(--text-faint)]">
+        <Inbox className="size-[18px]" aria-hidden />
+      </div>
+      <p className="text-[13.5px] font-semibold text-[var(--text-primary)]">Nothing to show yet</p>
+      <p className="mt-1 max-w-sm text-[12.5px] leading-[1.55] text-[var(--text-muted)]">
+        There are no records to display here yet.
+      </p>
+    </div>
   )
 }
 

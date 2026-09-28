@@ -165,28 +165,28 @@ export function SearchableSelect({
         type="button"
         tabIndex={-1}
         onClick={() => setOpen(o => !o)}
-        className="absolute right-2 top-1/2 -translate-y-1/2 text-[#98A2B3] hover:text-[#374151] cursor-pointer"
+        className="absolute right-2 top-1/2 -translate-y-1/2 cursor-pointer text-[var(--text-faint)] transition-colors hover:text-[var(--text-primary)]"
         aria-label="Toggle options"
       >
         <ChevronDown className="h-3.5 w-3.5" />
       </button>
 
       {open && filtered.length > 0 && (
-        <div className="absolute z-50 mt-1 w-full rounded-xl border border-[#E4E7EC] bg-white shadow-lg overflow-hidden max-h-64 overflow-y-auto">
+        <div className="absolute z-50 mt-1 max-h-64 w-full overflow-hidden overflow-y-auto rounded-[8px] border border-[var(--border-2)] bg-[var(--surface)] p-1 shadow-[var(--shadow-pop)]">
           {filtered.map((opt, i) => (
             <button
               key={opt.value}
               type="button"
               onMouseDown={e => { e.preventDefault(); commit(opt, false) }}
               onMouseEnter={() => setHighlight(i)}
-              className={`flex w-full items-center gap-2 px-3 py-2 text-left text-[13px] transition cursor-pointer ${
-                i === highlight ? 'bg-[#FFF1F1]' : 'hover:bg-[#F9FAFB]'
+              className={`flex w-full cursor-pointer items-center gap-2 rounded-[6px] px-2.5 py-2 text-left text-[13px] transition-colors duration-75 ${
+                i === highlight ? 'bg-[var(--brand-soft)]' : 'hover:bg-[var(--surface-hover)]'
               }`}
             >
               <span className="min-w-0 flex-1">
-                <span className="block font-medium text-[#101828] truncate">{opt.label}</span>
+                <span className="block truncate font-medium text-[var(--text-primary)]">{opt.label}</span>
                 {(opt.sub || opt.hint) && (
-                  <span className="block text-[11px] text-[#98A2B3] truncate">{opt.sub ?? opt.hint}</span>
+                  <span className="block truncate text-[11px] text-[var(--text-faint)]">{opt.sub ?? opt.hint}</span>
                 )}
               </span>
             </button>

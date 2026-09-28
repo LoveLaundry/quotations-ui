@@ -6,6 +6,8 @@ import { toast } from 'sonner'
 import { Eye, Printer, Trash2, XCircle, CheckCircle, Wallet, PlayCircle, Settings2 } from 'lucide-react'
 import { useReactToPrint } from 'react-to-print'
 import { SalarySlipPrint } from '../components/salary-slip-print'
+import { TableEmptyRow } from '../../../components/ui/empty-state'
+import { LoadingSpinner } from '../../../components/ui/loading-spinner'
 import { Pagination } from '../../../components/ui/pagination'
 
 const PAGE_SIZE = 20
@@ -374,9 +376,13 @@ export default function SalaryHistoryPage() {
             </thead>
             <tbody>
               {isLoading ? (
-                <tr><td colSpan={9} className="text-center py-8 text-gray-400">Loading...</td></tr>
+                <tr><td colSpan={9} className="text-center py-8"><LoadingSpinner size="sm" /></td></tr>
               ) : slipsData.items.length === 0 ? (
-                <tr><td colSpan={9} className="text-center py-8 text-gray-400">{tab === 'DELETED' ? 'No deleted salary slips found' : 'No salary slips found'}</td></tr>
+                <TableEmptyRow
+                  colSpan={9}
+                  title={tab === 'DELETED' ? 'No deleted salary slips' : 'No salary slips found'}
+                  description={tab === 'DELETED' ? 'Slips you delete will be listed here.' : 'Generated salary slips will appear here.'}
+                />
               ) : (
                 slips.map((slip: any) => (
                   <tr key={slip.id} className="border-b hover:bg-gray-50 dark:hover:bg-gray-700/30">

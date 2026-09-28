@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { itemsApi } from '../api/management-api'
 import { toast } from 'sonner'
 import { Plus, Pencil, Trash2, X, Tag, Package } from 'lucide-react'
+import { TableEmptyRow } from '../../../components/ui/empty-state'
 import { Pagination } from '../../../components/ui/pagination'
 import { ConfirmDialog } from '../../../components/ui/confirm-dialog'
 import { useEnterFlow } from '../../../hooks/use-enter-flow'
@@ -128,7 +129,9 @@ export default function ManagementItems() {
                     </td>
                   </tr>
                 ))}
-                {itemsData.items.length === 0 && <tr><td colSpan={8} className="px-3 py-8 text-center text-gray-400">No items found</td></tr>}
+                {itemsData.items.length === 0 && (
+                  <TableEmptyRow colSpan={8} title="No items found" description="Add an item to start pricing work." />
+                )}
               </tbody>
             </table>
           </div>

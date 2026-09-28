@@ -205,7 +205,7 @@ export function DropdownMenu({
                     onMouseEnter={() => setActiveIndex(index)}
                     onClick={() => commit(item)}
                     className={cn(
-                      'flex w-full items-center gap-2 rounded-[5px] px-2 py-1.5 text-left text-[13px] transition-colors duration-75',
+                      'flex w-full items-center gap-2 rounded-[6px] px-2 py-1.5 text-left text-[13px] transition-colors duration-75',
                       'disabled:pointer-events-none disabled:opacity-45',
                       item.destructive
                         ? 'text-[var(--danger-text)] hover:bg-[var(--danger-soft)]'
@@ -278,7 +278,7 @@ export function RowActions({
           title={label}
           aria-label={label}
           className={cn(
-            'inline-flex size-7 items-center justify-center rounded-[5px] text-[var(--text-faint)]',
+            'inline-flex size-7 items-center justify-center rounded-[6px] text-[var(--text-faint)]',
             'transition-colors duration-100 hover:bg-[var(--surface-3)] hover:text-[var(--text-primary)]',
             'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]',
           )}

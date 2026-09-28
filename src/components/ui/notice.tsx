@@ -53,7 +53,7 @@ export function Notice({
   return (
     <div
       className={cn(
-        'flex items-start gap-2.5 rounded-[7px] border px-3 py-2.5 text-[12.5px] leading-[1.5]',
+        'flex items-start gap-2.5 rounded-[8px] border px-3 py-2.5 text-[12.5px] leading-[1.5]',
         !flush && 'bg-[var(--surface)]',
         TONE[tone],
         className,

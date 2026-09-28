@@ -48,8 +48,8 @@ export function Loader({
         gap: `${s.gap}px`,
         minHeight: fullScreen ? '100vh' : 'auto',
         padding: fullScreen ? '0' : '20px',
-        background: fullScreen ? '#fff' : 'transparent',
-        fontFamily: '"Spectral", Georgia, serif',
+        background: fullScreen ? 'var(--bg)' : 'transparent',
+        fontFamily: 'var(--font-sans)',
       }}
     >
       <style dangerouslySetInnerHTML={{ __html: loadingStyles }} />
@@ -67,7 +67,7 @@ export function Loader({
         <p style={{
           margin: 0,
           fontSize: `${s.text}px`,
-          color: '#000',
+          color: 'var(--text-primary)',
           fontWeight: 600,
           animation: 'fadeInUp 0.5s ease-out',
         }}>{text}</p>
@@ -76,7 +76,7 @@ export function Loader({
         <p style={{
           margin: 0,
           fontSize: `${s.text - 2}px`,
-          color: '#666',
+          color: 'var(--text-muted)',
           animation: 'fadeInUp 0.5s ease-out 0.1s both',
         }}>{subtext}</p>
       )}
@@ -91,10 +91,10 @@ export function SkeletonLoader({ count = 5, className = '' }: { count?: number; 
       {Array.from({ length: count }).map((_, i) => (
         <div key={i} style={{
           height: '20px',
-          background: 'linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)',
+          background: 'linear-gradient(90deg, var(--skeleton-from) 25%, var(--skeleton-via) 50%, var(--skeleton-to) 75%)',
           backgroundSize: '200% 100%',
           animation: 'shimmer 1.5s infinite',
-          borderRadius: '0',
+          borderRadius: 'var(--radius-sm)',
         }} />
       ))}
     </div>

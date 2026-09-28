@@ -7,6 +7,7 @@ import { useDataGrid } from '../../../hooks/use-data-grid'
 import { useEnterFlow } from '../../../hooks/use-enter-flow'
 import { useEscape } from '../../../hooks/use-escape'
 import { ConfirmDialog } from '../../../components/ui/confirm-dialog'
+import { EmptyState } from '../../../components/ui/empty-state'
 import { buildStaffSummary, type AttendanceRecord } from '../utils/attendance-summary'
 import { buildSalaryForecast } from '../utils/salary-forecast'
 
@@ -421,7 +422,12 @@ export default function AttendancePage() {
         </>) : (
         <div className="space-y-5">
           {activeStaff.length === 0 ? (
-            <p className="text-sm text-gray-400">No attendance-based active employees found.</p>
+            <EmptyState
+              bare
+              kind="search"
+              title="No employees found"
+              description="No active employees match the current search or filters."
+            />
           ) : (
             <>
               {/* Month summary per employee */}

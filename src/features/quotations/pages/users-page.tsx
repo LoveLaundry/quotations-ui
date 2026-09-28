@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
-    RiUserAddLine, RiUserLine, RiCloseLine, RiEyeLine, RiEyeOffLine,
+    RiUserAddLine, RiCloseLine, RiEyeLine, RiEyeOffLine,
     RiRefreshLine, RiShieldCheckLine, RiEditLine
 } from 'react-icons/ri'
 import { toast } from 'sonner'
 import authApi from '../../../api/auth-api'
+import { EmptyState } from '../../../components/ui/empty-state'
 import { Breadcrumb } from '../../../components/ui/breadcrumb'
 import { Card, CardContent } from '../../../components/ui/card'
 import { Button } from '../../../components/ui/button'
@@ -208,18 +209,16 @@ export default function UsersPage() {
                     ))}
                 </div>
             ) : users.length === 0 ? (
-                <Card>
-                    <CardContent className="py-16 flex flex-col items-center justify-center gap-3">
-                        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#F3F4F6] text-[#6B7280]">
-                            <RiUserLine size={28} />
-                        </div>
-                        <p className="text-[14px] font-semibold text-[#101828]">No users found</p>
-                        <p className="text-[13px] text-[#6B7280]">Create the first user to get started</p>
-                        <Button onClick={openModal} className="mt-2 flex items-center gap-1.5">
-                            <RiUserAddLine size={14} /> Create First User
+                <EmptyState
+                    kind="first-run"
+                    title="No users found"
+                    description="Create the first user to give someone access to this system."
+                    action={
+                        <Button onClick={openModal}>
+                            <RiUserAddLine aria-hidden /> Create first user
                         </Button>
-                    </CardContent>
-                </Card>
+                    }
+                />
             ) : (
                 <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                     {users.map((u, idx) => (

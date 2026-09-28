@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { holidaysApi } from '../api/management-api'
 import { toast } from 'sonner'
 import { Plus, X, Trash2, Calendar } from 'lucide-react'
+import { EmptyState } from '../../../components/ui/empty-state'
 import { LoadingSpinner } from '../../../components/ui/loading-spinner'
 import { ConfirmDialog } from '../../../components/ui/confirm-dialog'
 import { useEnterFlow } from '../../../hooks/use-enter-flow'
@@ -75,7 +76,14 @@ export default function HolidaysPage() {
         {isLoading ? (
           <div className="text-center py-8 text-gray-400 col-span-3"><LoadingSpinner size="sm" /></div>
         ) : holidays.length === 0 ? (
-          <div className="text-center py-8 text-gray-400 col-span-3">No holidays defined for {yearFilter}</div>
+          <div className="col-span-3">
+            <EmptyState
+              bare
+              kind="search"
+              title={`No holidays defined for ${yearFilter}`}
+              description="Add the public holidays that apply to this year."
+            />
+          </div>
         ) : (
           holidays.map((h: any) => (
             <div key={h.id} className="bg-white dark:bg-gray-800 rounded-xl border p-4 flex items-start justify-between">

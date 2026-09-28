@@ -286,9 +286,9 @@ export default function BillDetailPage() {
             </CardHeader>
 
             <CardContent className="pt-4">
-              <div className="rounded-xl border border-[#E4E7EC] overflow-hidden">
-                <table className="w-full text-left text-[13px]">
-                  <thead className="bg-[#F9FAFB] border-b border-[#E4E7EC] text-[#6B7280] font-semibold uppercase tracking-wide text-[11px]">
+              <div className="overflow-x-auto rounded-[10px] border border-[var(--border)]">
+                <table className="w-full min-w-[520px] text-left text-[13px]">
+                  <thead className="border-b border-[var(--border)] bg-[var(--surface-2)] text-[11px] font-semibold uppercase tracking-wide text-[var(--text-muted)]">
                     <tr>
                       <th className="px-4 py-2.5">Item</th>
                       <th className="px-4 py-2.5 text-right w-24">Qty</th>
