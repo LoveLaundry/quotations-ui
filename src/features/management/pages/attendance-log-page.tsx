@@ -4,6 +4,7 @@ import { employeesApi, attendanceApi } from '../api/management-api'
 import { toast } from 'sonner'
 import { Save, CalendarDays, CheckCircle2, UserRound } from 'lucide-react'
 import { EmptyState } from '../../../components/ui/empty-state'
+import { todayISO } from '../../../lib/time'
 
 const STATUSES = ['PRESENT', 'HALF_DAY', 'PAID_LEAVE', 'UNPAID_LEAVE', 'ABSENT'] as const
 const STATUS_COLORS: Record<string, string> = {
@@ -21,10 +22,7 @@ interface Row {
 
 export default function AttendanceLogPage() {
   const qc = useQueryClient()
-  const today = useMemo(() => {
-    const d = new Date()
-    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
-  }, [])
+  const today = useMemo(() => todayISO(), [])
   const [logDate, setLogDate] = useState(today)
 
   const { data: employees = [] } = useQuery({

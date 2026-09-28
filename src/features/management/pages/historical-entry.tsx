@@ -4,6 +4,7 @@ import { useDataGrid } from '../../../hooks/use-data-grid'
 import { transactionsApi, customersApi, itemsApi } from '../api/management-api'
 import { toast } from 'sonner'
 import { Plus, Copy, Trash2, Save, ArrowDown } from 'lucide-react'
+import { todayISO } from '../../../lib/time'
 
 const LIST_LIMIT = 500
 
@@ -26,7 +27,7 @@ interface Row {
 function newRow(): Row {
   return {
     id: crypto.randomUUID().slice(0, 8),
-    date: new Date().toISOString().split('T')[0],
+    date: todayISO(),
     customer_id: '',
     invoice_number: '',
     item_id: '',
@@ -102,7 +103,7 @@ export default function HistoricalEntry() {
   const duplicatePrevDay = useCallback(() => {
     if (rows.length === 0) return
     const last = rows[rows.length - 1]
-    const today = new Date().toISOString().split('T')[0]
+    const today = todayISO()
     const copy = { ...last, id: crypto.randomUUID().slice(0, 8), date: today }
     setRows(prev => [...prev, copy])
   }, [rows])

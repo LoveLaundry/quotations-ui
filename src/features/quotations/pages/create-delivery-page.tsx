@@ -13,6 +13,7 @@ import { useDataGrid } from '../../../hooks/use-data-grid'
 import { useEnterFlow } from '../../../hooks/use-enter-flow'
 import { useDefaults, useDraft, hasDraft } from '../../../components/ops'
 import type { PendingGatePass } from '../services/delivery.service'
+import { dateToStartOfDayISO, todayISO } from '../../../lib/time'
 
 interface SelectedItem {
     gate_pass_id: string
@@ -54,8 +55,7 @@ interface DeliveryDraft {
 }
 
 function todayLocal(): string {
-    const now = new Date()
-    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
+    return todayISO()
 }
 
 const inputClass =
@@ -307,7 +307,7 @@ export default function CreateDeliveryPage() {
         try {
             const created = await createDelivery.mutateAsync({
                 client_name: clientName,
-                delivery_date: new Date(form.deliveryDate).toISOString(),
+                delivery_date: dateToStartOfDayISO(form.deliveryDate),
                 delivered_by: form.deliveredBy.trim(),
                 received_by: form.receivedBy.trim(),
                 notes: form.notes.trim() || undefined,

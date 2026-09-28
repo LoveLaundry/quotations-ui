@@ -9,6 +9,7 @@ import { SalarySlipPrint } from '../components/salary-slip-print'
 import { TableEmptyRow } from '../../../components/ui/empty-state'
 import { LoadingSpinner } from '../../../components/ui/loading-spinner'
 import { Pagination } from '../../../components/ui/pagination'
+import { currentMonth, currentYear } from '../../../lib/time'
 
 const PAGE_SIZE = 20
 
@@ -38,11 +39,11 @@ export default function SalaryHistoryPage() {
   const slipRef = useRef<HTMLDivElement>(null)
   const [selectedEmp, setSelectedEmp] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
-  const [yearFilter, setYearFilter] = useState(new Date().getFullYear())
+  const [yearFilter, setYearFilter] = useState(currentYear())
   const [viewSlip, setViewSlip] = useState<any>(null)
   const [slipLang, setSlipLang] = useState<'EN' | 'SI'>('EN')
-  const [payYear, setPayYear] = useState(new Date().getFullYear())
-  const [payMonth, setPayMonth] = useState(new Date().getMonth() + 1)
+  const [payYear, setPayYear] = useState(currentYear())
+  const [payMonth, setPayMonth] = useState(currentMonth())
   const [preview, setPreview] = useState<any>(null)
   const [previewLoading, setPreviewLoading] = useState(false)
   const [payrollLoading, setPayrollLoading] = useState(false)

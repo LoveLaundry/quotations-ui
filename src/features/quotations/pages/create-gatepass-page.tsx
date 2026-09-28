@@ -16,6 +16,7 @@ import { useDefaults, useDraft, hasDraft } from '../../../components/ops'
 import type { GatePassItem } from '../../../types/operations'
 import type { Quotation } from '../../../types/quotation'
 import { quotationService } from '../services/quotation.service'
+import { dateToStartOfDayISO, todayISO } from '../../../lib/time'
 
 const EMPTY_ITEM: GatePassItem = {
     item_name: '',
@@ -46,13 +47,11 @@ interface LastItemSeed {
 }
 
 function todayLocal(): string {
-    const now = new Date()
-    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
+    return todayISO()
 }
 
 function genGatePassNumber(): string {
-    const now = new Date()
-    return `GP-${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}-${String(Math.floor(Math.random() * 9000) + 1000)}`
+    return `GP-${todayLocal().replace(/-/g, '')}-${String(Math.floor(Math.random() * 9000) + 1000)}`
 }
 
 // ─── Item Name Autocomplete ───────────────────────────────────────────────────
@@ -331,7 +330,7 @@ export default function CreateGatePassPage() {
             {
                 gate_pass_number: form.gate_pass_number.trim(),
                 client_name: form.client_name.trim(),
-                receiving_date: new Date(form.receiving_date).toISOString(),
+                receiving_date: dateToStartOfDayISO(form.receiving_date),
                 received_by: form.received_by.trim(),
                 notes: form.notes.trim() || undefined,
                 items: form.items,

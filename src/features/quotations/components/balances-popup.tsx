@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Search, ChevronDown } from 'lucide-react'
 import type { ClientWiseEntry } from '../hooks/useBusinessDashboard'
 import type { OutstandingAging } from '../services/dashboard.service'
+import { formatCalendarDate } from '../../../lib/time'
 import { Avatar } from '../../../components/ui/avatar'
 import { Badge } from '../../../components/ui/badge'
 import { Button } from '../../../components/ui/button'
@@ -34,8 +35,7 @@ const AGING_BUCKETS: { key: keyof OutstandingAging; label: string }[] = [
 
 function formatDate(dateStr: string) {
   if (!dateStr) return '-'
-  const d = new Date(dateStr)
-  return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
+  return formatCalendarDate(dateStr)
 }
 
 function lkr(n: number) {

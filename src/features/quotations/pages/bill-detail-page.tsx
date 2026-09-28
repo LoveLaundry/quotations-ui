@@ -5,6 +5,7 @@ import { Button } from '../../../components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card'
 import { EmptyState } from '../../../components/ui/empty-state'
 import { ErrorState } from '../../../components/ui/error-state'
+import { PrintTarget } from '../../../components/ui/print-target'
 import { Skeleton } from '../../../components/ui/skeleton'
 import { Breadcrumb } from '../../../components/ui/breadcrumb'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogBody, DialogFooter } from '../../../components/ui/dialog'
@@ -16,6 +17,8 @@ import { useReactToPrint } from 'react-to-print'
 import { BillPrintTemplate } from '../components/bill-print-template'
 import { BillStatusBadge } from '../../../components/ui/bill-status-badge'
 import { useRef } from 'react'
+import { formatCalendarDate } from '../../../lib/time'
+import { todayISO } from '../../../lib/time'
 
 function RecordPaymentModal({
   isOpen,
@@ -31,7 +34,7 @@ function RecordPaymentModal({
   const createPayment = useCreatePayment()
   const [amount, setAmount] = useState<number | ''>(suggestedAmount)
   const [method, setMethod] = useState('Cash')
-  const [date, setDate] = useState(() => new Date().toISOString().split('T')[0])
+  const [date, setDate] = useState(() => todayISO())
   const [reference, setReference] = useState('')
   const [notes, setNotes] = useState('')
 
@@ -439,7 +442,7 @@ export default function BillDetailPage() {
                           <div className="text-[11px] text-[#6B7280] flex items-center gap-1.5 mt-0.5">
                             <span className="font-medium text-[#374151]">{p.payment_method}</span>
                             <span>•</span>
-                            <span>{new Date(p.payment_date).toLocaleDateString()}</span>
+                            <span>{formatCalendarDate(p.payment_date)}</span>
                           </div>
                         </div>
                         {p.reference && (
@@ -468,7 +471,7 @@ export default function BillDetailPage() {
       
       {/* Hidden Print Template */}
       {bill && (
-        <div style={{ display: 'none' }}>
+        <PrintTarget>
           <BillPrintTemplate
             ref={printRef}
             bill={bill}
@@ -478,7 +481,7 @@ export default function BillDetailPage() {
             deliveryDate=""
             gatePass=""
           />
-        </div>
+        </PrintTarget>
       )}
 
       {/* Delete Confirmation */}

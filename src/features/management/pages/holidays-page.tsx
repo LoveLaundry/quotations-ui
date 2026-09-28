@@ -9,12 +9,13 @@ import { ConfirmDialog } from '../../../components/ui/confirm-dialog'
 import { useEnterFlow } from '../../../hooks/use-enter-flow'
 import { useEscape } from '../../../hooks/use-escape'
 import { todayISO } from '../../../lib/date'
+import { currentYear } from '../../../lib/time'
 
 export default function HolidaysPage() {
   const qc = useQueryClient()
   const [showForm, setShowForm] = useState(false)
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null)
-  const [yearFilter, setYearFilter] = useState(new Date().getFullYear())
+  const [yearFilter, setYearFilter] = useState(currentYear())
   const flow = useEnterFlow()
   useEscape(showForm, () => setShowForm(false))
 

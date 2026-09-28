@@ -11,6 +11,7 @@ import { FilterBar } from '../../../components/ui/filter-bar'
 import { Badge } from '../../../components/ui/badge'
 import { ExportButton } from '../../../components/ui/export-button'
 import { useEnterFlow } from '../../../hooks/use-enter-flow'
+import { currentMonth, currentYear } from '../../../lib/time'
 
 const MONTHS = [
   'January', 'February', 'March', 'April', 'May', 'June',
@@ -22,8 +23,8 @@ export default function SalarySlipPage() {
   const slipRef = useRef<HTMLDivElement>(null)
   const [searchParams] = useSearchParams()
   const paramEmp = searchParams.get('emp') || ''
-  const paramYear = Number(searchParams.get('year')) || new Date().getFullYear()
-  const paramMonth = Number(searchParams.get('month')) || new Date().getMonth() + 1
+  const paramYear = Number(searchParams.get('year')) || currentYear()
+  const paramMonth = Number(searchParams.get('month')) || currentMonth()
   const [selectedEmp, setSelectedEmp] = useState(paramEmp)
   const [year, setYear] = useState(paramYear)
   const [month, setMonth] = useState(paramMonth)
@@ -50,8 +51,8 @@ export default function SalarySlipPage() {
 
   useEffect(() => {
     const emp = searchParams.get('emp') || ''
-    const y = Number(searchParams.get('year')) || new Date().getFullYear()
-    const m = Number(searchParams.get('month')) || new Date().getMonth() + 1
+    const y = Number(searchParams.get('year')) || currentYear()
+    const m = Number(searchParams.get('month')) || currentMonth()
     const valid = emp && employees.some((e: any) => e.id === emp)
     if (valid) {
       if (emp !== selectedEmp) { setSelectedEmp(emp); didAutoCalc.current = false }

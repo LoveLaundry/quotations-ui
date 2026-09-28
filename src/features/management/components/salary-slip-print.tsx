@@ -1,4 +1,5 @@
 import { COMPANY } from '../../../config/company'
+import { monthName as monthNameOf } from '../../../lib/time'
 
 interface SalarySlipProps {
   slip: any
@@ -135,11 +136,11 @@ export function SalarySlipPrint({ slip, lang = 'EN' }: SalarySlipProps) {
   const prefix = isSi ? 'රු. ' : 'LKR '
   const formatRs = (val: number) => `${prefix}${Number(val || 0).toLocaleString('en-LK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
 
-  const start = slip.period_start ? new Date(slip.period_start + 'T00:00:00') : null
-  const periodMonth = start
+  const [periodYear, periodMonthIndex] = slip.period_start ? slip.period_start.split('-').map(Number) : [0, 0]
+  const periodMonth = slip.period_start
     ? isSi
-      ? `${SI_MONTHS[start.getMonth()]} ${start.getFullYear()}`
-      : start.toLocaleString('en-US', { month: 'long', year: 'numeric' })
+      ? `${SI_MONTHS[(periodMonthIndex || 1) - 1]} ${periodYear}`
+      : monthNameOf(slip.period_start)
     : ''
 
   const baseLabel = isSi

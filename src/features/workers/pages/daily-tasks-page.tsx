@@ -26,6 +26,7 @@ import type { DailyLog, DailyLogCreate, TaskEntry, Worker } from '../types'
 import type { GatePass, GatePassItem } from '../../../types/operations'
 import { ErrorState } from '../../../components/ui/error-state'
 import { useDataGrid } from '../../../hooks/use-data-grid'
+import { addDaysISO, todayISO } from '../../../lib/time'
 
 const taskTypes = [
   { value: 'WASHING', label: 'Washing', icon: ArrowsClockwise, color: 'bg-blue-50 text-blue-600' },
@@ -43,20 +44,16 @@ const taskTypes = [
 
 const taskTypeMap = Object.fromEntries(taskTypes.map(t => [t.value, t]))
 
-function formatDate(d: Date) {
-  return d.toISOString().split('T')[0]
-}
-
 function today() {
-  return formatDate(new Date())
+  return todayISO()
 }
 
 function getDateRange(start: string, days: number) {
   const dates: string[] = []
-  const d = new Date(start)
+  let current = start
   for (let i = 0; i < days; i++) {
-    dates.push(formatDate(new Date(d)))
-    d.setDate(d.getDate() + 1)
+    dates.push(current)
+    current = addDaysISO(current, 1)
   }
   return dates
 }

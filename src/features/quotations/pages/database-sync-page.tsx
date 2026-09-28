@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { RiDatabase2Line, RiRefreshLine, RiCheckLine, RiErrorWarningLine, RiTimeLine } from 'react-icons/ri'
+import { formatTimestamp } from '../../../lib/time'
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card'
 import { Breadcrumb } from '../../../components/ui/breadcrumb'
 import { Button } from '../../../components/ui/button'
@@ -41,7 +42,7 @@ function StatusDot({ online }: { online: boolean }) {
 function formatDate(value?: string | null) {
   if (!value) return 'Never'
   try {
-    return new Date(value).toLocaleString()
+    return formatTimestamp(value)
   } catch {
     return value
   }

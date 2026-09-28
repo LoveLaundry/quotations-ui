@@ -13,6 +13,7 @@ import {
   useOptimizeRoute,
 } from '../hooks/useDispatch'
 import type { DispatchJob, DispatchStatus, RoutePlan } from '../../../types/operations'
+import { toISODateTime } from '../../../lib/time'
 
 const STATUS_STYLE: Record<DispatchStatus, string> = {
   SCHEDULED: 'bg-[#EFF4FF] text-[#3538CD] border-[#C7D7FE]',
@@ -409,7 +410,7 @@ function NewJobModal({
                 latitude: form.latitude === '' ? undefined : Number(form.latitude),
                 longitude: form.longitude === '' ? undefined : Number(form.longitude),
                 scheduled_at: form.scheduled_at
-                  ? new Date(form.scheduled_at).toISOString()
+                  ? toISODateTime(form.scheduled_at)
                   : undefined,
               })
             }
