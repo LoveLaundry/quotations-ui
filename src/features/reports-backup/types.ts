@@ -5,6 +5,8 @@ export interface SourceStatus {
   error?: string
   fetched: number
   count: number
+  /** True when a page ceiling was hit and records may be missing. */
+  truncated?: boolean
 }
 
 export interface CompanyBrief {

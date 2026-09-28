@@ -116,19 +116,26 @@ export function onMonth(rows: Record<string, unknown>[], period: string, candida
   })
 }
 
-/** Fetches several pages of a list endpoint (bounded). */
+/**
+ * Fetches several pages of a list endpoint.
+ *
+ * Stops early once a short page proves the end was reached; otherwise it keeps
+ * going to a hard page ceiling. Hitting that ceiling is reported back as
+ * `truncated` rather than silently swallowed — a report that quietly omits
+ * records is worse than one that admits it hit a cap.
+ */
 export async function fetchAll(
   fetchPage: (offset: number, limit: number) => Promise<unknown>,
   pageSize: number,
-  maxPages = 8
-): Promise<Record<string, unknown>[]> {
+  maxPages = 60,
+): Promise<{ rows: Record<string, unknown>[]; truncated: boolean }> {
   const all: Record<string, unknown>[] = []
   for (let page = 0; page < maxPages; page++) {
     const rows = arrayRows(await fetchPage(page * pageSize, pageSize))
     all.push(...rows)
-    if (rows.length < pageSize) break
+    if (rows.length < pageSize) return { rows: all, truncated: false }
   }
-  return all
+  return { rows: all, truncated: true }
 }
 
 export interface SourceOutput<T> {
@@ -139,6 +146,8 @@ export interface SourceOutput<T> {
   /** Raw rows returned by the API before date/day filtering. */
   fetched: number
   records: T[]
+  /** True when a page ceiling was hit and records may be missing. */
+  truncated?: boolean
 }
 
 export interface IncomeOutput extends SourceOutput<IncomeRecord> {
@@ -211,7 +220,7 @@ export async function fetchCompany(): Promise<CompanyBrief> {
 async function fetchIncome(date: string): Promise<IncomeOutput> {
   try {
     const { start_date, end_date } = monthWindow(date)
-    const rows = await fetchAll(
+    const { rows, truncated } = await fetchAll(
       (offset, limit) => transactionsApi.list({ start_date, end_date, limit, offset }),
       1000
     )
@@ -227,7 +236,7 @@ async function fetchIncome(date: string): Promise<IncomeOutput> {
         amount: toAmount(pick(r, ['total_amount', 'amount', 'total', 'value'])),
       }))
     const total = records.reduce((sum, r) => sum + r.amount, 0)
-    return { key: 'income', label: 'Income (ledger)', ok: true, fetched, records, total }
+    return { key: 'income', label: 'Income (ledger)', ok: true, fetched, records, truncated, total }
   } catch (err: unknown) {
     return {
       key: 'income',
@@ -244,7 +253,7 @@ async function fetchIncome(date: string): Promise<IncomeOutput> {
 async function fetchExpenses(date: string): Promise<ExpenseOutput> {
   try {
     const { start_date, end_date } = monthWindow(date)
-    const rows = await fetchAll(
+    const { rows, truncated } = await fetchAll(
       (offset, limit) => expensesApi.list({ start_date, end_date, limit, offset }),
       500
     )
@@ -260,7 +269,7 @@ async function fetchExpenses(date: string): Promise<ExpenseOutput> {
         amount: toAmount(pick(r, ['amount', 'total', 'value'])),
       }))
     const total = records.reduce((sum, r) => sum + r.amount, 0)
-    return { key: 'expenses', label: 'Expenses', ok: true, fetched, records, total }
+    return { key: 'expenses', label: 'Expenses', ok: true, fetched, records, truncated, total }
   } catch (err: unknown) {
     return {
       key: 'expenses',
@@ -378,7 +387,7 @@ async function fetchBills(date: string): Promise<SourceOutput<BillRecord>> {
 async function fetchMgmtPayments(date: string): Promise<SourceOutput<PaymentRecord>> {
   try {
     const { start_date, end_date } = monthWindow(date)
-    const rows = await fetchAll(
+    const { rows, truncated } = await fetchAll(
       (offset, limit) => mgmtApi.get('/api/payments', { params: { start_date, end_date, limit, offset } }),
       500
     )
@@ -392,7 +401,7 @@ async function fetchMgmtPayments(date: string): Promise<SourceOutput<PaymentReco
         ref: toStringValue(pick(r, ['reference', 'ref_no', 'receipt_no'])),
         amount: toAmount(pick(r, ['amount', 'total', 'value'])),
       }))
-    return { key: 'payments', label: 'Payments received', ok: true, fetched, records }
+    return { key: 'payments', label: 'Payments received', ok: true, fetched, records, truncated }
   } catch (err: unknown) {
     return { key: 'payments', label: 'Payments received', ok: false, error: errorText(err), fetched: 0, records: [] }
   }
@@ -400,7 +409,7 @@ async function fetchMgmtPayments(date: string): Promise<SourceOutput<PaymentReco
 
 async function fetchShopBills(date: string): Promise<SourceOutput<ShopBillRecord>> {
   try {
-    const rows = await fetchAll(
+    const { rows, truncated } = await fetchAll(
       (skip, limit) => billsApi.get('/shop-bills', { params: { skip, limit } }),
       500
     )
@@ -414,7 +423,7 @@ async function fetchShopBills(date: string): Promise<SourceOutput<ShopBillRecord
         balance: toAmount(pick(r, ['outstanding_amount', 'balance', 'balance_due', 'amount_due'])),
         status: String(pick(r, ['status', 'payment_status']) ?? '').toUpperCase(),
       }))
-    return { key: 'shop_bills', label: 'Shop bills', ok: true, fetched, records }
+    return { key: 'shop_bills', label: 'Shop bills', ok: true, fetched, records, truncated }
   } catch (err: unknown) {
     return { key: 'shop_bills', label: 'Shop bills', ok: false, error: errorText(err), fetched: 0, records: [] }
   }
@@ -422,7 +431,7 @@ async function fetchShopBills(date: string): Promise<SourceOutput<ShopBillRecord
 
 async function fetchLegacyInvoices(date: string): Promise<SourceOutput<LegacyInvoiceRecord>> {
   try {
-    const rows = await fetchAll(
+    const { rows, truncated } = await fetchAll(
       (skip, limit) => billsApi.get('/shop-bills/legacy', { params: { skip, limit } }),
       200
     )
@@ -435,7 +444,7 @@ async function fetchLegacyInvoices(date: string): Promise<SourceOutput<LegacyInv
         total: toAmount(pick(r, ['grand_total', 'total_amount', 'total', 'amount'])),
         status: toStringValue(pick(r, ['status', 'payment_status'])),
       }))
-    return { key: 'legacy_invoices', label: 'Legacy invoices', ok: true, fetched, records }
+    return { key: 'legacy_invoices', label: 'Legacy invoices', ok: true, fetched, records, truncated }
   } catch (err: unknown) {
     return { key: 'legacy_invoices', label: 'Legacy invoices', ok: false, error: errorText(err), fetched: 0, records: [] }
   }
@@ -462,7 +471,14 @@ export function customerFrom(r: Record<string, unknown>): string {
 
 async function fetchGatePasses(date: string): Promise<SourceOutput<GatePassRecord>> {
   try {
-    const res = await billsApi.get('/gatepasses')
+    const { start_date, end_date } = monthWindow(date)
+    // Unfiltered, this endpoint returns the WHOLE lifetime history: slow, and
+    // silently lossy once the collection is large. It supports date_from/date_to
+    // on receiving_date, so bound the query to the month and still pick the
+    // exact day client-side.
+    const res = await billsApi.get('/gatepasses', {
+      params: { date_from: `${start_date}T00:00:00`, date_to: `${end_date}T00:00:00` },
+    })
     const rows = arrayRows(res)
     const fetched = rows.length
     const records = onDay(rows, date, ['receiving_date', 'date', 'created_at'])
@@ -493,7 +509,18 @@ async function fetchGatePasses(date: string): Promise<SourceOutput<GatePassRecor
 
 async function fetchDeliveries(date: string): Promise<SourceOutput<DeliveryRecord>> {
   try {
-    const res = await billsApi.get('/deliveries')
+    const { start_date, end_date } = monthWindow(date)
+    // include_cancelled defaults to FALSE server-side, which dropped every
+    // cancelled delivery from the report without saying so. A report is meant
+    // to show what happened, so ask for them explicitly. Same month-bounded
+    // window as gate passes.
+    const res = await billsApi.get('/deliveries', {
+      params: {
+        date_from: `${start_date}T00:00:00`,
+        date_to: `${end_date}T00:00:00`,
+        include_cancelled: true,
+      },
+    })
     const rows = arrayRows(res)
     const fetched = rows.length
     const records = onDay(rows, date, ['delivery_date', 'date', 'created_at'])

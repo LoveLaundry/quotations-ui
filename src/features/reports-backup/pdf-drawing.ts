@@ -71,18 +71,18 @@ export function dataTable(opts: TableOptions) {
     opts.header.map(text => ({
       text,
       bold: true,
-      fontSize: 7.5,
+      fontSize: 9.5,
       color: '#FFFFFF',
       fillColor: RED,
-      margin: [4, 4, 4, 4] as [number, number, number, number],
+      margin: [5, 5, 5, 5] as [number, number, number, number],
     })),
     ...opts.body.map(row =>
       row.map((cell, c) => ({
         text: cell,
-        fontSize: 8,
+        fontSize: 9.5,
         color: DARK,
         alignment: (opts.alignments?.[c] ?? 'left') as 'left' | 'right' | 'center',
-        margin: [4, 3, 4, 3] as [number, number, number, number],
+        margin: [5, 4, 5, 4] as [number, number, number, number],
       }))
     ),
   ]
@@ -90,27 +90,28 @@ export function dataTable(opts: TableOptions) {
     body.push(
       opts.totals.map((cell, c) => ({
         text: cell,
-        fontSize: 8,
+        fontSize: 9.5,
         bold: true,
         color: DARK,
-        fillColor: '#FEF3C7',
+        fillColor: LIGHT,
         alignment: (opts.alignments?.[c] ?? 'left') as 'left' | 'right' | 'center',
-        margin: [4, 3, 4, 3] as [number, number, number, number],
+        margin: [5, 4, 5, 4] as [number, number, number, number],
       }))
     )
   }
   return {
     layout: {
-      hLineWidth: (i: number) => (i === 0 || i === body.length - 1 ? 0.8 : 0.4),
+      hLineWidth: (i: number) => (i === 0 || i === body.length - 1 ? 1 : 0.5),
       vLineWidth: () => 0,
       hLineColor: () => BORDER,
-      paddingLeft: () => 2,
-      paddingRight: () => 2,
+      paddingLeft: () => 3,
+      paddingRight: () => 3,
     },
     table: {
       headerRows: 1,
       widths: opts.widths,
       body,
+      dontBreakRows: true,
     },
   }
 }
@@ -119,25 +120,25 @@ export function dataTable(opts: TableOptions) {
 export function sectionTitle(index: number, title: string, subtitle?: string) {
   return {
     columns: [
-      { text: [`${index}  `, { text: title.toUpperCase(), bold: true }], fontSize: 11, color: RED, bold: true },
+      { text: [`${index}  `, { text: title.toUpperCase(), bold: true }], fontSize: 13, color: RED, bold: true },
       ...(subtitle
-        ? [{ text: subtitle, alignment: 'right' as const, fontSize: 8, color: GRAY, margin: [0, 3, 0, 0] }]
+        ? [{ text: subtitle, alignment: 'right' as const, fontSize: 10, color: GRAY, margin: [0, 3, 0, 0] }]
         : []),
     ],
-    margin: [0, 10, 0, 4] as [number, number, number, number],
+    margin: [0, 12, 0, 5] as [number, number, number, number],
   }
 }
 
 export function noData(text: string) {
-  return { text, italic: true, fontSize: 8.5, color: GRAY, margin: [0, 2, 0, 6] }
+  return { text, italic: true, fontSize: 10, color: GRAY, margin: [0, 3, 0, 8] }
 }
 
 export function sourceFailed(error?: string) {
   return {
     text: `Source unavailable — ${error ?? 'request failed'}`,
-    fontSize: 8,
+    fontSize: 9.5,
     color: AMBER,
-    margin: [0, 2, 0, 6] as [number, number, number, number],
+    margin: [0, 3, 0, 8] as [number, number, number, number],
   }
 }
 
@@ -146,7 +147,7 @@ export function statusCell(value: string | number) {
 }
 
 export function miniHeading(text: string) {
-  return { text, bold: true, fontSize: 9, color: DARK, characterSpacing: 1, margin: [0, 8, 0, 4] }
+  return { text, bold: true, fontSize: 10.5, color: DARK, characterSpacing: 1, margin: [0, 10, 0, 5] }
 }
 
 export function note(text: string, color: string = GRAY, bold = false) {

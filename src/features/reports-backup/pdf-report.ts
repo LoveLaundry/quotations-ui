@@ -115,27 +115,27 @@ export async function generateReportPdf(snapshot: DailyReportSnapshot): Promise<
             },
             {
               stack: [
-                { text: company.name.toUpperCase(), fontSize: 17, bold: true, color: RED, characterSpacing: 1.5 },
-                { text: company.tagline ?? '', fontSize: 9, color: GRAY, italic: true },
-                { text: company.address ?? '', fontSize: 8, color: DARK, margin: [0, 3, 0, 0] },
+                { text: company.name.toUpperCase(), fontSize: 19, bold: true, color: RED, characterSpacing: 1.5 },
+                { text: company.tagline ?? '', fontSize: 10.5, color: GRAY, italic: true },
+                { text: company.address ?? '', fontSize: 9.5, color: DARK, margin: [0, 3, 0, 0] },
                 {
                   text: `${company.phone ?? ''}${company.email ? `   •   ${company.email}` : ''}`,
-                  fontSize: 8,
+                  fontSize: 9.5,
                   color: DARK,
                 },
                 company.registration_no
-                  ? { text: `Reg No: ${company.registration_no}`, fontSize: 8, color: GRAY }
+                  ? { text: `Reg No: ${company.registration_no}`, fontSize: 9.5, color: GRAY }
                   : {},
               ],
               alignment: 'left',
             },
             {
               stack: [
-                { text: 'DAILY REPORT', fontSize: 11, bold: true, color: '#FFFFFF', alignment: 'center' },
-                { text: date, fontSize: 12, bold: true, color: '#FFFFFF', alignment: 'center' },
-                { text: residencyMonths(date), fontSize: 8.5, color: '#FFFFFF', alignment: 'center' },
-                { text: `Generated ${meta.generated_at.slice(0, 19).replace('T', ' ')}`, fontSize: 7.5, color: '#FFFFFF', alignment: 'center' },
-                { text: `Backup v${meta.backup_version ?? 2}`, fontSize: 7.5, color: '#FFFFFF', alignment: 'center', margin: [0, 4, 0, 0] },
+                { text: 'DAILY REPORT', fontSize: 14, bold: true, color: '#FFFFFF', alignment: 'center' },
+                { text: date, fontSize: 14, bold: true, color: '#FFFFFF', alignment: 'center' },
+                { text: residencyMonths(date), fontSize: 14, color: '#FFFFFF', alignment: 'center' },
+                { text: `Generated ${meta.generated_at.slice(0, 19).replace('T', ' ')}`, fontSize: 10.5, color: '#FFFFFF', alignment: 'center' },
+                { text: `Backup v${meta.backup_version ?? 2}`, fontSize: 10.5, color: '#FFFFFF', alignment: 'center', margin: [0, 4, 0, 0] },
               ],
               fillColor: RED,
               margin: [0, 0, 0, 0],
@@ -147,7 +147,7 @@ export async function generateReportPdf(snapshot: DailyReportSnapshot): Promise<
       margin: [0, 0, 0, 8],
     },
 
-    { text: 'EXECUTIVE SUMMARY', fontSize: 11, bold: true, color: RED, margin: [0, 4, 0, 4] },
+    { text: 'EXECUTIVE SUMMARY', fontSize: 14, bold: true, color: RED, margin: [0, 4, 0, 4] },
     kpiGrid([
       { label: 'INCOME', value: money(totals.income), sub: 'Ledger', tone: 'green' },
       { label: 'EXPENSES', value: money(totals.expenses), sub: 'Ledger', tone: 'red' },
@@ -166,7 +166,7 @@ export async function generateReportPdf(snapshot: DailyReportSnapshot): Promise<
       { label: 'PRESENT', value: String(att.present), sub: `${attendanceRate} of ${attTotal}`, tone: 'green' },
       { label: 'LEAVE / HOLIDAY', value: `${att.leave} / ${att.holiday}`, sub: 'staff', tone: 'amber' },
     ]),
-    { text: 'Net = ledger income − ledger expenses. Bill / payment / salary / linen figures are operational activity and are not added to the accounting net. Percentages are of the daily totals shown.', fontSize: 7, color: GRAY, italics: true, margin: [0, 3, 0, 8] },
+    { text: 'Net = ledger income − ledger expenses. Bill / payment / salary / linen figures are operational activity and are not added to the accounting net. Percentages are of the daily totals shown.', fontSize: 14, color: GRAY, italics: true, margin: [0, 3, 0, 8] },
 
     // ── Charts ─────────────────────────────────────────────────────────────
     miniHeading('FINANCIAL PERFORMANCE TODAY'),
@@ -191,7 +191,7 @@ export async function generateReportPdf(snapshot: DailyReportSnapshot): Promise<
             ],
             labels: ['Today'],
           }),
-          { text: `Collected so far ${collectedPct} of bills raised today (outstanding ${money(billsBalance)}).`, fontSize: 7, color: GRAY, margin: [0, 2, 0, 4] },
+          { text: `Collected so far ${collectedPct} of bills raised today (outstanding ${money(billsBalance)}).`, fontSize: 14, color: GRAY, margin: [0, 2, 0, 4] },
         ]
       : []),
 
@@ -205,7 +205,7 @@ export async function generateReportPdf(snapshot: DailyReportSnapshot): Promise<
             ],
             labels: ['Today'],
           }),
-          { text: `Delivery completion ${deliveredPct} of received pieces.`, fontSize: 7, color: GRAY, margin: [0, 2, 0, 4] },
+          { text: `Delivery completion ${deliveredPct} of received pieces.`, fontSize: 14, color: GRAY, margin: [0, 2, 0, 4] },
         ]
       : []),
 
@@ -500,7 +500,7 @@ export async function generateReportPdf(snapshot: DailyReportSnapshot): Promise<
         body: [[String(ls.in_stock), String(ls.in_use), String(ls.in_wash), String(ls.retired), String(ls.lost), String(ls.total)]],
       }),
       ls.truncated
-        ? { text: 'Snapshot limited to the first 5,000 linen records.', fontSize: 7, color: AMBER, margin: [0, 3, 0, 0] }
+        ? { text: 'Snapshot limited to the first 5,000 linen records.', fontSize: 14, color: AMBER, margin: [0, 3, 0, 0] }
         : {}
     )
   }
@@ -511,7 +511,7 @@ export async function generateReportPdf(snapshot: DailyReportSnapshot): Promise<
     content.push(
       {
         text: failedSources.map(s => `• ${s.label}: ${s.error ?? 'failed'}`).join('\n'),
-        fontSize: 8,
+        fontSize: 9.5,
         color: AMBER,
         margin: [0, 0, 0, 6],
       }
@@ -520,27 +520,28 @@ export async function generateReportPdf(snapshot: DailyReportSnapshot): Promise<
 
   const doc: Record<string, unknown> = {
     pageSize: 'A4',
-    pageMargins: [32, 30, 32, 44],
-    defaultStyle: { font: 'Roboto', fontSize: 10, color: DARK },
+    pageOrientation: 'landscape',
+    pageMargins: [36, 30, 36, 48],
+    defaultStyle: { font: 'Roboto', fontSize: 14, color: DARK },
     content: content as unknown[],
     footer: (currentPage: number, pageCount: number) => ({
       columns: [
         {
           text: `${company.name}  •  Daily Report ${date}`,
-          fontSize: 7,
+          fontSize: 9.5,
           color: GRAY,
           alignment: 'left',
-          margin: [32, 0, 0, 0],
+          margin: [36, 0, 0, 0],
         },
         {
           text: `Page ${currentPage} of ${pageCount}`,
-          fontSize: 7,
+          fontSize: 9.5,
           color: GRAY,
           alignment: 'right',
-          margin: [0, 0, 32, 0],
+          margin: [0, 0, 36, 0],
         },
       ],
-      margin: [0, 10, 0, 0],
+      margin: [0, 12, 0, 0],
     }),
   }
 

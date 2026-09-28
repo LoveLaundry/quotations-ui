@@ -47,7 +47,7 @@ function monthName(period: string): string {
 async function fetchMonthIncome(period: string): Promise<SourceOutput<IncomeRecord> & { total: number }> {
   try {
     const { start_date, end_date } = monthWindow(`${period}-01`)
-    const rows = await fetchAll((offset, limit) => transactionsApi.list({ start_date, end_date, limit, offset }), 1000)
+    const { rows, truncated } = await fetchAll((offset, limit) => transactionsApi.list({ start_date, end_date, limit, offset }), 1000)
     const fetched = rows.length
     const records = onMonth(rows, period, ['transaction_date', 'date', 'created_at']).map<IncomeRecord>(r => {
       const on = dayOf(pick(r, ['transaction_date', 'date', 'created_at'])) ?? period
@@ -62,7 +62,7 @@ async function fetchMonthIncome(period: string): Promise<SourceOutput<IncomeReco
       }
     })
     const total = records.reduce((sum, r) => sum + r.amount, 0)
-    return { key: 'income', label: 'Income (ledger)', ok: true, fetched, records, total }
+    return { key: 'income', label: 'Income (ledger)', ok: true, fetched, records, truncated, total }
   } catch (err: unknown) {
     return { key: 'income', label: 'Income (ledger)', ok: false, error: errorText(err), fetched: 0, records: [], total: 0 }
   }
@@ -71,7 +71,7 @@ async function fetchMonthIncome(period: string): Promise<SourceOutput<IncomeReco
 async function fetchMonthExpenses(period: string): Promise<SourceOutput<ExpenseRecord> & { total: number }> {
   try {
     const { start_date, end_date } = monthWindow(`${period}-01`)
-    const rows = await fetchAll((offset, limit) => expensesApi.list({ start_date, end_date, limit, offset }), 500)
+    const { rows, truncated } = await fetchAll((offset, limit) => expensesApi.list({ start_date, end_date, limit, offset }), 500)
     const fetched = rows.length
     const records = onMonth(rows, period, ['date', 'expense_date', 'created_at', 'paid_date']).map<ExpenseRecord>(r => ({
       id: String(pick(r, ['id', '_id', 'expense_id']) ?? ''),
@@ -83,7 +83,7 @@ async function fetchMonthExpenses(period: string): Promise<SourceOutput<ExpenseR
       amount: toAmount(pick(r, ['amount', 'total', 'value'])),
     }))
     const total = records.reduce((sum, r) => sum + r.amount, 0)
-    return { key: 'expenses', label: 'Expenses', ok: true, fetched, records, total }
+    return { key: 'expenses', label: 'Expenses', ok: true, fetched, records, truncated, total }
   } catch (err: unknown) {
     return { key: 'expenses', label: 'Expenses', ok: false, error: errorText(err), fetched: 0, records: [], total: 0 }
   }
@@ -155,7 +155,7 @@ async function fetchMonthSalary(period: string): Promise<SourceOutput<SalarySlip
 async function fetchMonthBills(period: string): Promise<SourceOutput<BillRecord>> {
   try {
     const { start_date, end_date } = monthWindow(`${period}-01`)
-    const rows = await fetchAll(
+    const { rows, truncated } = await fetchAll(
       (skip, limit) =>
         billsApi.get('/bills', {
           params: { date_from: `${start_date}T00:00:00`, date_to: `${end_date}T00:00:00`, skip, limit },
@@ -179,7 +179,7 @@ async function fetchMonthBills(period: string): Promise<SourceOutput<BillRecord>
         payment_status: String(pick(r, ['payment_status', 'status']) ?? '').toUpperCase(),
       }
     })
-    return { key: 'bills', label: 'Bills', ok: true, fetched, records }
+    return { key: 'bills', label: 'Bills', ok: true, fetched, records, truncated }
   } catch (err: unknown) {
     return { key: 'bills', label: 'Bills', ok: false, error: errorText(err), fetched: 0, records: [] }
   }
@@ -188,7 +188,7 @@ async function fetchMonthBills(period: string): Promise<SourceOutput<BillRecord>
 async function fetchMonthPayments(period: string): Promise<SourceOutput<PaymentRecord>> {
   try {
     const { start_date, end_date } = monthWindow(`${period}-01`)
-    const rows = await fetchAll(
+    const { rows, truncated } = await fetchAll(
       (offset, limit) => mgmtApi.get('/api/payments', { params: { start_date, end_date, limit, offset } }),
       500
     )
@@ -201,7 +201,7 @@ async function fetchMonthPayments(period: string): Promise<SourceOutput<PaymentR
       ref: toStringValue(pick(r, ['reference', 'ref_no', 'receipt_no'])),
       amount: toAmount(pick(r, ['amount', 'total', 'value'])),
     }))
-    return { key: 'payments', label: 'Payments received', ok: true, fetched, records }
+    return { key: 'payments', label: 'Payments received', ok: true, fetched, records, truncated }
   } catch (err: unknown) {
     return { key: 'payments', label: 'Payments received', ok: false, error: errorText(err), fetched: 0, records: [] }
   }
@@ -209,7 +209,7 @@ async function fetchMonthPayments(period: string): Promise<SourceOutput<PaymentR
 
 async function fetchMonthShopBills(period: string): Promise<SourceOutput<ShopBillRecord>> {
   try {
-    const rows = await fetchAll((skip, limit) => billsApi.get('/shop-bills', { params: { skip, limit } }), 500)
+    const { rows, truncated } = await fetchAll((skip, limit) => billsApi.get('/shop-bills', { params: { skip, limit } }), 500)
     const fetched = rows.length
     const records = onMonth(rows, period, ['created_at', 'date', 'bill_date', 'issue_date']).map<ShopBillRecord>(r => ({
       bill_id: String(pick(r, ['id', '_id', 'bill_id']) ?? ''),
@@ -219,7 +219,7 @@ async function fetchMonthShopBills(period: string): Promise<SourceOutput<ShopBil
       balance: toAmount(pick(r, ['outstanding_amount', 'balance', 'balance_due', 'amount_due'])),
       status: String(pick(r, ['status', 'payment_status']) ?? '').toUpperCase(),
     }))
-    return { key: 'shop_bills', label: 'Shop bills', ok: true, fetched, records }
+    return { key: 'shop_bills', label: 'Shop bills', ok: true, fetched, records, truncated }
   } catch (err: unknown) {
     return { key: 'shop_bills', label: 'Shop bills', ok: false, error: errorText(err), fetched: 0, records: [] }
   }
@@ -227,7 +227,7 @@ async function fetchMonthShopBills(period: string): Promise<SourceOutput<ShopBil
 
 async function fetchMonthLegacy(period: string): Promise<SourceOutput<LegacyInvoiceRecord>> {
   try {
-    const rows = await fetchAll((skip, limit) => billsApi.get('/shop-bills/legacy', { params: { skip, limit } }), 200)
+    const { rows, truncated } = await fetchAll((skip, limit) => billsApi.get('/shop-bills/legacy', { params: { skip, limit } }), 200)
     const fetched = rows.length
     const records = onMonth(rows, period, ['created_at', 'date', 'issue_date', 'invoice_date']).map<LegacyInvoiceRecord>(
       r => ({
@@ -238,7 +238,7 @@ async function fetchMonthLegacy(period: string): Promise<SourceOutput<LegacyInvo
         status: toStringValue(pick(r, ['status', 'payment_status'])),
       })
     )
-    return { key: 'legacy_invoices', label: 'Legacy invoices', ok: true, fetched, records }
+    return { key: 'legacy_invoices', label: 'Legacy invoices', ok: true, fetched, records, truncated }
   } catch (err: unknown) {
     return { key: 'legacy_invoices', label: 'Legacy invoices', ok: false, error: errorText(err), fetched: 0, records: [] }
   }
@@ -246,7 +246,11 @@ async function fetchMonthLegacy(period: string): Promise<SourceOutput<LegacyInvo
 
 async function fetchMonthGatePasses(period: string): Promise<SourceOutput<GatePassRecord>> {
   try {
-    const rows = arrayRows(await billsApi.get('/gatepasses'))
+    const { start_date, end_date } = monthWindow(`${period}-01`)
+    const res = await billsApi.get('/gatepasses', {
+      params: { date_from: `${start_date}T00:00:00`, date_to: `${end_date}T00:00:00` },
+    })
+    const rows = arrayRows(res)
     const fetched = rows.length
     const records = onMonth(rows, period, ['receiving_date', 'date', 'created_at']).map<GatePassRecord>(r => {
       const items = itemRows(pick(r, ['items', 'linen']))
@@ -275,7 +279,15 @@ async function fetchMonthGatePasses(period: string): Promise<SourceOutput<GatePa
 
 async function fetchMonthDeliveries(period: string): Promise<SourceOutput<DeliveryRecord>> {
   try {
-    const rows = arrayRows(await billsApi.get('/deliveries'))
+    const { start_date, end_date } = monthWindow(`${period}-01`)
+    const res = await billsApi.get('/deliveries', {
+      params: {
+        date_from: `${start_date}T00:00:00`,
+        date_to: `${end_date}T00:00:00`,
+        include_cancelled: true,
+      },
+    })
+    const rows = arrayRows(res)
     const fetched = rows.length
     const records = onMonth(rows, period, ['delivery_date', 'date', 'created_at']).map<DeliveryRecord>(r => {
       const items = itemRows(pick(r, ['items', 'linen', 'deliveries']))
