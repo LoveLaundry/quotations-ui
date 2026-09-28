@@ -1,4 +1,5 @@
 import type { AxiosError, AxiosInstance } from 'axios'
+import { withNestedItems } from '../lib/api-normalise'
 
 type UnauthorizedHandler = () => void
 
@@ -32,13 +33,25 @@ function extractMessage(err: AxiosError): string {
 
 /**
  * Attaches a response interceptor that:
+ *  - Repairs omitted collections before any consumer sees the payload.
  *  - Never force-reloads the page or hijacks login errors.
  *  - On 401 (outside auth endpoints) triggers a single clean SPA logout redirect.
  *  - Normalizes error messages so they are never "[object Object]".
  */
 export function attachResponseInterceptor(instance: AxiosInstance) {
   instance.interceptors.response.use(
-    (response) => response,
+    (response) => {
+      // The API is free to answer `null` instead of `[]`, and a row can come
+      // back without its `items` array even though the types say otherwise.
+      // Repaired once here, centrally, because a per-page `?? []` at every
+      // access is exactly the guard that gets forgotten — and one missed
+      // `null.items` throws into the route error boundary and replaces the
+      // whole page with "Error 500".
+      if (response.data != null && typeof response.data === 'object') {
+        response.data = withNestedItems(response.data)
+      }
+      return response
+    },
     (err: AxiosError) => {
       if (err.response?.status === 401) {
         localStorage.removeItem('ll_token')

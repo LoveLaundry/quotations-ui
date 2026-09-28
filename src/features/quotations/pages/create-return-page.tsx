@@ -335,7 +335,7 @@ export default function CreateReturnPage() {
               >
                 <div className="flex justify-between items-center">
                   <span className="text-[#6B7280] font-mono text-[11px]">{dl.id.slice(-8).toUpperCase()}</span>
-                  <span className="text-[#101828]">{dl.delivered_by} · {dl.items.length} items</span>
+                  <span className="text-[#101828]">{dl.delivered_by} · {(dl.items ?? []).length} items</span>
                 </div>
               </button>
             ))}
@@ -353,7 +353,7 @@ export default function CreateReturnPage() {
         </div>
 
         {/* Gate Pass Items (selectable) */}
-        {selectedGP && selectedGP.items.length > 0 && (
+        {selectedGP && (selectedGP.items ?? []).length > 0 && (
           <div className="mb-4">
             <p className="text-[12px] font-semibold text-[#6B7280] mb-2">From Gate Pass — tick items being returned:</p>
             <div className="space-y-2" onKeyDown={gpGrid.handleKeyDown}>

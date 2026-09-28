@@ -598,7 +598,7 @@ export default function GatePassDetailPage() {
 
                 {[
                     { icon: User, label: 'Received By', value: gp.received_by },
-                    { icon: ClipboardList, label: 'Items', value: `${gp.items.length} types · ${totalReceived} pcs` },
+                    { icon: ClipboardList, label: 'Items', value: `${(gp.items ?? []).length} types · ${totalReceived} pcs` },
                     { icon: Truck, label: 'Delivered', value: totalDelivered > 0 ? `${totalDelivered} pcs` : 'None yet' },
                     { icon: AlertCircle, label: 'Pending', value: totalPending > 0 ? `${totalPending} pcs` : 'All delivered' },
                     { icon: AlertCircle, label: 'Mismatches', value: mismatches.length > 0 ? `${mismatches.length} item${mismatches.length > 1 ? 's' : ''}` : 'None' },

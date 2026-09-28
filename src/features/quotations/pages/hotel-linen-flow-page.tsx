@@ -417,7 +417,7 @@ function HotelTreeCard({ hotel }: { hotel: HotelNode }) {
         y: Y_LEAF,
         label: (d.delivery_date ?? '').slice(5, 10),
         title: `Delivery ${(d.id ?? '').slice(0, 8)}`,
-        sub: `${formatDate(d.delivery_date)} · ${pieces(d.items)} pcs`,
+        sub: `${formatDate(d.delivery_date)} · ${pieces(d.items ?? [])} pcs`,
         chips: (d.items ?? []).map(i => `${i.item_name}${i.specification ? ` (${i.specification})` : ''} ×${i.quantity}`),
         to: d.id ? `/deliveries/${d.id}` : undefined,
       }))

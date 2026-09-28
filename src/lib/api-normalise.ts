@@ -23,3 +23,37 @@ export function withItems<T extends { items?: unknown }>(data: T[] | null | unde
         items: Array.isArray(row.items) ? row.items : [],
     }))
 }
+
+/**
+ * Recursively replaces every `items` value in a response with a real array.
+ *
+ * `withItems` only covers the top level of a list, but the API nests the
+ * collection: a `/reports/client-wise` row carries `items` and also a
+ * `gate_passes[]` whose own rows carry `items`. Those inner rows are the ones
+ * that reach a render unguarded, so a single top-level pass leaves the same
+ * `null.items` crash in place. Depth is capped so a self-referential payload
+ * cannot spin here.
+ */
+const NESTED_KEYS = ['items', 'gate_passes', 'rows', 'results', 'data'] as const
+
+export function withNestedItems<T>(value: T, depth = 0): T {
+    if (depth > 6 || value == null || typeof value !== 'object') return value
+    if (Array.isArray(value)) {
+        return value.map((row) => withNestedItems(row, depth + 1)) as unknown as T
+    }
+    const out: Record<string, unknown> = { ...(value as Record<string, unknown>) }
+    for (const key of NESTED_KEYS) {
+        const child = out[key]
+        if (Array.isArray(child)) {
+            out[key] = child.map((row) => withNestedItems(row, depth + 1))
+        } else if (child == null && key === 'items') {
+            out[key] = []
+        }
+    }
+    return out as T
+}
+
+/** `asList` plus the nested `items` repair, for a list response. */
+export function normaliseList<T>(data: T[] | null | undefined): T[] {
+    return withNestedItems(asList(data))
+}

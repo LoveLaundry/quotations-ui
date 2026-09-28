@@ -122,7 +122,7 @@ export default function CreateDeliveryPage() {
     const allItems: SelectedItem[] = useMemo(() => {
         const items: SelectedItem[] = []
         for (const gp of selectedGPs) {
-            for (const item of gp.items) {
+            for (const item of gp.items ?? []) {
                 items.push({
                     gate_pass_id: gp.gate_pass_id,
                     gate_pass_number: gp.gate_pass_number,
@@ -501,7 +501,7 @@ export default function CreateDeliveryPage() {
                                                 </div>
                                                 <div className="text-right shrink-0">
                                                     <p className="text-[13px] font-bold text-[#EA580C]">{gp.total_pending} pending</p>
-                                                    <p className="text-[11px] text-[#98A2B3]">{gp.items.length} item type{gp.items.length !== 1 ? 's' : ''}</p>
+                                                    <p className="text-[11px] text-[#98A2B3]">{(gp.items ?? []).length} item type{(gp.items ?? []).length !== 1 ? 's' : ''}</p>
                                                 </div>
                                             </button>
                                         )

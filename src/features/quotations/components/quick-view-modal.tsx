@@ -118,7 +118,7 @@ function GatePassQuickView({ gp }: { gp: GatePass }) {
             <div className="grid grid-cols-2 gap-x-4">
                 <DetailRow label="Received" value={formatDateOnly(gp.receiving_date)} />
                 <DetailRow label="Received by" value={gp.received_by} />
-                <DetailRow label="Item types" value={gp.items.length} />
+                <DetailRow label="Item types" value={(gp.items ?? []).length} />
                 <DetailRow label="Total qty" value={`${total} pcs`} />
             </div>
 

@@ -111,7 +111,7 @@ export default function ReturnsPage() {
     returnsApi
       .list({ client_name: clientName || undefined })
       .then((data) => {
-        setReturns(data.items)
+        setReturns(Array.isArray(data.items) ? data.items : [])
         setLoading(false)
       })
       .catch((err) => {

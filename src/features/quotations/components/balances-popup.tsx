@@ -255,7 +255,7 @@ export function BalancesPopup({
                                     </span>
                                   </div>
                                   <ul className="mt-1.5 flex flex-wrap gap-1">
-                                    {gp.items.map((item) => (
+                                    {(gp.items ?? []).map((item) => (
                                       <li
                                         key={`${item.item_name}-${item.specification}`}
                                         className="inline-flex items-center gap-1.5 rounded-[4px] border border-[var(--border-2)] bg-[var(--surface-2)] px-1.5 py-0.5 text-[11px]"
@@ -282,7 +282,7 @@ export function BalancesPopup({
                           <div>
                             <p className="section-label mb-1.5">Pending items</p>
                             <ul className="divide-y divide-[var(--border)] rounded-[6px] border border-[var(--border)] bg-[var(--surface)]">
-                              {client.items.map((item) => (
+                              {(client.items ?? []).map((item) => (
                                 <li
                                   key={`${item.item_name}-${item.specification}`}
                                   className="flex items-center justify-between gap-3 px-2.5 py-1.5"

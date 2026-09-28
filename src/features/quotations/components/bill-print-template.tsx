@@ -201,7 +201,7 @@ const billPrintStyles = `
 
 export const BillPrintTemplate = React.forwardRef<HTMLDivElement, BillPrintTemplateProps>(
   ({ bill, contactNo, address, receivedDate, deliveryDate, gatePass }, ref) => {
-    const paddedItems = [...bill.items]
+    const paddedItems = [...(bill.items ?? [])]
     while (paddedItems.length < 15) {
       paddedItems.push({ item_name: '', quantity: 0, unit_price: 0, line_total: 0 })
     }
