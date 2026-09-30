@@ -122,12 +122,12 @@ export default function ManagementEmployees() {
     queryFn: () => attendanceApi.listRange(monthStart, monthEnd).then(r => r.data),
   })
 
-  const attSummary = useMemo(() => buildStaffSummary(monthAtt), [monthAtt])
-
   const { data: holidaysData = [] } = useQuery({
     queryKey: ['mgmt-holidays', attYear],
     queryFn: () => holidaysApi.list(attYear).then(r => r.data),
   })
+
+  const attSummary = useMemo(() => buildStaffSummary(monthAtt, holidaysData), [monthAtt, holidaysData])
 
   return (
     <div className="space-y-4">
