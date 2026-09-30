@@ -13,6 +13,7 @@ import { Pagination } from '../../../components/ui/pagination'
 import { ConfirmDialog } from '../../../components/ui/confirm-dialog'
 import { useEnterFlow } from '../../../hooks/use-enter-flow'
 import { useEscape } from '../../../hooks/use-escape'
+import { invalidateResource } from '../../../cache/invalidation'
 
 const PAGE_SIZE = 12
 const TYPES = ['HOTEL', 'SHOP', 'INDIVIDUAL', 'RESTAURANT']
@@ -51,19 +52,19 @@ export default function ManagementCustomers() {
 
   const createMut = useMutation({
     mutationFn: (data: any) => customersApi.create(data),
-    onSuccess: () => { toast.success('Customer created'); qc.invalidateQueries({ queryKey: ['mgmt-customers'] }); setShowForm(false) },
+    onSuccess: () => { toast.success('Customer created'); invalidateResource(qc, 'customers'); setShowForm(false) },
     onError: (e: any) => toast.error(e.response?.data?.detail || 'Failed'),
   })
 
   const updateMut = useMutation({
     mutationFn: ({ id, data }: any) => customersApi.update(id, data),
-    onSuccess: () => { toast.success('Customer updated'); qc.invalidateQueries({ queryKey: ['mgmt-customers'] }); setEditing(null) },
+    onSuccess: () => { toast.success('Customer updated'); invalidateResource(qc, 'customers'); setEditing(null) },
     onError: (e: any) => toast.error(e.response?.data?.detail || 'Failed'),
   })
 
   const deleteMut = useMutation({
     mutationFn: (id: string) => customersApi.remove(id),
-    onSuccess: () => { toast.success('Customer deactivated'); qc.invalidateQueries({ queryKey: ['mgmt-customers'] }); setDeleteTarget(null) },
+    onSuccess: () => { toast.success('Customer deactivated'); invalidateResource(qc, 'customers'); setDeleteTarget(null) },
     onError: (e: any) => toast.error(e.response?.data?.detail || 'Failed'),
   })
 

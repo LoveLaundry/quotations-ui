@@ -8,6 +8,7 @@ import { Pagination } from '../../../components/ui/pagination'
 import { ConfirmDialog } from '../../../components/ui/confirm-dialog'
 import { useEnterFlow } from '../../../hooks/use-enter-flow'
 import { useEscape } from '../../../hooks/use-escape'
+import { invalidateResource } from '../../../cache/invalidation'
 
 const PAGE_SIZE = 20
 
@@ -43,30 +44,30 @@ export default function ManagementItems() {
 
   const createItemMut = useMutation({
     mutationFn: (data: any) => itemsApi.create(data),
-    onSuccess: () => { toast.success('Item created'); qc.invalidateQueries({ queryKey: ['mgmt-items'] }); setShowForm(false) },
+    onSuccess: () => { toast.success('Item created'); invalidateResource(qc, 'items'); setShowForm(false) },
     onError: (e: any) => toast.error(e.response?.data?.detail || 'Failed'),
   })
 
   const updateItemMut = useMutation({
     mutationFn: ({ id, data }: any) => itemsApi.update(id, data),
-    onSuccess: () => { toast.success('Item updated'); qc.invalidateQueries({ queryKey: ['mgmt-items'] }); setEditing(null) },
+    onSuccess: () => { toast.success('Item updated'); invalidateResource(qc, 'items'); setEditing(null) },
     onError: (e: any) => toast.error(e.response?.data?.detail || 'Failed'),
   })
 
   const deleteItemMut = useMutation({
     mutationFn: (id: string) => itemsApi.remove(id),
-    onSuccess: () => { toast.success('Item deactivated'); qc.invalidateQueries({ queryKey: ['mgmt-items'] }); setDeleteItemTarget(null) },
+    onSuccess: () => { toast.success('Item deactivated'); invalidateResource(qc, 'items'); setDeleteItemTarget(null) },
   })
 
   const createCatMut = useMutation({
     mutationFn: (data: any) => itemsApi.createCategory(data),
-    onSuccess: () => { toast.success('Category created'); qc.invalidateQueries({ queryKey: ['mgmt-categories'] }); setShowForm(false) },
+    onSuccess: () => { toast.success('Category created'); invalidateResource(qc, 'categories'); setShowForm(false) },
     onError: (e: any) => toast.error(e.response?.data?.detail || 'Failed'),
   })
 
   const deleteCatMut = useMutation({
     mutationFn: (id: string) => itemsApi.removeCategory(id),
-    onSuccess: () => { toast.success('Category deactivated'); qc.invalidateQueries({ queryKey: ['mgmt-categories'] }); setDeleteCatTarget(null) },
+    onSuccess: () => { toast.success('Category deactivated'); invalidateResource(qc, 'categories'); setDeleteCatTarget(null) },
   })
 
   return (

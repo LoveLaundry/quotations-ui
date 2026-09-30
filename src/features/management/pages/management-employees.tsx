@@ -17,6 +17,7 @@ import { useEnterFlow } from '../../../hooks/use-enter-flow'
 import { useEscape } from '../../../hooks/use-escape'
 import { todayISO } from '../../../lib/date'
 import { currentMonth, currentYear, daysInMonth, monthName } from '../../../lib/time'
+import { invalidateResource } from '../../../cache/invalidation'
 
 const PAGE_SIZE = 12
 
@@ -81,31 +82,31 @@ export default function ManagementEmployees() {
 
   const createMut = useMutation({
     mutationFn: (data: any) => employeesApi.create(data),
-    onSuccess: () => { toast.success('Employee added'); qc.invalidateQueries({ queryKey: ['mgmt-employees'] }); setShowForm(false) },
+    onSuccess: () => { toast.success('Employee added'); invalidateResource(qc, 'employees'); setShowForm(false) },
     onError: (e: any) => toast.error(e.response?.data?.detail || 'Failed'),
   })
 
   const updateMut = useMutation({
     mutationFn: ({ id, data }: any) => employeesApi.update(id, data),
-    onSuccess: () => { toast.success('Employee updated'); qc.invalidateQueries({ queryKey: ['mgmt-employees'] }); setEditing(null); setShowForm(false) },
+    onSuccess: () => { toast.success('Employee updated'); invalidateResource(qc, 'employees'); setEditing(null); setShowForm(false) },
     onError: (e: any) => toast.error(e.response?.data?.detail || 'Failed'),
   })
 
   const deactivateMut = useMutation({
     mutationFn: (id: string) => employeesApi.remove(id),
-    onSuccess: () => { toast.success('Employee deactivated'); qc.invalidateQueries({ queryKey: ['mgmt-employees'] }); setDeactivateTarget(null) },
+    onSuccess: () => { toast.success('Employee deactivated'); invalidateResource(qc, 'employees'); setDeactivateTarget(null) },
     onError: (e: any) => toast.error(e.response?.data?.detail || 'Failed'),
   })
 
   const activateMut = useMutation({
     mutationFn: (id: string) => employeesApi.activate(id),
-    onSuccess: () => { toast.success('Employee activated'); qc.invalidateQueries({ queryKey: ['mgmt-employees'] }) },
+    onSuccess: () => { toast.success('Employee activated'); invalidateResource(qc, 'employees') },
     onError: (e: any) => toast.error(e.response?.data?.detail || 'Failed'),
   })
 
   const createSalaryMut = useMutation({
     mutationFn: ({ empId, data }: any) => employeesApi.createSalary(empId, data),
-    onSuccess: () => { toast.success('Salary recorded'); setShowSalary(null); qc.invalidateQueries({ queryKey: ['mgmt-employees'] }) },
+    onSuccess: () => { toast.success('Salary recorded'); setShowSalary(null); invalidateResource(qc, 'employees', 'salary') },
     onError: (e: any) => toast.error(e.response?.data?.detail || 'Failed'),
   })
 

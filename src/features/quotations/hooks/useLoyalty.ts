@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { loyalty } from '../services/loyalty.service'
 import type { LoyaltyAccount, LoyaltyAdjust } from '../../../types/operations'
+import { invalidateResource } from '../../../cache/invalidation'
 
 // `useAdjustLoyalty` invalidates ['loyalty', client]. The list has to live
 // under the same namespace or an adjustment would never refresh it.
@@ -24,7 +25,7 @@ export function useAdjustLoyalty() {
         mutationFn: (data: LoyaltyAdjust) => loyalty.adjust(data),
         onSuccess: (acct) => {
             qc.setQueryData(loyaltyKeys.detail(acct.client_name), acct)
-            qc.invalidateQueries({ queryKey: loyaltyKeys.all })
+            invalidateResource(qc, 'loyalty')
             toast.success('Loyalty updated')
         },
         onError: () => toast.error('Failed to update loyalty'),

@@ -10,6 +10,7 @@ import { useEnterFlow } from '../../../hooks/use-enter-flow'
 import { useEscape } from '../../../hooks/use-escape'
 import { todayISO } from '../../../lib/date'
 import { currentYear } from '../../../lib/time'
+import { invalidateResource } from '../../../cache/invalidation'
 
 export default function HolidaysPage() {
   const qc = useQueryClient()
@@ -29,7 +30,7 @@ export default function HolidaysPage() {
     onSuccess: () => {
       toast.success('Holiday added')
       setShowForm(false)
-      qc.invalidateQueries({ queryKey: ['holidays'] })
+      invalidateResource(qc, 'holidays')
     },
     onError: (e: any) => toast.error(e.response?.data?.detail || 'Failed'),
   })
@@ -39,7 +40,7 @@ export default function HolidaysPage() {
     onSuccess: () => {
       toast.success('Holiday removed')
       setDeleteTarget(null)
-      qc.invalidateQueries({ queryKey: ['holidays'] })
+      invalidateResource(qc, 'holidays')
     },
     onError: (e: any) => toast.error(e.response?.data?.detail || 'Failed'),
   })

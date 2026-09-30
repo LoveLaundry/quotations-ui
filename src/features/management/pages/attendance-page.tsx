@@ -11,6 +11,7 @@ import { EmptyState } from '../../../components/ui/empty-state'
 import { buildStaffSummary, type AttendanceRecord } from '../utils/attendance-summary'
 import { buildSalaryForecast } from '../utils/salary-forecast'
 import { addDaysISO, currentMonth, currentYear, daysInMonth, todayISO, weekdayOfISO } from '../../../lib/time'
+import { invalidateResource } from '../../../cache/invalidation'
 
 const STATUSES = ['PRESENT', 'HALF_DAY', 'PAID_LEAVE', 'UNPAID_LEAVE', 'ABSENT'] as const
 const STATUS_LABEL: Record<string, string> = {
@@ -148,9 +149,7 @@ export default function AttendancePage() {
     mutationFn: (data: any) => attendanceApi.create(selectedEmp, data),
     onSuccess: () => {
       toast.success('Attendance saved')
-      qc.invalidateQueries({ queryKey: ['attendance', selectedEmp] })
-      qc.invalidateQueries({ queryKey: ['attendance-summary', selectedEmp] })
-      qc.invalidateQueries({ queryKey: ['attendance-all'] })
+      invalidateResource(qc, 'attendance')
     },
     onError: (e: any) => toast.error(e.response?.data?.detail || 'Failed to save attendance'),
   })
@@ -160,9 +159,7 @@ export default function AttendancePage() {
     onSuccess: () => {
       toast.success('Attendance updated')
       setEditDate(null)
-      qc.invalidateQueries({ queryKey: ['attendance', selectedEmp] })
-      qc.invalidateQueries({ queryKey: ['attendance-summary', selectedEmp] })
-      qc.invalidateQueries({ queryKey: ['attendance-all'] })
+      invalidateResource(qc, 'attendance')
     },
     onError: (e: any) => toast.error(e.response?.data?.detail || 'Failed to update attendance'),
   })
@@ -173,9 +170,7 @@ export default function AttendancePage() {
       toast.success('Record deleted')
       setEditDate(null)
       setDeleteTarget(null)
-      qc.invalidateQueries({ queryKey: ['attendance', selectedEmp] })
-      qc.invalidateQueries({ queryKey: ['attendance-summary', selectedEmp] })
-      qc.invalidateQueries({ queryKey: ['attendance-all'] })
+      invalidateResource(qc, 'attendance')
     },
     onError: (e: any) => toast.error(e.response?.data?.detail || 'Failed to delete record'),
   })
@@ -185,9 +180,7 @@ export default function AttendancePage() {
     onSuccess: () => {
       toast.success(`${pickedDates.size} record(s) saved as ${STATUS_LABEL[bulkStatus] || bulkStatus}`)
       setPickedDates(new Set())
-      qc.invalidateQueries({ queryKey: ['attendance', selectedEmp] })
-      qc.invalidateQueries({ queryKey: ['attendance-summary', selectedEmp] })
-      qc.invalidateQueries({ queryKey: ['attendance-all'] })
+      invalidateResource(qc, 'attendance')
     },
     onError: (e: any) => toast.error(e.response?.data?.detail || 'Bulk save failed'),
   })

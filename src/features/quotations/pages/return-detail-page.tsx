@@ -1,3 +1,4 @@
+import { useQueryClient } from '@tanstack/react-query'
 import { useState, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import {
@@ -13,6 +14,7 @@ import { toast } from 'sonner'
 import { formatDate } from '../../../lib/utils'
 import { returns as returnsApi } from '../services/returns.service'
 import type { Return } from '../../../types/operations'
+import { invalidateResource } from '../../../cache/invalidation'
 
 const STATUS_CONFIG: Record<string, { label: string; bg: string; text: string; border: string; icon: any }> = {
   PENDING: { label: 'Pending', bg: '#FEF3C7', text: '#D97706', border: '#FDE68A', icon: Clock },
@@ -48,6 +50,7 @@ const ACTION_LABELS: Record<string, string> = {
 }
 
 export default function ReturnDetailPage() {
+  const queryClient = useQueryClient()
   const { id } = useParams()
   const [returnData, setReturnData] = useState<Return | null>(null)
   const [loading, setLoading] = useState(true)
@@ -77,6 +80,7 @@ export default function ReturnDetailPage() {
       const updated = await returnsApi.update(returnData.return_id, { status: newStatus })
       setReturnData(updated)
       setStatusOpen(false)
+      invalidateResource(queryClient, 'returns', 'gatepasses')
       toast.success(`Status updated to ${newStatus}`)
     } catch (err: any) {
       toast.error(err?.response?.data?.detail || 'Failed to update status')
@@ -90,6 +94,7 @@ export default function ReturnDetailPage() {
     try {
       const updated = await returnsApi.markResent(returnData.return_id, itemName, spec)
       setReturnData(updated)
+      invalidateResource(queryClient, 'returns')
       toast.success('Marked as sent')
     } catch (err: any) {
       toast.error(err?.response?.data?.detail || 'Failed to mark as sent')

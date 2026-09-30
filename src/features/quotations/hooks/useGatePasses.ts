@@ -34,6 +34,8 @@ export const DELIVERY_DEPENDENT_KEYS = [
     // unbilled-gate-pass list both change with delivery state.
     ['bills'],
     ['shop-bills'],
+    ['returns'],
+    ['events'],
 ] as const
 
 export function invalidateDeliveryData(qc: QueryClient) {

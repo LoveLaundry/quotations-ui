@@ -12,6 +12,7 @@ import { EmptyState } from '../../../components/ui/empty-state'
 import { LoadingSpinner } from '../../../components/ui/loading-spinner'
 import { ExportButton } from '../../../components/ui/export-button'
 import { Pagination } from '../../../components/ui/pagination'
+import { invalidateResource } from '../../../cache/invalidation'
 
 const PAGE_SIZE = 20
 
@@ -47,7 +48,7 @@ export default function ManagementTransactions() {
 
   const deleteMut = useMutation({
     mutationFn: (id: string) => transactionsApi.remove(id),
-    onSuccess: () => { toast.success('Transaction deleted'); qc.invalidateQueries({ queryKey: ['mgmt-transactions'] }) },
+    onSuccess: () => { toast.success('Transaction deleted'); invalidateResource(qc, 'transactions') },
   })
 
   const totalAmount = pageTransactions.reduce((s: number, t: any) => s + t.total_amount, 0)

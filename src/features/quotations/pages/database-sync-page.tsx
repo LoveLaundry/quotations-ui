@@ -8,6 +8,7 @@ import { Breadcrumb } from '../../../components/ui/breadcrumb'
 import { Button } from '../../../components/ui/button'
 import { Skeleton } from '../../../components/ui/skeleton'
 import billsApi from '../../../api/bills-api'
+import { invalidateResource } from '../../../cache/invalidation'
 
 interface DatabaseStatus {
   main: { status: string }
@@ -72,8 +73,9 @@ export default function DatabaseSyncPage() {
       }
     },
     onSuccess: (report) => {
-      qc.invalidateQueries({ queryKey: ['database-status'] })
+      invalidateResource(qc, 'database')
       if (report.status === 'SUCCESS') {
+        invalidateResource(qc, 'quotations', 'gatepasses', 'bills', 'workers', 'linen')
         toast.success('Local database synchronized')
       } else {
         toast.warning('Local sync completed with errors')
@@ -88,7 +90,7 @@ export default function DatabaseSyncPage() {
       return res.data
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['database-status'] })
+      invalidateResource(qc, 'database', 'quotations', 'gatepasses', 'bills', 'workers', 'linen')
       toast.success('Secondary sync triggered')
     },
     onError: () => toast.error('Failed to trigger secondary sync'),

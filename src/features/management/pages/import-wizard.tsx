@@ -3,6 +3,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { importApi } from '../api/management-api'
 import { toast } from 'sonner'
 import { Upload, Download, CheckCircle2, XCircle, FileSpreadsheet, ArrowRight, AlertTriangle } from 'lucide-react'
+import { invalidateResource } from '../../../cache/invalidation'
 
 type Step = 'upload' | 'preview' | 'result'
 
@@ -25,6 +26,7 @@ export default function ImportWizard() {
       setStep('preview')
     },
     onError: () => toast.error('Failed to preview file'),
+    meta: { readOnly: true },
   })
 
   const executeMut = useMutation({
@@ -36,8 +38,7 @@ export default function ImportWizard() {
     onSuccess: (data) => {
       setResult(data)
       setStep('result')
-      qc.invalidateQueries({ queryKey: ['mgmt-transactions'] })
-      qc.invalidateQueries({ queryKey: ['mgmt-dashboard'] })
+      invalidateResource(qc, 'transactions')
     },
     onError: () => toast.error('Import failed'),
   })

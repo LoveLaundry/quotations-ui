@@ -5,6 +5,7 @@ import { transactionsApi, customersApi, itemsApi } from '../api/management-api'
 import { toast } from 'sonner'
 import { Plus, Copy, Trash2, Save, ArrowDown } from 'lucide-react'
 import { todayISO } from '../../../lib/time'
+import { invalidateResource } from '../../../cache/invalidation'
 
 const LIST_LIMIT = 500
 
@@ -65,7 +66,7 @@ export default function HistoricalEntry() {
     mutationFn: (txns: any[]) => transactionsApi.bulkCreate({ transactions: txns }),
     onSuccess: () => {
       toast.success('Records saved successfully')
-      qc.invalidateQueries({ queryKey: ['mgmt-transactions'] })
+      invalidateResource(qc, 'transactions')
       setRows([newRow()])
     },
     onError: (e: any) => toast.error(e.response?.data?.detail || 'Save failed'),

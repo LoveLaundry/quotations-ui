@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { quotationService } from '../services/quotation.service'
 import type { Quotation, QuotationPayload, OrderStatus } from '../../../types/quotation'
+import { invalidateResource } from '../../../cache/invalidation'
 
 export const quotationKeys = {
   all: ['quotations'] as const,
@@ -73,6 +74,7 @@ export function useDeleteQuotation() {
     },
     onSuccess: (_r, id) => {
       qc.removeQueries({ queryKey: quotationKeys.detail(id) })
+      invalidateResource(qc, 'quotations')
       toast.success('Quotation deleted')
     },
   })

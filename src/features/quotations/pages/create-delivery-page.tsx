@@ -94,7 +94,7 @@ export default function CreateDeliveryPage() {
     }, [search])
 
     const { data: pendingGPs = [], isLoading, isError, error } = useQuery<PendingGatePass[]>({
-        queryKey: ['pending-gatepasses', debouncedSearch],
+        queryKey: ['ops', 'pending-gatepasses', debouncedSearch],
         queryFn: () => deliveries.pendingGatePasses(debouncedSearch || undefined),
         staleTime: 30_000,
     })

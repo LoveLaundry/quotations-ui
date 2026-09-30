@@ -12,6 +12,7 @@ import { Badge } from '../../../components/ui/badge'
 import { ExportButton } from '../../../components/ui/export-button'
 import { useEnterFlow } from '../../../hooks/use-enter-flow'
 import { currentMonth, currentYear } from '../../../lib/time'
+import { invalidateResource } from '../../../cache/invalidation'
 
 const MONTHS = [
   'January', 'February', 'March', 'April', 'May', 'June',
@@ -79,6 +80,7 @@ export default function SalarySlipPage() {
       setNotes('')
     },
     onError: (e: any) => toast.error(e.response?.data?.detail || 'Calculation failed'),
+    meta: { readOnly: true },
   })
 
   const generateMut = useMutation({
@@ -87,7 +89,7 @@ export default function SalarySlipPage() {
       toast.success('Salary slip generated')
       setGeneratedSlip(res.data)
       setShowSlip(true)
-      qc.invalidateQueries({ queryKey: ['salary-slips'] })
+      invalidateResource(qc, 'salary')
     },
     onError: (e: any) => toast.error(e.response?.data?.detail || 'Generation failed'),
   })

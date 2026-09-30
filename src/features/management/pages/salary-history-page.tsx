@@ -10,6 +10,7 @@ import { TableEmptyRow } from '../../../components/ui/empty-state'
 import { LoadingSpinner } from '../../../components/ui/loading-spinner'
 import { Pagination } from '../../../components/ui/pagination'
 import { currentMonth, currentYear } from '../../../lib/time'
+import { invalidateResource } from '../../../cache/invalidation'
 
 const PAGE_SIZE = 20
 
@@ -81,25 +82,25 @@ export default function SalaryHistoryPage() {
 
   const finalizeMut = useMutation({
     mutationFn: (slipId: string) => salaryApi.finalizeSlip(slipId),
-    onSuccess: () => { toast.success('Salary slip finalized'); qc.invalidateQueries({ queryKey: ['salary-slips'] }) },
+    onSuccess: () => { toast.success('Salary slip finalized'); invalidateResource(qc, 'salary') },
     onError: (e: any) => toast.error(e.response?.data?.detail || 'Failed'),
   })
 
   const cancelMut = useMutation({
     mutationFn: (slipId: string) => salaryApi.cancelSlip(slipId),
-    onSuccess: () => { toast.success('Salary slip cancelled'); qc.invalidateQueries({ queryKey: ['salary-slips'] }); setViewSlip(null) },
+    onSuccess: () => { toast.success('Salary slip cancelled'); invalidateResource(qc, 'salary'); setViewSlip(null) },
     onError: (e: any) => toast.error(e.response?.data?.detail || 'Failed'),
   })
 
   const deleteMut = useMutation({
     mutationFn: (slipId: string) => salaryApi.deleteSlip(slipId),
-    onSuccess: () => { toast.success('Salary slip deleted'); qc.invalidateQueries({ queryKey: ['salary-slips'] }); setViewSlip(null) },
+    onSuccess: () => { toast.success('Salary slip deleted'); invalidateResource(qc, 'salary'); setViewSlip(null) },
     onError: (e: any) => toast.error(e.response?.data?.detail || 'Failed'),
   })
 
   const payMut = useMutation({
     mutationFn: ({ slipId, amount }: { slipId: string; amount: number }) => salaryApi.paySlip(slipId, amount),
-    onSuccess: () => { toast.success('Marked as paid'); qc.invalidateQueries({ queryKey: ['salary-slips'] }); setViewSlip(null) },
+    onSuccess: () => { toast.success('Marked as paid'); invalidateResource(qc, 'salary'); setViewSlip(null) },
     onError: (e: any) => toast.error(e.response?.data?.detail || 'Failed'),
   })
 
@@ -130,7 +131,7 @@ export default function SalaryHistoryPage() {
       const r = await salaryApi.payrollRun(payYear, payMonth)
       toast.success(`${r.data.created?.length ?? 0} slip(s) created, ${r.data.skipped?.length ?? 0} skipped`)
       setPreview(null)
-      qc.invalidateQueries({ queryKey: ['salary-slips'] })
+      invalidateResource(qc, 'salary')
     } catch (e: any) {
       toast.error(e.response?.data?.detail || 'Payroll run failed')
     } finally {
@@ -148,7 +149,7 @@ export default function SalaryHistoryPage() {
 
   const overrideMut = useMutation({
     mutationFn: (data: any) => salaryPackagesApi.upsert(data),
-    onSuccess: () => { toast.success('Month arrangement saved'); setOverrideEmp(null); setPreview(null) },
+    onSuccess: () => { toast.success('Month arrangement saved'); invalidateResource(qc, 'salary'); setOverrideEmp(null); setPreview(null) },
     onError: (e: any) => toast.error(e.response?.data?.detail || 'Failed'),
   })
 
