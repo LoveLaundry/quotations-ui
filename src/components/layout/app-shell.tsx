@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { Sidebar } from './sidebar'
 import { TopBar } from './top-bar'
 import { CommandSearch } from '../ui/command-search'
 import { OfflineSyncBar } from '../ui/offline-sync-bar'
+import { PageLoader } from '../ui/loader'
 import { useAuth } from '../../context/AuthContext'
 import { setUnauthorizedHandler } from '../../api/interceptors'
 
@@ -168,7 +169,9 @@ export function AppShell() {
         {/* Wide cap with a tighter margin on small screens: a 320px viewport
             gets 16px of gutter, a desktop gets a comfortable measure. */}
         <div className="mx-auto w-full max-w-[1480px] px-4 py-4 sm:px-5 sm:py-5 lg:px-7 lg:py-6">
-          <Outlet />
+          <Suspense fallback={<PageLoader />}>
+            <Outlet />
+          </Suspense>
         </div>
       </main>
     </div>
