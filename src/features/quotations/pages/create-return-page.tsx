@@ -391,7 +391,7 @@ export default function CreateReturnPage() {
                     </label>
 
                     {isSelected && sel && (
-                      <div className="mt-3 pt-3 border-t border-amber-200 grid grid-cols-4 gap-2">
+                      <div className="mt-3 pt-3 border-t border-amber-200 grid grid-cols-2 sm:grid-cols-4 gap-2">
                         <div>
                           <label className="text-[10px] text-[#98A2B3] mb-0.5 block">Qty</label>
                           <input

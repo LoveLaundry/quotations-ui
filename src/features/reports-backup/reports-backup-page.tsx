@@ -561,7 +561,7 @@ export default function ReportsBackupPage() {
           <CardContent>
             {result ? (
               <div className="space-y-3">
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                   <StatBox label="Income" value={fmtMoney(result.snapshot.totals.income)} tone="green" />
                   <StatBox label="Expenses" value={fmtMoney(result.snapshot.totals.expenses)} tone="red" />
                   <StatBox label="Net" value={fmtMoney(result.snapshot.totals.net)} tone="red" />

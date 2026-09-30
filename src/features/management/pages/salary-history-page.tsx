@@ -455,7 +455,7 @@ export default function SalaryHistoryPage() {
           <div className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-1">
               <h3 className="font-semibold flex items-center gap-2"><Settings2 size={18} /> Adjust Month Arrangement</h3>
-              <button onClick={() => setOverrideEmp(null)}><XCircle size={20} /></button>
+              <button onClick={() => setOverrideEmp(null)} aria-label="Close"><XCircle size={20} /></button>
             </div>
             <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
               {overrideEmp.name} · {overrideMonth} — saved as a per-month override for this employee. Past finalized months are never changed.

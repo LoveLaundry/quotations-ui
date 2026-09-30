@@ -332,11 +332,16 @@ export default function CreateDeliveryPage() {
     }
 
     // ── Items grouped by gate pass for manual display ─────────────────────────
+    // Manual mode must list *every* pending line, including the ones still at
+    // zero — the quantity inputs live inside this list, so filtering zeroes
+    // away would leave the operator with nothing to type into. Auto mode is
+    // the opposite: the distribution is derived, so only filled rows are shown.
     const itemsByGP = useMemo(() => {
-        const source = form.fillMode === 'auto' ? autoDistributed : items
+        const manual = form.fillMode === 'auto' ? null : items
+        const source = manual ?? autoDistributed
         const map = new Map<string, { client_name: string; gate_pass_number: string; items: SelectedItem[] }>()
         for (const item of source) {
-            if (item.quantity <= 0) continue
+            if (!manual && item.quantity <= 0) continue
             const existing = map.get(item.gate_pass_id)
             if (existing) {
                 existing.items.push(item)

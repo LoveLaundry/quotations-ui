@@ -215,7 +215,7 @@ export function BalancesPopup({
                         id={detailId}
                         className="border-t border-[var(--border)] bg-[var(--surface-2)] px-4 py-3 sm:px-5"
                       >
-                        <dl className="mb-3 grid grid-cols-3 gap-px overflow-hidden rounded-[6px] border border-[var(--border)] bg-[var(--border)]">
+                        <dl className="mb-3 grid grid-cols-1 sm:grid-cols-3 gap-px overflow-hidden rounded-[6px] border border-[var(--border)] bg-[var(--border)]">
                           {[
                             { label: 'Billed', value: client.total_billed },
                             { label: 'Paid', value: client.paid_amount },

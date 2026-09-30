@@ -175,7 +175,7 @@ export default function ManagementCustomers() {
           <div className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-lg font-semibold">{editing ? 'Edit Customer' : 'Add Customer'}</h2>
-              <button onClick={() => { setShowForm(false); setEditing(null) }}><X size={20} /></button>
+              <button onClick={() => { setShowForm(false); setEditing(null) }} aria-label="Close form"><X size={20} /></button>
             </div>
             <form onSubmit={e => {
               e.preventDefault()

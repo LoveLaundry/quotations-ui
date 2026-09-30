@@ -124,8 +124,8 @@ export default function ManagementItems() {
                     <td className="px-3 py-2 text-right">LKR {(item.total_revenue || 0).toLocaleString()}</td>
                     <td className="px-3 py-2 text-right text-green-600">LKR {((item.total_revenue || 0) - (item.total_cost || 0)).toLocaleString()}</td>
                     <td className="px-3 py-2 text-center">
-                      <button onClick={() => { setEditing(item); setShowForm(true) }} className="p-1 hover:bg-gray-100 rounded"><Pencil size={14} /></button>
-                      <button onClick={() => setDeleteItemTarget(item)} className="p-1 hover:bg-red-100 text-red-500 rounded"><Trash2 size={14} /></button>
+                      <button onClick={() => { setEditing(item); setShowForm(true) }} aria-label="Edit" className="p-1 hover:bg-gray-100 rounded"><Pencil size={14} /></button>
+                      <button onClick={() => setDeleteItemTarget(item)} aria-label="Delete item" className="p-1 hover:bg-red-100 text-red-500 rounded"><Trash2 size={14} /></button>
                     </td>
                   </tr>
                 ))}
@@ -158,7 +158,7 @@ export default function ManagementItems() {
           <div className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-md">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-lg font-semibold">{editing ? 'Edit' : 'Add'} {tab === 'items' ? 'Item' : 'Category'}</h2>
-              <button onClick={() => { setShowForm(false); setEditing(null) }}><X size={20} /></button>
+              <button onClick={() => { setShowForm(false); setEditing(null) }} aria-label="Close form"><X size={20} /></button>
             </div>
             {tab === 'items' ? (
               <form onSubmit={e => {

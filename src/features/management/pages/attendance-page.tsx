@@ -282,13 +282,13 @@ export default function AttendancePage() {
                 <Table2 size={14} /> All Staff
               </button>
             </div>
-            <button onClick={goPrev} className="p-2 border rounded-lg text-sm hover:bg-gray-50 dark:hover:bg-gray-700" title="Previous month">
+            <button onClick={goPrev} aria-label="Previous month" className="p-2 border rounded-lg text-sm hover:bg-gray-50 dark:hover:bg-gray-700" title="Previous month">
               <ChevronLeft size={16} />
             </button>
             <button onClick={goToday} className="px-3 py-2 border rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700" title="Jump to today">
               Today
             </button>
-            <button onClick={goNext} className="p-2 border rounded-lg text-sm hover:bg-gray-50 dark:hover:bg-gray-700" title="Next month">
+            <button onClick={goNext} aria-label="Next month" className="p-2 border rounded-lg text-sm hover:bg-gray-50 dark:hover:bg-gray-700" title="Next month">
               <ChevronRight size={16} />
             </button>
           </div>
@@ -533,7 +533,7 @@ export default function AttendancePage() {
       {/* Edit modal */}
       {editDate && editForm && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" onClick={() => setEditDate(null)}>
-          <div className="bg-white dark:bg-gray-800 rounded-xl border p-6 w-[380px] space-y-4 shadow-xl" onClick={e => e.stopPropagation()} ref={editFlow.ref} onKeyDown={editFlow.handleKeyDown}>
+          <div className="bg-white dark:bg-gray-800 rounded-lg border p-6 w-[380px] max-w-[calc(100vw-24px)] space-y-4 shadow-xl" onClick={e => e.stopPropagation()} ref={editFlow.ref} onKeyDown={editFlow.handleKeyDown}>
             <div className="flex items-center justify-between">
               <h3 className="font-semibold flex items-center gap-2">
                 <Pencil size={16} /> {editDate}

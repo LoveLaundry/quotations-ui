@@ -556,6 +556,7 @@ export default function GatePassDetailPage() {
                                 onClick={startEditDate}
                                 className="text-[#6B7280] hover:text-[#2563EB] transition"
                                 title="Correct receiving date"
+                                aria-label="Correct receiving date"
                             >
                                 <Pencil className="h-3.5 w-3.5" />
                             </button>

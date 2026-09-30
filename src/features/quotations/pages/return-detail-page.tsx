@@ -273,7 +273,7 @@ export default function ReturnDetailPage() {
       {returnData.bill_adjustment && returnData.bill_adjustment.adjustment_type !== 'NONE' && (
         <Card className="p-5">
           <h3 className="text-[14px] font-semibold text-[#101828] mb-3">Bill Adjustment</h3>
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
               <p className="text-[11px] text-[#98A2B3] mb-0.5">Type</p>
               <p className="text-[13px] font-semibold text-[#101828]">{returnData.bill_adjustment.adjustment_type}</p>

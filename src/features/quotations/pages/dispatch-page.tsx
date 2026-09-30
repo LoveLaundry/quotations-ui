@@ -304,7 +304,7 @@ function NewJobModal({
       <div className="w-full max-w-md rounded-2xl bg-white shadow-xl">
         <div className="flex items-center justify-between border-b border-[#F2F2F2] px-5 py-4">
           <h3 className="text-[15px] font-semibold text-[#101828]">New Dispatch Job</h3>
-          <button onClick={onClose} className="rounded-lg p-1.5 hover:bg-[#F5F5F5]">
+          <button onClick={onClose} aria-label="Close" className="rounded-lg p-1.5 hover:bg-[#F5F5F5]">
             <X className="h-4 w-4" />
           </button>
         </div>
@@ -442,7 +442,7 @@ function RoutePlannerModal({
       <div className="w-full max-w-md rounded-2xl bg-white shadow-xl">
         <div className="flex items-center justify-between border-b border-[#F2F2F2] px-5 py-4">
           <h3 className="text-[15px] font-semibold text-[#101828]">Plan Driver Route</h3>
-          <button onClick={onClose} className="rounded-lg p-1.5 hover:bg-[#F5F5F5]">
+          <button onClick={onClose} aria-label="Close" className="rounded-lg p-1.5 hover:bg-[#F5F5F5]">
             <X className="h-4 w-4" />
           </button>
         </div>

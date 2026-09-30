@@ -706,7 +706,7 @@ function TaskDialog({ open, onClose, editEntry, workers, gatePasses, onSubmit, i
           <h3 className="text-[15px] font-semibold text-[#111827]">
             {editEntry ? 'Edit Task' : 'Log New Task'}
           </h3>
-          <button onClick={onClose} className="p-1 rounded-lg hover:bg-[#F3F4F6] transition-colors cursor-pointer">
+          <button onClick={onClose} aria-label="Close dialog" className="p-1 rounded-lg hover:bg-[#F3F4F6] transition-colors cursor-pointer">
             <X size={16} className="text-[#6B7280]" />
           </button>
         </div>
@@ -810,7 +810,7 @@ function TaskDialog({ open, onClose, editEntry, workers, gatePasses, onSubmit, i
                 </div>
               </div>
 
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
                   <label className="text-[12px] font-medium text-[#374151] block mb-1">Quantity</label>
                   <input
@@ -968,7 +968,7 @@ function TaskDialog({ open, onClose, editEntry, workers, gatePasses, onSubmit, i
                         placeholder="Item / service description"
                         className="w-full rounded-lg border border-[#E5E7EB] px-2.5 py-1.5 text-[12px] text-[#111827] placeholder-[#9CA3AF] focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/10 transition-all"
                       />
-                      <div className="grid grid-cols-3 gap-2">
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                         <input
                           ref={grid.registerCell(ri, 2)}
                           type="number" min="0"

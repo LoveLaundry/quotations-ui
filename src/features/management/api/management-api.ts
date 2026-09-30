@@ -1,5 +1,6 @@
 import axios from 'axios'
 import { installOfflineAdapter } from '../../../cache/offline-adapter'
+import { attachResponseInterceptor } from '../../../api/interceptors'
 
 export interface Paginated<T> {
   items: T[]
@@ -19,6 +20,11 @@ mgmtApi.interceptors.request.use((config) => {
   if (token) config.headers.Authorization = `Bearer ${token}`
   return config
 })
+
+// Without this, a 401 from the management backend would neither clear the
+// session nor redirect, and the raw Axios error would skip extractMessage() —
+// so "[object Object]" could surface across the whole management surface.
+attachResponseInterceptor(mgmtApi)
 
 installOfflineAdapter(mgmtApi, 'management')
 

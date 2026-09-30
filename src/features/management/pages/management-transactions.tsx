@@ -139,7 +139,7 @@ export default function ManagementTransactions() {
           <div className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-lg font-semibold">Transaction Details</h2>
-              <button onClick={() => setViewTxn(null)}><X size={20} /></button>
+              <button onClick={() => setViewTxn(null)} aria-label="Close details"><X size={20} /></button>
             </div>
             <div className="grid grid-cols-2 gap-4 mb-4 text-sm">
               <div><p className="text-gray-500">Date</p><p className="font-medium">{viewTxn.transaction_date}</p></div>

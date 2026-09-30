@@ -5,7 +5,7 @@ import { Suspense, useEffect, useMemo, useRef, type ReactNode } from 'react'
 import { Toaster, toast } from 'sonner'
 import { router } from './routes'
 import './App.css'
-import LoveLoader from './components/ui/LoveLoader'
+import { PageLoader } from './components/ui/loader'
 import { ThemeProvider } from './context/ThemeContext'
 import { HotelProvider } from './context/HotelContext'
 import { useAuth } from './context/AuthContext'
@@ -129,7 +129,7 @@ function App() {
           <DefaultsProvider>
           {/* Suspense covers route-level lazy chunks: the loader only shows while
               a page bundle is actually being fetched, removing the old 600ms wait. */}
-          <Suspense fallback={<LoveLoader />}>
+          <Suspense fallback={<PageLoader />}>
             <HotelProvider>
               <RouterProvider router={router} />
             </HotelProvider>

@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { quotationService } from '../services/quotation.service'
-import type { Quotation, QuotationPayload, OrderStatus, GarmentTag } from '../../../types/quotation'
+import type { Quotation, QuotationPayload, OrderStatus } from '../../../types/quotation'
 
 export const quotationKeys = {
   all: ['quotations'] as const,
@@ -110,8 +110,17 @@ export function useCreateTags() {
       id: string
       body: { count?: number; per_item?: boolean; label?: string }
     }) => quotationService.createTags(id, body),
-    onSuccess: (data) => {
-      qc.setQueryData<GarmentTag[]>(quotationKeys.tags(String(data.quotation_id)), data.tags)
+    onSuccess: (data, variables) => {
+      // `quotationKeys.tags` is read by useQuotationTags as a TagsResponse
+      // ({ quotation_id, tags }). Writing only the array here would flip the
+      // cached entry's shape and crash every consumer of `data.tags`.
+      // Write the full response, and cover the case where the server echoes a
+      // different id than the one requested.
+      const written = String(data.quotation_id)
+      qc.setQueryData(quotationKeys.tags(written), data)
+      if (written !== variables.id) {
+        qc.setQueryData(quotationKeys.tags(variables.id), data)
+      }
       toast.success(
         data.tags.length === 1 ? 'Tag generated' : `${data.tags.length} tags generated`,
       )
