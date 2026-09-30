@@ -9,6 +9,7 @@ import {
 } from '@phosphor-icons/react'
 import { cn } from '../../../lib/utils'
 import { addDaysISO, TIME_ZONE, todayISO } from '../../../lib/time'
+import { useAuth } from '../../../context/AuthContext'
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card'
 import { Button } from '../../../components/ui/button'
 import { Skeleton } from '../../../components/ui/skeleton'
@@ -101,20 +102,37 @@ function eventLabel(type: string): string {
  * `Receive` and `Deliver` — the two that actually run the floor — are marked
  * with a badge instead of a fill.
  */
-const QUICK_ACTIONS = [
+const QUICK_ACTIONS: {
+  to: string
+  label: string
+  hint: string
+  icon: typeof ClipboardText
+  primary?: boolean
+  roles?: string[]
+}[] = [
   { to: '/gate-passes/new', label: 'Receive', hint: 'New gate pass', icon: ClipboardText, primary: true },
   { to: '/deliveries/new', label: 'Deliver', hint: 'Record delivery', icon: Truck, primary: true },
   { to: '/bills/new', label: 'Bill', hint: 'Create bill', icon: FileText },
   { to: '/returns/new', label: 'Return', hint: 'Record return', icon: ArrowCounterClockwise },
-  { to: '/management/expenses', label: 'Expense', hint: 'Record expense', icon: Receipt },
-  { to: '/management/attendance-log', label: 'Attendance', hint: 'Log staff', icon: CalendarBlank },
+  {
+    to: '/management/expenses', label: 'Expense', hint: 'Record expense', icon: Receipt,
+    roles: ['ADMIN', 'MANAGER'],
+  },
+  {
+    to: '/management/attendance-log', label: 'Attendance', hint: 'Log staff', icon: CalendarBlank,
+    roles: ['ADMIN', 'MANAGER'],
+  },
 ]
 
 function QuickActions() {
+  const { user } = useAuth()
+  const role = user?.role_id?.toUpperCase() ?? ''
+  const actions = QUICK_ACTIONS.filter((action) => !action.roles || action.roles.includes(role))
+
   return (
     <nav aria-label="Quick actions">
       <ul className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
-        {QUICK_ACTIONS.map((a) => (
+        {actions.map((a) => (
           <li key={a.to}>
             <Link
               to={a.to}

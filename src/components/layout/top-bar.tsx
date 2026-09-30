@@ -13,6 +13,7 @@ import type { GatePassPendingEntry, NotificationType } from '../../types/notific
 interface TopBarProps {
   title?: string
   sidebarCollapsed: boolean
+  mobileMenuOpen: boolean
   onMobileMenuToggle: () => void
   onOpenSearch?: () => void
 }
@@ -28,6 +29,7 @@ interface TopBarProps {
 export function TopBar({
   title,
   sidebarCollapsed,
+  mobileMenuOpen,
   onMobileMenuToggle,
   onOpenSearch,
 }: TopBarProps) {
@@ -108,7 +110,9 @@ export function TopBar({
             type="button"
             onClick={onMobileMenuToggle}
             className={cn(iconBtn, '-ml-1 lg:hidden')}
-            aria-label="Open navigation"
+            aria-label={mobileMenuOpen ? 'Close navigation' : 'Open navigation'}
+            aria-expanded={mobileMenuOpen}
+            aria-controls="mobile-navigation-drawer"
           >
             <List size={19} aria-hidden />
           </button>

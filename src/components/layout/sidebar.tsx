@@ -1,9 +1,9 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
 import {
   House, ChartBar, ClipboardText, Truck, UsersThree, CurrencyCircleDollar, FileText,
   FolderOpen, GearSix, Users, Database, CaretLeft, CaretRight, ChatCircleDots, Scan, Upload,
-  ListChecks, Receipt, UserCircle, Package, Wallet, Money, CalendarBlank, CalendarPlus,
+  ListChecks, Receipt, UserCircle, Package, Wallet, Money, CalendarBlank, CalendarPlus, X,
   Lightning, Brain, CloudArrowDown, FlowArrow, Package as PackageIcon, CaretDown, ChartLineUp,
 } from '@phosphor-icons/react'
 import { LogoOnDark } from '../brand/logo'
@@ -122,6 +122,60 @@ interface SidebarProps {
 
 export function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose }: SidebarProps) {
   const location = useLocation()
+  const mobileDrawerRef = useRef<HTMLElement>(null)
+  const closeMobileRef = useRef(onMobileClose)
+
+  useEffect(() => {
+    closeMobileRef.current = onMobileClose
+  }, [onMobileClose])
+
+  useEffect(() => {
+    if (!mobileOpen) return
+
+    const previouslyFocused = document.activeElement instanceof HTMLElement
+      ? document.activeElement
+      : null
+    const drawer = mobileDrawerRef.current
+    drawer?.focus()
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault()
+        closeMobileRef.current()
+        return
+      }
+      if (event.key !== 'Tab' || !drawer) return
+
+      const focusable = Array.from(
+        drawer.querySelectorAll<HTMLElement>(
+          'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])',
+        ),
+      ).filter((element) => element.getAttribute('aria-hidden') !== 'true')
+      if (focusable.length === 0) {
+        event.preventDefault()
+        return
+      }
+
+      const first = focusable[0]
+      const last = focusable[focusable.length - 1]
+      if (!drawer.contains(document.activeElement)) {
+        event.preventDefault()
+        ;(event.shiftKey ? last : first).focus()
+      } else if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault()
+        last.focus()
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault()
+        first.focus()
+      }
+    }
+
+    document.addEventListener('keydown', onKeyDown)
+    return () => {
+      document.removeEventListener('keydown', onKeyDown)
+      if (previouslyFocused?.isConnected) previouslyFocused.focus()
+    }
+  }, [mobileOpen])
 
   // Any navigation closes the mobile drawer.
   useEffect(() => {
@@ -152,13 +206,21 @@ export function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose }: Side
             aria-hidden
           />
           <aside
+            ref={mobileDrawerRef}
+            id="mobile-navigation-drawer"
             role="dialog"
             aria-modal="true"
             aria-label="Main navigation"
+            tabIndex={-1}
             className="nav-drawer sidebar-dark fixed inset-y-0 left-0 z-50 flex w-[268px] max-w-[85vw] flex-col lg:hidden"
             style={{ animation: 'slide-in-left 160ms cubic-bezier(0.16, 1, 0.3, 1)' }}
           >
-            <SidebarContent collapsed={false} onToggle={onToggle} isMobile />
+            <SidebarContent
+              collapsed={false}
+              onToggle={onToggle}
+              isMobile
+              onMobileClose={onMobileClose}
+            />
             {/* The keyframes follow the animation token (slide-up uses the same
                 curve); injected here because the drawer is the only consumer. */}
             <style>{`@keyframes slide-in-left{from{transform:translateX(-100%)}to{transform:translateX(0)}}`}</style>
@@ -173,9 +235,10 @@ interface SidebarContentProps {
   collapsed: boolean
   onToggle: () => void
   isMobile: boolean
+  onMobileClose?: () => void
 }
 
-function SidebarContent({ collapsed, onToggle, isMobile }: SidebarContentProps) {
+function SidebarContent({ collapsed, onToggle, isMobile, onMobileClose }: SidebarContentProps) {
   const { user } = useAuth()
   const { hasPermission } = usePermissions()
   const isAdmin = user?.role_id?.toUpperCase() === 'ADMIN'
@@ -216,6 +279,16 @@ function SidebarContent({ collapsed, onToggle, isMobile }: SidebarContentProps) 
         )}
       >
         <LogoOnDark collapsed={collapsed} />
+        {isMobile && (
+          <button
+            type="button"
+            onClick={onMobileClose}
+            aria-label="Close navigation"
+            className="ml-auto flex size-8 shrink-0 items-center justify-center rounded-[6px] text-[var(--sidebar-label)] transition-colors hover:bg-[var(--sidebar-hover-bg)] hover:text-[var(--sidebar-hover-text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
+          >
+            <X size={17} aria-hidden />
+          </button>
+        )}
       </div>
 
       {/* Nav */}

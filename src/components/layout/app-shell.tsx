@@ -150,6 +150,7 @@ export function AppShell() {
       <TopBar
         title={getPageTitle(location.pathname)}
         sidebarCollapsed={collapsed}
+        mobileMenuOpen={mobileOpen}
         onMobileMenuToggle={() => setMobileOpen((v) => !v)}
         onOpenSearch={() => setCmdOpen(true)}
       />
