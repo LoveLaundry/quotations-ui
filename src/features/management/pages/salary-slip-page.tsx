@@ -94,7 +94,9 @@ export default function SalarySlipPage() {
 
   const handlePrint = useReactToPrint({
     contentRef: slipRef,
-    documentTitle: generatedSlip ? `SalarySlip-${generatedSlip.slip_number}` : 'SalarySlip',
+    documentTitle: generatedSlip?.slip_number
+      ? `SalarySlip-${generatedSlip.slip_number}`
+      : 'SalarySlip',
   })
 
   const handleGenerate = () => {

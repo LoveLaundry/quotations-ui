@@ -140,7 +140,7 @@ export default function SalaryHistoryPage() {
 
   const handlePrint = useReactToPrint({
     contentRef: slipRef,
-    documentTitle: viewSlip ? `SalarySlip-${viewSlip.slip_number}` : 'SalarySlip',
+    documentTitle: viewSlip?.slip_number ? `SalarySlip-${viewSlip.slip_number}` : 'SalarySlip',
   })
 
   const [overrideEmp, setOverrideEmp] = useState<any>(null)

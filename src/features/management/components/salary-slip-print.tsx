@@ -212,7 +212,7 @@ export function SalarySlipPrint({ slip, lang = 'EN' }: SalarySlipProps) {
           <div className="doc-meta">
             <div className="doc-title">{t.title}</div>
             <div className="doc-period">{periodMonth}</div>
-            <div className="slip-number" style={{ marginTop: 3 }}>{slip.slip_number}</div>
+            <div className="slip-number" style={{ marginTop: 3 }}>{slip.slip_number || slip.id || ''}</div>
           </div>
         </div>
 
