@@ -22,6 +22,7 @@ const MONTHS = [
 export default function SalarySlipPage() {
   const qc = useQueryClient()
   const slipRef = useRef<HTMLDivElement>(null)
+  const summarySlipRef = useRef<HTMLDivElement>(null)
   const [searchParams] = useSearchParams()
   const paramEmp = searchParams.get('emp') || ''
   const paramYear = Number(searchParams.get('year')) || currentYear()
@@ -44,11 +45,22 @@ export default function SalarySlipPage() {
   const [notes, setNotes] = useState('')
   const [slipLang, setSlipLang] = useState<'EN' | 'SI'>('EN')
   const flow = useEnterFlow<HTMLDivElement>()
+  const [selectedSlipId, setSelectedSlipId] = useState('')
+  const [summarySlipLang, setSummarySlipLang] = useState<'EN' | 'SI'>('EN')
 
   const { data: employees = [] } = useQuery({
     queryKey: ['mgmt-employees'],
     queryFn: () => employeesApi.list('').then(r => r.data),
   })
+
+  const { data: slipsResp = { items: [], total: 0 } } = useQuery({
+    queryKey: ['salary-slips', 'picker', selectedEmp, new Date().getFullYear()],
+    queryFn: () => salaryApi.listSlips({ employee_id: selectedEmp || undefined, limit: 300 }).then(r => r.data),
+  })
+
+  const slips = slipsResp.items
+  const selectedSlip = slips.find((s: any) => String(s.id) === String(selectedSlipId)) || null
+  const rs = (n: number | string | null | undefined) => 'Rs. ' + Number(n || 0).toLocaleString('en-LK')
 
   useEffect(() => {
     const emp = searchParams.get('emp') || ''
@@ -99,6 +111,11 @@ export default function SalarySlipPage() {
     documentTitle: generatedSlip?.slip_number
       ? `SalarySlip-${generatedSlip.slip_number}`
       : 'SalarySlip',
+  })
+
+  const handleSummaryPrint = useReactToPrint({
+    contentRef: summarySlipRef,
+    documentTitle: selectedSlip ? `SalarySlip-${selectedSlip.slip_number}` : 'SalarySlip-Summary',
   })
 
   const handleGenerate = () => {
@@ -196,7 +213,7 @@ export default function SalarySlipPage() {
             <label className="text-sm font-medium text-gray-600 dark:text-gray-400">Employee</label>
             <select
               value={selectedEmp}
-              onChange={e => { setSelectedEmp(e.target.value); setCalculation(null); setShowSlip(false) }}
+              onChange={e => { setSelectedEmp(e.target.value); setCalculation(null); setShowSlip(false); setSelectedSlipId('') }}
               className="w-full min-w-[200px] mt-1 px-3 py-2 border rounded-lg text-sm"
             >
               <option value="">Select Employee</option>
@@ -297,6 +314,121 @@ export default function SalarySlipPage() {
             </button>
           </div>
         </FilterBar>
+      </div>
+
+      <div className="bg-white dark:bg-gray-800 rounded-xl border p-6 space-y-4">
+        <h2 className="text-lg font-semibold flex items-center gap-2">
+          <FileText size={20} /> Generated Slips Summary
+        </h2>
+
+        <div>
+          <label className="text-sm font-medium text-gray-600 dark:text-gray-400">Select a generated slip</label>
+          <select
+            value={selectedSlipId}
+            onChange={e => setSelectedSlipId(e.target.value)}
+            className="w-full mt-1 px-3 py-2 border rounded-lg text-sm"
+          >
+            <option value="">
+              {slips.length === 0
+                ? selectedEmp ? 'No slips generated for this employee yet' : 'No slips generated yet'
+                : 'Choose a slip to view its summary…'}
+            </option>
+            {slips
+              .filter((s: any) => s.status !== 'DELETED')
+              .sort((a: any, b: any) => String(b.period_start || '').localeCompare(String(a.period_start || '')))
+              .map((s: any) => (
+                <option key={s.id} value={s.id}>
+                  {s.slip_number} · {s.employee_name} · {s.period_start} → {s.period_end} · {s.status}
+                  {s.paid ? ' · PAID' : ''}
+                </option>
+              ))}
+          </select>
+        </div>
+
+        {selectedSlip && (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between flex-wrap gap-3">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-base font-bold">{selectedSlip.slip_number}</span>
+                <Badge variant={selectedSlip.status === 'PAID' ? 'success' : selectedSlip.status === 'CANCELLED' ? 'danger' : selectedSlip.status === 'FINALIZED' ? 'info' : 'warning'}>
+                  {selectedSlip.status}
+                </Badge>
+                {selectedSlip.paid && (
+                  <Badge variant="success">PAID{selectedSlip.paid_date ? ` · ${selectedSlip.paid_date}` : ''}</Badge>
+                )}
+              </div>
+              <div className="flex gap-2 items-center">
+                <div className="flex items-center gap-1 border rounded-lg p-1">
+                  <button
+                    onClick={() => setSummarySlipLang('EN')}
+                    className={`px-3 py-1.5 rounded-md text-sm font-medium ${summarySlipLang === 'EN' ? 'bg-red-600 text-white' : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700'}`}>
+                    English
+                  </button>
+                  <button
+                    onClick={() => setSummarySlipLang('SI')}
+                    className={`px-3 py-1.5 rounded-md text-sm font-medium ${summarySlipLang === 'SI' ? 'bg-red-600 text-white' : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700'}`}>
+                    සිංහල
+                  </button>
+                </div>
+                <button
+                  onClick={() => handleSummaryPrint()}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm flex items-center gap-2"
+                >
+                  <Printer size={16} /> Print
+                </button>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="bg-gray-50 dark:bg-gray-900 rounded-xl border p-5 space-y-3">
+                <h3 className="font-semibold text-lg">Period & Attendance</h3>
+                <div className="grid grid-cols-2 gap-3 text-sm">
+                  <div className="flex justify-between"><span className="text-gray-500">Employee</span><span className="font-medium">{selectedSlip.employee_name}</span></div>
+                  <div className="flex justify-between"><span className="text-gray-500">Salary Type</span><span className="font-medium">{selectedSlip.salary_type || '-'}</span></div>
+                  <div className="flex justify-between"><span className="text-gray-500">Method</span><span className="font-medium">{calMethodLabel(selectedSlip.calculation_method)}</span></div>
+                  <div className="flex justify-between"><span className="text-gray-500">Period</span><span className="font-medium">{selectedSlip.period_start} → {selectedSlip.period_end}</span></div>
+                  <div className="flex justify-between"><span className="text-gray-500">Created</span><span className="font-medium">{(selectedSlip.created_at || '').slice(0, 10) || '-'}</span></div>
+                  {selectedSlip.attendance_required !== false && (
+                    <>
+                      <div className="flex justify-between"><span className="text-gray-500">Worked Days</span><span className="font-medium text-green-600">{selectedSlip.worked_days ?? '-'}</span></div>
+                      <div className="flex justify-between"><span className="text-gray-500">Leave Days</span><span className="font-medium text-blue-600">{selectedSlip.leave_days ?? '-'}</span></div>
+                      <div className="flex justify-between"><span className="text-gray-500">Absent Days</span><span className="font-medium text-red-600">{selectedSlip.absent_days ?? '-'}</span></div>
+                      <div className="flex justify-between"><span className="text-gray-500">Calendar / Working Days</span><span className="font-medium">{selectedSlip.calendar_days ?? '-'} / {selectedSlip.working_days ?? '-'}</span></div>
+                    </>
+                  )}
+                  {selectedSlip.epf_employee > 0 && (
+                    <div className="flex justify-between"><span className="text-gray-500">EPF Base</span><span className="font-medium">{selectedSlip.epf_base || '-'}</span></div>
+                  )}
+                </div>
+              </div>
+
+              <div className="bg-gray-50 dark:bg-gray-900 rounded-xl border p-5 space-y-3">
+                <h3 className="font-semibold text-lg">Earnings & Deductions Summary</h3>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between"><span>Base Salary (Period)</span><span>{rs(selectedSlip.base_salary_for_period)}</span></div>
+                  {selectedSlip.overtime_pay > 0 && <div className="flex justify-between"><span>Overtime ({selectedSlip.overtime_hours} hrs)</span><span>{rs(selectedSlip.overtime_pay)}</span></div>}
+                  {selectedSlip.extra_work_total > 0 && <div className="flex justify-between"><span>Extra Work</span><span>{rs(selectedSlip.extra_work_total)}</span></div>}
+                  {selectedSlip.bonus > 0 && <div className="flex justify-between"><span>Bonus</span><span>{rs(selectedSlip.bonus)}</span></div>}
+                  {selectedSlip.other_payments > 0 && <div className="flex justify-between"><span>Other Payments</span><span>{rs(selectedSlip.other_payments)}</span></div>}
+                  {selectedSlip.allowance_for_period > 0 && <div className="flex justify-between"><span>Allowance</span><span>{rs(selectedSlip.allowance_for_period)}</span></div>}
+                  <div className="border-t pt-2 flex justify-between"><span className="font-medium">Total Earnings</span><span className="font-bold">{rs(selectedSlip.total_earnings)}</span></div>
+                  {selectedSlip.epf_employee > 0 && <div className="flex justify-between"><span>EPF (Employee)</span><span className="text-red-600">- {rs(selectedSlip.epf_employee)}</span></div>}
+                  {selectedSlip.advance_deductions > 0 && <div className="flex justify-between"><span>Advance Deductions</span><span className="text-red-600">- {rs(selectedSlip.advance_deductions)}</span></div>}
+                  {selectedSlip.loan_deduction > 0 && <div className="flex justify-between"><span>Loan Deduction</span><span className="text-red-600">- {rs(selectedSlip.loan_deduction)}</span></div>}
+                  {selectedSlip.other_deductions > 0 && <div className="flex justify-between"><span>Other Deductions</span><span className="text-red-600">- {rs(selectedSlip.other_deductions)}</span></div>}
+                  <div className="border-t pt-2 space-y-1.5">
+                    <div className="flex justify-between"><span className="font-medium">Total Deductions</span><span className="font-bold text-red-600">- {rs(selectedSlip.total_deductions)}</span></div>
+                    <div className="flex justify-between text-lg"><span className="font-bold">Net Salary</span><span className="font-bold text-green-600">{rs(selectedSlip.net_salary)}</span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div ref={summarySlipRef} className="hidden">
+              <SalarySlipPrint slip={selectedSlip} lang={summarySlipLang} />
+            </div>
+          </div>
+        )}
       </div>
 
       {calculation && (
