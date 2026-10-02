@@ -77,7 +77,11 @@ export default function SalaryHistoryPage() {
       year: yearFilter,
       limit,
       offset,
-    }).then(r => r.data),
+    }).then(r => {
+      const d = r.data
+      const items = Array.isArray(d) ? d : d?.items ?? []
+      return { items, total: Array.isArray(d) ? d.length : d?.total ?? items.length ?? 0 }
+    }),
   })
 
   const slips = slipsData.items

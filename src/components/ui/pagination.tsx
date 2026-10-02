@@ -21,13 +21,14 @@ interface PaginationProps {
  * five-button cluster plus a count does not fit a 320px screen.
  */
 export function Pagination({ total, limit, offset, onChange, className, itemLabel }: PaginationProps) {
-  if (total <= 0) return null
+  const safeTotal = Number(total) || 0
+  if (safeTotal <= 0) return null
 
   const limitSafe = Math.max(1, limit)
   const currentPage = Math.floor(offset / limitSafe) + 1
-  const totalPages = Math.max(1, Math.ceil(total / limitSafe))
+  const totalPages = Math.max(1, Math.ceil(safeTotal / limitSafe))
   const start = offset + 1
-  const end = Math.min(offset + limitSafe, total)
+  const end = Math.min(offset + limitSafe, safeTotal)
 
   const pages = pageWindow(currentPage, totalPages)
 
@@ -36,7 +37,7 @@ export function Pagination({ total, limit, offset, onChange, className, itemLabe
       <span className="tabular-nums">
         {start.toLocaleString()}–{end.toLocaleString()}
       </span>{' '}
-      of <span className="font-medium text-[var(--text-secondary)] tabular-nums">{total.toLocaleString()}</span>
+      of <span className="font-medium text-[var(--text-secondary)] tabular-nums">{safeTotal.toLocaleString()}</span>
       {itemLabel ? ` ${itemLabel}` : ''}
     </p>
   )

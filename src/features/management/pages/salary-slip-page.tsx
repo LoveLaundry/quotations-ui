@@ -55,7 +55,11 @@ export default function SalarySlipPage() {
 
   const { data: slipsResp = { items: [], total: 0 } } = useQuery({
     queryKey: ['salary-slips', 'picker', selectedEmp, new Date().getFullYear()],
-    queryFn: () => salaryApi.listSlips({ employee_id: selectedEmp || undefined, limit: 300 }).then(r => r.data),
+    queryFn: () => salaryApi.listSlips({ employee_id: selectedEmp || undefined, limit: 300 }).then(r => {
+      const d = r.data
+      const items = Array.isArray(d) ? d : d?.items ?? []
+      return { items, total: Array.isArray(d) ? d.length : d?.total ?? items.length ?? 0 }
+    }),
   })
 
   const slips = slipsResp.items
