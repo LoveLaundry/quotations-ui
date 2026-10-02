@@ -87,7 +87,11 @@ class LoveAiClient {
   }
 
   health() {
-    return this.request(() => this.http.get('/api/ai/health'))
+    return this.request(async () => {
+      const path = '/api/ai/health'
+      const headers = await this.signHeaders('GET', path, '')
+      return this.http.get(path, { headers })
+    })
   }
 
   dashboard(months = 12) {

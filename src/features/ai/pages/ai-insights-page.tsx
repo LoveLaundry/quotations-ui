@@ -78,7 +78,7 @@ export default function AiInsightsPage() {
 
   const insights = useQuery({
     queryKey: ['ai-insights', months],
-    queryFn: () => loveAi.dashboard(months).then(r => r.data),
+    queryFn: () => loveAi.dashboard(months),
   })
 
   const revenue = useQuery({ queryKey: ['ai-revenue', months], queryFn: () => loveAi.revenue(months).then(r => r.data) })
@@ -88,9 +88,9 @@ export default function AiInsightsPage() {
 
   const loading = insights.isLoading || revenue.isLoading
   const error = insights.error || revenue.error
-  const d = insights.data || {}
+  const d = insights.data?.data || {}
 
-  const verified = (insights.data as any)?.verified
+  const verified = insights.data?.verified
 
   return (
     <div className="space-y-6">
