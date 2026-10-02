@@ -101,25 +101,25 @@ export default function SalaryHistoryPage() {
   }, [slips])
 
   const selectedSlips = slips.filter((s: any) => selectedIds.includes(s.id))
-  const selTotGross = selectedSlips.reduce((a: number, s: any) => a + (s.total_earnings || 0), 0)
-  const selTotDed = selectedSlips.reduce((a: number, s: any) => a + (s.total_deductions || 0), 0)
-  const selTotNet = selectedSlips.reduce((a: number, s: any) => a + (s.net_salary || 0), 0)
-  const selTotPaid = selectedSlips.reduce((a: number, s: any) => a + (s.paid ? (s.amount_paid || 0) : 0), 0)
+  const selTotGross = selectedSlips.reduce((a: number, s: any) => a + (Number(s.total_earnings) || 0), 0)
+  const selTotDed = selectedSlips.reduce((a: number, s: any) => a + (Number(s.total_deductions) || 0), 0)
+  const selTotNet = selectedSlips.reduce((a: number, s: any) => a + (Number(s.net_salary) || 0), 0)
+  const selTotPaid = selectedSlips.reduce((a: number, s: any) => a + (s.paid ? (Number(s.amount_paid) || 0) : 0), 0)
   const selStatusCounts = selectedSlips.reduce((acc: Record<string, number>, s: any) => {
     acc[s.status] = (acc[s.status] || 0) + 1
     return acc
   }, {} as Record<string, number>)
   const selByEmp = [...selectedSlips.reduce((m: Map<string, any>, s: any) => {
     const k = s.employee_id || s.employee_name || 'unknown'
-    const cur = m.get(k) || { name: s.employee_name, count: 0, earnings: 0, deductions: 0, net: 0, paid: 0 }
+    const cur = m.get(k) || { name: s.employee_name || 'Unknown employee', count: 0, earnings: 0, deductions: 0, net: 0, paid: 0 }
     cur.count += 1
-    cur.earnings += s.total_earnings || 0
-    cur.deductions += s.total_deductions || 0
-    cur.net += s.net_salary || 0
-    cur.paid += s.paid ? (s.amount_paid || 0) : 0
+    cur.earnings += Number(s.total_earnings) || 0
+    cur.deductions += Number(s.total_deductions) || 0
+    cur.net += Number(s.net_salary) || 0
+    cur.paid += s.paid ? (Number(s.amount_paid) || 0) : 0
     m.set(k, cur)
     return m
-  }, new Map())].sort((a, b) => b.net - a.net)
+  }, new Map()).values()].sort((a, b) => b.net - a.net)
 
   const finalizeMut = useMutation({
     mutationFn: (slipId: string) => salaryApi.finalizeSlip(slipId),
