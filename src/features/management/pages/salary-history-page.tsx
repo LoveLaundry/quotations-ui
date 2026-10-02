@@ -281,19 +281,19 @@ export default function SalaryHistoryPage() {
           <div className="mt-4 border-t pt-4 space-y-4">
             <div className="grid grid-cols-2 md:grid-cols-5 gap-3 text-sm">
               <div><div className="text-2xl font-bold">{preview.count}</div><div className="text-xs text-gray-400">Employees</div></div>
-              <div><div className="text-2xl font-bold text-red-600">LKR {(preview.total_gross || 0).toLocaleString()}</div><div className="text-xs text-gray-400">Gross Total</div></div>
-              <div><div className="text-2xl font-bold text-red-600">LKR {(preview.total_deductions || 0).toLocaleString()}</div><div className="text-xs text-gray-400">Deductions</div></div>
-              <div><div className="text-2xl font-bold text-green-600">LKR {(preview.total_net || 0).toLocaleString()}</div><div className="text-xs text-gray-400">Net Payroll</div></div>
+              <div><div className="text-2xl font-bold text-red-600">LKR {formatNumber(preview.total_gross)}</div><div className="text-xs text-gray-400">Gross Total</div></div>
+              <div><div className="text-2xl font-bold text-red-600">LKR {formatNumber(preview.total_deductions)}</div><div className="text-xs text-gray-400">Deductions</div></div>
+              <div><div className="text-2xl font-bold text-green-600">LKR {formatNumber(preview.total_net)}</div><div className="text-xs text-gray-400">Net Payroll</div></div>
               <div className="text-xs text-gray-400">Missing slips will be created on Run Payroll. Existing slips are skipped.</div>
             </div>
 
             <div className="rounded-xl border border-indigo-200 bg-indigo-50/60 dark:border-indigo-800/60 dark:bg-indigo-900/10 p-3">
               <div className="text-xs font-semibold text-indigo-600 dark:text-indigo-300 mb-2">Projection — if every employee attends all remaining working days</div>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-                <div><div className="text-xl font-bold text-indigo-700 dark:text-indigo-200">LKR {(preview.projected_total_gross || 0).toLocaleString()}</div><div className="text-xs text-gray-400">Gross Total</div></div>
-                <div><div className="text-xl font-bold text-indigo-700 dark:text-indigo-200">LKR {(preview.projected_total_deductions || 0).toLocaleString()}</div><div className="text-xs text-gray-400">Deductions</div></div>
-                <div><div className="text-xl font-bold text-indigo-700 dark:text-indigo-200">LKR {(preview.projected_total_net || 0).toLocaleString()}</div><div className="text-xs text-gray-400">Net Payroll</div></div>
-                <div><div className="text-xl font-bold text-green-700 dark:text-green-300">+ LKR {(preview.projected_total_net_variance || 0).toLocaleString()}</div><div className="text-xs text-gray-400">Additional if all attend</div></div>
+                <div><div className="text-xl font-bold text-indigo-700 dark:text-indigo-200">LKR {formatNumber(preview.projected_total_gross)}</div><div className="text-xs text-gray-400">Gross Total</div></div>
+                <div><div className="text-xl font-bold text-indigo-700 dark:text-indigo-200">LKR {formatNumber(preview.projected_total_deductions)}</div><div className="text-xs text-gray-400">Deductions</div></div>
+                <div><div className="text-xl font-bold text-indigo-700 dark:text-indigo-200">LKR {formatNumber(preview.projected_total_net)}</div><div className="text-xs text-gray-400">Net Payroll</div></div>
+                <div><div className="text-xl font-bold text-green-700 dark:text-green-300">+ LKR {formatNumber(preview.projected_total_net_variance)}</div><div className="text-xs text-gray-400">Additional if all attend</div></div>
               </div>
             </div>
 
@@ -320,8 +320,8 @@ export default function SalaryHistoryPage() {
                       <td className="px-3 py-2">{row.salary_type || 'MONTHLY'}</td>
                       <td className="px-3 py-2 text-xs">{CALC_METHOD_LABELS[row.calculation_method] || row.calculation_method || '—'}</td>
                       <td className="px-3 py-2">{row.attendance_required !== false ? 'Required' : <span className="text-amber-600 font-medium">Not required (fixed)</span>}</td>
-                      <td className="px-3 py-2 text-right">LKR {(row.base_salary_for_period || 0).toLocaleString()}</td>
-                      <td className="px-3 py-2 text-right font-semibold">LKR {(row.net_salary || 0).toLocaleString()}</td>
+                      <td className="px-3 py-2 text-right">LKR {formatNumber(row.base_salary_for_period)}</td>
+                      <td className="px-3 py-2 text-right font-semibold">LKR {formatNumber(row.net_salary)}</td>
                       <td className="px-3 py-2 text-right" title={`Projection if all remaining working days are attended (base + allowance + OT so far − EPF)`}>
                         {(() => {
                           const f = projectRow(row)
@@ -421,20 +421,20 @@ export default function SalaryHistoryPage() {
               <div className="text-xs text-gray-400">Slips Selected</div>
             </div>
             <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 p-3">
-              <div className="text-xl font-bold text-red-600">LKR {selTotGross.toLocaleString()}</div>
+              <div className="text-xl font-bold text-red-600">LKR {formatNumber(selTotGross)}</div>
               <div className="text-xs text-gray-400">Total Earnings (Gross)</div>
             </div>
             <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 p-3">
-              <div className="text-xl font-bold text-red-600">- LKR {selTotDed.toLocaleString()}</div>
+              <div className="text-xl font-bold text-red-600">- LKR {formatNumber(selTotDed)}</div>
               <div className="text-xs text-gray-400">Total Deductions</div>
             </div>
             <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 p-3">
-              <div className="text-xl font-bold text-green-600">LKR {selTotNet.toLocaleString()}</div>
+              <div className="text-xl font-bold text-green-600">LKR {formatNumber(selTotNet)}</div>
               <div className="text-xs text-gray-400">Total Net Salary</div>
             </div>
             <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 p-3">
-              <div className="text-xl font-bold text-sky-600">LKR {selTotPaid.toLocaleString()}</div>
-              <div className="text-xs text-gray-400">Total Paid{selTotNet > selTotPaid ? ` · ${(selTotNet - selTotPaid).toLocaleString()} outstanding` : ''}</div>
+              <div className="text-xl font-bold text-sky-600">LKR {formatNumber(selTotPaid)}</div>
+              <div className="text-xs text-gray-400">Total Paid{selTotNet > selTotPaid ? ` · ${formatNumber(selTotNet - selTotPaid)} outstanding` : ''}</div>
             </div>
           </div>
 
@@ -465,19 +465,19 @@ export default function SalaryHistoryPage() {
                   <tr key={row.name} className="border-b hover:bg-gray-50 dark:hover:bg-gray-700/30">
                     <td className="px-3 py-2 font-medium">{row.name}</td>
                     <td className="px-3 py-2 text-right">{row.count}</td>
-                    <td className="px-3 py-2 text-right">LKR {row.earnings.toLocaleString()}</td>
-                    <td className="px-3 py-2 text-right text-red-600">LKR {row.deductions.toLocaleString()}</td>
-                    <td className="px-3 py-2 text-right font-semibold">LKR {row.net.toLocaleString()}</td>
-                    <td className="px-3 py-2 text-right text-sky-600">LKR {row.paid.toLocaleString()}</td>
+                    <td className="px-3 py-2 text-right">LKR {formatNumber(row.earnings)}</td>
+                    <td className="px-3 py-2 text-right text-red-600">LKR {formatNumber(row.deductions)}</td>
+                    <td className="px-3 py-2 text-right font-semibold">LKR {formatNumber(row.net)}</td>
+                    <td className="px-3 py-2 text-right text-sky-600">LKR {formatNumber(row.paid)}</td>
                   </tr>
                 ))}
                 <tr className="bg-gray-50 dark:bg-gray-800">
                   <td className="px-3 py-2 font-bold">Totals</td>
                   <td className="px-3 py-2 text-right font-bold">{selectedSlips.length}</td>
-                  <td className="px-3 py-2 text-right font-bold">LKR {selTotGross.toLocaleString()}</td>
-                  <td className="px-3 py-2 text-right font-bold text-red-600">LKR {selTotDed.toLocaleString()}</td>
-                  <td className="px-3 py-2 text-right font-bold text-green-600">LKR {selTotNet.toLocaleString()}</td>
-                  <td className="px-3 py-2 text-right font-bold text-sky-600">LKR {selTotPaid.toLocaleString()}</td>
+                  <td className="px-3 py-2 text-right font-bold">LKR {formatNumber(selTotGross)}</td>
+                  <td className="px-3 py-2 text-right font-bold text-red-600">LKR {formatNumber(selTotDed)}</td>
+                  <td className="px-3 py-2 text-right font-bold text-green-600">LKR {formatNumber(selTotNet)}</td>
+                  <td className="px-3 py-2 text-right font-bold text-sky-600">LKR {formatNumber(selTotPaid)}</td>
                 </tr>
               </tbody>
             </table>
@@ -541,9 +541,9 @@ export default function SalaryHistoryPage() {
                       {slip.attendance_required === false && <span className="ml-1 text-amber-600 font-medium">· fixed</span>}
                     </td>
                     <td className="px-4 py-3">{slip.period_start}</td>
-                    <td className="px-4 py-3 text-right">LKR {(slip.total_earnings || 0).toLocaleString()}</td>
-                    <td className="px-4 py-3 text-right text-red-600">LKR {(slip.total_deductions || 0).toLocaleString()}</td>
-                    <td className="px-4 py-3 text-right font-semibold">LKR {(slip.net_salary || 0).toLocaleString()}</td>
+                    <td className="px-4 py-3 text-right">LKR {formatNumber(slip.total_earnings)}</td>
+                    <td className="px-4 py-3 text-right text-red-600">LKR {formatNumber(slip.total_deductions)}</td>
+                    <td className="px-4 py-3 text-right font-semibold">LKR {formatNumber(slip.net_salary)}</td>
                     <td className="px-4 py-3 text-center">
                       <div className="flex items-center justify-center gap-1">
                         <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${STATUS_COLORS[slip.status] || ''}`}>
@@ -551,7 +551,7 @@ export default function SalaryHistoryPage() {
                         </span>
                         {slip.paid && (
                           <span className="inline-block px-2 py-0.5 rounded text-xs font-medium bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300" title={`Paid ${slip.paid_date} — LKR ${slip.amount_paid}`}>
-                            Paid LKR {(slip.amount_paid || 0).toLocaleString()}
+                            Paid LKR {formatNumber(slip.amount_paid)}
                           </span>
                         )}
                       </div>
