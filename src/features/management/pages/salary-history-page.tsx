@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { employeesApi, salaryApi, salaryPackagesApi, holidaysApi } from '../api/management-api'
 import { buildSalaryForecast, buildRemainingForecast } from '../utils/salary-forecast'
 import { toast } from 'sonner'
-import { Eye, Printer, Trash2, XCircle, CheckCircle, Wallet, PlayCircle, Settings2 } from 'lucide-react'
+import { Eye, Printer, Trash2, XCircle, CheckCircle, Wallet, PlayCircle, Settings2, ListChecks, X } from 'lucide-react'
 import { useReactToPrint } from 'react-to-print'
 import { SalarySlipPrint } from '../components/salary-slip-print'
 import { TableEmptyRow } from '../../../components/ui/empty-state'
@@ -42,6 +42,7 @@ export default function SalaryHistoryPage() {
   const [statusFilter, setStatusFilter] = useState('')
   const [yearFilter, setYearFilter] = useState(currentYear())
   const [viewSlip, setViewSlip] = useState<any>(null)
+  const [viewMode, setViewMode] = useState<'SUMMARY' | 'FULL'>('SUMMARY')
   const [slipLang, setSlipLang] = useState<'EN' | 'SI'>('EN')
   const [payYear, setPayYear] = useState(currentYear())
   const [payMonth, setPayMonth] = useState(currentMonth())
@@ -50,6 +51,7 @@ export default function SalaryHistoryPage() {
   const [payrollLoading, setPayrollLoading] = useState(false)
   const [tab, setTab] = useState<'ACTIVE' | 'DELETED'>('ACTIVE')
   const [offset, setOffset] = useState(0)
+  const [selectedIds, setSelectedIds] = useState<string[]>([])
   const limit = PAGE_SIZE
 
   useEffect(() => {
@@ -79,6 +81,41 @@ export default function SalaryHistoryPage() {
   })
 
   const slips = slipsData.items
+
+  const toggleSelect = (id: string) =>
+    setSelectedIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id])
+
+  const allPageSelected = slips.length > 0 && slips.every((s: any) => selectedIds.includes(s.id))
+
+  useEffect(() => {
+    setSelectedIds(prev => {
+      if (prev.length === 0) return prev
+      const ids = new Set(slips.map((s: any) => s.id))
+      const next = prev.filter(id => ids.has(id))
+      return next.length === prev.length ? prev : next
+    })
+  }, [slips])
+
+  const selectedSlips = slips.filter((s: any) => selectedIds.includes(s.id))
+  const selTotGross = selectedSlips.reduce((a: number, s: any) => a + (s.total_earnings || 0), 0)
+  const selTotDed = selectedSlips.reduce((a: number, s: any) => a + (s.total_deductions || 0), 0)
+  const selTotNet = selectedSlips.reduce((a: number, s: any) => a + (s.net_salary || 0), 0)
+  const selTotPaid = selectedSlips.reduce((a: number, s: any) => a + (s.paid ? (s.amount_paid || 0) : 0), 0)
+  const selStatusCounts = selectedSlips.reduce((acc: Record<string, number>, s: any) => {
+    acc[s.status] = (acc[s.status] || 0) + 1
+    return acc
+  }, {} as Record<string, number>)
+  const selByEmp = [...selectedSlips.reduce((m: Map<string, any>, s: any) => {
+    const k = s.employee_id || s.employee_name || 'unknown'
+    const cur = m.get(k) || { name: s.employee_name, count: 0, earnings: 0, deductions: 0, net: 0, paid: 0 }
+    cur.count += 1
+    cur.earnings += s.total_earnings || 0
+    cur.deductions += s.total_deductions || 0
+    cur.net += s.net_salary || 0
+    cur.paid += s.paid ? (s.amount_paid || 0) : 0
+    m.set(k, cur)
+    return m
+  }, new Map())].sort((a, b) => b.net - a.net)
 
   const finalizeMut = useMutation({
     mutationFn: (slipId: string) => salaryApi.finalizeSlip(slipId),
@@ -143,6 +180,8 @@ export default function SalaryHistoryPage() {
     contentRef: slipRef,
     documentTitle: viewSlip?.slip_number ? `SalarySlip-${viewSlip.slip_number}` : 'SalarySlip',
   })
+
+  const lkr = (n: number | string | null | undefined) => 'LKR ' + Number(n || 0).toLocaleString('en-LK')
 
   const [overrideEmp, setOverrideEmp] = useState<any>(null)
   const [overrideMonth, setOverrideMonth] = useState('')
@@ -360,11 +399,104 @@ export default function SalaryHistoryPage() {
         </div>
       </div>
 
+      {selectedSlips.length > 0 && (
+        <div className="bg-white dark:bg-gray-800 rounded-xl border p-5 space-y-4">
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <h2 className="text-lg font-semibold flex items-center gap-2">
+              <ListChecks size={20} /> Selected Slips Summary — {selectedSlips.length} slip{selectedSlips.length !== 1 ? 's' : ''}
+            </h2>
+            <button onClick={() => setSelectedIds([])} className="text-sm text-gray-500 hover:text-red-600 flex items-center gap-1">
+              <X size={14} /> Clear selection
+            </button>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-3 text-sm">
+            <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 p-3">
+              <div className="text-xl font-bold">{selectedSlips.length}</div>
+              <div className="text-xs text-gray-400">Slips Selected</div>
+            </div>
+            <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 p-3">
+              <div className="text-xl font-bold text-red-600">LKR {selTotGross.toLocaleString()}</div>
+              <div className="text-xs text-gray-400">Total Earnings (Gross)</div>
+            </div>
+            <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 p-3">
+              <div className="text-xl font-bold text-red-600">- LKR {selTotDed.toLocaleString()}</div>
+              <div className="text-xs text-gray-400">Total Deductions</div>
+            </div>
+            <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 p-3">
+              <div className="text-xl font-bold text-green-600">LKR {selTotNet.toLocaleString()}</div>
+              <div className="text-xs text-gray-400">Total Net Salary</div>
+            </div>
+            <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 p-3">
+              <div className="text-xl font-bold text-sky-600">LKR {selTotPaid.toLocaleString()}</div>
+              <div className="text-xs text-gray-400">Total Paid{selTotNet > selTotPaid ? ` · ${(selTotNet - selTotPaid).toLocaleString()} outstanding` : ''}</div>
+            </div>
+          </div>
+
+          {Object.keys(selStatusCounts).length > 0 && (
+            <div className="flex items-center gap-2 flex-wrap">
+              {(Object.entries(selStatusCounts) as [string, number][]).map(([st, c]) => (
+                <span key={st} className={`inline-block px-2.5 py-0.5 rounded text-xs font-medium ${STATUS_COLORS[st] || ''}`}>
+                  {st} · {c}
+                </span>
+              ))}
+            </div>
+          )}
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b bg-gray-50 dark:bg-gray-700/50 text-left">
+                  <th className="px-3 py-2 font-medium">Employee</th>
+                  <th className="px-3 py-2 font-medium text-right">Slips</th>
+                  <th className="px-3 py-2 font-medium text-right">Earnings</th>
+                  <th className="px-3 py-2 font-medium text-right">Deductions</th>
+                  <th className="px-3 py-2 font-medium text-right">Net</th>
+                  <th className="px-3 py-2 font-medium text-right">Paid</th>
+                </tr>
+              </thead>
+              <tbody>
+                {selByEmp.map((row: any) => (
+                  <tr key={row.name} className="border-b hover:bg-gray-50 dark:hover:bg-gray-700/30">
+                    <td className="px-3 py-2 font-medium">{row.name}</td>
+                    <td className="px-3 py-2 text-right">{row.count}</td>
+                    <td className="px-3 py-2 text-right">LKR {row.earnings.toLocaleString()}</td>
+                    <td className="px-3 py-2 text-right text-red-600">LKR {row.deductions.toLocaleString()}</td>
+                    <td className="px-3 py-2 text-right font-semibold">LKR {row.net.toLocaleString()}</td>
+                    <td className="px-3 py-2 text-right text-sky-600">LKR {row.paid.toLocaleString()}</td>
+                  </tr>
+                ))}
+                <tr className="bg-gray-50 dark:bg-gray-800">
+                  <td className="px-3 py-2 font-bold">Totals</td>
+                  <td className="px-3 py-2 text-right font-bold">{selectedSlips.length}</td>
+                  <td className="px-3 py-2 text-right font-bold">LKR {selTotGross.toLocaleString()}</td>
+                  <td className="px-3 py-2 text-right font-bold text-red-600">LKR {selTotDed.toLocaleString()}</td>
+                  <td className="px-3 py-2 text-right font-bold text-green-600">LKR {selTotNet.toLocaleString()}</td>
+                  <td className="px-3 py-2 text-right font-bold text-sky-600">LKR {selTotPaid.toLocaleString()}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
       <div className="bg-white dark:bg-gray-800 rounded-xl border overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b bg-gray-50 dark:bg-gray-700/50">
+                <th className="px-4 py-3 w-8">
+                  <input
+                    type="checkbox"
+                    className="rounded cursor-pointer"
+                    checked={allPageSelected}
+                    title="Select all slips on this page"
+                    onChange={() => {
+                      if (allPageSelected) setSelectedIds(prev => prev.filter(id => !slips.some((s: any) => s.id === id)))
+                      else setSelectedIds(prev => [...new Set([...prev, ...slips.map((s: any) => s.id)])])
+                    }}
+                  />
+                </th>
                 <th className="text-left px-4 py-3 font-medium">Slip #</th>
                 <th className="text-left px-4 py-3 font-medium">Employee</th>
                 <th className="text-left px-4 py-3 font-medium">Arrangement</th>
@@ -378,16 +510,25 @@ export default function SalaryHistoryPage() {
             </thead>
             <tbody>
               {isLoading ? (
-                <tr><td colSpan={9} className="text-center py-8"><LoadingSpinner size="sm" /></td></tr>
+                <tr><td colSpan={10} className="text-center py-8"><LoadingSpinner size="sm" /></td></tr>
               ) : slipsData.items.length === 0 ? (
                 <TableEmptyRow
-                  colSpan={9}
+                  colSpan={10}
                   title={tab === 'DELETED' ? 'No deleted salary slips' : 'No salary slips found'}
                   description={tab === 'DELETED' ? 'Slips you delete will be listed here.' : 'Generated salary slips will appear here.'}
                 />
               ) : (
                 slips.map((slip: any) => (
-                  <tr key={slip.id} className="border-b hover:bg-gray-50 dark:hover:bg-gray-700/30">
+                  <tr key={slip.id} onClick={() => { setViewSlip(slip); setViewMode('SUMMARY') }}
+                    className="border-b hover:bg-gray-50 dark:hover:bg-gray-700/30 cursor-pointer" title="Click to view summary">
+                    <td className="px-4 py-3 w-8" onClick={e => e.stopPropagation()}>
+                      <input
+                        type="checkbox"
+                        className="rounded cursor-pointer"
+                        checked={selectedIds.includes(slip.id)}
+                        onChange={() => toggleSelect(slip.id)}
+                      />
+                    </td>
                     <td className="px-4 py-3 font-mono text-xs">{slip.slip_number}</td>
                     <td className="px-4 py-3">{slip.employee_name}</td>
                     <td className="px-4 py-3 text-xs text-gray-600 dark:text-gray-400">
@@ -410,9 +551,9 @@ export default function SalaryHistoryPage() {
                         )}
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-center">
+                    <td className="px-4 py-3 text-center" onClick={e => e.stopPropagation()}>
                       <div className="flex items-center justify-center gap-1">
-                        <button onClick={() => setViewSlip(slip)} className="p-1.5 hover:bg-gray-100 rounded" title="View">
+                        <button onClick={() => { setViewSlip(slip); setViewMode('SUMMARY') }} className="p-1.5 hover:bg-gray-100 rounded" title="View summary">
                           <Eye size={14} />
                         </button>
                         {slip.status === 'DRAFT' && (
@@ -546,21 +687,35 @@ export default function SalaryHistoryPage() {
       {viewSlip && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="bg-white dark:bg-gray-800 rounded-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-            <div className="sticky top-0 bg-white dark:bg-gray-800 border-b px-6 py-3 flex items-center justify-between z-10">
+            <div className="sticky top-0 bg-white dark:bg-gray-800 border-b px-6 py-3 flex items-center justify-between z-10 flex-wrap gap-2">
               <h3 className="font-semibold">{viewSlip.slip_number} — {viewSlip.employee_name}</h3>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <div className="flex items-center gap-1 border rounded-lg p-1">
                   <button
-                    onClick={() => setSlipLang('EN')}
-                    className={`px-2.5 py-1 rounded-md text-xs font-medium ${slipLang === 'EN' ? 'bg-red-600 text-white' : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700'}`}>
-                    English
+                    onClick={() => setViewMode('SUMMARY')}
+                    className={`px-2.5 py-1 rounded-md text-xs font-medium ${viewMode === 'SUMMARY' ? 'bg-red-600 text-white' : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700'}`}>
+                    Summary
                   </button>
                   <button
-                    onClick={() => setSlipLang('SI')}
-                    className={`px-2.5 py-1 rounded-md text-xs font-medium ${slipLang === 'SI' ? 'bg-red-600 text-white' : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700'}`}>
-                    සිංහල
+                    onClick={() => setViewMode('FULL')}
+                    className={`px-2.5 py-1 rounded-md text-xs font-medium ${viewMode === 'FULL' ? 'bg-red-600 text-white' : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700'}`}>
+                    Full Slip
                   </button>
                 </div>
+                {viewMode === 'FULL' && (
+                  <div className="flex items-center gap-1 border rounded-lg p-1">
+                    <button
+                      onClick={() => setSlipLang('EN')}
+                      className={`px-2.5 py-1 rounded-md text-xs font-medium ${slipLang === 'EN' ? 'bg-red-600 text-white' : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700'}`}>
+                      English
+                    </button>
+                    <button
+                      onClick={() => setSlipLang('SI')}
+                      className={`px-2.5 py-1 rounded-md text-xs font-medium ${slipLang === 'SI' ? 'bg-red-600 text-white' : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700'}`}>
+                      සිංහල
+                    </button>
+                  </div>
+                )}
                 <button onClick={() => handlePrint()} className="px-3 py-1.5 bg-blue-600 text-white rounded-lg text-sm flex items-center gap-1">
                   <Printer size={14} /> Print
                 </button>
@@ -570,7 +725,67 @@ export default function SalaryHistoryPage() {
               </div>
             </div>
             <div className="p-6" ref={slipRef}>
-              <SalarySlipPrint slip={viewSlip} lang={slipLang} />
+              {viewMode === 'SUMMARY' ? (
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${STATUS_COLORS[viewSlip.status] || ''}`}>
+                      {viewSlip.status}
+                    </span>
+                    {viewSlip.paid && (
+                      <span className="inline-block px-2 py-0.5 rounded text-xs font-medium bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">
+                        Paid {lkr(viewSlip.amount_paid)}{viewSlip.paid_date ? ` · ${viewSlip.paid_date}` : ''}
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div className="bg-gray-50 dark:bg-gray-900 rounded-xl border p-5 space-y-3">
+                      <h3 className="font-semibold text-lg">Period & Attendance</h3>
+                      <div className="grid grid-cols-2 gap-3 text-sm">
+                        <div className="flex justify-between"><span className="text-gray-500">Employee</span><span className="font-medium">{viewSlip.employee_name}</span></div>
+                        <div className="flex justify-between"><span className="text-gray-500">Salary Type</span><span className="font-medium">{viewSlip.salary_type || '-'}</span></div>
+                        <div className="flex justify-between"><span className="text-gray-500">Method</span><span className="font-medium">{CALC_METHOD_LABELS[viewSlip.calculation_method] || viewSlip.calculation_method || '-'}</span></div>
+                        <div className="flex justify-between"><span className="text-gray-500">Period</span><span className="font-medium">{viewSlip.period_start} → {viewSlip.period_end}</span></div>
+                        <div className="flex justify-between"><span className="text-gray-500">Created</span><span className="font-medium">{(viewSlip.created_at || '').slice(0, 10) || '-'}</span></div>
+                        {viewSlip.attendance_required !== false && (
+                          <>
+                            <div className="flex justify-between"><span className="text-gray-500">Worked Days</span><span className="font-medium text-green-600">{viewSlip.worked_days ?? '-'}</span></div>
+                            <div className="flex justify-between"><span className="text-gray-500">Leave Days</span><span className="font-medium text-blue-600">{viewSlip.leave_days ?? '-'}</span></div>
+                            <div className="flex justify-between"><span className="text-gray-500">Absent Days</span><span className="font-medium text-red-600">{viewSlip.absent_days ?? '-'}</span></div>
+                            <div className="flex justify-between"><span className="text-gray-500">Calendar / Working Days</span><span className="font-medium">{viewSlip.calendar_days ?? '-'} / {viewSlip.working_days ?? '-'}</span></div>
+                          </>
+                        )}
+                        {viewSlip.epf_employee > 0 && (
+                          <div className="flex justify-between"><span className="text-gray-500">EPF Base</span><span className="font-medium">{viewSlip.epf_base || '-'}</span></div>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="bg-gray-50 dark:bg-gray-900 rounded-xl border p-5 space-y-3">
+                      <h3 className="font-semibold text-lg">Earnings & Deductions Summary</h3>
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between"><span>Base Salary (Period)</span><span>{lkr(viewSlip.base_salary_for_period)}</span></div>
+                        {viewSlip.overtime_pay > 0 && <div className="flex justify-between"><span>Overtime ({viewSlip.overtime_hours} hrs)</span><span>{lkr(viewSlip.overtime_pay)}</span></div>}
+                        {viewSlip.extra_work_total > 0 && <div className="flex justify-between"><span>Extra Work</span><span>{lkr(viewSlip.extra_work_total)}</span></div>}
+                        {viewSlip.bonus > 0 && <div className="flex justify-between"><span>Bonus</span><span>{lkr(viewSlip.bonus)}</span></div>}
+                        {viewSlip.other_payments > 0 && <div className="flex justify-between"><span>Other Payments</span><span>{lkr(viewSlip.other_payments)}</span></div>}
+                        {viewSlip.allowance_for_period > 0 && <div className="flex justify-between"><span>Allowance</span><span>{lkr(viewSlip.allowance_for_period)}</span></div>}
+                        <div className="border-t pt-2 flex justify-between"><span className="font-medium">Total Earnings</span><span className="font-bold">{lkr(viewSlip.total_earnings)}</span></div>
+                        {viewSlip.epf_employee > 0 && <div className="flex justify-between"><span>EPF (Employee)</span><span className="text-red-600">- {lkr(viewSlip.epf_employee)}</span></div>}
+                        {viewSlip.advance_deductions > 0 && <div className="flex justify-between"><span>Advance Deductions</span><span className="text-red-600">- {lkr(viewSlip.advance_deductions)}</span></div>}
+                        {viewSlip.loan_deduction > 0 && <div className="flex justify-between"><span>Loan Deduction</span><span className="text-red-600">- {lkr(viewSlip.loan_deduction)}</span></div>}
+                        {viewSlip.other_deductions > 0 && <div className="flex justify-between"><span>Other Deductions</span><span className="text-red-600">- {lkr(viewSlip.other_deductions)}</span></div>}
+                        <div className="border-t pt-2 space-y-1.5">
+                          <div className="flex justify-between"><span className="font-medium">Total Deductions</span><span className="font-bold text-red-600">- {lkr(viewSlip.total_deductions)}</span></div>
+                          <div className="flex justify-between text-lg"><span className="font-bold">Net Salary</span><span className="font-bold text-green-600">{lkr(viewSlip.net_salary)}</span></div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <SalarySlipPrint slip={viewSlip} lang={slipLang} />
+              )}
             </div>
           </div>
         </div>
