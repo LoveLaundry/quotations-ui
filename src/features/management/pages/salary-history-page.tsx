@@ -185,6 +185,7 @@ export default function SalaryHistoryPage() {
     documentTitle: viewSlip?.slip_number ? `SalarySlip-${viewSlip.slip_number}` : 'SalarySlip',
   })
 
+  const formatNumber = (value: unknown) => Number(value ?? 0).toLocaleString()
   const lkr = (n: number | string | null | undefined) => 'LKR ' + Number(n || 0).toLocaleString('en-LK')
 
   const [overrideEmp, setOverrideEmp] = useState<any>(null)
@@ -327,9 +328,9 @@ export default function SalaryHistoryPage() {
                           const extra = f.projected - (row.net_salary || 0)
                           return (
                             <>
-                              <span className="font-semibold text-indigo-700 dark:text-indigo-300 tabular-nums">LKR {f.projected.toLocaleString()}</span>
+                              <span className="font-semibold text-indigo-700 dark:text-indigo-300 tabular-nums">LKR {formatNumber(f.projected)}</span>
                               {extra > 0 && (
-                                <span className="block text-[10px] text-green-600 dark:text-green-400">+ LKR {extra.toLocaleString()} if all attend</span>
+                                <span className="block text-[10px] text-green-600 dark:text-green-400">+ LKR {formatNumber(extra)} if all attend</span>
                               )}
                             </>
                           )
@@ -342,7 +343,7 @@ export default function SalaryHistoryPage() {
                           const r = remainingRow(row)
                           return (
                             <>
-                              <span className="font-semibold text-emerald-700 dark:text-emerald-300 tabular-nums">+ LKR {r.remaining_amount.toLocaleString()}</span>
+                              <span className="font-semibold text-emerald-700 dark:text-emerald-300 tabular-nums">+ LKR {formatNumber(r.remaining_amount)}</span>
                               <span className="block text-[10px] text-gray-400">{r.remaining_working_days} working days left</span>
                             </>
                           )
