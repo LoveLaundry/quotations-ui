@@ -106,7 +106,8 @@ export const ConsolidatedInvoiceTemplate = React.forwardRef<HTMLDivElement, Cons
   ({ bills, dateFrom, dateTo, invoiceNo, clientAddress }, ref) => {
     const invoiceBills = bills.filter((bill) => bill.payment_status !== 'CANCELLED')
     const itemColumns = buildItemColumns(invoiceBills)
-    const clientName = invoiceBills[0]?.client_name ?? '—'
+    const clientNames = [...new Set(invoiceBills.map((bill) => bill.client_name))]
+    const clientName = clientNames.length > 1 ? 'Multiple clients' : clientNames[0] ?? '—'
     const totalAmount = invoiceBills.reduce((sum, bill) => sum + (bill.grand_total ?? bill.total_amount), 0)
     const totalPaid = invoiceBills.reduce((sum, bill) => sum + (bill.paid_amount ?? 0), 0)
     const totalOutstanding = invoiceBills.reduce(
@@ -140,7 +141,9 @@ export const ConsolidatedInvoiceTemplate = React.forwardRef<HTMLDivElement, Cons
             <div className="inv-box" style={{ flex: 1 }}>
               <div className="inv-section-title" style={{ fontSize: 9 }}>Bill to</div>
               <div style={{ marginTop: 5, fontSize: 14, fontWeight: 800 }}>{clientName}</div>
-              <div style={{ marginTop: 3, fontSize: 10, whiteSpace: 'pre-wrap' }}>{clientAddress?.trim() || 'Address not provided'}</div>
+              <div style={{ marginTop: 3, fontSize: 10, whiteSpace: 'pre-wrap' }}>
+                {clientNames.length > 1 ? 'See customer name on each bill row.' : clientAddress?.trim() || 'Address not provided'}
+              </div>
             </div>
             <div className="inv-box" style={{ minWidth: 190, fontSize: 10, lineHeight: 1.8 }}>
               <div><strong>Invoice No:</strong> {invoiceNo}</div>
@@ -158,6 +161,7 @@ export const ConsolidatedInvoiceTemplate = React.forwardRef<HTMLDivElement, Cons
             <thead>
               <tr>
                 <th>Bill No.</th>
+                <th>Client</th>
                 <th>Date</th>
                 {itemColumns.map((column) => <th key={column.key}>{column.label}</th>)}
                 <th>Amount (LKR)</th>
@@ -165,10 +169,11 @@ export const ConsolidatedInvoiceTemplate = React.forwardRef<HTMLDivElement, Cons
             </thead>
             <tbody>
               {invoiceBills.length === 0 ? (
-                <tr><td colSpan={itemColumns.length + 3}>No bills selected.</td></tr>
+                <tr><td colSpan={itemColumns.length + 4}>No bills selected.</td></tr>
               ) : invoiceBills.map((bill) => (
                 <tr key={bill.id}>
                   <td>{`BILL-${bill.id.slice(-6).toUpperCase()}`}</td>
+                  <td>{bill.client_name}</td>
                   <td>{formatInvoiceDate(bill.created_at)}</td>
                   {itemColumns.map((column) => {
                     const qty = quantityFor(bill, column)
@@ -181,7 +186,7 @@ export const ConsolidatedInvoiceTemplate = React.forwardRef<HTMLDivElement, Cons
             <tfoot>
               <tr>
                 <td className="item-name">MONTH TOTAL</td>
-                <td>{invoiceBills.length} bill(s)</td>
+                <td colSpan={2}>{invoiceBills.length} bill(s)</td>
                 {itemColumns.map((column) => {
                   const total = invoiceBills.reduce((sum, bill) => sum + quantityFor(bill, column), 0)
                   return <td key={column.key}>{total ? new Intl.NumberFormat('en-LK', { maximumFractionDigits: 2 }).format(total) : '—'}</td>

@@ -429,7 +429,7 @@ function DayDialog({ params, day, dayState, rows, onClose }: DayDialogProps) {
                             <thead>
                                 <tr className="bg-[var(--surface-2)]">
                                     <th className="border-b border-[var(--border)] px-3 py-1.5 text-left text-[11px] font-semibold uppercase text-[var(--text-tertiary)]">Item</th>
-                                    <th className="w-24 border-b border-[var(--border)] px-2 py-1.5 text-right text-[11px] font-semibold uppercase text-[var(--text-tertiary)]">Price (LKR)</th>
+                                    <th className="w-24 border-b border-[var(--border)] px-2 py-1.5 text-right text-[11px] font-semibold uppercase text-[var(--text-tertiary)]">Price (LKR / unit)</th>
                                     <th className="w-24 border-b border-[var(--border)] px-2 py-1.5 text-center text-[11px] font-semibold uppercase text-[var(--text-tertiary)]">Qty</th>
                                     <th className="w-24 border-b border-[var(--border)] px-2 py-1.5 text-center text-[11px] font-semibold uppercase text-[var(--text-tertiary)]">Curtain pcs</th>
                                     <th className="w-32 border-b border-[var(--border)] px-2 py-1.5 text-right text-[11px] font-semibold uppercase text-[var(--text-tertiary)]">Line total (LKR)</th>
@@ -445,7 +445,7 @@ function DayDialog({ params, day, dayState, rows, onClose }: DayDialogProps) {
                                                 {row.specification && <span className="text-[var(--text-faint)]"> · {row.specification}</span>}
                                             </td>
                                             <td className="border-b border-[var(--border)] px-2 py-1 text-right text-[12.5px] tabular-nums text-[var(--text-tertiary)]">
-                                                {row.has_price ? row.unit_price.toFixed(2) : '—'}
+                                                {row.has_price ? `${row.unit_price.toFixed(2)} / ${row.unit}` : '—'}
                                             </td>
                                             <td className="border-b border-[var(--border)] p-0 text-center">
                                                 <input

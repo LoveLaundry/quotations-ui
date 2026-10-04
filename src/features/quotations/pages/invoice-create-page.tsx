@@ -13,6 +13,7 @@ import { EmptyState } from '../../../components/ui/empty-state'
 import { ErrorState } from '../../../components/ui/error-state'
 import { Skeleton } from '../../../components/ui/skeleton'
 import { Breadcrumb } from '../../../components/ui/breadcrumb'
+import { Notice } from '../../../components/ui/notice'
 import { formatDate } from '../../../lib/utils'
 import { ConsolidatedInvoiceTemplate } from '../components/consolidated-invoice-template'
 import type { Bill } from '../../../types/bill'
@@ -48,17 +49,6 @@ export default function InvoiceCreatePage() {
   const [dateFrom, setDateFrom] = useState(searchParams.get('date_from') ?? init.from)
   const [dateTo, setDateTo] = useState(searchParams.get('date_to') ?? init.to)
   const [selected, setSelected] = useState<Set<string>>(new Set())
-  const { data: clientAddress = '' } = useQuery({
-    queryKey: ['invoice-customer-address', clientName ?? ''],
-    queryFn: async () => {
-      if (!clientName) return ''
-      const response = await customersApi.list(clientName, 100, 0)
-      const customers: CustomerAddressEntry[] = response.data.items
-      return customers.find((customer) => customer.name.trim().toLowerCase() === clientName.trim().toLowerCase())?.address ?? ''
-    },
-    enabled: Boolean(clientName),
-  })
-
   const { data, isLoading, isError, error } = useBills({
     client_name: clientName,
     gate_pass_date_from: dateFrom || undefined,
@@ -85,6 +75,26 @@ export default function InvoiceCreatePage() {
   }, [unpaid, billIdsParam, requestedBillIds])
 
   const chosen = useMemo(() => unpaid.filter(b => selected.has(b.id)), [unpaid, selected])
+  const chosenClientNames = useMemo(
+    () => [...new Set(chosen.map((bill) => bill.client_name))],
+    [chosen],
+  )
+  const addressClientName = clientName ?? (chosenClientNames.length === 1 ? chosenClientNames[0] : undefined)
+  const {
+    data: clientAddress = '',
+    isLoading: isClientAddressLoading,
+    isError: isClientAddressError,
+    error: clientAddressError,
+  } = useQuery({
+    queryKey: ['invoice-customer-address', addressClientName ?? ''],
+    queryFn: async () => {
+      if (!addressClientName) return ''
+      const response = await customersApi.list(addressClientName, 100, 0)
+      const customers: CustomerAddressEntry[] = response.data.items
+      return customers.find((customer) => customer.name.trim().toLowerCase() === addressClientName.trim().toLowerCase())?.address ?? ''
+    },
+    enabled: Boolean(addressClientName),
+  })
   const totalOutstanding = chosen.reduce((s, b) => s + (b.outstanding_amount ?? (b.grand_total ?? b.total_amount) ?? 0), 0)
 
   const allSelected = unpaid.length > 0 && chosen.length === unpaid.length
@@ -123,10 +133,18 @@ export default function InvoiceCreatePage() {
             {invoiceNo} · Select unpaid bills and generate one professional invoice document.
           </p>
         </div>
-        <Button onClick={handlePrint} disabled={chosen.length === 0}>
+        <Button onClick={handlePrint} disabled={chosen.length === 0 || isClientAddressLoading}>
           <Printer className="h-4 w-4 mr-2" /> Print Invoice
         </Button>
       </div>
+
+      {isClientAddressError && (
+        <div className="print:hidden">
+          <Notice tone="warning" title="Customer address could not be loaded">
+            {clientAddressError instanceof Error ? clientAddressError.message : 'The invoice can still be printed, but its address may be missing.'}
+          </Notice>
+        </div>
+      )}
 
       {/* Date range */}
       <Card className="print:hidden">
