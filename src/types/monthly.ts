@@ -48,6 +48,9 @@ export interface MonthlyDayState {
     total_qty: number
     quantities: Record<string, number>
     piece_quantities: Record<string, number>
+    bill_number?: string | null
+    gate_pass_number?: string | null
+    alrs_number?: string | null
     gate_pass_ids: string[]
     delivery_ids: string[]
     rewash_ids: string[]
@@ -88,6 +91,9 @@ export interface MonthlyQuantitiesPayload {
     quantities: Record<string, number>
     /** Curtain piece count, tracked separately from its billable kg quantity. */
     piece_quantities: Record<string, number>
+    bill_number?: string | null
+    gate_pass_number?: string | null
+    alrs_number?: string | null
 }
 
 export interface MonthlyDeliverySource {

@@ -267,6 +267,9 @@ function DayDialog({ params, day, dayState, rows, onClose }: DayDialogProps) {
     const isConfirmed = status === 'CONFIRMED'
     const [quantities, setQuantities] = useState<Record<string, number>>(() => ({ ...(dayState?.quantities ?? {}) }))
     const [pieceQuantities, setPieceQuantities] = useState<Record<string, number>>(() => ({ ...(dayState?.piece_quantities ?? {}) }))
+    const [billNumber, setBillNumber] = useState(dayState?.bill_number ?? '')
+    const [gatePassNumber, setGatePassNumber] = useState(dayState?.gate_pass_number ?? '')
+    const [alrsNumber, setAlrsNumber] = useState(dayState?.alrs_number ?? '')
     const [receivedBy, setReceivedBy] = useState('')
     const [deliveredBy, setDeliveredBy] = useState('')
     const [notes, setNotes] = useState(dayState?.notes ?? '')
@@ -333,6 +336,12 @@ function DayDialog({ params, day, dayState, rows, onClose }: DayDialogProps) {
         return clean
     }
 
+    const referencePayload = () => ({
+        bill_number: billNumber.trim() || null,
+        gate_pass_number: gatePassNumber.trim() || null,
+        alrs_number: alrsNumber.trim() || null,
+    })
+
     const manualSources = () => {
         const sources = pending
             .filter((p) => manual[p.gate_pass_id])
@@ -362,6 +371,7 @@ function DayDialog({ params, day, dayState, rows, onClose }: DayDialogProps) {
                 payload: {
                     quantities: payload(),
                     piece_quantities: piecePayload(),
+                    ...referencePayload(),
                 },
             })
             await confirm.mutateAsync({
@@ -416,6 +426,26 @@ function DayDialog({ params, day, dayState, rows, onClose }: DayDialogProps) {
                             </span>
                         )}
                     </div>
+
+                    {params.kind === 'receiving' && !isConfirmed && (
+                        <div className="grid gap-3 rounded border border-[var(--border)] p-3 sm:grid-cols-3">
+                            <Field label="Daily bill number" hint="Manual reference for this receiving day.">
+                                <Input value={billNumber} maxLength={120} onChange={(e) => setBillNumber(e.target.value)} />
+                            </Field>
+                            <Field label="Gate-pass number" hint="This becomes the visible gate-pass number.">
+                                <Input value={gatePassNumber} maxLength={120} onChange={(e) => setGatePassNumber(e.target.value)} />
+                            </Field>
+                            <Field label="ALRS number" hint="Manual reference for this receiving day.">
+                                <Input value={alrsNumber} maxLength={120} onChange={(e) => setAlrsNumber(e.target.value)} />
+                            </Field>
+                        </div>
+                    )}
+                    {params.kind === 'receiving' && isConfirmed && (
+                        <div className="rounded border border-[var(--border)] p-3 text-[12.5px] text-[var(--text-secondary)]">
+                            <strong>Daily references:</strong>{' '}
+                            Bill {dayState?.bill_number || '—'} · Gate pass {dayState?.gate_pass_number || '—'} · ALRS {dayState?.alrs_number || '—'}
+                        </div>
+                    )}
 
                     {isConfirmed && (
                         <Notice tone="info" title="Locked">
@@ -642,7 +672,7 @@ function DayDialog({ params, day, dayState, rows, onClose }: DayDialogProps) {
                     <div className="flex-1" />
                     {!isConfirmed && (
                         <>
-                            <Button variant="secondary" loading={save.isPending} disabled={busy} onClick={() => save.mutate({ day, payload: { quantities: payload(), piece_quantities: piecePayload() } }, { onSuccess: onClose })}>
+                            <Button variant="secondary" loading={save.isPending} disabled={busy} onClick={() => save.mutate({ day, payload: { quantities: payload(), piece_quantities: piecePayload(), ...referencePayload() } }, { onSuccess: onClose })}>
                                 Save draft
                             </Button>
                             <Button

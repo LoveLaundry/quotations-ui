@@ -160,7 +160,7 @@ export const ConsolidatedInvoiceTemplate = React.forwardRef<HTMLDivElement, Cons
           <table className="inv-table">
             <thead>
               <tr>
-                <th>Bill No.</th>
+                <th>Daily references</th>
                 <th>Client</th>
                 <th>Date</th>
                 {itemColumns.map((column) => <th key={column.key}>{column.label}</th>)}
@@ -172,7 +172,11 @@ export const ConsolidatedInvoiceTemplate = React.forwardRef<HTMLDivElement, Cons
                 <tr><td colSpan={itemColumns.length + 4}>No bills selected.</td></tr>
               ) : invoiceBills.map((bill) => (
                 <tr key={bill.id}>
-                  <td>{`BILL-${bill.id.slice(-6).toUpperCase()}`}</td>
+                  <td style={{ fontSize: 7, lineHeight: 1.5 }}>
+                    <div><strong>Bill:</strong> {bill.manual_bill_number || `BILL-${bill.id.slice(-6).toUpperCase()}`}</div>
+                    {bill.manual_gate_pass_number && <div><strong>Gate pass:</strong> {bill.manual_gate_pass_number}</div>}
+                    {bill.alrs_number && <div><strong>ALRS:</strong> {bill.alrs_number}</div>}
+                  </td>
                   <td>{bill.client_name}</td>
                   <td>{formatInvoiceDate(bill.created_at)}</td>
                   {itemColumns.map((column) => {
