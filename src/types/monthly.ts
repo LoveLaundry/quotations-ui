@@ -37,6 +37,7 @@ export interface MonthlyItemRow {
     category?: string | null
     unit_price: number
     has_price: boolean
+    unit: 'kg' | 'pcs'
     usage_qty: number
 }
 
@@ -46,6 +47,7 @@ export interface MonthlyDayState {
     status: MonthlyDayStatus
     total_qty: number
     quantities: Record<string, number>
+    piece_quantities: Record<string, number>
     gate_pass_ids: string[]
     delivery_ids: string[]
     rewash_ids: string[]
@@ -84,6 +86,8 @@ export interface MonthlyMonthDoc {
 export interface MonthlyQuantitiesPayload {
     /** item key (`name||spec`) -> quantity. Zero/negative values clear the cell. */
     quantities: Record<string, number>
+    /** Curtain piece count, tracked separately from its billable kg quantity. */
+    piece_quantities: Record<string, number>
 }
 
 export interface MonthlyDeliverySource {

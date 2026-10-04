@@ -4,6 +4,8 @@ export interface BillItem {
   unit_price: number
   quantity: number
   line_total: number
+  piece_count?: number
+  unit?: string
 }
 
 export interface Verification {
@@ -48,6 +50,8 @@ export interface BillPayload {
     category?: string
     unit_price: number
     quantity: number
+    piece_count?: number
+    unit?: string
   }>
   notes?: string
   instant?: boolean

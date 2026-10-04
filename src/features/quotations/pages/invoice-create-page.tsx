@@ -1,5 +1,6 @@
 import { useMemo, useRef, useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
+import { useQuery } from '@tanstack/react-query'
 import { Printer, Calendar, FileText, CheckSquare, Square } from 'lucide-react'
 import { useReactToPrint } from 'react-to-print'
 import { useBills } from '../hooks/useBills'
@@ -16,6 +17,12 @@ import { formatDate } from '../../../lib/utils'
 import { ConsolidatedInvoiceTemplate } from '../components/consolidated-invoice-template'
 import type { Bill } from '../../../types/bill'
 import { startOfMonthISO, todayISO } from '../../../lib/time'
+import { customersApi } from '../../management/api/management-api'
+
+interface CustomerAddressEntry {
+  name: string
+  address?: string | null
+}
 
 function defaultThisMonthRange() {
   return { from: startOfMonthISO(), to: todayISO() }
@@ -31,11 +38,29 @@ function isUnpaid(b: Bill): boolean {
 
 export default function InvoiceCreatePage() {
   const init = defaultThisMonthRange()
-  const [dateFrom, setDateFrom] = useState(init.from)
-  const [dateTo, setDateTo] = useState(init.to)
+  const [searchParams] = useSearchParams()
+  const billIdsParam = searchParams.get('bill_ids')
+  const requestedBillIds = useMemo(
+    () => new Set((billIdsParam ?? '').split(',').filter(Boolean)),
+    [billIdsParam],
+  )
+  const clientName = searchParams.get('client_name') || undefined
+  const [dateFrom, setDateFrom] = useState(searchParams.get('date_from') ?? init.from)
+  const [dateTo, setDateTo] = useState(searchParams.get('date_to') ?? init.to)
   const [selected, setSelected] = useState<Set<string>>(new Set())
+  const { data: clientAddress = '' } = useQuery({
+    queryKey: ['invoice-customer-address', clientName ?? ''],
+    queryFn: async () => {
+      if (!clientName) return ''
+      const response = await customersApi.list(clientName, 100, 0)
+      const customers: CustomerAddressEntry[] = response.data.items
+      return customers.find((customer) => customer.name.trim().toLowerCase() === clientName.trim().toLowerCase())?.address ?? ''
+    },
+    enabled: Boolean(clientName),
+  })
 
   const { data, isLoading, isError, error } = useBills({
+    client_name: clientName,
     gate_pass_date_from: dateFrom || undefined,
     gate_pass_date_to: dateTo || undefined,
     limit: 1000,
@@ -48,13 +73,16 @@ export default function InvoiceCreatePage() {
   // Default all unpaid bills as selected whenever the list changes
   useEffect(() => {
     setSelected(prev => {
+      if (billIdsParam) {
+        return new Set(unpaid.filter(b => requestedBillIds.has(b.id)).map(b => b.id))
+      }
       const set = new Set(unpaid.map(b => b.id))
       prev.forEach(id => {
         if (unpaid.some(b => b.id === id)) set.add(id)
       })
       return set
     })
-  }, [unpaid])
+  }, [unpaid, billIdsParam, requestedBillIds])
 
   const chosen = useMemo(() => unpaid.filter(b => selected.has(b.id)), [unpaid, selected])
   const totalOutstanding = chosen.reduce((s, b) => s + (b.outstanding_amount ?? (b.grand_total ?? b.total_amount) ?? 0), 0)
@@ -224,6 +252,8 @@ export default function InvoiceCreatePage() {
           bills={chosen}
           dateFrom={dateFrom}
           dateTo={dateTo}
+          invoiceNo={invoiceNo}
+          clientAddress={clientAddress}
         />
       </PrintTarget>
     </div>

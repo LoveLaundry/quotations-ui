@@ -1,263 +1,248 @@
 import React from 'react'
-import { type Bill } from '../../../types/bill'
-import { formatDate } from '../../../lib/utils'
+import { type Bill, type BillItem } from '../../../types/bill'
 import { COMPANY } from '../../../config/company'
 
 interface ConsolidatedInvoiceTemplateProps {
   bills: Bill[]
   dateFrom?: string
   dateTo?: string
+  invoiceNo: string
+  clientAddress?: string
+}
+
+interface InvoiceColumn {
+  key: string
+  itemName: string
+  label: string
+  measure: 'quantity' | 'pieces'
 }
 
 const printStyles = `
-  @page {
-    size: A4 portrait;
-    margin: 10mm 10mm 15mm 10mm;
-  }
-
+  @page { size: A4 portrait; margin: 12mm; }
+  .inv-root { width: 190mm; margin: 0 auto; background: white; color: #17202a; }
+  .inv-page { min-height: 270mm; position: relative; padding-bottom: 22mm; }
+  .inv-brand { display: flex; align-items: center; justify-content: space-between; gap: 14px; border-bottom: 3px solid #b91c1c; padding-bottom: 12px; }
+  .inv-brand img { width: 68px; height: 68px; object-fit: contain; }
+  .inv-title { color: #b91c1c; font-size: 26px; letter-spacing: 3px; font-weight: 800; text-align: right; }
+  .inv-table { width: 100%; border-collapse: collapse; font-size: 8px; table-layout: auto; }
+  .inv-table th, .inv-table td { border: 1px solid #cbd5e1; padding: 5px 4px; vertical-align: middle; }
+  .inv-table th { color: white; background: #b91c1c; text-align: center; font-weight: 700; }
+  .inv-table td { text-align: center; overflow-wrap: anywhere; }
+  .inv-table td.item-name { text-align: left; }
+  .inv-table td.num { text-align: right; white-space: nowrap; }
+  .inv-table tbody tr:nth-child(even) { background: #fff7ed; }
+  .inv-table tfoot td { background: #fef3c7; font-weight: 800; }
+  .inv-box { border: 1px solid #cbd5e1; padding: 10px 12px; }
+  .inv-section-title { color: #991b1b; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
+  .inv-footer { position: absolute; bottom: 0; left: 0; right: 0; border-top: 2px solid #b91c1c; padding-top: 8px; text-align: center; font-size: 9px; }
+  .inv-sign { display: flex; justify-content: space-between; gap: 30px; margin-top: 44px; text-align: center; font-size: 10px; font-weight: 700; }
+  .inv-sign span { display: block; border-top: 1px solid #111827; padding-top: 5px; width: 42%; }
+  .inv-terms-page { margin-top: 24px; border-top: 1px dashed #94a3b8; padding-top: 24px; }
   @media print {
     html, body { margin: 0; padding: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-
-    .inv-root { margin: 0; padding: 0; width: auto; background: #fff; }
-
-    /* ---- Table rules ---- */
-    .inv-table {
-      width: 100%;
-      border-collapse: collapse;
-      table-layout: fixed;
-      font-size: 11px;
-      line-height: 1.3;
-    }
-
-    /* Column widths (total ≈ 180mm usable) */
-    .inv-table colgroup .col-no   { width: 13%; }
-    .inv-table colgroup .col-cli  { width: 23%; }
-    .inv-table colgroup .col-date { width: 15%; }
-    .inv-table colgroup .col-amt  { width: 15%; }
-    .inv-table colgroup .col-paid { width: 15%; }
-    .inv-table colgroup .col-out  { width: 19%; }
-
-    .inv-table th,
-    .inv-table td {
-      border: 1px solid #D1D5DB;
-      padding: 5px 6px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      vertical-align: middle;
-    }
-
-    .inv-table th {
-      background: #DC2626;
-      color: #fff;
-      font-weight: 600;
-      text-align: left;
-      border-color: #DC2626;
-    }
-    .inv-table th.num { text-align: right; }
-    .inv-table th.ctr { text-align: center; }
-
-    .inv-table td { text-align: left; }
-    .inv-table td.num { text-align: right; font-variant-numeric: tabular-nums; }
-    .inv-table td.ctr { text-align: center; }
-    .inv-table td.bold { font-weight: 600; }
-    .inv-table td.red  { color: #DC2626; font-weight: 600; }
-
-    .inv-table tbody tr:nth-child(even) { background: #F9FAFB; }
-
-    /* Page-break controls */
+    .inv-root { width: auto; margin: 0; }
+    .inv-page { min-height: 270mm; page-break-inside: avoid; break-inside: avoid; }
+    .inv-terms-page { margin: 0; padding-top: 0; border: 0; page-break-before: always; break-before: page; }
     .inv-table thead { display: table-header-group; }
-    .inv-table tfoot { display: table-footer-group; }
-    .inv-table tbody tr { page-break-inside: avoid; break-inside: avoid; }
-
-    /* Keep outstanding box + notes together */
-    .inv-footer-block { page-break-inside: avoid; break-inside: avoid; }
+    .inv-table tr { page-break-inside: avoid; break-inside: avoid; }
   }
-
-  /* Screen fallback — same table-layout so WYSIWYG */
-  .inv-table {
-    table-layout: fixed;
-  }
-  .inv-table colgroup .col-no   { width: 13%; }
-  .inv-table colgroup .col-cli  { width: 23%; }
-  .inv-table colgroup .col-date { width: 15%; }
-  .inv-table colgroup .col-amt  { width: 15%; }
-  .inv-table colgroup .col-paid { width: 15%; }
-  .inv-table colgroup .col-out  { width: 19%; }
-
-  .inv-table th,
-  .inv-table td {
-    padding: 5px 6px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    vertical-align: middle;
-  }
-  .inv-table th { text-align: left; }
-  .inv-table th.num { text-align: right; }
-  .inv-table th.ctr { text-align: center; }
-  .inv-table td { text-align: left; }
-  .inv-table td.num { text-align: right; font-variant-numeric: tabular-nums; }
-  .inv-table td.ctr { text-align: center; }
-  .inv-table tbody tr:nth-child(even) { background: #F9FAFB; }
 `
 
+function formatInvoiceDate(value?: string): string {
+  if (!value) return '—'
+  const parsed = /^\d{4}-\d{2}-\d{2}$/.test(value)
+    ? new Date(`${value}T12:00:00`)
+    : new Date(value)
+  if (Number.isNaN(parsed.getTime())) return value
+  return new Intl.DateTimeFormat('en-GB', {
+    day: '2-digit',
+    month: 'long',
+    year: 'numeric',
+  }).format(parsed)
+}
+
+function itemUnit(item: BillItem): 'kg' | 'pcs' {
+  if (item.unit === 'kg') return 'kg'
+  if (item.unit === 'pcs') return 'pcs'
+  return item.item_name.toLowerCase().includes('curtain') ? 'kg' : 'pcs'
+}
+
+function buildItemColumns(bills: Bill[]): InvoiceColumn[] {
+  const columns: InvoiceColumn[] = []
+  const seen = new Set<string>()
+  for (const bill of bills) {
+    for (const item of bill.items) {
+      const unit = itemUnit(item)
+      const kgKey = `${item.item_name}::kg`
+      const itemKey = `${item.item_name}::item`
+      if (unit === 'kg') {
+        if (!seen.has(kgKey)) {
+          columns.push({ key: kgKey, itemName: item.item_name, label: `${item.item_name} (kg)`, measure: 'quantity' })
+          seen.add(kgKey)
+        }
+        if (item.item_name.toLowerCase().includes('curtain')) {
+          const pieceKey = `${item.item_name}::pieces`
+          if (!seen.has(pieceKey)) {
+            columns.push({ key: pieceKey, itemName: item.item_name, label: `${item.item_name} (pcs)`, measure: 'pieces' })
+            seen.add(pieceKey)
+          }
+        }
+      } else if (!seen.has(itemKey)) {
+        columns.push({ key: itemKey, itemName: item.item_name, label: item.item_name, measure: 'quantity' })
+        seen.add(itemKey)
+      }
+    }
+  }
+  return columns
+}
+
+function quantityFor(bill: Bill, column: InvoiceColumn): number {
+  return bill.items
+    .filter((item) => item.item_name === column.itemName)
+    .reduce((sum, item) => sum + (column.measure === 'pieces' ? item.piece_count ?? 0 : item.quantity), 0)
+}
+
 export const ConsolidatedInvoiceTemplate = React.forwardRef<HTMLDivElement, ConsolidatedInvoiceTemplateProps>(
-  ({ bills, dateFrom, dateTo }, ref) => {
-    const unpaid = bills.filter(b => b.payment_status !== 'PAID' && b.payment_status !== 'CANCELLED')
-    const totalOutstanding = unpaid.reduce(
-      (sum, b) => sum + (b.outstanding_amount ?? (b.grand_total ?? b.total_amount)),
+  ({ bills, dateFrom, dateTo, invoiceNo, clientAddress }, ref) => {
+    const invoiceBills = bills.filter((bill) => bill.payment_status !== 'CANCELLED')
+    const itemColumns = buildItemColumns(invoiceBills)
+    const clientName = invoiceBills[0]?.client_name ?? '—'
+    const totalAmount = invoiceBills.reduce((sum, bill) => sum + (bill.grand_total ?? bill.total_amount), 0)
+    const totalPaid = invoiceBills.reduce((sum, bill) => sum + (bill.paid_amount ?? 0), 0)
+    const totalOutstanding = invoiceBills.reduce(
+      (sum, bill) => sum + (bill.outstanding_amount ?? (bill.grand_total ?? bill.total_amount)),
       0,
     )
-    const totalBilled = unpaid.reduce((sum, b) => sum + (b.grand_total ?? b.total_amount), 0)
-    const totalPaid = unpaid.reduce((s, b) => s + (b.paid_amount ?? 0), 0)
-    const g = (n: number) => n.toFixed(2)
+    const money = (amount: number) => `LKR ${amount.toFixed(2)}`
+    const generatedOn = formatInvoiceDate(new Date().toISOString())
 
     return (
-      <div ref={ref} className="inv-root" style={{ fontFamily: '"Spectral", Georgia, serif', color: '#000', background: '#fff' }}>
+      <div ref={ref} className="inv-root" style={{ fontFamily: '"Spectral", Georgia, serif' }}>
         <style dangerouslySetInnerHTML={{ __html: printStyles }} />
-
-        <div style={{ padding: '0 0 8px 0' }}>
-          {/* ── Header ── */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '3px double #000', paddingBottom: 14, marginBottom: 14 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexShrink: 0 }}>
-              <img
-                src="/icon.png"
-                alt="Love Laundry"
-                style={{ width: 72, height: 72, objectFit: 'contain', border: '2px solid #000', borderRadius: 0, padding: 3, background: '#fafafa' }}
-              />
-            </div>
-            <div style={{ textAlign: 'center', flex: 1 }}>
-              <h1 style={{ fontSize: 22, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 2, lineHeight: 1.2, margin: '0 0 3px 0' }}>
-                {COMPANY.name}
-              </h1>
-              <h2 style={{ fontSize: 13, fontWeight: 500, fontStyle: 'italic', margin: 0, color: '#333' }}>
-                {COMPANY.tagline}
-              </h2>
-            </div>
-            <div style={{ fontSize: 11, fontWeight: 600, textAlign: 'right', whiteSpace: 'nowrap', border: '1px solid #000', padding: '5px 10px', background: '#f9f9f9', borderRadius: 0, flexShrink: 0 }}>
-              Reg. No: {COMPANY.registrationNo}
-            </div>
-          </div>
-
-          {/* ── Services ── */}
-          <div style={{ display: 'flex', justifyContent: 'center', gap: 18, fontSize: 10, fontWeight: 600, borderBottom: '2px solid #000', paddingBottom: 8, marginBottom: 10, flexWrap: 'wrap' }}>
-            {['Dry Cleaning', 'Free Pickup & Delivery', 'Wash & Pressed', 'Wash & Fold', 'Laundered Pressed'].map(s => (
-              <span key={s} style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-                <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#DC2626', display: 'inline-block' }} />
-                {s}
-              </span>
-            ))}
-          </div>
-
-          {/* ── Contact ── */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, marginBottom: 10 }}>
-            <div>
-              <p style={{ margin: 0 }}>Tel: {COMPANY.phone.primary} / {COMPANY.phone.secondary}</p>
-              <p style={{ margin: 0 }}>Email: {COMPANY.email}</p>
-            </div>
-            <div style={{ textAlign: 'right' }}>
-              <p style={{ margin: 0 }}>{COMPANY.address.line1}</p>
-              <p style={{ margin: 0 }}>{COMPANY.address.line2}</p>
-            </div>
-          </div>
-
-          {/* ── Title ── */}
-          <h3 style={{ fontSize: 16, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 2, textAlign: 'center', margin: '0 0 12px 0' }}>
-            CONSOLIDATED INVOICE
-          </h3>
-
-          {/* ── Invoice meta ── */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12, fontSize: 12 }}>
-            <div>
-              <span style={{ fontWeight: 700 }}>Invoice Period: </span>
-              <span>{dateFrom || '—'} to {dateTo || '—'}</span>
+        <section className="inv-page">
+          <header className="inv-brand">
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <img src="/icon.png" alt="Love Laundry" />
+              <div>
+                <h1 style={{ margin: 0, fontSize: 23, letterSpacing: 1.5, textTransform: 'uppercase' }}>{COMPANY.name}</h1>
+                <p style={{ margin: '2px 0', fontSize: 12, fontStyle: 'italic' }}>{COMPANY.tagline}</p>
+                <p style={{ margin: 0, fontSize: 9 }}>{COMPANY.address.line1}, {COMPANY.address.line2}</p>
+                <p style={{ margin: 0, fontSize: 9 }}>Tel: {COMPANY.phone.primary} / {COMPANY.phone.secondary} · {COMPANY.email}</p>
+              </div>
             </div>
             <div>
-              <span style={{ fontWeight: 700 }}>Generated: </span>
-              <span>{formatDate(new Date().toISOString())}</span>
+              <div className="inv-title">INVOICE</div>
+              <div style={{ textAlign: 'right', fontSize: 10 }}>Reg. No. {COMPANY.registrationNo}</div>
+            </div>
+          </header>
+
+          <div style={{ display: 'flex', justifyContent: 'space-between', gap: 14, marginTop: 16 }}>
+            <div className="inv-box" style={{ flex: 1 }}>
+              <div className="inv-section-title" style={{ fontSize: 9 }}>Bill to</div>
+              <div style={{ marginTop: 5, fontSize: 14, fontWeight: 800 }}>{clientName}</div>
+              <div style={{ marginTop: 3, fontSize: 10, whiteSpace: 'pre-wrap' }}>{clientAddress?.trim() || 'Address not provided'}</div>
+            </div>
+            <div className="inv-box" style={{ minWidth: 190, fontSize: 10, lineHeight: 1.8 }}>
+              <div><strong>Invoice No:</strong> {invoiceNo}</div>
+              <div><strong>Invoice date:</strong> {generatedOn}</div>
+              <div><strong>Period:</strong> {formatInvoiceDate(dateFrom)} – {formatInvoiceDate(dateTo)}</div>
+              <div><strong>Payment terms:</strong> 7 days</div>
             </div>
           </div>
 
-          {/* ── Bills table ── */}
+          <h2 style={{ margin: '18px 0 8px', textAlign: 'center', fontSize: 13, letterSpacing: 1, textTransform: 'uppercase' }}>
+            Monthly laundry services · Received items
+          </h2>
+
           <table className="inv-table">
-            <colgroup>
-              <col className="col-no" />
-              <col className="col-cli" />
-              <col className="col-date" />
-              <col className="col-amt" />
-              <col className="col-paid" />
-              <col className="col-out" />
-            </colgroup>
             <thead>
               <tr>
                 <th>Bill No.</th>
-                <th>Client</th>
                 <th>Date</th>
-                <th className="num">Amount</th>
-                <th className="num">Paid</th>
-                <th className="num">Outstanding</th>
+                {itemColumns.map((column) => <th key={column.key}>{column.label}</th>)}
+                <th>Amount (LKR)</th>
               </tr>
             </thead>
             <tbody>
-              {unpaid.length === 0 && (
-                <tr>
-                  <td colSpan={6} style={{ textAlign: 'center', color: '#6B7280', whiteSpace: 'normal' }}>
-                    No unpaid bills in the selected period.
-                  </td>
-                </tr>
-              )}
-              {unpaid.map((b) => (
-                <tr key={b.id}>
-                  <td style={{ fontWeight: 500 }}>{b.id.slice(0, 10).toUpperCase()}</td>
-                  <td>{b.client_name}</td>
-                  <td>{formatDate(b.created_at)}</td>
-                  <td className="num">{g(b.grand_total ?? b.total_amount)}</td>
-                  <td className="num">{g(b.paid_amount ?? 0)}</td>
-                  <td className="num bold">{g(b.outstanding_amount ?? (b.grand_total ?? b.total_amount))}</td>
+              {invoiceBills.length === 0 ? (
+                <tr><td colSpan={itemColumns.length + 3}>No bills selected.</td></tr>
+              ) : invoiceBills.map((bill) => (
+                <tr key={bill.id}>
+                  <td>{`BILL-${bill.id.slice(-6).toUpperCase()}`}</td>
+                  <td>{formatInvoiceDate(bill.created_at)}</td>
+                  {itemColumns.map((column) => {
+                    const qty = quantityFor(bill, column)
+                    return <td key={column.key}>{qty ? new Intl.NumberFormat('en-LK', { maximumFractionDigits: 2 }).format(qty) : '—'}</td>
+                  })}
+                  <td className="num">{(bill.grand_total ?? bill.total_amount).toFixed(2)}</td>
                 </tr>
               ))}
             </tbody>
             <tfoot>
               <tr>
-                <td colSpan={3} style={{ textAlign: 'right', fontWeight: 700, background: '#F3F4F6' }}>TOTALS</td>
-                <td className="num bold" style={{ background: '#F3F4F6' }}>{g(totalBilled)}</td>
-                <td className="num bold" style={{ background: '#F3F4F6' }}>{g(totalPaid)}</td>
-                <td className="num red" style={{ background: '#F3F4F6' }}>{g(totalOutstanding)}</td>
+                <td className="item-name">MONTH TOTAL</td>
+                <td>{invoiceBills.length} bill(s)</td>
+                {itemColumns.map((column) => {
+                  const total = invoiceBills.reduce((sum, bill) => sum + quantityFor(bill, column), 0)
+                  return <td key={column.key}>{total ? new Intl.NumberFormat('en-LK', { maximumFractionDigits: 2 }).format(total) : '—'}</td>
+                })}
+                <td className="num">{totalAmount.toFixed(2)}</td>
               </tr>
             </tfoot>
           </table>
 
-          {/* ── Outstanding notice + notes (kept together) ── */}
-          <div className="inv-footer-block">
-            {/* Outstanding notice */}
-            <div style={{ marginTop: 20, display: 'flex', alignItems: 'center', justifyContent: 'space-between', border: '2px solid #DC2626', background: '#FFF1F1', padding: '10px 16px' }}>
-              <div>
-                <p style={{ fontWeight: 800, textTransform: 'uppercase', color: '#DC2626', fontSize: 12, margin: 0 }}>Total Outstanding</p>
-                <p style={{ fontSize: 10, color: '#6B7280', margin: '3px 0 0 0' }}>
-                  This amount is due across {unpaid.length} unpaid bill{unpaid.length === 1 ? '' : 's'} in the selected period.
-                </p>
-              </div>
-              <p style={{ fontSize: 20, fontWeight: 800, color: '#DC2626', margin: 0, whiteSpace: 'nowrap' }}>LKR {g(totalOutstanding)}</p>
-            </div>
-
-            {/* Notes */}
-            <div style={{ marginTop: 16, fontSize: 9, color: '#6B7280', lineHeight: 1.5, borderTop: '1px solid #D1D5DB', paddingTop: 10 }}>
-              <p style={{ fontWeight: 700, color: '#000', margin: '0 0 3px 0', fontSize: 10 }}>Notes:</p>
-              <ul style={{ margin: 0, paddingLeft: 16 }}>
-                <li>Payments received after the generated date are not reflected on this invoice.</li>
-                <li>Any complaints regarding the quality of cleaning should be made within 24 hours of delivery.</li>
-                <li>Garments should be collected within 10 days from the date of delivery, after which the management will not be responsible for any loss or damage.</li>
-              </ul>
-            </div>
-
-            {/* Signatures */}
-            <div style={{ marginTop: 36, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', fontWeight: 700, fontSize: 11, textAlign: 'center' }}>
-              <div style={{ width: 180, borderTop: '2px dotted #000', paddingTop: 4 }}>Authorized Signature</div>
-              <div style={{ width: 180, borderTop: '2px dotted #000', paddingTop: 4 }}>Received Signature</div>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 12 }}>
+            <div className="inv-box" style={{ minWidth: 240, fontSize: 11, lineHeight: 1.9 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16 }}><strong>Total amount</strong><span>{money(totalAmount)}</span></div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16 }}><span>Paid</span><span>{money(totalPaid)}</span></div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16, borderTop: '1px solid #94a3b8', paddingTop: 4, color: '#991b1b', fontWeight: 800 }}><span>Balance due</span><span>{money(totalOutstanding)}</span></div>
             </div>
           </div>
-        </div>
+
+          <footer className="inv-footer">
+            {COMPANY.name} · {COMPANY.address.line1}, {COMPANY.address.line2} · {COMPANY.phone.primary} · {COMPANY.email}
+          </footer>
+        </section>
+
+        <section className="inv-page inv-terms-page">
+          <header className="inv-brand">
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <img src="/icon.png" alt="Love Laundry" />
+              <div>
+                <h1 style={{ margin: 0, fontSize: 21, textTransform: 'uppercase' }}>{COMPANY.name}</h1>
+                <p style={{ margin: '2px 0', fontSize: 11 }}>{COMPANY.tagline}</p>
+              </div>
+            </div>
+            <div style={{ textAlign: 'right', fontSize: 10 }}><strong>Invoice:</strong> {invoiceNo}<br /><strong>Customer:</strong> {clientName}</div>
+          </header>
+
+          <h2 className="inv-section-title" style={{ margin: '24px 0 12px', fontSize: 15 }}>Terms and conditions</h2>
+          <ol style={{ paddingLeft: 22, fontSize: 11, lineHeight: 1.9 }}>
+            <li>Payment is due within 7 days of the invoice date.</li>
+            <li>Please quote the invoice number when making payment.</li>
+            <li>Any discrepancy in the received-item quantities or invoice should be reported promptly.</li>
+            <li>Payments received after this invoice is issued may not be reflected here.</li>
+            <li>Any complaints about the quality of cleaning should be reported within 24 hours of delivery.</li>
+            <li>Items should be collected within 10 days of delivery; after that period, Love Laundry cannot be responsible for loss or damage.</li>
+          </ol>
+
+          <div className="inv-box" style={{ marginTop: 24 }}>
+            <h3 className="inv-section-title" style={{ margin: '0 0 8px', fontSize: 11 }}>Payment details</h3>
+            <p style={{ margin: 0, fontSize: 10, lineHeight: 1.7 }}>
+              Please contact us at {COMPANY.phone.primary} or {COMPANY.email} for current bank transfer details. Include the invoice number with your payment reference.
+            </p>
+          </div>
+
+          <div className="inv-sign">
+            <span>Authorized signature</span>
+            <span>Customer acknowledgment</span>
+          </div>
+
+          <p style={{ marginTop: 38, textAlign: 'center', fontSize: 13, fontWeight: 800, color: '#991b1b' }}>Thank you for choosing Love Laundry.</p>
+          <footer className="inv-footer">
+            {COMPANY.name} · {COMPANY.address.line1}, {COMPANY.address.line2} · {COMPANY.phone.primary} · {COMPANY.email}
+          </footer>
+        </section>
       </div>
     )
   },

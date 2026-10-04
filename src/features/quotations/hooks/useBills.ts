@@ -24,10 +24,11 @@ export function useBill(id?: string) {
   })
 }
 
-export function useUnbilledGatePasses(client_name?: string) {
+export function useUnbilledGatePasses(client_name?: string, enabled = true) {
   return useQuery({
     queryKey: [...billKeys.all, 'unbilled-gatepasses', client_name ?? ''] as const,
     queryFn: () => billService.getUnbilledGatePasses(client_name),
+    enabled,
   })
 }
 

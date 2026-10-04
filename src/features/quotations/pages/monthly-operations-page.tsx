@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
-import { ArrowRight, CalendarDays, Info, PackageOpen, RefreshCw } from 'lucide-react'
+import { ArrowRight, CalendarDays, Info, PackageOpen, Receipt, RefreshCw } from 'lucide-react'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useHotelScope } from '../../../context/HotelContext'
 import {
     useActivateDelivery,
@@ -15,8 +16,9 @@ import {
 import { useDeliveries } from '../hooks/useDeliveries'
 import { useGatePasses } from '../hooks/useGatePasses'
 import { useQuotations } from '../hooks/useQuotations'
+import { billKeys, useUnbilledGatePasses } from '../hooks/useBills'
+import { billService } from '../services/bill.service'
 import { deliveries as deliveriesApi, type PendingGatePass } from '../services/delivery.service'
-import { useQuery } from '@tanstack/react-query'
 import {
     Badge,
     Button,
@@ -91,16 +93,21 @@ const formatQuantity = (value: number) => new Intl.NumberFormat('en-LK').format(
 
 interface QuantityPriceSummary {
     totalQty: number
+    curtainKg: number
     pricedQty: number
     unpricedQty: number
+    unpricedCurtainKg: number
     quotedValue: number
 }
 
 interface MonthlyAnalysis extends QuantityPriceSummary {
     dayQuantities: Record<number, number>
+    dayCurtainKg: Record<number, number>
+    dayCurtainPieces: Record<number, number>
     dayPricedQuantities: Record<number, number>
     dayValues: Record<number, number>
     itemQuantities: Record<string, number>
+    itemCurtainPieces: Record<string, number>
     itemValues: Record<string, number>
     pricedDays: number
     averagePerPricedDay: number
@@ -117,8 +124,10 @@ function summarizeQuantities(
     )
     const summary: QuantityPriceSummary = {
         totalQty: 0,
+        curtainKg: 0,
         pricedQty: 0,
         unpricedQty: 0,
+        unpricedCurtainKg: 0,
         quotedValue: 0,
     }
 
@@ -126,13 +135,15 @@ function summarizeQuantities(
         const qty = Number(rawQty) || 0
         if (qty <= 0) continue
 
-        summary.totalQty += qty
         const row = rowsByKey.get(key)
+        if (row?.unit === 'kg') summary.curtainKg += qty
+        else summary.totalQty += qty
         if (row?.has_price) {
             summary.pricedQty += qty
             summary.quotedValue += qty * row.unit_price
         } else {
-            summary.unpricedQty += qty
+            if (row?.unit === 'kg') summary.unpricedCurtainKg += qty
+            else summary.unpricedQty += qty
         }
     }
 
@@ -142,13 +153,18 @@ function summarizeQuantities(
 function analyzeMonthlyMatrix(data: MonthlyMatrixResponse): MonthlyAnalysis {
     const analysis: MonthlyAnalysis = {
         totalQty: 0,
+        curtainKg: 0,
         pricedQty: 0,
         unpricedQty: 0,
+        unpricedCurtainKg: 0,
         quotedValue: 0,
         dayQuantities: {},
+        dayCurtainKg: {},
+        dayCurtainPieces: {},
         dayPricedQuantities: {},
         dayValues: {},
         itemQuantities: {},
+        itemCurtainPieces: {},
         itemValues: {},
         pricedDays: 0,
         averagePerPricedDay: 0,
@@ -167,21 +183,36 @@ function analyzeMonthlyMatrix(data: MonthlyMatrixResponse): MonthlyAnalysis {
 
         const daySummary = summarizeQuantities(data.rows, quantities)
         analysis.dayQuantities[day] = daySummary.totalQty
+        analysis.dayCurtainKg[day] = daySummary.curtainKg
         analysis.dayPricedQuantities[day] = daySummary.pricedQty
         analysis.dayValues[day] = daySummary.quotedValue
         analysis.totalQty += daySummary.totalQty
+        analysis.curtainKg += daySummary.curtainKg
         analysis.pricedQty += daySummary.pricedQty
         analysis.unpricedQty += daySummary.unpricedQty
+        analysis.unpricedCurtainKg += daySummary.unpricedCurtainKg
         analysis.quotedValue += daySummary.quotedValue
 
         for (const [key, qty] of Object.entries(quantities)) {
             if (qty <= 0) continue
-            analysis.itemQuantities[key] = (analysis.itemQuantities[key] ?? 0) + qty
             const row = rowsByKey.get(key)
+            if (row?.unit !== 'kg') {
+                analysis.itemQuantities[key] = (analysis.itemQuantities[key] ?? 0) + qty
+            }
             if (row?.has_price) {
                 analysis.itemValues[key] =
                     (analysis.itemValues[key] ?? 0) + qty * row.unit_price
             }
+        }
+        const dayState = data.days.find((state) => state.day === day)
+        const pieceCounts = dayState?.piece_quantities ?? {}
+        analysis.dayCurtainPieces[day] = Object.values(pieceCounts).reduce(
+            (sum, count) => sum + (Number(count) || 0),
+            0,
+        )
+        for (const [key, count] of Object.entries(pieceCounts)) {
+            analysis.itemCurtainPieces[key] =
+                (analysis.itemCurtainPieces[key] ?? 0) + (Number(count) || 0)
         }
 
         if (daySummary.pricedQty > 0) {
@@ -235,6 +266,7 @@ function DayDialog({ params, day, dayState, rows, onClose }: DayDialogProps) {
     const status = dayState?.status ?? 'EMPTY'
     const isConfirmed = status === 'CONFIRMED'
     const [quantities, setQuantities] = useState<Record<string, number>>(() => ({ ...(dayState?.quantities ?? {}) }))
+    const [pieceQuantities, setPieceQuantities] = useState<Record<string, number>>(() => ({ ...(dayState?.piece_quantities ?? {}) }))
     const [receivedBy, setReceivedBy] = useState('')
     const [deliveredBy, setDeliveredBy] = useState('')
     const [notes, setNotes] = useState(dayState?.notes ?? '')
@@ -265,17 +297,36 @@ function DayDialog({ params, day, dayState, rows, onClose }: DayDialogProps) {
         () => summarizeQuantities(rows, quantities),
         [rows, quantities],
     )
-    const total = daySummary.totalQty
+    const totalPieces = Object.values(pieceQuantities).reduce((sum, count) => sum + (Number(count) || 0), 0)
+    const hasAnyQuantities = daySummary.totalQty > 0 || daySummary.curtainKg > 0 || totalPieces > 0
     const busy = save.isPending || confirm.isPending || cancelDay.isPending
 
     const setQty = (key: string, raw: string) => {
-        const n = parseInt(raw, 10)
+        const n = Number(raw)
         setQuantities((prev) => ({ ...prev, [key]: Number.isFinite(n) ? n : 0 }))
+    }
+
+    const setPieceQty = (key: string, raw: string) => {
+        const n = raw === '' ? 0 : Number(raw)
+        if (!Number.isInteger(n)) {
+            toast.error('Curtain piece count must be a whole number')
+            return
+        }
+        setPieceQuantities((prev) => ({ ...prev, [key]: n }))
     }
 
     const payload = () => {
         const clean: Record<string, number> = {}
         for (const [key, qty] of Object.entries(quantities)) {
+            const n = Number(qty) || 0
+            if (n > 0) clean[key] = n
+        }
+        return clean
+    }
+
+    const piecePayload = () => {
+        const clean: Record<string, number> = {}
+        for (const [key, qty] of Object.entries(pieceQuantities)) {
             const n = Number(qty) || 0
             if (n > 0) clean[key] = n
         }
@@ -300,13 +351,20 @@ function DayDialog({ params, day, dayState, rows, onClose }: DayDialogProps) {
         return sources
     }
 
-    const confirmDay = () => {
+    const confirmDay = async () => {
         if (sourceMode === 'manual' && manualSources().length === 0) {
             toast.error('Choose at least one gate pass with a quantity')
             return
         }
-        confirm.mutate(
-            {
+        try {
+            await save.mutateAsync({
+                day,
+                payload: {
+                    quantities: payload(),
+                    piece_quantities: piecePayload(),
+                },
+            })
+            await confirm.mutateAsync({
                 day,
                 payload: {
                     quotation_id: params.quotationId ?? null,
@@ -317,14 +375,11 @@ function DayDialog({ params, day, dayState, rows, onClose }: DayDialogProps) {
                     chargeable: params.kind === 'rewash' ? chargeable : null,
                     notes: notes || null,
                 },
-            },
-            {
-                onSuccess: () => {
-                    // Refetch so the record lists below reflect the new IDs.
-                    onClose()
-                },
-            },
-        )
+            })
+            onClose()
+        } catch {
+            // The mutations display their own error toast; do not confirm unsaved quantities.
+        }
     }
 
     return (
@@ -344,12 +399,16 @@ function DayDialog({ params, day, dayState, rows, onClose }: DayDialogProps) {
                 <DialogBody className="space-y-4">
                     <div className="flex flex-wrap items-center gap-2">
                         <Badge tone={DAY_TONE[status].badge} dot>{status === 'EMPTY' ? 'Not started' : status}</Badge>
-                        <Badge tone="neutral">Total {formatQuantity(total)} pcs</Badge>
+                        <Badge tone="neutral">
+                            {formatQuantity(daySummary.totalQty)} pcs · {formatQuantity(daySummary.curtainKg)} kg · {formatQuantity(totalPieces)} curtain pcs
+                        </Badge>
                         <Badge tone="info">
                             Quoted value {daySummary.pricedQty > 0 ? formatMoney(daySummary.quotedValue) : '—'}
                         </Badge>
-                        {daySummary.unpricedQty > 0 && (
-                            <Badge tone="warning">{formatQuantity(daySummary.unpricedQty)} pcs unpriced</Badge>
+                        {(daySummary.unpricedQty > 0 || daySummary.unpricedCurtainKg > 0) && (
+                            <Badge tone="warning">
+                                Unpriced: {formatQuantity(daySummary.unpricedQty)} pcs · {formatQuantity(daySummary.unpricedCurtainKg)} kg
+                            </Badge>
                         )}
                         {dayState?.confirmed_at && (
                             <span className="text-[12px] text-[var(--text-faint)]">
@@ -372,6 +431,7 @@ function DayDialog({ params, day, dayState, rows, onClose }: DayDialogProps) {
                                     <th className="border-b border-[var(--border)] px-3 py-1.5 text-left text-[11px] font-semibold uppercase text-[var(--text-tertiary)]">Item</th>
                                     <th className="w-24 border-b border-[var(--border)] px-2 py-1.5 text-right text-[11px] font-semibold uppercase text-[var(--text-tertiary)]">Price (LKR)</th>
                                     <th className="w-24 border-b border-[var(--border)] px-2 py-1.5 text-center text-[11px] font-semibold uppercase text-[var(--text-tertiary)]">Qty</th>
+                                    <th className="w-24 border-b border-[var(--border)] px-2 py-1.5 text-center text-[11px] font-semibold uppercase text-[var(--text-tertiary)]">Curtain pcs</th>
                                     <th className="w-32 border-b border-[var(--border)] px-2 py-1.5 text-right text-[11px] font-semibold uppercase text-[var(--text-tertiary)]">Line total (LKR)</th>
                                 </tr>
                             </thead>
@@ -391,11 +451,28 @@ function DayDialog({ params, day, dayState, rows, onClose }: DayDialogProps) {
                                                 <input
                                                     type="number"
                                                     min={0}
+                                                    step={row.unit === 'kg' ? '0.01' : '1'}
                                                     disabled={isConfirmed}
                                                     value={quantities[key] ?? 0}
                                                     onChange={(e) => setQty(key, e.target.value)}
                                                     className="h-8 w-20 bg-transparent text-center text-[13px] tabular-nums outline-none focus:bg-[var(--brand-soft)] disabled:text-[var(--text-faint)]"
                                                 />
+                                            </td>
+                                            <td className="border-b border-[var(--border)] p-0 text-center">
+                                                {row.unit === 'kg' ? (
+                                                    <input
+                                                        type="number"
+                                                        min={0}
+                                                        step={1}
+                                                        disabled={isConfirmed}
+                                                        value={pieceQuantities[key] ?? 0}
+                                                        onChange={(e) => setPieceQty(key, e.target.value)}
+                                                        className="h-8 w-20 bg-transparent text-center text-[13px] tabular-nums outline-none focus:bg-[var(--brand-soft)] disabled:text-[var(--text-faint)]"
+                                                        aria-label={`${row.item_name} pieces`}
+                                                    />
+                                                ) : (
+                                                    <span className="text-[var(--text-faint)]">—</span>
+                                                )}
                                             </td>
                                             <td className="border-b border-[var(--border)] px-2 py-1 text-right text-[12px] tabular-nums text-[var(--text-secondary)]">
                                                 {row.has_price
@@ -457,9 +534,10 @@ function DayDialog({ params, day, dayState, rows, onClose }: DayDialogProps) {
                                                                 <input
                                                                     type="number"
                                                                     min={0}
+                                                                    step={it.item_name.toLowerCase().includes('curtain') ? '0.01' : '1'}
                                                                     disabled={!manual[p.gate_pass_id]}
                                                                     value={manualQtys[mkey] ?? it.pending_qty}
-                                                                    onChange={(e) => setManualQtys((prev) => ({ ...prev, [mkey]: parseInt(e.target.value, 10) || 0 }))}
+                                                                    onChange={(e) => setManualQtys((prev) => ({ ...prev, [mkey]: Number(e.target.value) || 0 }))}
                                                                     className="h-6 w-14 rounded border border-[var(--border)] bg-[var(--surface)] px-1 text-center text-[12px] tabular-nums outline-none focus:border-[var(--brand)] disabled:opacity-50"
                                                                 />
                                                                 <span className="text-[var(--text-faint)]">/ {it.pending_qty}</span>
@@ -564,13 +642,13 @@ function DayDialog({ params, day, dayState, rows, onClose }: DayDialogProps) {
                     <div className="flex-1" />
                     {!isConfirmed && (
                         <>
-                            <Button variant="secondary" loading={save.isPending} disabled={busy} onClick={() => save.mutate({ day, payload: { quantities: payload() } }, { onSuccess: onClose })}>
+                            <Button variant="secondary" loading={save.isPending} disabled={busy} onClick={() => save.mutate({ day, payload: { quantities: payload(), piece_quantities: piecePayload() } }, { onSuccess: onClose })}>
                                 Save draft
                             </Button>
                             <Button
                                 variant="primary"
                                 loading={confirm.isPending}
-                                disabled={busy || total <= 0}
+                                disabled={busy || !hasAnyQuantities}
                                 onClick={confirmDay}
                             >
                                 Confirm day
@@ -628,6 +706,12 @@ function Matrix({
                 <tbody>
                     {data.rows.map((row) => {
                         const key = monthlyItemKey(row.item_name, row.specification)
+                        const itemCurtainKg = data.days.reduce(
+                            (sum, state) => state.status === 'CANCELLED'
+                                ? sum
+                                : sum + (Number(state.quantities[key]) || 0),
+                            0,
+                        )
                         return (
                             <tr key={key} className="hover:bg-[var(--surface-hover)]">
                                 <td className="sticky left-0 z-10 border-b border-r border-[var(--border)] bg-[var(--surface)] px-3 py-1.5">
@@ -645,16 +729,25 @@ function Matrix({
                                     return (
                                         <td key={d} className={cn(CELL_BASE, locked ? 'bg-[var(--surface-2)]' : 'cursor-pointer', 'hover:bg-[var(--brand-soft)]')} onClick={() => onOpenDay(d)}>
                                             <span className={cn(qty > 0 && (locked ? 'text-[var(--text-primary)]' : 'text-[var(--brand-text)]'), qty === 0 && 'text-[var(--text-faint)]')}>
-                                                {qty > 0 ? qty : ''}
+                                                {row.unit === 'kg'
+                                                    ? [qty > 0 ? `${formatQuantity(qty)} kg` : '', (dayByNumber.get(d)?.piece_quantities?.[key] ?? 0) > 0 ? `${formatQuantity(dayByNumber.get(d)?.piece_quantities?.[key] ?? 0)} pc` : ''].filter(Boolean).join(' · ')
+                                                    : qty > 0 ? formatQuantity(qty) : ''}
                                             </span>
                                         </td>
                                     )
                                 })}
                                 <td className={cn(CELL_BASE, 'bg-[var(--surface-2)] font-semibold')}>
-                                    {analysis.itemQuantities[key] ? formatQuantity(analysis.itemQuantities[key]) : ''}
+                                    {row.unit === 'kg'
+                                        ? [
+                                            itemCurtainKg > 0 ? `${formatQuantity(itemCurtainKg)} kg` : '',
+                                            analysis.itemCurtainPieces[key]
+                                                ? `${formatQuantity(analysis.itemCurtainPieces[key])} pc`
+                                                : '',
+                                        ].filter(Boolean).join(' · ')
+                                        : analysis.itemQuantities[key] ? formatQuantity(analysis.itemQuantities[key]) : ''}
                                 </td>
                                 <td className={cn(CELL_BASE, 'min-w-32 whitespace-nowrap bg-[var(--surface-2)] px-2 text-right font-semibold')}>
-                                    {row.has_price && analysis.itemQuantities[key]
+                                    {row.has_price && (analysis.itemQuantities[key] || itemCurtainKg)
                                         ? formatMoney(analysis.itemValues[key] ?? 0)
                                         : '—'}
                                 </td>
@@ -665,7 +758,7 @@ function Matrix({
                 <tfoot>
                     <tr>
                         <td className="sticky left-0 z-10 border-t border-r border-[var(--border)] bg-[var(--surface-2)] px-3 py-1.5 text-[12px] font-semibold uppercase text-[var(--text-tertiary)]">
-                            Qty total
+                            Qty total (pcs)
                         </td>
                         {Array.from({ length: data.month_length }, (_, i) => i + 1).map((d) => {
                             const st = dayByNumber.get(d)?.status ?? 'EMPTY'
@@ -679,6 +772,25 @@ function Matrix({
                         <td className={cn(CELL_BASE, 'min-w-32 whitespace-nowrap bg-[var(--surface-3)] px-2 text-right font-bold')}>
                             {analysis.pricedQty > 0 ? formatMoney(analysis.quotedValue) : '—'}
                         </td>
+                    </tr>
+                    <tr>
+                        <td className="sticky left-0 z-10 border-t border-r border-[var(--border)] bg-[var(--surface-2)] px-3 py-1.5 text-[12px] font-semibold uppercase text-[var(--text-tertiary)]">
+                            Curtain total (kg / pcs)
+                        </td>
+                        {Array.from({ length: data.month_length }, (_, i) => i + 1).map((d) => {
+                            const st = dayByNumber.get(d)?.status ?? 'EMPTY'
+                            const kg = analysis.dayCurtainKg[d] ?? 0
+                            const pieces = analysis.dayCurtainPieces[d] ?? 0
+                            return (
+                                <td key={d} className={cn(CELL_BASE, DAY_TONE[st].head, 'font-semibold')}>
+                                    {[kg > 0 ? `${formatQuantity(kg)} kg` : '', pieces > 0 ? `${formatQuantity(pieces)} pc` : ''].filter(Boolean).join(' · ')}
+                                </td>
+                            )
+                        })}
+                        <td className={cn(CELL_BASE, 'bg-[var(--surface-3)] font-bold')}>
+                            {formatQuantity(analysis.curtainKg)} kg · {formatQuantity(Object.values(analysis.itemCurtainPieces).reduce((sum, count) => sum + count, 0))} pc
+                        </td>
+                        <td className={cn(CELL_BASE, 'bg-[var(--surface-3)]')} />
                     </tr>
                     <tr>
                         <td className="sticky left-0 z-10 border-t border-r border-[var(--border)] bg-[var(--surface-2)] px-3 py-1.5 text-[12px] font-semibold uppercase text-[var(--text-tertiary)]">
@@ -715,12 +827,16 @@ function Matrix({
 // ─────────────────────────────────────────────────────────────────────────────
 
 export default function MonthlyOperationsPage() {
+    const navigate = useNavigate()
+    const queryClient = useQueryClient()
     const { hotel, showAllHotels } = useHotelScope()
     const [kind, setKind] = useState<MonthlyKind>('receiving')
     const [year, setYear] = useState(MONTH_YEAR.year)
     const [month, setMonth] = useState(MONTH_YEAR.month)
     const [quotationId, setQuotationId] = useState('')
     const [openDay, setOpenDay] = useState<number | null>(null)
+    const [invoiceDialogOpen, setInvoiceDialogOpen] = useState(false)
+    const [invoiceCreating, setInvoiceCreating] = useState(false)
 
     const params = useMemo<MonthlyMatrixParams>(
         () => ({ kind, clientName: hotel ?? '', year, month, quotationId: quotationId || null }),
@@ -729,6 +845,12 @@ export default function MonthlyOperationsPage() {
 
     const { data, isLoading, isFetching, isError, error, refetch } = useMonthlyMatrix(params)
     const { data: quotations = [] } = useQuotations()
+    const {
+        data: unbilledGatePasses = [],
+        isLoading: unbilledLoading,
+        isError: unbilledError,
+        error: unbilledErrorDetails,
+    } = useUnbilledGatePasses(hotel ?? undefined, Boolean(hotel))
     const analysis = useMemo(
         () => data ? analyzeMonthlyMatrix(data) : null,
         [data],
@@ -748,6 +870,75 @@ export default function MonthlyOperationsPage() {
     const openDayState = openDay === null ? undefined : data?.days.find((d) => d.day === openDay)
     const draftDays = data?.days.filter((d) => d.status === 'DRAFT').length ?? 0
     const confirmedDays = data?.days.filter((d) => d.status === 'CONFIRMED').length ?? 0
+    const monthlyGatePassIds = useMemo(
+        () => new Set(
+            data?.days
+                .filter((day) => day.status === 'CONFIRMED')
+                .flatMap((day) => day.gate_pass_ids) ?? [],
+        ),
+        [data],
+    )
+    const monthlyUnbilledGatePasses = useMemo(
+        () => unbilledGatePasses.filter((gatePass) => monthlyGatePassIds.has(gatePass.id)),
+        [monthlyGatePassIds, unbilledGatePasses],
+    )
+
+    const openInvoicePage = (billIds: string[]) => {
+        const dateFrom = `${year}-${String(month).padStart(2, '0')}-01`
+        const dateTo = `${year}-${String(month).padStart(2, '0')}-${String(new Date(year, month, 0).getDate()).padStart(2, '0')}`
+        const search = new URLSearchParams({
+            client_name: hotel ?? '',
+            date_from: dateFrom,
+            date_to: dateTo,
+            bill_ids: billIds.join(','),
+        })
+        navigate(`/invoices/new?${search.toString()}`)
+    }
+
+    const createMonthlyInvoice = async () => {
+        if (!data || !hotel || monthlyUnbilledGatePasses.length === 0) return
+
+        setInvoiceCreating(true)
+        setInvoiceDialogOpen(false)
+        const createdBillIds: string[] = []
+        const monthLabel = `${MONTH_NAMES[month - 1]} ${year}`
+
+        try {
+            for (const gatePass of monthlyUnbilledGatePasses) {
+                const quotationIdForPass = gatePass.quotation_id || data.quotation_id || ''
+                const quotation = hotelQuotations.find(
+                    (candidate) => String(candidate.id) === quotationIdForPass,
+                )
+                const bill = await billService.createBill({
+                    quotation_id: quotationIdForPass,
+                    quotation_title: quotation?.quotation_title || `Monthly receiving · ${monthLabel}`,
+                    client_name: hotel,
+                    gate_pass_id: gatePass.id,
+                    items: [],
+                    notes: `Monthly receiving invoice · ${monthLabel}`,
+                })
+                createdBillIds.push(bill.id)
+            }
+        } catch (cause) {
+            await queryClient.invalidateQueries({ queryKey: billKeys.all })
+            const message = cause instanceof Error ? cause.message : 'Unknown billing error'
+            if (createdBillIds.length > 0) {
+                toast.error(
+                    `Created ${createdBillIds.length} of ${monthlyUnbilledGatePasses.length} bills. Opening an invoice for the completed bills. ${message}`,
+                )
+                openInvoicePage(createdBillIds)
+            } else {
+                toast.error(`Could not create the monthly invoice: ${message}`)
+            }
+            setInvoiceCreating(false)
+            return
+        }
+
+        await queryClient.invalidateQueries({ queryKey: billKeys.all })
+        toast.success(`Created monthly invoice from ${createdBillIds.length} received gate pass(es)`)
+        openInvoicePage(createdBillIds)
+        setInvoiceCreating(false)
+    }
 
     if (!hotel) {
         return (
@@ -770,9 +961,31 @@ export default function MonthlyOperationsPage() {
                         {hotel} · {MONTH_NAMES[month - 1]} {year} — enter the month, then confirm each day.
                     </p>
                 </div>
-                <Button variant="secondary" size="sm" onClick={() => void refetch()} loading={isFetching}>
-                    <RefreshCw /> Refresh
-                </Button>
+                <div className="flex items-center gap-2">
+                    {kind === 'receiving' && (
+                        <Button
+                            variant="primary"
+                            size="sm"
+                            disabled={unbilledLoading || unbilledError || monthlyUnbilledGatePasses.length === 0}
+                            loading={invoiceCreating}
+                            title={
+                                unbilledLoading
+                                    ? 'Checking for unbilled received quantities'
+                                    : unbilledError
+                                      ? 'Unable to check unbilled received quantities'
+                                      : monthlyUnbilledGatePasses.length === 0
+                                        ? 'No unbilled quantities on confirmed receiving days for this month'
+                                        : `Create a consolidated invoice from ${monthlyUnbilledGatePasses.length} received gate pass(es)`
+                            }
+                            onClick={() => setInvoiceDialogOpen(true)}
+                        >
+                            <Receipt /> Create invoice ({monthlyUnbilledGatePasses.length})
+                        </Button>
+                    )}
+                    <Button variant="secondary" size="sm" onClick={() => void refetch()} loading={isFetching}>
+                        <RefreshCw /> Refresh
+                    </Button>
+                </div>
             </div>
 
             <Tabs
@@ -821,7 +1034,14 @@ export default function MonthlyOperationsPage() {
                         </span>
                     </Notice>
                 )}
-            </Card>
+                {kind === 'receiving' && unbilledError && (
+                    <Notice tone="warning" title="Could not check unbilled receiving">
+                        {unbilledErrorDetails instanceof Error
+                            ? unbilledErrorDetails.message
+                            : 'Refresh the page and try again before creating an invoice.'}
+                    </Notice>
+                )}
+                </Card>
 
             {data && (
                 <div className="flex flex-wrap items-center gap-2 text-[12px] text-[var(--text-tertiary)]">
@@ -841,12 +1061,12 @@ export default function MonthlyOperationsPage() {
                             {
                                 label: 'Estimated monthly value',
                                 value: analysis.pricedQty > 0 ? formatMoney(analysis.quotedValue) : '—',
-                                detail: `${formatQuantity(analysis.pricedQty)} pcs with a price`,
+                                detail: `Curtains priced by kg · ${formatQuantity(analysis.unpricedQty)} unpriced pcs · ${formatQuantity(analysis.unpricedCurtainKg)} unpriced kg`,
                             },
                             {
-                                label: 'Total quantity',
+                                label: 'Other items',
                                 value: `${formatQuantity(analysis.totalQty)} pcs`,
-                                detail: `${formatQuantity(analysis.unpricedQty)} pcs without a price`,
+                                detail: `Curtains: ${formatQuantity(analysis.curtainKg)} kg / ${formatQuantity(Object.values(analysis.itemCurtainPieces).reduce((sum, count) => sum + count, 0))} pcs`,
                             },
                             {
                                 label: 'Average per priced day',
@@ -930,6 +1150,37 @@ export default function MonthlyOperationsPage() {
                     rows={data.rows}
                     onClose={() => setOpenDay(null)}
                 />
+            )}
+
+            {invoiceDialogOpen && (
+                <Dialog open onOpenChange={(open) => { if (!open) setInvoiceDialogOpen(false) }}>
+                    <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle>Create monthly invoice</DialogTitle>
+                            <DialogDescription>
+                                Create bills from the received quantities for {hotel}, {MONTH_NAMES[month - 1]} {year}, then combine them into one invoice.
+                            </DialogDescription>
+                        </DialogHeader>
+                        <DialogBody className="space-y-3">
+                            <Notice tone="info" title={`${monthlyUnbilledGatePasses.length} gate pass(es) with unbilled received items`}>
+                                Existing billed quantities are excluded. The consolidated invoice will open with only the bills created by this action selected.
+                            </Notice>
+                        </DialogBody>
+                        <DialogFooter>
+                            <Button variant="secondary" disabled={invoiceCreating} onClick={() => setInvoiceDialogOpen(false)}>
+                                Cancel
+                            </Button>
+                            <Button
+                                variant="primary"
+                                loading={invoiceCreating}
+                                disabled={monthlyUnbilledGatePasses.length === 0}
+                                onClick={() => void createMonthlyInvoice()}
+                            >
+                                Create and continue
+                            </Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
             )}
         </div>
     )
