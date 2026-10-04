@@ -35,6 +35,7 @@ export interface Bill {
   status?: string
   payment_status?: 'DRAFT' | 'PENDING' | 'ISSUED' | 'PARTIALLY_PAID' | 'PAID' | 'CANCELLED' | string
   gate_pass_id?: string
+  receiving_date?: string | null
   manual_bill_number?: string | null
   manual_gate_pass_number?: string | null
   alrs_number?: string | null

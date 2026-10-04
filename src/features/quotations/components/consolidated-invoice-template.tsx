@@ -171,7 +171,7 @@ export const ConsolidatedInvoiceTemplate = React.forwardRef<HTMLDivElement, Cons
               <tr>
                 <th>Daily references</th>
                 <th>Client</th>
-                <th>Date</th>
+                <th>Received date</th>
                 {itemColumns.map((column) => <th key={column.key}>{column.label}</th>)}
                 <th>Amount (LKR)</th>
               </tr>
@@ -187,7 +187,7 @@ export const ConsolidatedInvoiceTemplate = React.forwardRef<HTMLDivElement, Cons
                     {bill.alrs_number && <div><strong>ALRS:</strong> {bill.alrs_number}</div>}
                   </td>
                   <td>{bill.client_name}</td>
-                  <td>{formatInvoiceDate(bill.created_at)}</td>
+                  <td>{formatInvoiceDate(bill.receiving_date || bill.created_at)}</td>
                   {itemColumns.map((column) => {
                     const qty = quantityFor(bill, column)
                     return <td key={column.key}>{qty ? new Intl.NumberFormat('en-LK', { maximumFractionDigits: 2 }).format(qty) : '—'}</td>
