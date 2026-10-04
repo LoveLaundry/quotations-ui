@@ -72,7 +72,19 @@ export const deliveries = {
         }).then((r: any) => r.data)
     },
 
-    pendingGatePasses: (clientName?: string) =>
+    /**
+     * Activate a DRAFT delivery created from the monthly grid.
+     *
+     * While a delivery is DRAFT it is a daily-manifest placeholder: no balance
+     * moved and the source gate pass is untouched. Activating re-checks every
+     * line against the LIVE available balance before turning it DELIVERED, so a
+     * pass that was oversold in the meantime is refused rather than silently
+     * driving the balance negative.
+     */
+    activate: (id: string) =>
+        billsApi.post<Delivery>(`/deliveries/${id}/activate`).then((r: any) => r.data),
+
+    pendingGatePasses: (clientName?: string): Promise<PendingGatePass[]> =>
         billsApi.get<PendingGatePass[]>('/deliveries/pending-gatepasses', {
             params: clientName ? { client_name: clientName } : {},
         }).then((r: any) => r.data),

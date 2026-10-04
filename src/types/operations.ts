@@ -40,7 +40,8 @@ export interface GatePass {
     receiving_date: string
     received_by: string
     items: GatePassItem[]
-    status: 'RECEIVED' | 'PROCESSING' | 'READY_FOR_DELIVERY' | 'PARTIALLY_DELIVERED' | 'DELIVERED' | 'CANCELLED'
+    /** DRAFT is a monthly-grid pass that has not been activated: no stock, no balance. */
+  status: 'DRAFT' | 'RECEIVED' | 'PROCESSING' | 'READY_FOR_DELIVERY' | 'PARTIALLY_DELIVERED' | 'DELIVERED' | 'CANCELLED'
     notes?: string
     adjustments?: object[]
     quotation_id?: string

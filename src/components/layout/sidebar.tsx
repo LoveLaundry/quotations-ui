@@ -36,6 +36,7 @@ const navGroups: { label: string; items: NavItem[] }[] = [
     label: 'Operations',
     items: [
       { to: '/gate-passes', label: 'Gate Passes', icon: ClipboardText, permission: 'view_gate_passes' },
+      { to: '/monthly-operations', label: 'Monthly Operations', icon: CalendarBlank, permission: 'view_gate_passes' },
       { to: '/deliveries', label: 'Deliveries', icon: Truck, permission: 'view_deliveries' },
       { to: '/dispatch', label: 'Dispatch', icon: PackageIcon, permission: 'view_deliveries' },
       { to: '/hotel-linen-flow', label: 'Hotel Linen Flow', icon: FlowArrow },

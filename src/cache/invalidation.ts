@@ -81,9 +81,21 @@ export const RESOURCE_KEYS = {
     'ops',
     'returns',
     'events',
+    'monthly',
   ],
   dispatch: ['dispatch', 'ops'],
   bills: ['bills', 'shop-bills', 'payments', 'loyalty', 'statement'],
+  // The monthly grid creates real gate passes and deliveries, and activating
+  // those flips their statuses, so both directions of that link are invalidated.
+  monthly: [
+    'monthly',
+    'gatepasses',
+    'deliveries',
+    'bills',
+    'ops',
+    'returns',
+    'events',
+  ],
   returns: ['returns', 'events', 'ops', 'deliveries'],
   loyalty: ['loyalty', 'shop-bills'],
   linen: ['linens', 'linen-flow', 'workers', 'daily-logs'],
