@@ -73,6 +73,143 @@ const MONTH_YEAR = (() => {
     return { year: now.getFullYear(), month: now.getMonth() + 1 }
 })()
 
+const formatMoney = (value: number) =>
+    new Intl.NumberFormat('en-LK', {
+        style: 'currency',
+        currency: 'LKR',
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+    }).format(value)
+
+const formatAmount = (value: number) =>
+    new Intl.NumberFormat('en-LK', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+    }).format(value)
+
+const formatQuantity = (value: number) => new Intl.NumberFormat('en-LK').format(value)
+
+interface QuantityPriceSummary {
+    totalQty: number
+    pricedQty: number
+    unpricedQty: number
+    quotedValue: number
+}
+
+interface MonthlyAnalysis extends QuantityPriceSummary {
+    dayQuantities: Record<number, number>
+    dayPricedQuantities: Record<number, number>
+    dayValues: Record<number, number>
+    itemQuantities: Record<string, number>
+    itemValues: Record<string, number>
+    pricedDays: number
+    averagePerPricedDay: number
+    highestValueDay?: { day: number; value: number }
+    highestValueItem?: { name: string; value: number }
+}
+
+function summarizeQuantities(
+    rows: MonthlyItemRow[],
+    quantities: Record<string, number>,
+): QuantityPriceSummary {
+    const rowsByKey = new Map(
+        rows.map((row) => [monthlyItemKey(row.item_name, row.specification), row]),
+    )
+    const summary: QuantityPriceSummary = {
+        totalQty: 0,
+        pricedQty: 0,
+        unpricedQty: 0,
+        quotedValue: 0,
+    }
+
+    for (const [key, rawQty] of Object.entries(quantities)) {
+        const qty = Number(rawQty) || 0
+        if (qty <= 0) continue
+
+        summary.totalQty += qty
+        const row = rowsByKey.get(key)
+        if (row?.has_price) {
+            summary.pricedQty += qty
+            summary.quotedValue += qty * row.unit_price
+        } else {
+            summary.unpricedQty += qty
+        }
+    }
+
+    return summary
+}
+
+function analyzeMonthlyMatrix(data: MonthlyMatrixResponse): MonthlyAnalysis {
+    const analysis: MonthlyAnalysis = {
+        totalQty: 0,
+        pricedQty: 0,
+        unpricedQty: 0,
+        quotedValue: 0,
+        dayQuantities: {},
+        dayPricedQuantities: {},
+        dayValues: {},
+        itemQuantities: {},
+        itemValues: {},
+        pricedDays: 0,
+        averagePerPricedDay: 0,
+    }
+    const rowsByKey = new Map(
+        data.rows.map((row) => [monthlyItemKey(row.item_name, row.specification), row]),
+    )
+
+    for (let day = 1; day <= data.month_length; day += 1) {
+        if (data.days.find((state) => state.day === day)?.status === 'CANCELLED') continue
+
+        const quantities: Record<string, number> = {}
+        for (const [key, dayCells] of Object.entries(data.cells)) {
+            quantities[key] = Number(dayCells[String(day)]) || 0
+        }
+
+        const daySummary = summarizeQuantities(data.rows, quantities)
+        analysis.dayQuantities[day] = daySummary.totalQty
+        analysis.dayPricedQuantities[day] = daySummary.pricedQty
+        analysis.dayValues[day] = daySummary.quotedValue
+        analysis.totalQty += daySummary.totalQty
+        analysis.pricedQty += daySummary.pricedQty
+        analysis.unpricedQty += daySummary.unpricedQty
+        analysis.quotedValue += daySummary.quotedValue
+
+        for (const [key, qty] of Object.entries(quantities)) {
+            if (qty <= 0) continue
+            analysis.itemQuantities[key] = (analysis.itemQuantities[key] ?? 0) + qty
+            const row = rowsByKey.get(key)
+            if (row?.has_price) {
+                analysis.itemValues[key] =
+                    (analysis.itemValues[key] ?? 0) + qty * row.unit_price
+            }
+        }
+
+        if (daySummary.pricedQty > 0) {
+            analysis.pricedDays += 1
+            if (
+                !analysis.highestValueDay ||
+                daySummary.quotedValue > analysis.highestValueDay.value
+            ) {
+                analysis.highestValueDay = { day, value: daySummary.quotedValue }
+            }
+        }
+    }
+
+    analysis.averagePerPricedDay = analysis.pricedDays
+        ? analysis.quotedValue / analysis.pricedDays
+        : 0
+    const topItem = Object.entries(analysis.itemValues).sort((a, b) => b[1] - a[1])[0]
+    if (topItem && topItem[1] > 0) {
+        const row = rowsByKey.get(topItem[0])
+        analysis.highestValueItem = {
+            name: row ? [row.item_name, row.specification].filter(Boolean).join(' · ') : topItem[0],
+            value: topItem[1],
+        }
+    }
+
+    return analysis
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Day dialog
 // ─────────────────────────────────────────────────────────────────────────────
@@ -124,7 +261,11 @@ function DayDialog({ params, day, dayState, rows, onClose }: DayDialogProps) {
         enabled: params.kind === 'delivery' && sourceMode === 'manual' && Boolean(params.clientName),
     })
 
-    const total = Object.values(quantities).reduce((sum, q) => sum + (Number(q) || 0), 0)
+    const daySummary = useMemo(
+        () => summarizeQuantities(rows, quantities),
+        [rows, quantities],
+    )
+    const total = daySummary.totalQty
     const busy = save.isPending || confirm.isPending || cancelDay.isPending
 
     const setQty = (key: string, raw: string) => {
@@ -203,7 +344,13 @@ function DayDialog({ params, day, dayState, rows, onClose }: DayDialogProps) {
                 <DialogBody className="space-y-4">
                     <div className="flex flex-wrap items-center gap-2">
                         <Badge tone={DAY_TONE[status].badge} dot>{status === 'EMPTY' ? 'Not started' : status}</Badge>
-                        <Badge tone="neutral">Total {total} pcs</Badge>
+                        <Badge tone="neutral">Total {formatQuantity(total)} pcs</Badge>
+                        <Badge tone="info">
+                            Quoted value {daySummary.pricedQty > 0 ? formatMoney(daySummary.quotedValue) : '—'}
+                        </Badge>
+                        {daySummary.unpricedQty > 0 && (
+                            <Badge tone="warning">{formatQuantity(daySummary.unpricedQty)} pcs unpriced</Badge>
+                        )}
                         {dayState?.confirmed_at && (
                             <span className="text-[12px] text-[var(--text-faint)]">
                                 Confirmed {new Date(dayState.confirmed_at).toLocaleString()}
@@ -223,8 +370,9 @@ function DayDialog({ params, day, dayState, rows, onClose }: DayDialogProps) {
                             <thead>
                                 <tr className="bg-[var(--surface-2)]">
                                     <th className="border-b border-[var(--border)] px-3 py-1.5 text-left text-[11px] font-semibold uppercase text-[var(--text-tertiary)]">Item</th>
-                                    <th className="w-24 border-b border-[var(--border)] px-2 py-1.5 text-right text-[11px] font-semibold uppercase text-[var(--text-tertiary)]">Price</th>
+                                    <th className="w-24 border-b border-[var(--border)] px-2 py-1.5 text-right text-[11px] font-semibold uppercase text-[var(--text-tertiary)]">Price (LKR)</th>
                                     <th className="w-24 border-b border-[var(--border)] px-2 py-1.5 text-center text-[11px] font-semibold uppercase text-[var(--text-tertiary)]">Qty</th>
+                                    <th className="w-32 border-b border-[var(--border)] px-2 py-1.5 text-right text-[11px] font-semibold uppercase text-[var(--text-tertiary)]">Line total (LKR)</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -248,6 +396,11 @@ function DayDialog({ params, day, dayState, rows, onClose }: DayDialogProps) {
                                                     onChange={(e) => setQty(key, e.target.value)}
                                                     className="h-8 w-20 bg-transparent text-center text-[13px] tabular-nums outline-none focus:bg-[var(--brand-soft)] disabled:text-[var(--text-faint)]"
                                                 />
+                                            </td>
+                                            <td className="border-b border-[var(--border)] px-2 py-1 text-right text-[12px] tabular-nums text-[var(--text-secondary)]">
+                                                {row.has_price
+                                                    ? formatMoney((Number(quantities[key]) || 0) * row.unit_price)
+                                                    : (Number(quantities[key]) || 0) > 0 ? 'Unpriced' : '—'}
                                             </td>
                                         </tr>
                                     )
@@ -436,41 +589,14 @@ function DayDialog({ params, day, dayState, rows, onClose }: DayDialogProps) {
 
 function Matrix({
     data,
+    analysis,
     onOpenDay,
 }: {
     data: MonthlyMatrixResponse
+    analysis: MonthlyAnalysis
     onOpenDay: (day: number) => void
 }) {
     const dayByNumber = useMemo(() => new Map(data.days.map((d) => [d.day, d])), [data.days])
-
-    const rowTotals = useMemo(() => {
-        const totals: Record<string, number> = {}
-        for (const row of data.rows) {
-            const key = monthlyItemKey(row.item_name, row.specification)
-            let sum = 0
-            for (let d = 1; d <= data.month_length; d += 1) sum += data.cells[key]?.[String(d)] ?? 0
-            totals[key] = sum
-        }
-        return totals
-    }, [data])
-
-    const dayTotals = useMemo(() => {
-        const totals: Record<number, number> = {}
-        for (let d = 1; d <= data.month_length; d += 1) {
-            let sum = 0
-            for (const row of data.rows) {
-                const key = monthlyItemKey(row.item_name, row.specification)
-                sum += data.cells[key]?.[String(d)] ?? 0
-            }
-            totals[d] = sum
-        }
-        return totals
-    }, [data])
-
-    const grandTotal = useMemo(
-        () => Object.values(rowTotals).reduce((a, b) => a + b, 0),
-        [rowTotals],
-    )
 
     return (
         <div className="overflow-x-auto">
@@ -495,7 +621,8 @@ function Matrix({
                                 </th>
                             )
                         })}
-                        <th className={cn(DAY_HEAD, 'w-16 bg-[var(--surface-2)]')}>Total</th>
+                        <th className={cn(DAY_HEAD, 'min-w-16 bg-[var(--surface-2)]')}>Qty total</th>
+                        <th className={cn(DAY_HEAD, 'min-w-32 bg-[var(--surface-2)]')}>Value total</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -523,7 +650,14 @@ function Matrix({
                                         </td>
                                     )
                                 })}
-                                <td className={cn(CELL_BASE, 'bg-[var(--surface-2)] font-semibold')}>{rowTotals[key] || ''}</td>
+                                <td className={cn(CELL_BASE, 'bg-[var(--surface-2)] font-semibold')}>
+                                    {analysis.itemQuantities[key] ? formatQuantity(analysis.itemQuantities[key]) : ''}
+                                </td>
+                                <td className={cn(CELL_BASE, 'min-w-32 whitespace-nowrap bg-[var(--surface-2)] px-2 text-right font-semibold')}>
+                                    {row.has_price && analysis.itemQuantities[key]
+                                        ? formatMoney(analysis.itemValues[key] ?? 0)
+                                        : '—'}
+                                </td>
                             </tr>
                         )
                     })}
@@ -531,17 +665,44 @@ function Matrix({
                 <tfoot>
                     <tr>
                         <td className="sticky left-0 z-10 border-t border-r border-[var(--border)] bg-[var(--surface-2)] px-3 py-1.5 text-[12px] font-semibold uppercase text-[var(--text-tertiary)]">
-                            Day total
+                            Qty total
                         </td>
                         {Array.from({ length: data.month_length }, (_, i) => i + 1).map((d) => {
                             const st = dayByNumber.get(d)?.status ?? 'EMPTY'
                             return (
                                 <td key={d} className={cn(CELL_BASE, DAY_TONE[st].head, 'font-semibold')}>
-                                    {dayTotals[d] > 0 ? dayTotals[d] : ''}
+                                    {analysis.dayQuantities[d] > 0 ? formatQuantity(analysis.dayQuantities[d]) : ''}
                                 </td>
                             )
                         })}
-                        <td className={cn(CELL_BASE, 'bg-[var(--surface-3)] font-bold')}>{grandTotal}</td>
+                        <td className={cn(CELL_BASE, 'bg-[var(--surface-3)] font-bold')}>{formatQuantity(analysis.totalQty)}</td>
+                        <td className={cn(CELL_BASE, 'min-w-32 whitespace-nowrap bg-[var(--surface-3)] px-2 text-right font-bold')}>
+                            {analysis.pricedQty > 0 ? formatMoney(analysis.quotedValue) : '—'}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td className="sticky left-0 z-10 border-t border-r border-[var(--border)] bg-[var(--surface-2)] px-3 py-1.5 text-[12px] font-semibold uppercase text-[var(--text-tertiary)]">
+                            Value (LKR)
+                        </td>
+                        {Array.from({ length: data.month_length }, (_, i) => i + 1).map((d) => {
+                            const st = dayByNumber.get(d)?.status ?? 'EMPTY'
+                            const value = analysis.dayValues[d] ?? 0
+                            const pricedQty = analysis.dayPricedQuantities[d] ?? 0
+                            return (
+                                <td
+                                    key={d}
+                                    className={cn(CELL_BASE, 'w-16 min-w-16 px-0.5 text-[8px] font-semibold', DAY_TONE[st].head)}
+                                    title={pricedQty > 0 ? `Estimated quoted value: ${formatMoney(value)}` : 'No priced quantities'}
+                                    aria-label={`Day ${d}: ${pricedQty > 0 ? formatMoney(value) : 'no priced quantities'}`}
+                                >
+                                    {pricedQty > 0 ? formatAmount(value) : '—'}
+                                </td>
+                            )
+                        })}
+                        <td className={cn(CELL_BASE, 'bg-[var(--surface-3)]')} />
+                        <td className={cn(CELL_BASE, 'min-w-32 whitespace-nowrap bg-[var(--surface-3)] px-2 text-right font-bold')}>
+                            {analysis.pricedQty > 0 ? formatMoney(analysis.quotedValue) : '—'}
+                        </td>
                     </tr>
                 </tfoot>
             </table>
@@ -568,6 +729,10 @@ export default function MonthlyOperationsPage() {
 
     const { data, isLoading, isFetching, isError, error, refetch } = useMonthlyMatrix(params)
     const { data: quotations = [] } = useQuotations()
+    const analysis = useMemo(
+        () => data ? analyzeMonthlyMatrix(data) : null,
+        [data],
+    )
 
     const hotelQuotations = useMemo(
         () => quotations.filter((q) => hotel && q.client_name === hotel),
@@ -669,6 +834,59 @@ export default function MonthlyOperationsPage() {
                 </div>
             )}
 
+            {data && analysis && data.rows.length > 0 && (
+                <>
+                    <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-5">
+                        {[
+                            {
+                                label: 'Estimated monthly value',
+                                value: analysis.pricedQty > 0 ? formatMoney(analysis.quotedValue) : '—',
+                                detail: `${formatQuantity(analysis.pricedQty)} pcs with a price`,
+                            },
+                            {
+                                label: 'Total quantity',
+                                value: `${formatQuantity(analysis.totalQty)} pcs`,
+                                detail: `${formatQuantity(analysis.unpricedQty)} pcs without a price`,
+                            },
+                            {
+                                label: 'Average per priced day',
+                                value: analysis.pricedDays > 0 ? formatMoney(analysis.averagePerPricedDay) : '—',
+                                detail: `${analysis.pricedDays} day(s) with priced items`,
+                            },
+                            {
+                                label: 'Highest-value day',
+                                value: analysis.highestValueDay
+                                    ? `${analysis.highestValueDay.day} ${MONTH_NAMES[month - 1]}`
+                                    : '—',
+                                detail: analysis.highestValueDay
+                                    ? formatMoney(analysis.highestValueDay.value)
+                                    : 'No priced quantities',
+                            },
+                            {
+                                label: 'Top item by value',
+                                value: analysis.highestValueItem?.name ?? '—',
+                                detail: analysis.highestValueItem
+                                    ? formatMoney(analysis.highestValueItem.value)
+                                    : 'No priced quantities',
+                            },
+                        ].map((stat) => (
+                            <Card key={stat.label} className="min-w-0 p-3">
+                                <p className="text-[11px] font-medium text-[var(--text-tertiary)]">{stat.label}</p>
+                                <p className="mt-1 truncate text-[15px] font-semibold tabular-nums text-[var(--text-primary)]" title={stat.value}>
+                                    {stat.value}
+                                </p>
+                                <p className="mt-0.5 truncate text-[11px] text-[var(--text-faint)]" title={stat.detail}>
+                                    {stat.detail}
+                                </p>
+                            </Card>
+                        ))}
+                    </div>
+                    <p className="text-[11.5px] text-[var(--text-faint)]">
+                        Values are estimates from the selected quotation; unpriced quantities are excluded. Rewash values are estimates and are billed only when marked chargeable.
+                    </p>
+                </>
+            )}
+
             {isLoading && (
                 <div className="space-y-2">
                     <Skeleton className="h-9 w-full" />
@@ -694,7 +912,7 @@ export default function MonthlyOperationsPage() {
 
             {!isLoading && !isError && data && data.rows.length > 0 && (
                 <Card className="overflow-hidden p-0">
-                    <Matrix data={data} onOpenDay={setOpenDay} />
+                    {analysis && <Matrix data={data} analysis={analysis} onOpenDay={setOpenDay} />}
                 </Card>
             )}
 
