@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ChangeEvent } from 'react'
+import { useEffect, useRef, useState, type ChangeEvent, type ReactNode } from 'react'
 import { Printer, Upload, X } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from './button'
@@ -23,11 +23,24 @@ interface SignatureUploadDialogProps {
   slots: SignatureSlot[]
   onClose: () => void
   onConfirm: (signatures: Record<string, string>) => void
+  title?: string
+  description?: string
+  confirmLabel?: string
+  children?: ReactNode
 }
 
 const MAX_SIZE = 3 * 1024 * 1024
 
-export function SignatureUploadDialog({ open, slots, onClose, onConfirm }: SignatureUploadDialogProps) {
+export function SignatureUploadDialog({
+  open,
+  slots,
+  onClose,
+  onConfirm,
+  title = 'Add laundry sign',
+  description = "Upload the laundry's sign (PNG) for this print. It is used for this print only and is never saved to the database.",
+  confirmLabel = 'Print with laundry sign',
+  children,
+}: SignatureUploadDialogProps) {
   const [pending, setPending] = useState<Record<string, string>>({})
   const [place, setPlace] = useState<Record<string, boolean>>({})
   const inputRef = useRef<HTMLInputElement>(null)
@@ -79,11 +92,8 @@ export function SignatureUploadDialog({ open, slots, onClose, onConfirm }: Signa
     <Dialog open={open} onOpenChange={o => { if (!o) onClose() }}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Add laundry sign</DialogTitle>
-          <DialogDescription>
-            Upload the laundry's sign (PNG) for this print. It is used for this print only and is never
-            saved to the database.
-          </DialogDescription>
+          <DialogTitle>{title}</DialogTitle>
+          <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
         <DialogBody>
           <input ref={inputRef} type="file" accept="image/png" className="hidden" onChange={handleFile} />
@@ -130,13 +140,14 @@ export function SignatureUploadDialog({ open, slots, onClose, onConfirm }: Signa
               </div>
             )
           })}
+          {children}
         </DialogBody>
         <DialogFooter>
           <Button variant="outline" onClick={onClose} className="w-full cursor-pointer">
             Cancel
           </Button>
           <Button onClick={() => onConfirm(payload)} className="w-full cursor-pointer gap-2">
-            <Printer size={15} /> Print with laundry sign
+            <Printer size={15} /> {confirmLabel}
           </Button>
         </DialogFooter>
       </DialogContent>

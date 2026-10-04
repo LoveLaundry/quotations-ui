@@ -3,6 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { Printer, Calendar, FileText, CheckSquare, Square } from 'lucide-react'
 import { useReactToPrint } from 'react-to-print'
+import { toast } from 'sonner'
 import { useBills } from '../hooks/useBills'
 import { Card, CardContent } from '../../../components/ui/card'
 import { Button } from '../../../components/ui/button'
@@ -19,6 +20,14 @@ import { ConsolidatedInvoiceTemplate } from '../components/consolidated-invoice-
 import type { Bill } from '../../../types/bill'
 import { startOfMonthISO, todayISO } from '../../../lib/time'
 import { customersApi } from '../../management/api/management-api'
+import { SignatureUploadDialog } from '../../../components/ui/signature-upload-dialog'
+
+interface InvoiceBankDetails {
+  bankName: string
+  branch: string
+  accountName: string
+  accountNumber: string
+}
 
 interface CustomerAddressEntry {
   name: string
@@ -48,6 +57,15 @@ export default function InvoiceCreatePage() {
   const clientName = searchParams.get('client_name') || undefined
   const [dateFrom, setDateFrom] = useState(searchParams.get('date_from') ?? init.from)
   const [dateTo, setDateTo] = useState(searchParams.get('date_to') ?? init.to)
+  const [printDialogOpen, setPrintDialogOpen] = useState(false)
+  const [managerSignature, setManagerSignature] = useState('')
+  const [bankDetails, setBankDetails] = useState<InvoiceBankDetails>({
+    bankName: '',
+    branch: '',
+    accountName: '',
+    accountNumber: '',
+  })
+  const [pendingBankDetails, setPendingBankDetails] = useState<InvoiceBankDetails>(bankDetails)
   const [selected, setSelected] = useState<Set<string>>(new Set())
   const { data, isLoading, isError, error } = useBills({
     client_name: clientName,
@@ -116,6 +134,30 @@ export default function InvoiceCreatePage() {
     contentRef: printRef,
     documentTitle: `Consolidated-Invoice-${dateFrom}-${dateTo}`,
   })
+  const signatureSlots = useMemo(
+    () => [{ id: 'manager', label: 'Laundry manager signature', value: managerSignature }],
+    [managerSignature],
+  )
+  const confirmPrint = (signatures: Record<string, string>) => {
+    const details: InvoiceBankDetails = {
+      bankName: pendingBankDetails.bankName.trim(),
+      branch: pendingBankDetails.branch.trim(),
+      accountName: pendingBankDetails.accountName.trim(),
+      accountNumber: pendingBankDetails.accountNumber.trim(),
+    }
+    if (Object.values(details).some((value) => !value)) {
+      toast.error('Complete all bank details before printing.')
+      return
+    }
+    if (!signatures.manager) {
+      toast.error('Upload the laundry manager signature before printing.')
+      return
+    }
+    setManagerSignature(signatures.manager)
+    setBankDetails(details)
+    setPrintDialogOpen(false)
+    window.setTimeout(() => handlePrint(), 180)
+  }
 
   return (
     <div className="space-y-5 pb-10">
@@ -133,7 +175,13 @@ export default function InvoiceCreatePage() {
             {invoiceNo} · Select unpaid bills and generate one professional invoice document.
           </p>
         </div>
-        <Button onClick={handlePrint} disabled={chosen.length === 0 || isClientAddressLoading}>
+        <Button
+          onClick={() => {
+            setPendingBankDetails(bankDetails)
+            setPrintDialogOpen(true)
+          }}
+          disabled={chosen.length === 0 || isClientAddressLoading}
+        >
           <Printer className="h-4 w-4 mr-2" /> Print Invoice
         </Button>
       </div>
@@ -272,8 +320,43 @@ export default function InvoiceCreatePage() {
           dateTo={dateTo}
           invoiceNo={invoiceNo}
           clientAddress={clientAddress}
+          managerSignature={managerSignature}
+          bankDetails={bankDetails}
         />
       </PrintTarget>
+      <SignatureUploadDialog
+        open={printDialogOpen}
+        slots={signatureSlots}
+        onClose={() => setPrintDialogOpen(false)}
+        onConfirm={confirmPrint}
+        title="Prepare invoice for printing"
+        description="Upload the laundry manager's PNG signature and enter the bank details to print on this invoice. The values are not saved to the account."
+        confirmLabel="Print invoice"
+      >
+        <div className="mt-4 grid gap-3 sm:grid-cols-2">
+          {([
+            ['bankName', 'Bank name'],
+            ['branch', 'Branch'],
+            ['accountName', 'Account name'],
+            ['accountNumber', 'Account number'],
+          ] as const).map(([key, label]) => (
+            <label key={key} className="flex flex-col gap-1">
+              <span className="text-[12px] font-medium text-[var(--text-secondary)]">{label}</span>
+              <input
+                required
+                value={pendingBankDetails[key]}
+                onChange={(event) =>
+                  setPendingBankDetails((current) => ({
+                    ...current,
+                    [key]: event.target.value,
+                  }))
+                }
+                className="h-10 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 text-[13px] text-[var(--text-primary)] outline-none focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/10"
+              />
+            </label>
+          ))}
+        </div>
+      </SignatureUploadDialog>
     </div>
   )
 }

@@ -8,6 +8,13 @@ interface ConsolidatedInvoiceTemplateProps {
   dateTo?: string
   invoiceNo: string
   clientAddress?: string
+  managerSignature?: string
+  bankDetails?: {
+    bankName: string
+    branch: string
+    accountName: string
+    accountNumber: string
+  }
 }
 
 interface InvoiceColumn {
@@ -35,8 +42,10 @@ const printStyles = `
   .inv-box { border: 1px solid #cbd5e1; padding: 10px 12px; }
   .inv-section-title { color: #991b1b; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
   .inv-footer { position: absolute; bottom: 0; left: 0; right: 0; border-top: 2px solid #b91c1c; padding-top: 8px; text-align: center; font-size: 9px; }
-  .inv-sign { display: flex; justify-content: space-between; gap: 30px; margin-top: 44px; text-align: center; font-size: 10px; font-weight: 700; }
-  .inv-sign span { display: block; border-top: 1px solid #111827; padding-top: 5px; width: 42%; }
+  .inv-sign { display: flex; justify-content: space-between; gap: 30px; margin-top: 28px; text-align: center; font-size: 10px; font-weight: 700; }
+  .inv-sign-block { display: flex; width: 42%; flex-direction: column; justify-content: flex-end; }
+  .inv-sign-line { display: block; border-top: 1px solid #111827; padding-top: 5px; }
+  .inv-sign-image { display: block; max-width: 140px; height: 38px; margin: 0 auto 4px; object-fit: contain; }
   .inv-terms-page { margin-top: 24px; border-top: 1px dashed #94a3b8; padding-top: 24px; }
   @media print {
     html, body { margin: 0; padding: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
@@ -103,7 +112,7 @@ function quantityFor(bill: Bill, column: InvoiceColumn): number {
 }
 
 export const ConsolidatedInvoiceTemplate = React.forwardRef<HTMLDivElement, ConsolidatedInvoiceTemplateProps>(
-  ({ bills, dateFrom, dateTo, invoiceNo, clientAddress }, ref) => {
+  ({ bills, dateFrom, dateTo, invoiceNo, clientAddress, managerSignature, bankDetails }, ref) => {
     const invoiceBills = bills.filter((bill) => bill.payment_status !== 'CANCELLED')
     const itemColumns = buildItemColumns(invoiceBills)
     const clientNames = [...new Set(invoiceBills.map((bill) => bill.client_name))]
@@ -238,13 +247,28 @@ export const ConsolidatedInvoiceTemplate = React.forwardRef<HTMLDivElement, Cons
           <div className="inv-box" style={{ marginTop: 24 }}>
             <h3 className="inv-section-title" style={{ margin: '0 0 8px', fontSize: 11 }}>Payment details</h3>
             <p style={{ margin: 0, fontSize: 10, lineHeight: 1.7 }}>
-              Please contact us at {COMPANY.phone.primary} or {COMPANY.email} for current bank transfer details. Include the invoice number with your payment reference.
+              {bankDetails ? (
+                <>
+                  Bank: {bankDetails.bankName}<br />
+                  Branch: {bankDetails.branch}<br />
+                  Account name: {bankDetails.accountName}<br />
+                  Account number: {bankDetails.accountNumber}<br />
+                  Include the invoice number with your payment reference.
+                </>
+              ) : (
+                <>Please contact us at {COMPANY.phone.primary} or {COMPANY.email} for current bank transfer details. Include the invoice number with your payment reference.</>
+              )}
             </p>
           </div>
 
           <div className="inv-sign">
-            <span>Authorized signature</span>
-            <span>Customer acknowledgment</span>
+            <div className="inv-sign-block">
+              {managerSignature && <img src={managerSignature} alt="Laundry manager signature" className="inv-sign-image" />}
+              <span className="inv-sign-line">Laundry manager authorization</span>
+            </div>
+            <div className="inv-sign-block">
+              <span className="inv-sign-line">Customer acknowledgment</span>
+            </div>
           </div>
 
           <p style={{ marginTop: 38, textAlign: 'center', fontSize: 13, fontWeight: 800, color: '#991b1b' }}>Thank you for choosing Love Laundry.</p>
