@@ -40,6 +40,8 @@ export function useMonthlyMatrix(params: MonthlyMatrixParams) {
         queryKey: monthlyKeys.matrix(params),
         queryFn: () => monthly.matrix(...pathArgs(params), params.quotationId),
         enabled,
+        refetchInterval: 5000,
+        refetchIntervalInBackground: false,
     })
 }
 

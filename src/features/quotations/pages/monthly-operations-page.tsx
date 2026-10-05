@@ -1,8 +1,9 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
-import { ArrowRight, CalendarDays, Info, PackageOpen, Receipt, RefreshCw } from 'lucide-react'
+import { ArrowRight, CalendarDays, ClipboardList, Info, PackageOpen, Printer, Receipt, RefreshCw } from 'lucide-react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useReactToPrint } from 'react-to-print'
 import { useHotelScope } from '../../../context/HotelContext'
 import {
     useActivateDelivery,
@@ -18,6 +19,7 @@ import { useGatePasses } from '../hooks/useGatePasses'
 import { useQuotations } from '../hooks/useQuotations'
 import { billKeys, useUnbilledGatePasses } from '../hooks/useBills'
 import { billService } from '../services/bill.service'
+import { MonthlyOperationsReport, type MonthlyReportSection } from '../components/monthly-operations-report'
 import { deliveries as deliveriesApi, type PendingGatePass } from '../services/delivery.service'
 import {
     Badge,
@@ -42,6 +44,7 @@ import {
     Textarea,
 } from '../../../components/ui'
 import { cn } from '../../../lib/utils'
+import { PrintTarget } from '../../../components/ui/print-target'
 import {
     MONTHLY_KINDS,
     MONTHLY_KIND_LABELS,
@@ -100,7 +103,7 @@ interface QuantityPriceSummary {
     quotedValue: number
 }
 
-interface MonthlyAnalysis extends QuantityPriceSummary {
+export interface MonthlyAnalysis extends QuantityPriceSummary {
     dayQuantities: Record<number, number>
     dayCurtainKg: Record<number, number>
     dayCurtainPieces: Record<number, number>
@@ -113,6 +116,17 @@ interface MonthlyAnalysis extends QuantityPriceSummary {
     averagePerPricedDay: number
     highestValueDay?: { day: number; value: number }
     highestValueItem?: { name: string; value: number }
+}
+
+const REPORT_SECTIONS: { key: MonthlyReportSection; label: string; description: string }[] = [
+    { key: 'summary', label: 'Monthly highlights', description: 'Quoted value and live received, delivered, and outstanding totals.' },
+    { key: 'daily', label: 'Daily activity', description: 'Daily quantity, value, status, gate-pass, and delivery counts.' },
+    { key: 'items', label: 'Item analytics', description: 'Monthly quantity, curtain piece count, price, and estimated value by item.' },
+    { key: 'balances', label: 'Gate-pass balances', description: 'Live active/draft gate-pass counts and canonical balance totals.' },
+]
+
+function formatBalanceQuantity(value: { pcs: number; kg: number }): string {
+    return `${formatQuantity(value.pcs)} pcs · ${formatQuantity(value.kg)} kg`
 }
 
 function summarizeQuantities(
@@ -867,6 +881,11 @@ export default function MonthlyOperationsPage() {
     const [openDay, setOpenDay] = useState<number | null>(null)
     const [invoiceDialogOpen, setInvoiceDialogOpen] = useState(false)
     const [invoiceCreating, setInvoiceCreating] = useState(false)
+    const [reportDialogOpen, setReportDialogOpen] = useState(false)
+    const [reportSections, setReportSections] = useState<MonthlyReportSection[]>(
+        REPORT_SECTIONS.map((section) => section.key),
+    )
+    const reportRef = useRef<HTMLDivElement>(null)
 
     const params = useMemo<MonthlyMatrixParams>(
         () => ({ kind, clientName: hotel ?? '', year, month, quotationId: quotationId || null }),
@@ -885,6 +904,15 @@ export default function MonthlyOperationsPage() {
         () => data ? analyzeMonthlyMatrix(data) : null,
         [data],
     )
+    const printReport = useReactToPrint({
+        contentRef: reportRef,
+        documentTitle: `Monthly-Operations-${hotel ?? 'Hotel'}-${year}-${String(month).padStart(2, '0')}`,
+    })
+    const confirmReportPrint = () => {
+        if (!reportSections.length) return
+        setReportDialogOpen(false)
+        window.setTimeout(() => printReport(), 180)
+    }
 
     const hotelQuotations = useMemo(
         () => quotations.filter((q) => hotel && q.client_name === hotel),
@@ -992,6 +1020,14 @@ export default function MonthlyOperationsPage() {
                     </p>
                 </div>
                 <div className="flex items-center gap-2">
+                    <Button
+                        variant="secondary"
+                        size="sm"
+                        disabled={!data || !analysis}
+                        onClick={() => setReportDialogOpen(true)}
+                    >
+                        <ClipboardList /> Generate report
+                    </Button>
                     {kind === 'receiving' && (
                         <Button
                             variant="primary"
@@ -1082,6 +1118,48 @@ export default function MonthlyOperationsPage() {
                         DRAFT days create records that stay invisible to stock until you activate them.
                     </span>
                 </div>
+            )}
+
+            {data && (
+                <Card className="p-3">
+                    <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+                        <div>
+                            <p className="text-[12px] font-semibold text-[var(--text-primary)]">Live received quantities and balances</p>
+                            <p className="text-[11px] text-[var(--text-faint)]">From active gate passes, deliveries, and pending returns · refreshes every 5 seconds</p>
+                        </div>
+                        <Badge tone={isFetching ? 'info' : 'success'} dot>{isFetching ? 'Syncing' : 'Live'}</Badge>
+                    </div>
+                    <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+                        {[
+                            {
+                                label: 'Received',
+                                value: formatBalanceQuantity(data.operations_summary.totals.received_qty),
+                                detail: `${data.operations_summary.gate_pass_count} active received gate pass(es)`,
+                            },
+                            {
+                                label: 'Delivered',
+                                value: formatBalanceQuantity(data.operations_summary.totals.delivered_qty),
+                                detail: 'Actual activated deliveries',
+                            },
+                            {
+                                label: 'Outstanding delivery',
+                                value: formatBalanceQuantity(data.operations_summary.totals.outstanding_delivery_qty),
+                                detail: 'Canonical live gate-pass balance',
+                            },
+                            {
+                                label: 'Draft gate passes',
+                                value: String(data.operations_summary.draft_gate_pass_count),
+                                detail: 'Not yet counted as received stock',
+                            },
+                        ].map((stat) => (
+                            <div key={stat.label} className="rounded border border-[var(--border)] px-3 py-2">
+                                <p className="text-[10.5px] font-medium uppercase text-[var(--text-tertiary)]">{stat.label}</p>
+                                <p className="mt-1 text-[13px] font-semibold tabular-nums text-[var(--text-primary)]">{stat.value}</p>
+                                <p className="mt-0.5 text-[10.5px] text-[var(--text-faint)]">{stat.detail}</p>
+                            </div>
+                        ))}
+                    </div>
+                </Card>
             )}
 
             {data && analysis && data.rows.length > 0 && (
@@ -1180,6 +1258,55 @@ export default function MonthlyOperationsPage() {
                     rows={data.rows}
                     onClose={() => setOpenDay(null)}
                 />
+            )}
+
+            {data && analysis && (
+                <PrintTarget>
+                    <MonthlyOperationsReport
+                        ref={reportRef}
+                        data={data}
+                        analysis={analysis}
+                        sections={reportSections}
+                    />
+                </PrintTarget>
+            )}
+
+            {reportDialogOpen && (
+                <Dialog open onOpenChange={(open) => { if (!open) setReportDialogOpen(false) }}>
+                    <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle>Select report analytics</DialogTitle>
+                            <DialogDescription>
+                                Choose the sections to include in the invoice-style PDF report for {hotel}, {MONTH_NAMES[month - 1]} {year}.
+                            </DialogDescription>
+                        </DialogHeader>
+                        <DialogBody className="space-y-3">
+                            {REPORT_SECTIONS.map((section) => (
+                                <div key={section.key} className="flex items-start gap-3 rounded border border-[var(--border)] p-3 hover:bg-[var(--surface-hover)]">
+                                    <Checkbox
+                                        checked={reportSections.includes(section.key)}
+                                        aria-label={section.label}
+                                        onChange={(event) => {
+                                            setReportSections((current) => event.target.checked
+                                                ? [...current, section.key]
+                                                : current.filter((item) => item !== section.key))
+                                        }}
+                                    />
+                                    <span>
+                                        <span className="block text-[13px] font-medium text-[var(--text-primary)]">{section.label}</span>
+                                        <span className="mt-0.5 block text-[11.5px] text-[var(--text-faint)]">{section.description}</span>
+                                    </span>
+                                </div>
+                            ))}
+                        </DialogBody>
+                        <DialogFooter>
+                            <Button variant="secondary" onClick={() => setReportDialogOpen(false)}>Cancel</Button>
+                            <Button variant="primary" disabled={!reportSections.length} onClick={confirmReportPrint}>
+                                <Printer /> Print / Save PDF
+                            </Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
             )}
 
             {invoiceDialogOpen && (

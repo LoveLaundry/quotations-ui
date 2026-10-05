@@ -1,7 +1,8 @@
-﻿import { useState, type ElementType, type SyntheticEvent } from 'react'
+import { useRef, useState, type ElementType, type SyntheticEvent } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { Search, BarChart3, Users, Package, ClipboardList, Banknote, History, TrendingUp, AlertTriangle, CheckCircle, Clock, Download } from 'lucide-react'
+import { Search, BarChart3, Users, Package, ClipboardList, Banknote, History, TrendingUp, AlertTriangle, CheckCircle, Clock, Download, Printer } from 'lucide-react'
 import { motion } from 'framer-motion'
+import { useReactToPrint } from 'react-to-print'
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card'
 import { Skeleton } from '../../../components/ui/skeleton'
 import { ErrorState } from '../../../components/ui/error-state'
@@ -9,8 +10,169 @@ import { Breadcrumb } from '../../../components/ui/breadcrumb'
 import { reports } from '../services/reports.service'
 import { toast } from 'sonner'
 import { formatCalendarDate, formatTimestamp } from '../../../lib/time'
+import { COMPANY } from '../../../config/company'
 
 type ReportTab = 'client' | 'item' | 'gatepass' | 'billing' | 'audit'
+type AnalyticsSection = 'clients' | 'items' | 'gatepasses' | 'billing' | 'audit'
+
+const ANALYTICS_SECTIONS: { id: AnalyticsSection; label: string; description: string }[] = [
+  { id: 'clients', label: 'Client performance', description: 'Client activity, balances and billing' },
+  { id: 'items', label: 'Item analytics', description: 'Received, delivered and pending quantities' },
+  { id: 'gatepasses', label: 'Gate pass activity', description: 'Gate pass volume, status and mismatches' },
+  { id: 'billing', label: 'Billing summary', description: 'Revenue, paid, pending and outstanding totals' },
+  { id: 'audit', label: 'Audit trail', description: 'The latest 100 audit events' },
+]
+
+const reportPrintStyles = `
+  @page { size: A4 portrait; margin: 12mm; }
+  .reports-print-root { display: none; width: 190mm; margin: 0 auto; background: #fff; color: #17202a; font-family: Georgia, serif; }
+  .reports-print-header { display: flex; justify-content: space-between; align-items: center; gap: 16px; border-bottom: 3px solid #b91c1c; padding-bottom: 12px; }
+  .reports-print-title { color: #b91c1c; font-size: 22px; letter-spacing: 2px; font-weight: 800; text-align: right; }
+  .reports-print-section { margin-top: 22px; page-break-inside: avoid; break-inside: avoid; }
+  .reports-print-section h2 { margin: 0 0 9px; padding-bottom: 5px; border-bottom: 1px solid #b91c1c; color: #991b1b; font-size: 13px; letter-spacing: 1px; text-transform: uppercase; }
+  .reports-print-table { width: 100%; border-collapse: collapse; font-size: 9px; }
+  .reports-print-table th, .reports-print-table td { border: 1px solid #cbd5e1; padding: 5px; text-align: left; vertical-align: top; overflow-wrap: anywhere; }
+  .reports-print-table th { background: #b91c1c; color: #fff; font-weight: 700; }
+  .reports-print-table tbody tr:nth-child(even) { background: #fff7ed; }
+  .reports-print-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .reports-print-stat { border: 1px solid #cbd5e1; padding: 9px; }
+  .reports-print-stat strong { display: block; margin-top: 4px; color: #991b1b; font-size: 13px; }
+  .reports-print-footer { margin-top: 26px; padding-top: 8px; border-top: 2px solid #b91c1c; text-align: center; font-size: 9px; }
+  @media print {
+    html, body { margin: 0; padding: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    body * { visibility: hidden !important; }
+    .reports-print-root, .reports-print-root * { visibility: visible !important; }
+    .reports-print-root { display: block !important; position: absolute; inset: 0 auto auto 0; width: auto; margin: 0; }
+    .reports-print-table thead { display: table-header-group; }
+    .reports-print-table tr { page-break-inside: avoid; break-inside: avoid; }
+  }
+`
+
+function formatReportAmount(value: unknown): string {
+  const amount = Number(value)
+  return Number.isFinite(amount) ? `LKR ${amount.toLocaleString('en-LK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '—'
+}
+
+function PrintTable({ headers, rows }: { headers: string[]; rows: unknown[][] }) {
+  return (
+    <table className="reports-print-table">
+      <thead><tr>{headers.map(header => <th key={header}>{header}</th>)}</tr></thead>
+      <tbody>
+        {rows.length
+          ? rows.map((row, index) => <tr key={index}>{row.map((value, cellIndex) => <td key={cellIndex}>{value == null || value === '' ? '—' : String(value)}</td>)}</tr>)
+          : <tr><td colSpan={headers.length}>No records available</td></tr>}
+      </tbody>
+    </table>
+  )
+}
+
+function ReportsPrintDocument({
+  selected, clients, items, gatepasses, billing, audit,
+}: {
+  selected: AnalyticsSection[]
+  clients: any[]
+  items: any[]
+  gatepasses: any[]
+  billing?: any
+  audit: any[]
+}) {
+  const generatedAt = formatCalendarDate(new Date().toISOString())
+  return (
+    <div className="reports-print-root">
+      <style dangerouslySetInnerHTML={{ __html: reportPrintStyles }} />
+      <header className="reports-print-header">
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <img src="/icon.png" alt="Love Laundry" style={{ width: 62, height: 62, objectFit: 'contain' }} />
+          <div>
+            <h1 style={{ margin: 0, fontSize: 20, letterSpacing: 1, textTransform: 'uppercase' }}>{COMPANY.name}</h1>
+            <p style={{ margin: '2px 0', fontSize: 11, fontStyle: 'italic' }}>{COMPANY.tagline}</p>
+            <p style={{ margin: 0, fontSize: 9 }}>{COMPANY.address.line1}, {COMPANY.address.line2}</p>
+            <p style={{ margin: 0, fontSize: 9 }}>Tel: {COMPANY.phone.primary} / {COMPANY.phone.secondary} · {COMPANY.email}</p>
+          </div>
+        </div>
+        <div>
+          <div className="reports-print-title">BUSINESS REPORT</div>
+          <div style={{ textAlign: 'right', fontSize: 10 }}>Reg. No. {COMPANY.registrationNo}</div>
+          <div style={{ textAlign: 'right', fontSize: 10 }}>Generated: {generatedAt}</div>
+        </div>
+      </header>
+
+      {selected.includes('billing') && (
+        <section className="reports-print-section">
+          <h2>Billing summary</h2>
+          <div className="reports-print-stats">
+            {[
+              ['Total revenue', billing?.total_sales],
+              ['Paid', billing?.paid_bills_amount],
+              ['Pending', billing?.pending_bills_amount],
+              ['Outstanding', billing?.outstanding_amount],
+            ].map(([label, value]) => (
+              <div className="reports-print-stat" key={label as string}>
+                <span style={{ fontSize: 9, textTransform: 'uppercase' }}>{label}</span>
+                <strong>{formatReportAmount(value)}</strong>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {selected.includes('clients') && (
+        <section className="reports-print-section">
+          <h2>Client performance</h2>
+          <PrintTable
+            headers={['Client', 'Gate passes', 'Received', 'Delivered', 'Pending', 'Billed', 'Paid', 'Outstanding', 'Mismatches']}
+            rows={clients.map(row => [
+              row.client_name, row.gate_pass_count, row.total_received, row.total_delivered, row.total_pending,
+              formatReportAmount(row.total_billed), formatReportAmount(row.paid_amount), formatReportAmount(row.outstanding),
+              row.total_mismatches,
+            ])}
+          />
+        </section>
+      )}
+
+      {selected.includes('items') && (
+        <section className="reports-print-section">
+          <h2>Item analytics</h2>
+          <PrintTable
+            headers={['Item', 'Received', 'Delivered', 'Pending', 'Mismatches', 'Clients']}
+            rows={items.map(row => [row.item_name, row.total_received, row.total_delivered, row.pending, row.mismatch_count, row.client_count])}
+          />
+        </section>
+      )}
+
+      {selected.includes('gatepasses') && (
+        <section className="reports-print-section">
+          <h2>Gate pass activity</h2>
+          <PrintTable
+            headers={['Gate pass', 'Client', 'Date', 'Received by', 'Received', 'Delivered', 'Mismatches', 'Status']}
+            rows={gatepasses.map(row => [
+              row.gate_pass_number, row.client_name, formatCalendarDate(row.receiving_date), row.received_by,
+              row.total_received, row.total_delivered, row.mismatch_count, row.status,
+            ])}
+          />
+        </section>
+      )}
+
+      {selected.includes('audit') && (
+        <section className="reports-print-section">
+          <h2>Audit trail · latest 100 events</h2>
+          <PrintTable
+            headers={['Time', 'User', 'Action', 'Entity', 'Entity ID', 'Details']}
+            rows={audit.map(row => [
+              formatTimestamp(row.timestamp), row.user_id, row.action, row.entity,
+              row.entity_id ? String(row.entity_id).slice(-8) : '—',
+              row.details ? (typeof row.details === 'object' ? JSON.stringify(row.details) : row.details) : '—',
+            ])}
+          />
+        </section>
+      )}
+
+      <footer className="reports-print-footer">
+        {COMPANY.name} · {COMPANY.address.line1}, {COMPANY.address.line2} · {COMPANY.phone.primary} · {COMPANY.email}
+      </footer>
+    </div>
+  )
+}
 
 const TABS: { id: ReportTab; label: string; icon: ElementType }[] = [
   { id: 'client', label: 'Client-Wise', icon: Users },
@@ -518,6 +680,46 @@ function AuditLog() {
 
 export default function ReportsPage() {
   const [activeTab, setActiveTab] = useState<ReportTab>('client')
+  const [selectedAnalytics, setSelectedAnalytics] = useState<AnalyticsSection[]>(['clients', 'items', 'gatepasses', 'billing'])
+  const printRef = useRef<HTMLDivElement>(null)
+  const clientsQuery = useQuery({
+    queryKey: ['reports', 'client-wise'],
+    queryFn: reports.clientWise as () => Promise<any[]>,
+    enabled: selectedAnalytics.includes('clients'),
+  })
+  const itemsQuery = useQuery({
+    queryKey: ['reports', 'item-wise'],
+    queryFn: reports.itemWise as () => Promise<any[]>,
+    enabled: selectedAnalytics.includes('items'),
+  })
+  const gatepassesQuery = useQuery({
+    queryKey: ['reports', 'gatepass-wise'],
+    queryFn: reports.gatepassWise as () => Promise<any[]>,
+    enabled: selectedAnalytics.includes('gatepasses'),
+  })
+  const billingQuery = useQuery({
+    queryKey: ['reports', 'billing'],
+    queryFn: reports.billing,
+    enabled: selectedAnalytics.includes('billing'),
+  })
+  const auditQuery = useQuery({
+    queryKey: ['reports', 'audit'],
+    queryFn: () => reports.auditLogs(100) as Promise<any[]>,
+    enabled: selectedAnalytics.includes('audit'),
+  })
+  const printQueries = [
+    selectedAnalytics.includes('clients') ? clientsQuery : null,
+    selectedAnalytics.includes('items') ? itemsQuery : null,
+    selectedAnalytics.includes('gatepasses') ? gatepassesQuery : null,
+    selectedAnalytics.includes('billing') ? billingQuery : null,
+    selectedAnalytics.includes('audit') ? auditQuery : null,
+  ].filter(Boolean)
+  const printLoading = printQueries.some(query => query!.isLoading)
+  const printError = printQueries.some(query => query!.isError)
+  const handlePrint = useReactToPrint({
+    contentRef: printRef,
+    documentTitle: `Love-Laundry-Reports-${new Date().toISOString().slice(0, 10)}`,
+  })
 
   const handleExport = async (type: 'gatepasses' | 'bills' | 'deliveries', format: 'csv' | 'xlsx' = 'csv') => {
     try {
@@ -546,6 +748,75 @@ export default function ReportsPage() {
           </div>
         </div>
       </div>
+
+      <Card className="p-4">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <h2 className="text-[14px] font-semibold" style={{ color: 'var(--text-primary)' }}>Build a printable report</h2>
+            <p className="mt-1 text-[12px]" style={{ color: 'var(--text-tertiary)' }}>
+              Choose the analytics to include, then print or save the invoice-style report as a PDF.
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => setSelectedAnalytics(ANALYTICS_SECTIONS.map(section => section.id))}
+              className="rounded-lg border px-3 py-2 text-[12px] font-medium transition hover:bg-[var(--surface-hover)]"
+              style={{ borderColor: 'var(--border)', color: 'var(--text-secondary)' }}
+            >
+              Select all
+            </button>
+            <button
+              type="button"
+              onClick={() => setSelectedAnalytics([])}
+              className="rounded-lg border px-3 py-2 text-[12px] font-medium transition hover:bg-[var(--surface-hover)]"
+              style={{ borderColor: 'var(--border)', color: 'var(--text-secondary)' }}
+            >
+              Clear
+            </button>
+            <button
+              type="button"
+              onClick={handlePrint}
+              disabled={!selectedAnalytics.length || printLoading || printError}
+              className="flex items-center gap-2 rounded-lg bg-[#DC2626] px-4 py-2 text-[12px] font-semibold text-white transition hover:bg-[#B91C1C] disabled:cursor-not-allowed disabled:opacity-50"
+              title={printError ? 'A selected report could not be loaded' : undefined}
+            >
+              <Printer className="h-3.5 w-3.5" />
+              {printLoading ? 'Preparing…' : 'Print / Save PDF'}
+            </button>
+          </div>
+        </div>
+        <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+          {ANALYTICS_SECTIONS.map(section => {
+            const checked = selectedAnalytics.includes(section.id)
+            return (
+              <label
+                key={section.id}
+                className="flex cursor-pointer items-start gap-2.5 rounded-lg border p-3 transition hover:bg-[var(--surface-hover)]"
+                style={{ borderColor: checked ? '#FECACA' : 'var(--border)', backgroundColor: checked ? '#FFF8F8' : undefined }}
+              >
+                <input
+                  type="checkbox"
+                  checked={checked}
+                  onChange={() => setSelectedAnalytics(current => (
+                    checked ? current.filter(item => item !== section.id) : [...current, section.id]
+                  ))}
+                  className="mt-0.5 accent-[#DC2626]"
+                />
+                <span>
+                  <span className="block text-[12px] font-semibold" style={{ color: 'var(--text-primary)' }}>{section.label}</span>
+                  <span className="mt-0.5 block text-[11px]" style={{ color: 'var(--text-tertiary)' }}>{section.description}</span>
+                </span>
+              </label>
+            )
+          })}
+        </div>
+        {printError && (
+          <p className="mt-3 text-[12px] text-[#DC2626]" role="alert">
+            One or more selected analytics could not be loaded. Retry after checking your connection.
+          </p>
+        )}
+      </Card>
 
       {/* Tabs */}
       <div className="flex items-center gap-3 overflow-x-auto pb-0.5 scrollbar-hidden">
@@ -609,6 +880,17 @@ export default function ReportsPage() {
         {activeTab === 'billing' && <BillingReport />}
         {activeTab === 'audit' && <AuditLog />}
       </motion.div>
+
+      <div ref={printRef}>
+        <ReportsPrintDocument
+          selected={selectedAnalytics}
+          clients={clientsQuery.data || []}
+          items={itemsQuery.data || []}
+          gatepasses={gatepassesQuery.data || []}
+          billing={billingQuery.data}
+          audit={auditQuery.data || []}
+        />
+      </div>
     </div>
   )
 }

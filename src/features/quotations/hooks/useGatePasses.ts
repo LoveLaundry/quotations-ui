@@ -25,6 +25,7 @@ export const gatepassKeys = {
 export const DELIVERY_DEPENDENT_KEYS = [
     ['gatepasses'],
     ['deliveries'],
+    ['monthly'],
     ['dashboard'],
     ['reports'],
     ['notifications'],

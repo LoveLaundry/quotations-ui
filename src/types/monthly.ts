@@ -70,6 +70,16 @@ export interface MonthlyMatrixResponse {
     days: MonthlyDayState[]
     /** item key -> day number -> quantity. The server's own pivot of `days`. */
     cells: Record<string, Record<string, number>>
+    operations_summary: {
+        gate_pass_count: number
+        draft_gate_pass_count: number
+        totals: {
+            received_qty: { pcs: number; kg: number }
+            delivered_qty: { pcs: number; kg: number }
+            returned_back_qty: { pcs: number; kg: number }
+            outstanding_delivery_qty: { pcs: number; kg: number }
+        }
+    }
 }
 
 /**

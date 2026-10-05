@@ -96,7 +96,7 @@ export const RESOURCE_KEYS = {
     'returns',
     'events',
   ],
-  returns: ['returns', 'events', 'ops', 'deliveries'],
+  returns: ['returns', 'events', 'ops', 'deliveries', 'monthly'],
   loyalty: ['loyalty', 'shop-bills'],
   linen: ['linens', 'linen-flow', 'workers', 'daily-logs'],
   workers: ['workers', 'linens', 'daily-logs'],
