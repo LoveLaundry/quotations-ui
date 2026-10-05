@@ -25,6 +25,9 @@ export default function ManagementExpenses() {
   const qc = useQueryClient()
   const defaults = useDefaults()
   const [showForm, setShowForm] = useState(false)
+  const [categoryId, setCategoryId] = useState('')
+  const [showNewCategory, setShowNewCategory] = useState(false)
+  const [newCategoryName, setNewCategoryName] = useState('')
   const [editing, setEditing] = useState<any>(null)
   const [deleteTarget, setDeleteTarget] = useState<any>(null)
   const [startDate, setStartDate] = useState('')
@@ -40,7 +43,12 @@ export default function ManagementExpenses() {
 
   useEscape(showForm, useCallback(() => { setShowForm(false); setEditing(null) }, []))
 
-  const { data: categories = [] } = useQuery({
+  const {
+    data: categories = [],
+    isError: categoriesError,
+    isLoading: categoriesLoading,
+    refetch: refetchCategories,
+  } = useQuery({
     queryKey: ['mgmt-expense-cats'],
     queryFn: () => expensesApi.categories().then(r => r.data),
   })
@@ -48,6 +56,22 @@ export default function ManagementExpenses() {
   const { data: expensesData = { items: [], total: 0 }, isLoading: _isLoading } = useQuery({
     queryKey: ['mgmt-expenses', startDate, endDate, catFilter, offset, limit],
     queryFn: () => expensesApi.list({ start_date: startDate, end_date: endDate, category_id: catFilter, limit, offset }).then(r => r.data),
+  })
+
+  const createCategoryMut = useMutation({
+    mutationFn: (name: string) => expensesApi.createCategory({ name }),
+    onSuccess: (response: any) => {
+      const category = response.data
+      qc.setQueryData(['mgmt-expense-cats'], (current: any[] = []) => [
+        ...current.filter(c => c.id !== category.id),
+        category,
+      ])
+      setCategoryId(category.id)
+      setNewCategoryName('')
+      setShowNewCategory(false)
+      toast.success('Expense category created')
+    },
+    onError: (e: any) => toast.error(e.response?.data?.detail || 'Failed to create category'),
   })
 
   const pageExpenses = expensesData.items
@@ -58,6 +82,13 @@ export default function ManagementExpenses() {
   })
 
   const totalExpenses = summary.reduce((s: number, item: any) => s + (item.total || 0), 0)
+  const openExpenseForm = (expense: any = null) => {
+    setEditing(expense)
+    setCategoryId(expense?.category_id || defaults.get('exp_category') || '')
+    setShowNewCategory(false)
+    setNewCategoryName('')
+    setShowForm(true)
+  }
 
   const createMut = useMutation({
     mutationFn: (data: any) => expensesApi.create(data),
@@ -93,7 +124,7 @@ export default function ManagementExpenses() {
       key: 'actions', header: 'Actions', align: 'center' as const,
       render: (e: any) => (
         <div className="flex items-center justify-center gap-1">
-          <button onClick={() => { setEditing(e); setShowForm(true) }} className="p-1 hover:bg-gray-100 rounded"><Pencil size={14} /></button>
+          <button onClick={() => openExpenseForm(e)} className="p-1 hover:bg-gray-100 rounded"><Pencil size={14} /></button>
           <button onClick={() => setDeleteTarget(e)} className="p-1 hover:bg-red-100 text-red-500 rounded"><Trash2 size={14} /></button>
         </div>
       ),
@@ -117,7 +148,7 @@ export default function ManagementExpenses() {
         actions={
           <>
             <ExportButton data={pageExpenses} filename="expenses" columns={exportCols} />
-            <button onClick={() => { setEditing(null); setShowForm(true) }}
+            <button onClick={() => openExpenseForm()}
               className="flex items-center gap-1.5 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm">
               <Plus size={16} /> Add Expense
             </button>
@@ -138,6 +169,11 @@ export default function ManagementExpenses() {
           <option value="">All Categories</option>
           {categories.map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
         </select>
+        {categoriesError && (
+          <button type="button" onClick={() => refetchCategories()} className="text-sm text-red-600">
+            Could not load categories — retry
+          </button>
+        )}
       </FilterBar>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -183,10 +219,46 @@ export default function ManagementExpenses() {
               else createMut.mutate(data)
             }} ref={flow.ref} onKeyDown={flow.handleKeyDown} className="space-y-3">
               <input name="date" type="date" defaultValue={editing?.date || todayISO()} required autoFocus className="w-full px-3 py-2 border rounded-lg text-sm" />
-              <select name="category_id" defaultValue={editing?.category_id || defaults.get('exp_category') || ''} required className="w-full px-3 py-2 border rounded-lg text-sm">
+              <select name="category_id" value={categoryId} onChange={e => setCategoryId(e.target.value)} required className="w-full px-3 py-2 border rounded-lg text-sm">
                 <option value="">Select Category *</option>
                 {categories.map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
+              {categoriesLoading && <p className="text-xs text-gray-500">Loading categories…</p>}
+              {categoriesError && (
+                <button type="button" onClick={() => refetchCategories()} className="text-xs text-red-600">
+                  Could not load categories — retry
+                </button>
+              )}
+              {!categoriesLoading && !categoriesError && categories.length === 0 && (
+                <p className="text-xs text-amber-700">No expense categories yet. Add one below to continue.</p>
+              )}
+              {showNewCategory ? (
+                <div className="flex gap-2">
+                  <input
+                    autoFocus
+                    value={newCategoryName}
+                    onChange={e => setNewCategoryName(e.target.value)}
+                    placeholder="New category name"
+                    aria-label="New expense category name"
+                    className="flex-1 px-3 py-2 border rounded-lg text-sm"
+                  />
+                  <button
+                    type="button"
+                    disabled={!newCategoryName.trim() || createCategoryMut.isPending}
+                    onClick={() => createCategoryMut.mutate(newCategoryName.trim())}
+                    className="px-3 py-2 bg-gray-100 rounded-lg text-sm disabled:opacity-50"
+                  >
+                    {createCategoryMut.isPending ? 'Saving…' : 'Save'}
+                  </button>
+                  <button type="button" onClick={() => setShowNewCategory(false)} aria-label="Cancel category creation" className="p-2 text-gray-500">
+                    <X size={16} />
+                  </button>
+                </div>
+              ) : (
+                <button type="button" onClick={() => setShowNewCategory(true)} className="text-sm text-red-600 hover:underline">
+                  + Create expense category
+                </button>
+              )}
               <input name="amount" type="number" step="0.01" defaultValue={editing?.amount} placeholder="Amount *" required className="w-full px-3 py-2 border rounded-lg text-sm" />
               <input name="description" defaultValue={editing?.description} placeholder="Description" className="w-full px-3 py-2 border rounded-lg text-sm" />
               <div className="grid grid-cols-2 gap-3">
