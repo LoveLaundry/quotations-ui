@@ -97,10 +97,12 @@ export default function CompanySettingsPage() {
     saveMut.mutate(data)
   }
   const meterNamesSaved =
+    !!form &&
+    !!settings &&
     form.electricity_meter_1_name === (settings.electricity_meter_1_name || 'Meter 1') &&
     form.electricity_meter_2_name === (settings.electricity_meter_2_name || 'Meter 2')
 
-  if (isLoading || !form) {
+  if (isLoading || !form || !settings) {
     return <div className="text-center py-12 text-gray-400">Loading settings...</div>
   }
 
