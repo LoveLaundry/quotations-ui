@@ -101,6 +101,20 @@ export function formatISOTime(parts: DateParts): string {
   return `${pad(parts.hour)}:${pad(parts.minute)}:${pad(parts.second)}`
 }
 
+/** `YYYY-MM-DDTHH:mm` for a datetime-local control in Sri Lankan time. */
+export function toSriLankaDateTimeInput(value: Date | string | number = new Date()): string {
+  const parts = getDateParts(value)
+  return `${formatISODate(parts)}T${pad(parts.hour)}:${pad(parts.minute)}`
+}
+
+/** Convert a datetime-local wall time to an unambiguous Sri Lankan ISO instant. */
+export function fromSriLankaDateTimeInput(value: string): string {
+  if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(value)) {
+    throw new Error('Enter a valid Sri Lanka date and time.')
+  }
+  return `${value}:00${UTC_OFFSET_SUFFIX}`
+}
+
 /**
  * `YYYY-MM-DDTHH:mm:ss+05:30` — the wire format for a wall-clock time the user
  * picked. Sending the explicit offset is what stops the server from reading our

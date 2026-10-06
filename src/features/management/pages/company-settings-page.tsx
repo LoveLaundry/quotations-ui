@@ -2,8 +2,10 @@ import { useEffect, useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { companySettingsApi } from '../api/management-api'
 import { toast } from 'sonner'
-import { Save, Settings } from 'lucide-react'
+import { Save, Settings, Zap } from 'lucide-react'
 import { invalidateResource } from '../../../cache/invalidation'
+import { useAuth } from '../../../context/AuthContext'
+import { formatTimestamp, fromSriLankaDateTimeInput, toSriLankaDateTimeInput } from '../../../lib/time'
 
 // Order follows JS Date.getDay(): 0=Sunday ... 6=Saturday.
 const DOW_LABELS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
@@ -14,7 +16,14 @@ const jsToPy = (js: number) => (js + 6) % 7
 
 export default function CompanySettingsPage() {
   const qc = useQueryClient()
+  const { user } = useAuth()
+  const isAdmin = user?.role_id?.toUpperCase() === 'ADMIN'
   const [form, setForm] = useState<any>(null)
+  const [readingAt, setReadingAt] = useState(() => toSriLankaDateTimeInput())
+  const [readingValues, setReadingValues] = useState<Record<string, string>>({
+    meter_1: '',
+    meter_2: '',
+  })
 
   const { data: settings, isLoading } = useQuery({
     queryKey: ['company-settings'],
@@ -29,6 +38,8 @@ export default function CompanySettingsPage() {
         working_days_per_week: settings.working_days_per_week ?? 6,
         working_days_pattern: (settings.working_days_pattern || [0, 1, 2, 3, 4, 5]).map(pyToJs),
         default_overtime_rate: settings.default_overtime_rate ?? 0,
+        electricity_meter_1_name: settings.electricity_meter_1_name || 'Meter 1',
+        electricity_meter_2_name: settings.electricity_meter_2_name || 'Meter 2',
       })
     }
   }, [settings, form])
@@ -42,6 +53,30 @@ export default function CompanySettingsPage() {
     onError: (e: any) => toast.error(e.response?.data?.detail || 'Failed to save settings'),
   })
 
+  const {
+    data: meterReadings = [],
+    isLoading: readingsLoading,
+    isError: readingsError,
+    refetch: refetchReadings,
+  } = useQuery({
+    queryKey: ['electricity-meter-readings'],
+    queryFn: () => companySettingsApi.meterReadings().then(r => r.data),
+  })
+
+  const addReadingMut = useMutation({
+    mutationFn: (data: {
+      meter_id: 'meter_1' | 'meter_2'
+      reading_value: number
+      recorded_at: string
+    }) => companySettingsApi.addMeterReading(data),
+    onSuccess: (_response, variables) => {
+      toast.success('Electricity reading saved')
+      setReadingValues(current => ({ ...current, [variables.meter_id]: '' }))
+      qc.invalidateQueries({ queryKey: ['electricity-meter-readings'] })
+    },
+    onError: (e: any) => toast.error(e.response?.data?.detail || 'Failed to save electricity reading'),
+  })
+
   const toggleDow = (i: number) => {
     if (!form) return
     const pattern = form.working_days_pattern.includes(i)
@@ -51,11 +86,19 @@ export default function CompanySettingsPage() {
   }
 
   const handleSave = () => {
-    saveMut.mutate({
+    const data = {
       ...form,
       working_days_pattern: (form.working_days_pattern || []).map(jsToPy),
-    })
+    }
+    if (!isAdmin) {
+      delete data.electricity_meter_1_name
+      delete data.electricity_meter_2_name
+    }
+    saveMut.mutate(data)
   }
+  const meterNamesSaved =
+    form.electricity_meter_1_name === (settings.electricity_meter_1_name || 'Meter 1') &&
+    form.electricity_meter_2_name === (settings.electricity_meter_2_name || 'Meter 2')
 
   if (isLoading || !form) {
     return <div className="text-center py-12 text-gray-400">Loading settings...</div>
@@ -111,6 +154,141 @@ export default function CompanySettingsPage() {
             />
           </div>
         </div>
+
+        <div className="bg-gray-50 dark:bg-gray-900/40 rounded-xl border p-6 space-y-5">
+            <div>
+              <h2 className="text-lg font-semibold flex items-center gap-2">
+                <Zap size={20} /> Electricity Meter Readings
+              </h2>
+              <p className="text-sm text-gray-500 mt-1">
+                Record each meter reading with Sri Lanka date and time (LKT). Readings are retained for future electricity-cost calculations.
+              </p>
+            </div>
+
+            {isAdmin && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {(['electricity_meter_1_name', 'electricity_meter_2_name'] as const).map((key, index) => (
+                  <label key={key} className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                    Meter {index + 1} name
+                    <input
+                      value={form[key]}
+                      onChange={e => setForm({ ...form, [key]: e.target.value })}
+                      maxLength={60}
+                      className="w-full mt-1 px-3 py-2 border rounded-lg text-sm"
+                    />
+                  </label>
+                ))}
+                <p className="md:col-span-2 text-xs text-gray-400">
+                  Save these names with the main Save button. Only admins can configure meters or submit readings.
+                </p>
+              </div>
+            )}
+
+            {isAdmin && (
+              <>
+                <label className="block text-sm font-medium text-gray-600 dark:text-gray-400">
+                  Reading date and time (Sri Lanka)
+                  <input
+                    type="datetime-local"
+                    value={readingAt}
+                    onChange={e => setReadingAt(e.target.value)}
+                    className="block mt-1 px-3 py-2 border rounded-lg text-sm"
+                  />
+                </label>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {(['meter_1', 'meter_2'] as const).map((meterId, index) => {
+                    const name = form[index === 0 ? 'electricity_meter_1_name' : 'electricity_meter_2_name']
+                    return (
+                      <form
+                        key={meterId}
+                        onSubmit={e => {
+                          e.preventDefault()
+                          const value = Number(readingValues[meterId])
+                          if (!Number.isFinite(value) || value < 0) {
+                            toast.error('Enter a valid non-negative meter reading')
+                            return
+                          }
+                          try {
+                            if (!readingAt) {
+                              toast.error('Enter a Sri Lanka date and time')
+                              return
+                            }
+                            addReadingMut.mutate({
+                              meter_id: meterId,
+                              reading_value: value,
+                              recorded_at: fromSriLankaDateTimeInput(readingAt),
+                            })
+                          } catch (error) {
+                            toast.error(error instanceof Error ? error.message : 'Enter a valid date and time')
+                          }
+                        }}
+                        className="rounded-lg border p-4 space-y-3"
+                      >
+                        <h3 className="font-medium">{name || `Meter ${index + 1}`}</h3>
+                        <div className="flex gap-2">
+                          <input
+                            type="number"
+                            min="0"
+                            step="any"
+                            required
+                            value={readingValues[meterId]}
+                            onChange={e => setReadingValues(current => ({ ...current, [meterId]: e.target.value }))}
+                            placeholder="Meter reading"
+                            aria-label={`${name || `Meter ${index + 1}`} reading`}
+                            className="min-w-0 flex-1 px-3 py-2 border rounded-lg text-sm"
+                          />
+                          <button
+                            type="submit"
+                            disabled={addReadingMut.isPending || !meterNamesSaved}
+                            className="px-3 py-2 bg-red-600 text-white rounded-lg text-sm disabled:opacity-50"
+                          >
+                            {addReadingMut.isPending ? 'Saving…' : 'Save reading'}
+                          </button>
+                        </div>
+                      </form>
+                    )
+                  })}
+                </div>
+                {!meterNamesSaved && (
+                  <p className="text-xs text-amber-700">
+                    Save the meter names first before recording readings.
+                  </p>
+                )}
+              </>
+            )}
+
+            <div className="overflow-x-auto">
+              <h3 className="font-medium mb-2">Recent readings</h3>
+              {readingsLoading ? (
+                <p className="text-sm text-gray-500 py-3">Loading readings…</p>
+              ) : readingsError ? (
+                <button type="button" onClick={() => refetchReadings()} className="text-sm text-red-600 py-3">
+                  Could not load readings — retry
+                </button>
+              ) : meterReadings.length === 0 ? (
+                <p className="text-sm text-gray-500 py-3">No meter readings recorded yet.</p>
+              ) : (
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="text-left text-gray-500 border-b">
+                      <th className="py-2 pr-4">Meter</th>
+                      <th className="py-2 pr-4">Reading (kWh)</th>
+                      <th className="py-2">Date and time (LKT)</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {meterReadings.map((reading: any) => (
+                      <tr key={reading.id} className="border-b last:border-0">
+                        <td className="py-2 pr-4">{reading.meter_name}</td>
+                        <td className="py-2 pr-4">{Number(reading.reading_value).toLocaleString()}</td>
+                        <td className="py-2">{formatTimestamp(reading.recorded_at)} LKT</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+          </div>
 
         <div>
           <label className="text-sm font-medium text-gray-600 dark:text-gray-400">
