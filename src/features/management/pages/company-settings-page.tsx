@@ -425,7 +425,11 @@ export default function CompanySettingsPage() {
               <button type="button" onClick={() => refetchAnalytics()} className="py-8 text-sm text-red-600">
                 Could not load monthly costs — retry
               </button>
-            ) : !monthlyAnalytics.some((month: any) => month.amount_lkr !== null) ? (
+            ) : !monthlyAnalytics.some((month: any) =>
+              month.amount_lkr !== null ||
+              month.meter_1_amount_lkr !== null ||
+              month.meter_2_amount_lkr !== null
+            ) ? (
               <p className="py-8 text-sm text-gray-500">
                 {meterAnalytics?.configuration_error ||
                   'A cost appears after a meter has at least two readings in its history.'}
@@ -440,8 +444,15 @@ export default function CompanySettingsPage() {
                       tickFormatter={(value: number) => Number(value).toLocaleString()}
                       label={{ value: 'LKR', angle: -90, position: 'insideLeft' }}
                     />
-                    <Tooltip formatter={(value: number) => formatLkr(value)} />
-                    <Bar dataKey="amount_lkr" name="Electricity cost" fill="#16a34a" />
+                    <Tooltip
+                      formatter={value =>
+                        value == null || typeof value !== 'number' ? '—' : formatLkr(value)
+                      }
+                    />
+                    <Legend />
+                    <Bar dataKey="meter_1_amount_lkr" name={form.electricity_meter_1_name} fill="#2563eb" />
+                    <Bar dataKey="meter_2_amount_lkr" name={form.electricity_meter_2_name} fill="#dc2626" />
+                    <Bar dataKey="amount_lkr" name="Combined total (incl. shared charges/tax)" fill="#16a34a" />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -449,7 +460,10 @@ export default function CompanySettingsPage() {
           </div>
 
           <div className="rounded-lg border p-4 xl:col-span-2">
-            <h3 className="font-medium">Monthly consumption and calculation details</h3>
+            <h3 className="font-medium">Monthly consumption and separate LKR amounts</h3>
+            <p className="text-xs text-gray-500 mt-1">
+              Meter columns show usage-based amounts. Shared fixed charges and tax are included only in the combined total.
+            </p>
             {analyticsLoading ? (
               <p className="py-4 text-sm text-gray-500">Loading monthly details…</p>
             ) : analyticsError ? (
@@ -465,6 +479,8 @@ export default function CompanySettingsPage() {
                       <th className="py-2 pr-4">{form.electricity_meter_1_name} (kWh)</th>
                       <th className="py-2 pr-4">{form.electricity_meter_2_name} (kWh)</th>
                       <th className="py-2 pr-4">Total (kWh)</th>
+                      <th className="py-2 pr-4">{form.electricity_meter_1_name} (LKR)</th>
+                      <th className="py-2 pr-4">{form.electricity_meter_2_name} (LKR)</th>
                       <th className="py-2 pr-4">Amount (LKR)</th>
                       <th className="py-2">Status</th>
                     </tr>
@@ -476,6 +492,12 @@ export default function CompanySettingsPage() {
                         <td className="py-2 pr-4">{Number(month.meter_1_units).toLocaleString()}</td>
                         <td className="py-2 pr-4">{Number(month.meter_2_units).toLocaleString()}</td>
                         <td className="py-2 pr-4">{Number(month.total_units).toLocaleString()}</td>
+                        <td className="py-2 pr-4 whitespace-nowrap">
+                          {month.meter_1_amount_lkr === null ? '—' : formatLkr(month.meter_1_amount_lkr)}
+                        </td>
+                        <td className="py-2 pr-4 whitespace-nowrap">
+                          {month.meter_2_amount_lkr === null ? '—' : formatLkr(month.meter_2_amount_lkr)}
+                        </td>
                         <td className="py-2 pr-4 whitespace-nowrap">
                           {month.amount_lkr === null ? '—' : formatLkr(month.amount_lkr)}
                         </td>
