@@ -316,6 +316,7 @@ export const companySettingsApi = {
   update: (data: any) => mgmtApi.put('/api/company-settings', data),
   meterReadings: (limit = 100) =>
     mgmtApi.get(`/api/company-settings/electricity-meter-readings?limit=${limit}`),
+  meterAnalytics: () => mgmtApi.get('/api/company-settings/electricity-meter-analytics'),
   addMeterReading: (data: {
     meter_id: 'meter_1' | 'meter_2'
     reading_value: number
