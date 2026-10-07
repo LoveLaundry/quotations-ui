@@ -38,8 +38,8 @@ export default function CompanySettingsPage() {
         working_days_per_week: settings.working_days_per_week ?? 6,
         working_days_pattern: (settings.working_days_pattern || [0, 1, 2, 3, 4, 5]).map(pyToJs),
         default_overtime_rate: settings.default_overtime_rate ?? 0,
-        electricity_meter_1_name: settings.electricity_meter_1_name || 'Meter 1',
-        electricity_meter_2_name: settings.electricity_meter_2_name || 'Meter 2',
+        electricity_meter_1_name: settings.electricity_meter_1_name || 'Chilaw Connection Line',
+        electricity_meter_2_name: settings.electricity_meter_2_name || 'Madampe Connection Line',
       })
     }
   }, [settings, form])
