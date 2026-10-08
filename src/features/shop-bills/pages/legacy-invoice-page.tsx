@@ -92,6 +92,8 @@ export default function LegacyInvoicePage() {
   const [searchInput, setSearchInput] = useState('')
   const [sortBy, setSortBy] = useState<'created_at' | 'invoice_number'>('created_at')
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc')
+  const [entrySortKey, setEntrySortKey] = useState<'date' | 'billNumber' | null>(null)
+  const [entrySortDir, setEntrySortDir] = useState<'asc' | 'desc'>('asc')
   const [signatures, setSignatures] = useState<Record<string, string>>({})
   const [printDialogOpen, setPrintDialogOpen] = useState(false)
 
@@ -106,7 +108,28 @@ export default function LegacyInvoicePage() {
     setRows(prev => prev.filter(r => r.id !== id))
   }
 
-  const verticalRows = useMemo(() => rows.filter(r => r.billNumber.trim() || r.amount > 0), [rows])
+  const sortedRows = useMemo(() => {
+    if (!entrySortKey) return rows
+    const dir = entrySortDir === 'asc' ? 1 : -1
+    return [...rows].sort((a, b) => {
+      const av = (entrySortKey === 'date' ? a.date : a.billNumber) || ''
+      const bv = (entrySortKey === 'date' ? b.date : b.billNumber) || ''
+      if (!av) return bv ? 1 : 0
+      if (!bv) return -1
+      return av < bv ? -dir : av > bv ? dir : 0
+    })
+  }, [rows, entrySortKey, entrySortDir])
+
+  const toggleEntrySort = (key: 'date' | 'billNumber') => {
+    if (entrySortKey === key) {
+      setEntrySortDir(d => (d === 'asc' ? 'desc' : 'asc'))
+    } else {
+      setEntrySortKey(key)
+      setEntrySortDir('asc')
+    }
+  }
+
+  const verticalRows = useMemo(() => sortedRows.filter(r => r.billNumber.trim() || r.amount > 0), [sortedRows])
   const grandTotal = useMemo(() => verticalRows.reduce((s, r) => s + (Number(r.amount) || 0), 0), [verticalRows])
 
   const saveInvoice = useCreateLegacyInvoice()
@@ -335,7 +358,7 @@ export default function LegacyInvoicePage() {
           <div className="flex items-center justify-between mb-3">
             <div>
               <h3 className="text-[13px] font-semibold text-[#101828]">Bill Entries</h3>
-              <p className="text-[11px] text-[#98A2B3] mt-0.5">Old bill date, number and amount — press Enter to go to the next field, Enter on the last row adds one.</p>
+              <p className="text-[11px] text-[#98A2B3] mt-0.5">Old bill date, number and amount — press Enter to go to the next field, Enter on the last row adds one. Click Date or Bill Number to sort.</p>
             </div>
             <Button size="sm" variant="outline" onClick={addRow} className="gap-1.5 cursor-pointer">
               <Plus size={14} /> Add Row
@@ -347,14 +370,32 @@ export default function LegacyInvoicePage() {
               <thead>
                 <tr className="border-b border-[#E4E7EC]">
                   <th className="py-2 pr-3 text-left font-semibold text-[#6B7280] w-[40px]">#</th>
-                  <th className="py-2 pr-3 text-left font-semibold text-[#6B7280]">Date</th>
-                  <th className="py-2 pr-3 text-left font-semibold text-[#6B7280]">Bill Number</th>
+                  <th className="py-2 pr-3 text-left">
+                    <button
+                      onClick={() => toggleEntrySort('date')}
+                      className={`inline-flex items-center gap-1 text-[13px] font-semibold cursor-pointer ${entrySortKey === 'date' ? 'text-[#2563EB]' : 'text-[#6B7280]'}`}
+                    >
+                      Date
+                      <ArrowUpDown size={12} className={entrySortKey === 'date' ? '' : 'text-[#98A2B3]'} />
+                      {entrySortKey === 'date' ? (entrySortDir === 'asc' ? '↑' : '↓') : null}
+                    </button>
+                  </th>
+                  <th className="py-2 pr-3 text-left">
+                    <button
+                      onClick={() => toggleEntrySort('billNumber')}
+                      className={`inline-flex items-center gap-1 text-[13px] font-semibold cursor-pointer ${entrySortKey === 'billNumber' ? 'text-[#2563EB]' : 'text-[#6B7280]'}`}
+                    >
+                      Bill Number
+                      <ArrowUpDown size={12} className={entrySortKey === 'billNumber' ? '' : 'text-[#98A2B3]'} />
+                      {entrySortKey === 'billNumber' ? (entrySortDir === 'asc' ? '↑' : '↓') : null}
+                    </button>
+                  </th>
                   <th className="py-2 pr-3 text-right font-semibold text-[#6B7280]">Amount (LKR)</th>
                   <th className="py-2 w-[40px]"></th>
                 </tr>
               </thead>
               <tbody>
-                {rows.map((row, idx) => (
+                {sortedRows.map((row, idx) => (
                   <tr key={row.id} className="border-b border-[#F2F4F7] hover:bg-[#F9FAFB]/60">
                     <td className="py-2 pr-3 text-[#98A2B3]">{idx + 1}</td>
                     <td className="py-2 pr-3">
