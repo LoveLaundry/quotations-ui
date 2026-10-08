@@ -290,8 +290,8 @@ export default function ShopBillDetailPage() {
   return (
     <div className="space-y-5 pb-10">
       {/* Header */}
-      <div className="flex items-center justify-between gap-3">
-        <div>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="min-w-0 flex-1">
           <Breadcrumb items={[{ label: 'Dashboard', href: '/' }, { label: 'Shop Bills', href: '/shop-bills' }, { label: bill?.bill_number ?? '...' }]} />
           <div className="flex items-center gap-3 mt-1">
             <Link to="/shop-bills" className="text-[#98A2B3] hover:text-[#374151]"><ArrowLeft className="h-4 w-4" /></Link>

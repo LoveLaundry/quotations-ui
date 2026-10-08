@@ -589,11 +589,11 @@ export default function SalarySlipPage() {
 
       {showSlip && generatedSlip && (
         <div className="bg-white dark:bg-gray-800 rounded-xl border p-6 space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold flex items-center gap-2">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <h2 className="text-lg font-semibold flex items-center gap-2 min-w-0 flex-1">
               <CheckCircle size={20} className="text-green-600" /> Slip Generated: {generatedSlip.slip_number}
             </h2>
-            <div className="flex gap-2 items-center">
+            <div className="flex flex-wrap gap-2 items-center">
               <div className="flex items-center gap-1 border rounded-lg p-1">
                 <button
                   onClick={() => setSlipLang('EN')}

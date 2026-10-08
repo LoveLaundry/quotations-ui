@@ -296,12 +296,12 @@ function TablesRow({ data }: { data: DashboardOverviewData }) {
       {/* Pending Balance */}
       <Card className={totalPending > 0 ? 'border-[var(--warning-border)]' : ''}>
         <CardHeader className="border-b border-[var(--border)] pb-3">
-          <div className="flex items-center justify-between">
-            <CardTitle className="flex items-center gap-2 text-[14px]">
+          <div className="flex flex-wrap items-center justify-between">
+            <CardTitle className="flex items-center gap-2 text-[14px] min-w-0 flex-1">
               <Package className="h-4 w-4" style={{ color: 'var(--text-muted)' }} /> Pending Balance
             </CardTitle>
             {totalPending > 0 && (
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <span className="text-[16px] font-bold text-[var(--warning-text)] tabular-nums">
                   {totalPending}
                 </span>

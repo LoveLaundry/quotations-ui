@@ -327,7 +327,8 @@ export default function QuotationDetailPage() {
                     </div>
                   )}
 
-                  <table className="w-full">
+                  <div className="overflow-x-auto">
+                  <table className="w-full min-w-[420px]">
                     {grouped.indexOf(grouped.find(g => g[0] === cat)!) === 0 && (
                       <thead className="border-b border-[#F2F4F7]">
                         <tr className="bg-[#F9FAFB]">
@@ -392,6 +393,7 @@ export default function QuotationDetailPage() {
                       })}
                     </tbody>
                   </table>
+                  </div>
                 </div>
               ))}
 

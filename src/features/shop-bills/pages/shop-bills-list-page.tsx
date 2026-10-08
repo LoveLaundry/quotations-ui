@@ -120,14 +120,14 @@ export default function ShopBillsListPage() {
 
   return (
     <div className="space-y-5 pb-10">
-      <div className="flex items-center justify-between gap-3">
-        <div>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="min-w-0 flex-1">
           <Breadcrumb items={[{ label: 'Dashboard', href: '/' }, { label: 'Shop Bills' }]} />
           <h1 className="text-dashboard-title mt-1">Shop Bills</h1>
           <p className="text-[13px] text-[#98A2B3] mt-0.5">{data ? `${data.total} bill${data.total === 1 ? '' : 's'}` : 'Shop bills'}</p>
           <OfflineChangesChip service="bills" resource="shop-bills" className="mt-2" />
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Button variant="outline" size="sm" onClick={() => setShowTemplates(true)} className="gap-1.5 cursor-pointer"><LayoutTemplate size={14} /> Templates</Button>
           <Button variant="outline" size="sm" onClick={() => setShowQuickBill(true)} className="gap-1.5 cursor-pointer"><Zap size={14} /> Quick Bill</Button>
           <Link to="/shop-bills/new"><Button className="bg-[#DC2626] hover:bg-[#B91C1C] text-white gap-2 cursor-pointer"><Plus size={16} /> New Bill</Button></Link>

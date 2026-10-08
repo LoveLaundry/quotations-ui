@@ -95,35 +95,38 @@ export function SignatureUploadDialog({
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
-        <DialogBody>
+        <DialogBody className="space-y-3">
           <input ref={inputRef} type="file" accept="image/png" className="hidden" onChange={handleFile} />
           {slots.map(slot => {
             const has = Boolean(pending[slot.id])
             return (
-              <div key={slot.id} className="flex items-center gap-3 rounded-[10px] border border-[var(--border)] p-3">
-                <label className="flex flex-1 cursor-pointer items-center gap-2">
+              <div
+                key={slot.id}
+                className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2 rounded-[10px] border border-[var(--border)] p-3"
+              >
+                <label className="flex min-w-0 flex-1 cursor-pointer items-center gap-2.5">
                   <input
                     type="checkbox"
                     checked={Boolean(place[slot.id])}
                     onChange={e => setPlace(p => ({ ...p, [slot.id]: e.target.checked }))}
                     disabled={!has}
-                    className="accent-[var(--brand)] cursor-pointer"
+                    className="accent-[var(--brand)] shrink-0 cursor-pointer"
                   />
-                  <span className="text-[13px] font-medium text-[var(--text-primary)]">{slot.label}</span>
+                  <span className="truncate text-[13px] font-medium text-[var(--text-primary)]">{slot.label}</span>
                 </label>
                 {has ? (
-                  <div className="flex items-center gap-2">
+                  <div className="flex shrink-0 items-center gap-2">
                     <img
                       src={pending[slot.id]}
                       alt={slot.label}
-                      className="h-10 max-w-[90px] rounded-[4px] border border-[var(--border)] bg-[var(--surface)] object-contain"
+                      className="h-10 max-w-[110px] rounded-[4px] border border-[var(--border)] bg-[var(--surface)] object-contain"
                     />
                     <button
                       onClick={() => {
                         setPending(p => { const n = { ...p }; delete n[slot.id]; return n })
                         setPlace(p => ({ ...p, [slot.id]: false }))
                       }}
-                      className="cursor-pointer p-1 text-[var(--text-faint)] transition-colors hover:text-[var(--danger-text)]"
+                      className="cursor-pointer rounded-[6px] p-1.5 text-[var(--text-faint)] transition-colors hover:bg-[var(--surface-hover)] hover:text-[var(--danger-text)]"
                       aria-label={`Remove ${slot.label}`}
                     >
                       <X size={14} />
@@ -132,9 +135,9 @@ export function SignatureUploadDialog({
                 ) : (
                   <button
                     onClick={() => pickFor(slot.id)}
-                    className="inline-flex cursor-pointer items-center gap-1.5 rounded-[6px] border border-[var(--border-2)] px-3 py-1.5 text-[12px] font-semibold text-[var(--brand-text)] transition-colors hover:bg-[var(--brand-soft)]"
+                    className="inline-flex shrink-0 cursor-pointer items-center gap-1.5 rounded-[6px] border border-[var(--border-2)] px-3 py-1.5 text-[12px] font-semibold text-[var(--brand-text)] transition-colors hover:bg-[var(--brand-soft)]"
                   >
-                    <Upload size={14} /> Upload
+                    <Upload size={14} /> Upload PNG
                   </button>
                 )}
               </div>
@@ -142,11 +145,14 @@ export function SignatureUploadDialog({
           })}
           {children}
         </DialogBody>
-        <DialogFooter>
-          <Button variant="outline" onClick={onClose} className="w-full cursor-pointer">
+        {/* flex-col (not col-reverse): DOM order is Cancel-then-confirm, which
+            already gives cancel-on-top / confirm-under-the-thumb on a mobile
+            bottom sheet, and cancel-left / confirm-right on desktop. */}
+        <DialogFooter className="flex-col">
+          <Button variant="outline" onClick={onClose} className="w-full cursor-pointer sm:w-auto">
             Cancel
           </Button>
-          <Button onClick={() => onConfirm(payload)} className="w-full cursor-pointer gap-2">
+          <Button onClick={() => onConfirm(payload)} className="w-full cursor-pointer gap-2 sm:w-auto">
             <Printer size={15} /> {confirmLabel}
           </Button>
         </DialogFooter>

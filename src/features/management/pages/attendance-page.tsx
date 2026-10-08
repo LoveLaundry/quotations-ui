@@ -594,7 +594,7 @@ export default function AttendancePage() {
     {/* Quick save card */}
       {quickDate && (
         <div className="fixed inset-0 bg-black/20 flex items-center justify-center z-40" onClick={() => setQuickDate(null)}>
-          <div className="bg-white dark:bg-gray-800 rounded-xl border p-5 w-[300px] space-y-3 shadow-xl" onClick={e => e.stopPropagation()}>
+          <div className="bg-white dark:bg-gray-800 rounded-xl border p-5 w-[300px] max-w-[calc(100vw-24px)] space-y-3 shadow-xl" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between">
               <h3 className="font-semibold flex items-center gap-2 text-sm">
                 <Check size={15} className="text-green-600" /> Quick save — {quickDate}

@@ -194,7 +194,8 @@ export default function ManagementReports() {
           {monthlyData.revenue_by_customer?.length > 0 && (
             <div className="mt-4">
               <h3 className="font-medium mb-2">Revenue by Customer</h3>
-              <table className="w-full text-sm">
+              <div className="overflow-x-auto">
+              <table className="w-full min-w-[360px] text-sm">
                 <thead className="bg-gray-50 dark:bg-gray-700">
                   <tr><th className="px-3 py-2 text-left">Customer</th><th className="px-3 py-2 text-right">Revenue</th></tr>
                 </thead>
@@ -204,6 +205,7 @@ export default function ManagementReports() {
                   ))}
                 </tbody>
               </table>
+              </div>
             </div>
           )}
         </div>
@@ -213,7 +215,8 @@ export default function ManagementReports() {
       {report === 'outstanding' && (
         <div className="bg-white dark:bg-gray-800 rounded-xl border p-6 space-y-4">
           <h2 className="text-lg font-semibold">Outstanding Payments</h2>
-          <table className="w-full text-sm">
+          <div className="overflow-x-auto">
+          <table className="w-full min-w-[560px] text-sm">
             <thead className="bg-gray-50 dark:bg-gray-700">
               <tr>
                 <th className="px-3 py-2 text-left">Customer</th>
@@ -236,6 +239,7 @@ export default function ManagementReports() {
               )}
             </tbody>
           </table>
+          </div>
         </div>
       )}
     </div>

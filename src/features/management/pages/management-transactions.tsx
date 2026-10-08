@@ -136,8 +136,8 @@ export default function ManagementTransactions() {
       )}
 
       {viewTxn && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-4 sm:p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-lg font-semibold">Transaction Details</h2>
               <button onClick={() => setViewTxn(null)} aria-label="Close details"><X size={20} /></button>
@@ -148,7 +148,8 @@ export default function ManagementTransactions() {
               <div><p className="text-gray-500">Invoice</p><p className="font-medium">{viewTxn.invoice_number || '—'}</p></div>
               <div><p className="text-gray-500">Source</p><p className="font-medium">{viewTxn.source}</p></div>
             </div>
-            <table className="w-full text-sm mb-4">
+            <div className="mb-4 overflow-x-auto">
+            <table className="w-full min-w-[520px] text-sm">
               <thead className="bg-gray-50 dark:bg-gray-700">
                 <tr>
                   <th className="px-2 py-1.5 text-left">Item</th>
@@ -172,7 +173,8 @@ export default function ManagementTransactions() {
                 ))}
               </tbody>
             </table>
-            <div className="flex justify-end gap-6 text-sm font-semibold border-t pt-3">
+            </div>
+            <div className="flex flex-wrap justify-between gap-x-6 gap-y-1 text-sm font-semibold border-t pt-3 sm:justify-end">
               <span>Total: LKR {viewTxn.total_amount.toLocaleString()}</span>
               <span>Cost: LKR {viewTxn.total_cost.toLocaleString()}</span>
               <span className="text-green-600">Profit: LKR {viewTxn.total_profit.toLocaleString()}</span>

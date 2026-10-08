@@ -468,8 +468,8 @@ function DayDialog({ params, day, dayState, rows, onClose }: DayDialogProps) {
                         </Notice>
                     )}
 
-                    <div className="overflow-hidden rounded border border-[var(--border)]">
-                        <table className="w-full border-collapse">
+                    <div className="overflow-x-auto rounded border border-[var(--border)]">
+                        <table className="w-full min-w-[640px] border-collapse">
                             <thead>
                                 <tr className="bg-[var(--surface-2)]">
                                     <th className="border-b border-[var(--border)] px-3 py-1.5 text-left text-[11px] font-semibold uppercase text-[var(--text-tertiary)]">Item</th>

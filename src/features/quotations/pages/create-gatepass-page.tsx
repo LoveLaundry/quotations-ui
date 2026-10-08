@@ -586,8 +586,8 @@ export default function CreateGatePassPage() {
                 {/* Items Card */}
                 <Card>
                     <CardHeader className="border-b border-[#F2F4F7] pb-3">
-                        <div className="flex items-center justify-between">
-                            <div>
+                        <div className="flex flex-wrap items-center justify-between">
+                            <div className="min-w-0 flex-1">
                                 <CardTitle>Linen Items</CardTitle>
                                 {selectedQuotation ? (
                                     <p className="text-[11px] text-[#98A2B3] mt-0.5">
@@ -599,7 +599,7 @@ export default function CreateGatePassPage() {
                                     </p>
                                 ) : null}
                             </div>
-                            <div className="flex items-center gap-2">
+                            <div className="flex flex-wrap items-center gap-2">
                                 {lastItems.length > 0 && (
                                     <Button
                                         type="button"

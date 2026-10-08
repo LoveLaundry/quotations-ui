@@ -8,6 +8,7 @@ import {
   CircleNotch,
   XCircle,
   CheckCircle,
+  ArrowLeft,
 } from '@phosphor-icons/react'
 import { chatApi, type ConversationDetail, type ConversationSummary } from '../../../api/chat.service'
 import { TIME_ZONE } from '../../../lib/time'
@@ -105,8 +106,11 @@ export default function LiveChatPage() {
   }
 
   return (
-    <div className="flex h-[calc(100vh-52px)] flex-col">
-      <div className="border-b border-[#E5E7EB] px-6 py-4">
+    <div className="flex h-[calc(100dvh-84px)] flex-col sm:h-[calc(100dvh-92px)] lg:h-[calc(100dvh-100px)]">
+      {/* Height = viewport minus the fixed topbar (52px) and this page's own
+          gutters (py-4 / sm:py-5 / lg:py-6). dvh keeps the composer visible
+          above mobile browser chrome. */}
+      <div className="border-b border-[#E5E7EB] px-4 py-4 sm:px-6">
         <h1 className="flex items-center gap-2 text-lg font-semibold text-[#111827]">
           <ChatCircleDots size={20} weight="fill" className="text-[#DC2626]" />
           Live Chat
@@ -117,9 +121,13 @@ export default function LiveChatPage() {
         </p>
       </div>
 
-      <div className="flex min-h-0 flex-1">
-        {/* Conversation list */}
-        <div className="w-full max-w-[320px] shrink-0 overflow-y-auto border-r border-[#E5E7EB]">
+      <div className="flex min-h-0 flex-1 flex-col md:flex-row">
+        {/* Conversation list — full-screen picker on phones, fixed rail from md */}
+        <div
+          className={`w-full overflow-y-auto border-b border-[#E5E7EB] md:w-[320px] md:shrink-0 md:border-b-0 md:border-r ${
+            selectedId ? 'hidden md:block' : 'min-h-0 flex-1 md:flex-none'
+          }`}
+        >
           {listQuery.isLoading ? (
             <div className="p-4 text-[13px] text-[#9CA3AF]">Loading conversations…</div>
           ) : conversations.length === 0 ? (
@@ -169,26 +177,38 @@ export default function LiveChatPage() {
           )}
         </div>
 
-        {/* Thread */}
-        <div className="flex min-w-0 flex-1 flex-col bg-[#FAFAFA]">
+        {/* Thread — hidden on phones until a conversation is picked */}
+        <div
+          className={`min-w-0 flex-1 flex-col bg-[#FAFAFA] ${selectedId ? 'flex' : 'hidden md:flex'}`}
+        >
           {!detail ? (
             <div className="flex flex-1 items-center justify-center text-[13px] text-[#9CA3AF]">
               Select a conversation to view the chat.
             </div>
           ) : (
             <>
-              <div className="flex items-center justify-between border-b border-[#E5E7EB] bg-white px-5 py-3">
-                <div>
-                  <p className="text-[14px] font-semibold text-[#111827]">
-                    {detail.guest_name || 'Website visitor'}
-                  </p>
-                  <p className="text-[11px] text-[#9CA3AF]">
-                    {detail.assigned_admin_name
-                      ? `Handled by ${detail.assigned_admin_name}`
-                      : 'Bot is answering'}
-                  </p>
+              <div className="flex items-center justify-between gap-2 border-b border-[#E5E7EB] bg-white px-3 py-3 sm:px-5">
+                <div className="flex min-w-0 items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => setSelectedId(null)}
+                    className="-ml-1 shrink-0 rounded-lg p-1.5 text-[#6B7280] transition hover:bg-[#F3F4F6] md:hidden"
+                    aria-label="Back to conversations"
+                  >
+                    <ArrowLeft size={18} />
+                  </button>
+                  <div className="min-w-0">
+                    <p className="truncate text-[14px] font-semibold text-[#111827]">
+                      {detail.guest_name || 'Website visitor'}
+                    </p>
+                    <p className="truncate text-[11px] text-[#9CA3AF]">
+                      {detail.assigned_admin_name
+                        ? `Handled by ${detail.assigned_admin_name}`
+                        : 'Bot is answering'}
+                    </p>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex shrink-0 items-center gap-2">
                   {detail.status !== 'closed' ? (
                     <button
                       type="button"

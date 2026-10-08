@@ -303,8 +303,8 @@ export default function BillsListPage() {
 
     return (
         <div className="space-y-5 pb-10">
-            <div className="flex items-center justify-between gap-3">
-                <div>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="min-w-0 flex-1">
                     <Breadcrumb items={[{ label: 'Dashboard', href: '/' }, { label: 'Bills' }]} />
                     <h1 className="text-dashboard-title mt-1">Bills</h1>
                     <p className="text-[13px] text-[#98A2B3] mt-0.5">
@@ -318,7 +318,7 @@ export default function BillsListPage() {
                         <SyncStatusBar queryKey={['bills']} label="Bills" className="mt-2" />
                     </div>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                     <Button variant="secondary" onClick={handleExportExcel} disabled={!bills.length}>
                         <Download className="h-4 w-4 mr-2" /> Export
                     </Button>

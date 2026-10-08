@@ -203,8 +203,8 @@ export default function BillDetailPage() {
 
   return (
     <div className="space-y-5 pb-10">
-      <div className="flex items-center justify-between gap-3 print:hidden">
-        <div>
+      <div className="flex flex-wrap items-center justify-between gap-3 print:hidden">
+        <div className="min-w-0 flex-1">
           <Breadcrumb
             items={[
               { label: 'Dashboard', href: '/' },
@@ -222,7 +222,7 @@ export default function BillDetailPage() {
         </div>
 
         {bill && (
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <Button variant="secondary" size="sm" onClick={() => handlePrint()}>
               <Printer className="h-3.5 w-3.5" /> Print
             </Button>

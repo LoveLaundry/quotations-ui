@@ -220,7 +220,8 @@ export default function ReturnDetailPage() {
           </CardTitle>
         </CardHeader>
         <CardContent className="pt-0">
-          <table className="w-full text-[13px]">
+          <div className="overflow-x-auto">
+          <table className="w-full min-w-[640px] text-[13px]">
             <thead className="bg-gray-50 border-b border-gray-100">
               <tr>
                 <th className="px-4 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wide text-gray-500">Item</th>
@@ -271,6 +272,7 @@ export default function ReturnDetailPage() {
               ))}
             </tbody>
           </table>
+          </div>
         </CardContent>
       </Card>
 

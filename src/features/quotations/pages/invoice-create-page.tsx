@@ -161,8 +161,8 @@ export default function InvoiceCreatePage() {
 
   return (
     <div className="space-y-5 pb-10">
-      <div className="flex items-start justify-between gap-3 print:hidden">
-        <div>
+      <div className="flex flex-wrap items-start justify-between gap-3 print:hidden">
+        <div className="min-w-0 flex-1">
           <Breadcrumb
             items={[
               { label: 'Dashboard', href: '/' },
@@ -181,6 +181,7 @@ export default function InvoiceCreatePage() {
             setPrintDialogOpen(true)
           }}
           disabled={chosen.length === 0 || isClientAddressLoading}
+          className="shrink-0"
         >
           <Printer className="h-4 w-4 mr-2" /> Print Invoice
         </Button>
@@ -333,28 +334,36 @@ export default function InvoiceCreatePage() {
         description="Upload the laundry manager's PNG signature and enter the bank details to print on this invoice. The values are not saved to the account."
         confirmLabel="Print invoice"
       >
-        <div className="mt-4 grid gap-3 sm:grid-cols-2">
-          {([
-            ['bankName', 'Bank name'],
-            ['branch', 'Branch'],
-            ['accountName', 'Account name'],
-            ['accountNumber', 'Account number'],
-          ] as const).map(([key, label]) => (
-            <label key={key} className="flex flex-col gap-1">
-              <span className="text-[12px] font-medium text-[var(--text-secondary)]">{label}</span>
-              <input
-                required
-                value={pendingBankDetails[key]}
-                onChange={(event) =>
-                  setPendingBankDetails((current) => ({
-                    ...current,
-                    [key]: event.target.value,
-                  }))
-                }
-                className="h-10 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 text-[13px] text-[var(--text-primary)] outline-none focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/10"
-              />
-            </label>
-          ))}
+        <div className="space-y-3">
+          <div>
+            <p className="text-[12px] font-semibold text-[var(--text-primary)]">Bank details to print</p>
+            <p className="text-[11.5px] text-[var(--text-muted)]">
+              All four values are required. They are used for this invoice only and are not saved.
+            </p>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2">
+            {([
+              ['bankName', 'Bank name'],
+              ['branch', 'Branch'],
+              ['accountName', 'Account name'],
+              ['accountNumber', 'Account number'],
+            ] as const).map(([key, label]) => (
+              <label key={key} className="flex min-w-0 flex-col gap-1">
+                <span className="text-[12px] font-medium text-[var(--text-secondary)]">{label}</span>
+                <input
+                  required
+                  value={pendingBankDetails[key]}
+                  onChange={(event) =>
+                    setPendingBankDetails((current) => ({
+                      ...current,
+                      [key]: event.target.value,
+                    }))
+                  }
+                  className="h-10 w-full rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 text-[13px] text-[var(--text-primary)] outline-none focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/10"
+                />
+              </label>
+            ))}
+          </div>
         </div>
       </SignatureUploadDialog>
     </div>
