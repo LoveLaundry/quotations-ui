@@ -5,12 +5,12 @@ import type { LegacyInvoiceCreate } from '../../../types/shop-bill'
 
 export const legacyInvoiceKeys = {
   all: ['legacy-invoices'] as const,
-  list: (params?: { skip?: number; limit?: number; search?: string }) =>
+  list: (params?: { skip?: number; limit?: number; search?: string; sortBy?: string; sortDir?: 'asc' | 'desc' }) =>
     [...legacyInvoiceKeys.all, 'list', params] as const,
   detail: (id: string) => [...legacyInvoiceKeys.all, id] as const,
 }
 
-export function useLegacyInvoices(params?: { skip?: number; limit?: number; search?: string }) {
+export function useLegacyInvoices(params?: { skip?: number; limit?: number; search?: string; sortBy?: string; sortDir?: 'asc' | 'desc' }) {
   return useQuery({
     queryKey: legacyInvoiceKeys.list(params),
     queryFn: () => shopBillService.listLegacyInvoices(params),

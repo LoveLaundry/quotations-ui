@@ -63,7 +63,7 @@ export const shopBillService = {
   markLegacyPaid: (id: string) =>
     billsApi.post<LegacyInvoice>(`/shop-bills/legacy/${id}/mark-paid`).then((r: any) => r.data),
 
-  listLegacyInvoices: (params?: { skip?: number; limit?: number; search?: string }) =>
+  listLegacyInvoices: (params?: { skip?: number; limit?: number; search?: string; sortBy?: string; sortDir?: 'asc' | 'desc' }) =>
     billsApi.get<{ items: LegacyInvoice[]; total: number }>('/shop-bills/legacy', { params }).then((r: any) => r.data),
 
   getLegacyInvoice: (id: string) =>

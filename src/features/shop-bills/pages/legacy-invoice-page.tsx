@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState } from 'react'
-import { Plus, Trash2, Printer, Save, Search, RotateCcw, CheckCircle2, FileText, Pencil, BadgeCheck } from 'lucide-react'
+import { Plus, Trash2, Printer, Save, Search, RotateCcw, CheckCircle2, FileText, Pencil, BadgeCheck, ArrowUpDown } from 'lucide-react'
 import { useReactToPrint } from 'react-to-print'
 import { Button } from '../../../components/ui/button'
 import { Card } from '../../../components/ui/card'
@@ -90,6 +90,8 @@ export default function LegacyInvoicePage() {
   const [deleteTarget, setDeleteTarget] = useState<LegacyInvoice | null>(null)
   const [markPaidTarget, setMarkPaidTarget] = useState<LegacyInvoice | null>(null)
   const [searchInput, setSearchInput] = useState('')
+  const [sortBy, setSortBy] = useState<'created_at' | 'invoice_number'>('created_at')
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc')
   const [signatures, setSignatures] = useState<Record<string, string>>({})
   const [printDialogOpen, setPrintDialogOpen] = useState(false)
 
@@ -238,6 +240,8 @@ export default function LegacyInvoicePage() {
   const { data: listData, isLoading: listLoading, isError: listError, error: listErr } = useLegacyInvoices({
     search: searchInput.trim() || undefined,
     limit: 50,
+    sortBy,
+    sortDir,
   })
 
   return (
@@ -384,20 +388,41 @@ export default function LegacyInvoicePage() {
 
       {/* Saved Invoices */}
       <div className="space-y-3 print:hidden">
-        <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 className="text-[14px] font-semibold text-[#101828]">Saved Invoices</h2>
             <p className="text-[11px] text-[#98A2B3]">Every legacy invoice you create is stored and can be reprinted anytime.</p>
           </div>
-          <div className="relative w-full sm:w-72">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#98A2B3]" />
-            <input
-              type="text"
-              value={searchInput}
-              onChange={e => setSearchInput(e.target.value)}
-              placeholder="Search by shop / hotel…"
-              className="h-10 w-full rounded-lg border border-[#E4E7EC] bg-white pl-9 pr-3 text-[13px] text-[#101828] outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/10 shadow-sm"
-            />
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+            <div className="flex items-center gap-1.5">
+              <select
+                value={sortBy}
+                onChange={e => setSortBy(e.target.value as 'created_at' | 'invoice_number')}
+                aria-label="Sort invoices by"
+                className="h-10 rounded-lg border border-[#E4E7EC] bg-white px-3 text-[13px] text-[#101828] outline-none focus:border-[#2563EB] cursor-pointer"
+              >
+                <option value="created_at">Date created</option>
+                <option value="invoice_number">Invoice number</option>
+              </select>
+              <button
+                onClick={() => setSortDir(d => (d === 'asc' ? 'desc' : 'asc'))}
+                title={sortDir === 'asc' ? 'Ascending order' : 'Descending order'}
+                className="flex h-10 items-center gap-1 rounded-lg border border-[#E4E7EC] bg-white px-3 text-[13px] font-semibold text-[#101828] outline-none hover:bg-[#F9FAFB] cursor-pointer"
+              >
+                <ArrowUpDown size={14} />
+                {sortDir === 'asc' ? 'ASC' : 'DESC'}
+              </button>
+            </div>
+            <div className="relative w-full sm:w-72">
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#98A2B3]" />
+              <input
+                type="text"
+                value={searchInput}
+                onChange={e => setSearchInput(e.target.value)}
+                placeholder="Search by shop / hotel…"
+                className="h-10 w-full rounded-lg border border-[#E4E7EC] bg-white pl-9 pr-3 text-[13px] text-[#101828] outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/10 shadow-sm"
+              />
+            </div>
           </div>
         </div>
 
