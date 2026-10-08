@@ -2,11 +2,12 @@ import { useEffect, useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { companySettingsApi } from '../api/management-api'
 import { toast } from 'sonner'
-import { Save, Settings, Zap } from 'lucide-react'
+import { Save, Settings, Zap, Activity, TrendingUp, TrendingDown, Minus } from 'lucide-react'
 import {
   Bar,
   BarChart,
   CartesianGrid,
+  ComposedChart,
   Legend,
   Line,
   LineChart,
@@ -29,6 +30,87 @@ const DEFAULT_ELECTRICITY_COST_FORMULA =
   '((meter_1_units + meter_2_units) * unit_rate_lkr + fixed_charge_lkr) * (1 + tax_rate)'
 const formatLkr = (value: number) =>
   `LKR ${Number(value).toLocaleString('en-LK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+const formatKwh = (value: number) =>
+  `${Number(value).toLocaleString('en-LK', { maximumFractionDigits: 1 })} kWh`
+
+const USAGE_RANGES = [
+  { value: '7', label: '7 days' },
+  { value: '14', label: '14 days' },
+  { value: '30', label: '30 days' },
+  { value: '90', label: '90 days' },
+  { value: 'all', label: 'All' },
+] as const
+
+function TrendBadge({ trend }: { trend?: any }) {
+  if (!trend) return <span className="text-xs text-gray-400">—</span>
+  const Icon = trend.direction === 'up' ? TrendingUp : trend.direction === 'down' ? TrendingDown : Minus
+  const color = trend.direction === 'up' ? 'text-green-600' : trend.direction === 'down' ? 'text-red-600' : 'text-gray-500'
+  return (
+    <span className={`inline-flex flex-wrap items-center gap-x-1 ${color}`}>
+      <Icon size={14} />
+      <span className="font-semibold">
+        {trend.direction === 'up' ? '+' : trend.kwh_per_day > 0 ? '+' : ''}
+        {Number(trend.kwh_per_day).toLocaleString('en-LK', { maximumFractionDigits: 1 })} kWh/day
+      </span>
+      <span className="text-gray-400 font-normal">r² {Number(trend.r_squared).toFixed(2)}</span>
+    </span>
+  )
+}
+
+function UsageCard({ meter, name }: { meter?: any; name: string }) {
+  const hasData = meter && meter.measured_days > 0
+  return (
+    <div className="rounded-lg border p-4 space-y-3">
+      <div className="flex items-center justify-between gap-2">
+        <h4 className="font-medium truncate">{name}</h4>
+        {meter?.reset_detected && (
+          <span className="shrink-0 text-[11px] text-amber-700" title="A reading was lower than its previous reading">reset detected</span>
+        )}
+      </div>
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <p className="text-xs text-gray-500">Total usage</p>
+          <p className="font-semibold">{hasData ? formatKwh(meter.total_usage_kwh) : '—'}</p>
+        </div>
+        <div>
+          <p className="text-xs text-gray-500">Daily average</p>
+          <p className="font-semibold">{hasData ? formatKwh(meter.avg_daily_kwh) : '—'}</p>
+        </div>
+        <div>
+          <p className="text-xs text-gray-500">Peak day</p>
+          <p className="font-semibold">
+            {hasData ? (
+              <>
+                {meter.peak_day.date}
+                <span className="ml-1 text-gray-500 font-normal">{formatKwh(meter.peak_day.kwh)}</span>
+              </>
+            ) : '—'}
+          </p>
+        </div>
+        <div>
+          <p className="text-xs text-gray-500">Trend (slope)</p>
+          <TrendBadge trend={meter?.trend} />
+        </div>
+      </div>
+      <p className="text-xs text-gray-400">
+        {hasData
+          ? meter.latest_reading_kwh != null
+            ? `${meter.measured_days} days with data · last reading ${formatKwh(meter.latest_reading_kwh)} on ${meter.latest_reading_date}`
+            : `${meter.measured_days} days with data`
+          : meter?.readings
+            ? `${meter.readings} reading${meter.readings === 1 ? '' : 's'} recorded — add one more to see usage`
+            : 'No readings recorded yet'}
+      </p>
+      {meter?.warnings?.length > 0 && (
+        <ul className="space-y-1">
+          {meter.warnings.map((warning: string, index: number) => (
+            <li key={index} className="text-xs text-amber-700">{warning}</li>
+          ))}
+        </ul>
+      )}
+    </div>
+  )
+}
 
 export default function CompanySettingsPage() {
   const qc = useQueryClient()
@@ -40,6 +122,7 @@ export default function CompanySettingsPage() {
     meter_1: '',
     meter_2: '',
   })
+  const [usageRange, setUsageRange] = useState<string>('30')
 
   const { data: settings, isLoading } = useQuery({
     queryKey: ['company-settings'],
@@ -70,6 +153,7 @@ export default function CompanySettingsPage() {
       toast.success('Company settings saved')
       invalidateResource(qc, 'settings')
       qc.invalidateQueries({ queryKey: ['electricity-meter-analytics'] })
+      qc.invalidateQueries({ queryKey: ['electricity-meter-usage'] })
     },
     onError: (e: any) => toast.error(e.response?.data?.detail || 'Failed to save settings'),
   })
@@ -94,6 +178,16 @@ export default function CompanySettingsPage() {
     queryFn: () => companySettingsApi.meterAnalytics().then(r => r.data),
   })
 
+  const {
+    data: meterUsage,
+    isLoading: usageLoading,
+    isError: usageError,
+    refetch: refetchUsage,
+  } = useQuery({
+    queryKey: ['electricity-meter-usage'],
+    queryFn: () => companySettingsApi.meterUsage().then(r => r.data),
+  })
+
   const addReadingMut = useMutation({
     mutationFn: (data: {
       meter_id: 'meter_1' | 'meter_2'
@@ -105,6 +199,7 @@ export default function CompanySettingsPage() {
       setReadingValues(current => ({ ...current, [variables.meter_id]: '' }))
       qc.invalidateQueries({ queryKey: ['electricity-meter-readings'] })
       qc.invalidateQueries({ queryKey: ['electricity-meter-analytics'] })
+      qc.invalidateQueries({ queryKey: ['electricity-meter-usage'] })
     },
     onError: (e: any) => toast.error(e.response?.data?.detail || 'Failed to save electricity reading'),
   })
@@ -145,6 +240,13 @@ export default function CompanySettingsPage() {
     meter_2: reading.meter_id === 'meter_2' ? Number(reading.reading_value) : null,
   }))
   const monthlyAnalytics = meterAnalytics?.months || []
+
+  const usageDays = meterUsage?.days || []
+  const usageRows = usageRange === 'all'
+    ? usageDays
+    : usageDays.slice(-Math.max(0, Math.min(Number(usageRange), usageDays.length)))
+  const usageMeters = meterUsage?.meters || {}
+  const usageCombined = meterUsage?.combined || {}
 
   if (isLoading || !form || !settings) {
     return <div className="text-center py-12 text-gray-400">Loading settings...</div>
@@ -520,6 +622,106 @@ export default function CompanySettingsPage() {
             )}
           </div>
         </div>
+      </section>
+
+      <section className="bg-white dark:bg-gray-800 rounded-xl border p-6 space-y-5">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <h2 className="text-lg font-semibold flex items-center gap-2">
+              <Activity size={20} /> Daily usage &amp; trends
+            </h2>
+            <p className="text-sm text-gray-500 mt-1">
+              Usage per day per meter (intervals between readings are distributed evenly across the days they span, in kWh).
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-1">
+            {USAGE_RANGES.map(range => (
+              <button
+                key={range.value}
+                onClick={() => setUsageRange(range.value)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium border cursor-pointer ${
+                  usageRange === range.value
+                    ? 'bg-red-600 text-white border-red-600'
+                    : 'bg-white dark:bg-gray-700 text-gray-500 border-gray-200 dark:border-gray-600'
+                }`}
+              >
+                {range.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {usageLoading ? (
+          <p className="py-8 text-sm text-gray-500">Loading daily usage…</p>
+        ) : usageError ? (
+          <button type="button" onClick={() => refetchUsage()} className="py-8 text-sm text-red-600">
+            Could not load usage analytics — retry
+          </button>
+        ) : usageDays.length === 0 ? (
+          <p className="py-8 text-sm text-gray-500">
+            Add at least two readings for a meter to see daily usage, trend and statistics.
+          </p>
+        ) : (
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <UsageCard meter={usageMeters?.meter_1} name={usageMeters?.meter_1?.name || form.electricity_meter_1_name} />
+              <UsageCard meter={usageMeters?.meter_2} name={usageMeters?.meter_2?.name || form.electricity_meter_2_name} />
+              <UsageCard meter={usageCombined} name="Combined (both meters)" />
+            </div>
+
+            <div className="rounded-lg border p-4">
+              <h3 className="font-medium">Daily usage with 7-day trend lines</h3>
+              <p className="text-xs text-gray-500 mt-1">
+                Bars are kWh per day; the analytical lines are the 7-day trailing averages of each meter (and the combined total).
+              </p>
+              <div className="h-80 mt-3">
+                <ResponsiveContainer width="100%" height="100%">
+                  <ComposedChart data={usageRows} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="date" minTickGap={24} />
+                    <YAxis label={{ value: 'kWh / day', angle: -90, position: 'insideLeft' }} />
+                    <Tooltip
+                      labelFormatter={(value: string) => `Date: ${value}`}
+                      formatter={(value: any, name: string) =>
+                        value == null ? ['—', name] : [formatKwh(value), name]
+                      }
+                    />
+                    <Legend />
+                    <Bar dataKey="meter_1" name={`${usageMeters?.meter_1?.name || form.electricity_meter_1_name} · daily`} fill="#bfdbfe" radius={[3, 3, 0, 0]} maxBarSize={28} />
+                    <Bar dataKey="meter_2" name={`${usageMeters?.meter_2?.name || form.electricity_meter_2_name} · daily`} fill="#fecaca" radius={[3, 3, 0, 0]} maxBarSize={28} />
+                    <Line type="monotone" dataKey="meter_1_ma7" name={`${usageMeters?.meter_1?.name || form.electricity_meter_1_name} · 7-day avg`} stroke="#1d4ed8" strokeWidth={2} dot={false} />
+                    <Line type="monotone" dataKey="meter_2_ma7" name={`${usageMeters?.meter_2?.name || form.electricity_meter_2_name} · 7-day avg`} stroke="#b91c1c" strokeWidth={2} dot={false} />
+                    <Line type="monotone" dataKey="combined_ma7" name="Combined · 7-day avg" stroke="#15803d" strokeWidth={2} dot={false} />
+                  </ComposedChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+            <div className="overflow-x-auto">
+              <h3 className="font-medium mb-2">Recent days</h3>
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="text-left text-gray-500 border-b">
+                    <th className="py-2 pr-4">Date</th>
+                    <th className="py-2 pr-4">{usageMeters?.meter_1?.name || form.electricity_meter_1_name} (kWh)</th>
+                    <th className="py-2 pr-4">{usageMeters?.meter_2?.name || form.electricity_meter_2_name} (kWh)</th>
+                    <th className="py-2">Combined (kWh)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {usageRows.slice(-10).reverse().map((row: any) => (
+                    <tr key={row.date} className="border-b last:border-0">
+                      <td className="py-2 pr-4">{row.date}</td>
+                      <td className="py-2 pr-4">{row.meter_1 == null ? '—' : formatKwh(row.meter_1)}</td>
+                      <td className="py-2 pr-4">{row.meter_2 == null ? '—' : formatKwh(row.meter_2)}</td>
+                      <td className="py-2">{row.combined == null ? '—' : formatKwh(row.combined)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
+        )}
       </section>
 
       <div className="bg-white dark:bg-gray-800 rounded-xl border p-6 space-y-6">
