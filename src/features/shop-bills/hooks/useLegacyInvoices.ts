@@ -37,6 +37,31 @@ export function useCreateLegacyInvoice() {
   })
 }
 
+export function useUpdateLegacyInvoice() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, payload }: { id: string; payload: LegacyInvoiceCreate }) =>
+      shopBillService.updateLegacyInvoice(id, payload),
+    onSuccess: (invoice) => {
+      qc.invalidateQueries({ queryKey: legacyInvoiceKeys.all })
+      toast.success(`Invoice ${invoice.invoice_number} updated`)
+    },
+    onError: () => toast.error('Failed to update invoice'),
+  })
+}
+
+export function useMarkLegacyPaid() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (id: string) => shopBillService.markLegacyPaid(id),
+    onSuccess: (invoice) => {
+      qc.invalidateQueries({ queryKey: legacyInvoiceKeys.all })
+      toast.success(`Invoice ${invoice.invoice_number} marked as paid`)
+    },
+    onError: () => toast.error('Failed to mark invoice as paid'),
+  })
+}
+
 export function useDeleteLegacyInvoice() {
   const qc = useQueryClient()
   return useMutation({

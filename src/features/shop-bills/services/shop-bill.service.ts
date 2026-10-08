@@ -57,6 +57,12 @@ export const shopBillService = {
   createLegacyInvoice: (data: LegacyInvoiceCreate) =>
     billsApi.post<LegacyInvoice>('/shop-bills/legacy', data).then((r: any) => r.data),
 
+  updateLegacyInvoice: (id: string, data: LegacyInvoiceCreate) =>
+    billsApi.put<LegacyInvoice>(`/shop-bills/legacy/${id}`, data).then((r: any) => r.data),
+
+  markLegacyPaid: (id: string) =>
+    billsApi.post<LegacyInvoice>(`/shop-bills/legacy/${id}/mark-paid`).then((r: any) => r.data),
+
   listLegacyInvoices: (params?: { skip?: number; limit?: number; search?: string }) =>
     billsApi.get<{ items: LegacyInvoice[]; total: number }>('/shop-bills/legacy', { params }).then((r: any) => r.data),
 

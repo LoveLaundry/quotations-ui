@@ -118,5 +118,6 @@ export interface LegacyInvoice {
   entries: LegacyInvoiceEntry[]
   total_entries: number
   grand_total: number
+  payment_status?: string
   created_at: string
 }

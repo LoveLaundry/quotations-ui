@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState } from 'react'
-import { Plus, Trash2, Printer, Save, Search, RotateCcw, CheckCircle2, FileText } from 'lucide-react'
+import { Plus, Trash2, Printer, Save, Search, RotateCcw, CheckCircle2, FileText, Pencil, BadgeCheck } from 'lucide-react'
 import { useReactToPrint } from 'react-to-print'
 import { Button } from '../../../components/ui/button'
 import { Card } from '../../../components/ui/card'
@@ -16,6 +16,8 @@ import {
   useCreateLegacyInvoice,
   useDeleteLegacyInvoice,
   useLegacyInvoices,
+  useMarkLegacyPaid,
+  useUpdateLegacyInvoice,
 } from '../hooks/useLegacyInvoices'
 import type { LegacyInvoice } from '../../../types/shop-bill'
 import { formatDateOnly } from '../../../lib/utils'
@@ -84,7 +86,9 @@ export default function LegacyInvoicePage() {
   const [description, setDescription] = useState('')
   const [rows, setRows] = useState<InvoiceRow[]>([makeRow()])
   const [saved, setSaved] = useState<LegacyInvoice | null>(null)
+  const [editing, setEditing] = useState<LegacyInvoice | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<LegacyInvoice | null>(null)
+  const [markPaidTarget, setMarkPaidTarget] = useState<LegacyInvoice | null>(null)
   const [searchInput, setSearchInput] = useState('')
   const [signatures, setSignatures] = useState<Record<string, string>>({})
   const [printDialogOpen, setPrintDialogOpen] = useState(false)
@@ -104,29 +108,51 @@ export default function LegacyInvoicePage() {
   const grandTotal = useMemo(() => verticalRows.reduce((s, r) => s + (Number(r.amount) || 0), 0), [verticalRows])
 
   const saveInvoice = useCreateLegacyInvoice()
+  const updateInvoice = useUpdateLegacyInvoice()
   const deleteInvoice = useDeleteLegacyInvoice()
+  const markPaid = useMarkLegacyPaid()
 
-  const canSave = shopName.trim().length > 0 && verticalRows.length > 0 && grandTotal > 0 && !saveInvoice.isPending
+  const isEditing = Boolean(editing)
+  const canSave = shopName.trim().length > 0 && verticalRows.length > 0 && grandTotal > 0 && !saveInvoice.isPending && !updateInvoice.isPending
+
+  const buildPayload = () => ({
+    shop_name: shopName.trim(),
+    description: description.trim() || undefined,
+    entries: verticalRows.map(r => ({
+      date: r.date || undefined,
+      bill_number: r.billNumber.trim() || undefined,
+      amount: Number(r.amount) || 0,
+    })),
+  })
+
+  const resetForm = () => {
+    setShopName('')
+    setDescription('')
+    setRows([makeRow()])
+    setSignatures({})
+  }
 
   const handleSave = () => {
     if (!canSave) return
+    if (editing) {
+      updateInvoice.mutate(
+        { id: editing.id, payload: buildPayload() },
+        {
+          onSuccess: invoice => {
+            setSaved(invoice)
+            setEditing(null)
+            resetForm()
+          },
+        },
+      )
+      return
+    }
     saveInvoice.mutate(
+      buildPayload(),
       {
-        shop_name: shopName.trim(),
-        description: description.trim() || undefined,
-        entries: verticalRows.map(r => ({
-          date: r.date || undefined,
-          bill_number: r.billNumber.trim() || undefined,
-          amount: Number(r.amount) || 0,
-        })),
-      },
-      {
-onSuccess: invoice => {
+        onSuccess: invoice => {
           setSaved(invoice)
-          setShopName('')
-          setDescription('')
-          setRows([makeRow()])
-          setSignatures({})
+          resetForm()
         },
       },
     )
@@ -134,10 +160,28 @@ onSuccess: invoice => {
 
   const handleNew = () => {
     setSaved(null)
-    setShopName('')
-    setDescription('')
-    setRows([makeRow()])
+    setEditing(null)
+    resetForm()
+  }
+
+  const handleEdit = (invoice: LegacyInvoice) => {
+    if (invoice.payment_status === 'PAID') return
+    setEditing(invoice)
+    setSaved(invoice)
+    setShopName(invoice.shop_name)
+    setDescription(invoice.description ?? '')
+    setRows(
+      invoice.entries.length > 0
+        ? invoice.entries.map(e => ({
+            id: crypto.randomUUID(),
+            date: e.date ?? '',
+            billNumber: e.bill_number ?? '',
+            amount: Number(e.amount) || 0,
+          }))
+        : [makeRow()],
+    )
     setSignatures({})
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   const handleLoad = (invoice: LegacyInvoice) => {
@@ -145,11 +189,23 @@ onSuccess: invoice => {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
+  const handleMarkPaid = () => {
+    if (!markPaidTarget) return
+    markPaid.mutate(markPaidTarget.id, {
+      onSuccess: invoice => {
+        if (editing?.id === invoice.id) setEditing(null)
+        setSaved(invoice)
+        setMarkPaidTarget(null)
+      },
+    })
+  }
+
   const handleDelete = () => {
     if (!deleteTarget) return
     deleteInvoice.mutate(deleteTarget.id, {
       onSuccess: () => {
         if (saved?.id === deleteTarget.id) setSaved(null)
+        if (editing?.id === deleteTarget.id) setEditing(null)
         setDeleteTarget(null)
       },
     })
@@ -206,7 +262,7 @@ onSuccess: invoice => {
                 <Printer size={16} /> Print
               </Button>
               <Button onClick={handleSave} disabled={!canSave} className="gap-2 cursor-pointer">
-                <Save size={16} /> {saveInvoice.isPending ? 'Saving…' : 'Save Invoice'}
+                <Save size={16} /> {saveInvoice.isPending || updateInvoice.isPending ? 'Saving…' : isEditing ? 'Save Changes' : 'Save Invoice'}
               </Button>
             </div>
             <SyncStatusBar queryKey={['legacy-invoices']} label="Invoices" />
@@ -222,13 +278,30 @@ onSuccess: invoice => {
               <CheckCircle2 className="h-5 w-5 text-[#16A34A]" />
             </div>
             <div>
-              <p className="text-[13px] font-semibold text-[#15803D]">Invoice {saved.invoice_number} saved</p>
+              <p className="text-[13px] font-semibold text-[#15803D]">
+                Invoice {saved.invoice_number} saved
+                {saved.payment_status === 'PAID' && (
+                  <span className="ml-2 inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-wide text-[#166534] bg-[#BBF7D0] rounded-full px-2 py-0.5">
+                    <BadgeCheck size={12} /> Paid
+                  </span>
+                )}
+              </p>
               <p className="text-[11px] text-[#16A34A]/80">
                 {saved.shop_name} · {saved.total_entries} entr{saved.total_entries === 1 ? 'y' : 'ies'} · {fmtMoney(saved.grand_total)} · {formatDateOnly(saved.created_at)}
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            {saved.payment_status !== 'PAID' && (
+              <>
+                <Button size="sm" variant="outline" onClick={() => handleEdit(saved)} className="gap-1.5 cursor-pointer">
+                  <Pencil size={14} /> Edit
+                </Button>
+                <Button size="sm" variant="outline" onClick={() => setMarkPaidTarget(saved)} className="gap-1.5 cursor-pointer">
+                  <BadgeCheck size={14} /> Mark as Paid
+                </Button>
+              </>
+            )}
             <Button size="sm" variant="outline" onClick={requestPrint} className="gap-1.5 cursor-pointer">
               <Printer size={14} /> Print {saved.invoice_number}
             </Button>
@@ -290,7 +363,7 @@ onSuccess: invoice => {
                       <input type="number" min="0" step="0.01" value={row.amount || ''} onChange={e => updateRow(row.id, 'amount', parseFloat(e.target.value) || 0)} placeholder="0.00" className={`${cellInputClass} text-right`} ref={grid.registerCell(idx, 2)} />
                     </td>
                     <td className="py-2">
-                      <button onClick={() => removeRow(row.id)} disabled={rows.length <= 1 || Boolean(saved)} className="p-1.5 text-[#98A2B3] hover:text-[#DC2626] disabled:opacity-30 cursor-pointer">
+                      <button onClick={() => removeRow(row.id)} disabled={rows.length <= 1 || (Boolean(saved) && !editing)} className="p-1.5 text-[#98A2B3] hover:text-[#DC2626] disabled:opacity-30 cursor-pointer">
                         <Trash2 size={14} />
                       </button>
                     </td>
@@ -353,7 +426,7 @@ onSuccess: invoice => {
                   <th className="py-2.5 px-4 text-center font-semibold text-[#6B7280]">Entries</th>
                   <th className="py-2.5 px-4 text-right font-semibold text-[#6B7280]">Grand Total</th>
                   <th className="py-2.5 px-4 text-left font-semibold text-[#6B7280]">Created</th>
-                  <th className="py-2.5 px-4 w-[120px]"></th>
+                  <th className="py-2.5 px-4 w-[180px]"></th>
                 </tr>
               </thead>
               <tbody>
@@ -365,14 +438,25 @@ onSuccess: invoice => {
                     <td className="py-2.5 px-4 text-right font-semibold text-[#101828]">{fmtMoney(inv.grand_total)}</td>
                     <td className="py-2.5 px-4 text-[#98A2B3] whitespace-nowrap">{formatDateOnly(inv.created_at)}</td>
                     <td className="py-2.5 px-4">
-                      <div className="flex items-center justify-end gap-1">
-                        <Button size="sm" variant="ghost" onClick={() => handleLoad(inv)} className="gap-1.5 cursor-pointer">
-                          <Printer size={14} /> View / Print
-                        </Button>
-                        <button onClick={() => setDeleteTarget(inv)} className="p-2 text-[#98A2B3] hover:text-[#DC2626] hover:bg-[#FEF2F2] rounded-lg cursor-pointer">
-                          <Trash2 size={15} />
-                        </button>
-                      </div>
+                      {inv.payment_status === 'PAID' ? (
+                        <div className="flex items-center justify-end">
+                          <span className="inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-wide text-[#166534] bg-[#BBF7D0] rounded-full px-2 py-0.5">
+                            <BadgeCheck size={12} /> Paid
+                          </span>
+                        </div>
+                      ) : (
+                        <div className="flex items-center justify-end gap-1">
+                          <Button size="sm" variant="ghost" onClick={() => handleEdit(inv)} className="gap-1.5 cursor-pointer">
+                            <Pencil size={14} /> Edit
+                          </Button>
+                          <Button size="sm" variant="ghost" onClick={() => handleLoad(inv)} className="gap-1.5 cursor-pointer">
+                            <Printer size={14} /> Print
+                          </Button>
+                          <button onClick={() => setDeleteTarget(inv)} className="p-2 text-[#98A2B3] hover:text-[#DC2626] hover:bg-[#FEF2F2] rounded-lg cursor-pointer">
+                            <Trash2 size={15} />
+                          </button>
+                        </div>
+                      )}
                     </td>
                   </tr>
                 ))}
@@ -498,6 +582,16 @@ onSuccess: invoice => {
         description={`Are you sure you want to delete ${deleteTarget?.invoice_number ?? 'this invoice'} for ${deleteTarget?.shop_name ?? ''}? This action cannot be undone.`}
         confirmLabel="Delete"
         variant="danger"
+      />
+
+      <ConfirmDialog
+        open={Boolean(markPaidTarget)}
+        onCancel={() => setMarkPaidTarget(null)}
+        onConfirm={handleMarkPaid}
+        loading={markPaid.isPending}
+        title="Mark as Paid"
+        description={`Mark ${markPaidTarget?.invoice_number ?? 'this invoice'} for ${markPaidTarget?.shop_name ?? ''} as paid? It can no longer be edited or deleted.`}
+        confirmLabel="Mark as Paid"
       />
     </div>
   )
