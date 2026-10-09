@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { companySettingsApi } from '../api/management-api'
 import { toast } from 'sonner'
-import { Save, Settings, Zap, Activity, TrendingUp, TrendingDown, Minus } from 'lucide-react'
+import { Activity, AlertCircle, Minus, Pencil, Save, Settings, TrendingDown, TrendingUp, X, Zap } from 'lucide-react'
 import {
   Bar,
   BarChart,
@@ -123,6 +123,9 @@ export default function CompanySettingsPage() {
     meter_2: '',
   })
   const [usageRange, setUsageRange] = useState<string>('30')
+  const [editReading, setEditReading] = useState<any | null>(null)
+  const [editValue, setEditValue] = useState('')
+  const [editReason, setEditReason] = useState('')
 
   const { data: settings, isLoading } = useQuery({
     queryKey: ['company-settings'],
@@ -203,6 +206,27 @@ export default function CompanySettingsPage() {
     },
     onError: (e: any) => toast.error(e.response?.data?.detail || 'Failed to save electricity reading'),
   })
+
+  const updateReadingMut = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: { reading_value: number; reason: string } }) =>
+      companySettingsApi.updateMeterReading(id, data),
+    onSuccess: () => {
+      toast.success('Reading corrected — reason recorded')
+      setEditReading(null)
+      setEditValue('')
+      setEditReason('')
+      qc.invalidateQueries({ queryKey: ['electricity-meter-readings'] })
+      qc.invalidateQueries({ queryKey: ['electricity-meter-analytics'] })
+      qc.invalidateQueries({ queryKey: ['electricity-meter-usage'] })
+    },
+    onError: (e: any) => toast.error(e.response?.data?.detail || 'Failed to correct the reading'),
+  })
+
+  const openEdit = (reading: any) => {
+    setEditReading(reading)
+    setEditValue(String(Number(reading.reading_value) || ''))
+    setEditReason('')
+  }
 
   const toggleDow = (i: number) => {
     if (!form) return
@@ -455,15 +479,37 @@ export default function CompanySettingsPage() {
                 <tr className="text-left text-gray-500 border-b">
                   <th className="py-2 pr-4">Meter</th>
                   <th className="py-2 pr-4">Reading (kWh)</th>
-                  <th className="py-2">Date and time (LKT)</th>
+                  <th className="py-2 pr-4">Date and time (LKT)</th>
+                  {isAdmin && <th className="py-2">Actions</th>}
                 </tr>
               </thead>
               <tbody>
                 {meterReadings.map((reading: any) => (
                   <tr key={reading.id} className="border-b last:border-0">
                     <td className="py-2 pr-4">{reading.meter_name}</td>
-                    <td className="py-2 pr-4">{Number(reading.reading_value).toLocaleString()}</td>
-                    <td className="py-2">{formatTimestamp(reading.recorded_at)} LKT</td>
+                    <td className="py-2 pr-4">
+                      {Number(reading.reading_value).toLocaleString()}
+                      {reading.correction_reason && (
+                        <span
+                          title={reading.correction_reason}
+                          className="ml-2 inline-flex items-center gap-1 text-[11px] text-amber-700 bg-amber-50 border border-amber-200 rounded px-1.5 py-0.5"
+                        >
+                          <AlertCircle size={11} /> corrected
+                        </span>
+                      )}
+                    </td>
+                    <td className="py-2 pr-4">{formatTimestamp(reading.recorded_at)} LKT</td>
+                    {isAdmin && (
+                      <td className="py-2">
+                        <button
+                          type="button"
+                          onClick={() => openEdit(reading)}
+                          className="inline-flex items-center gap-1 text-xs text-[#B91C1C] hover:text-red-700 cursor-pointer"
+                        >
+                          <Pencil size={13} /> Edit
+                        </button>
+                      </td>
+                    )}
                   </tr>
                 ))}
               </tbody>
@@ -787,6 +833,77 @@ export default function CompanySettingsPage() {
           <p className="text-xs text-gray-400 mt-1">Non-working days are skipped in salary calculation. Sundays and Saturdays follow your selection.</p>
         </div>
       </div>
+
+      {editReading && isAdmin && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => setEditReading(null)}>
+          <div className="w-full max-w-md rounded-xl bg-white p-5 shadow-xl" onClick={e => e.stopPropagation()}>
+            <div className="flex items-start justify-between gap-3 mb-3">
+              <div>
+                <h3 className="font-semibold">Correct meter reading</h3>
+                <p className="text-xs text-gray-500 mt-0.5">
+                  {editReading.meter_name} · {formatTimestamp(editReading.recorded_at)} LKT · current value{' '}
+                  {Number(editReading.reading_value).toLocaleString()} kWh
+                </p>
+              </div>
+              <button type="button" onClick={() => setEditReading(null)} className="text-gray-400 hover:text-gray-600 cursor-pointer">
+                <X size={18} />
+              </button>
+            </div>
+            <div className="space-y-3">
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">New reading (kWh)</label>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={editValue}
+                  onChange={e => setEditValue(e.target.value)}
+                  className="w-full rounded-md border px-3 py-2 text-sm"
+                  placeholder="0.00"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">Reason for correction *</label>
+                <textarea
+                  value={editReason}
+                  onChange={e => setEditReason(e.target.value)}
+                  rows={3}
+                  className="w-full rounded-md border px-3 py-2 text-sm"
+                  placeholder="e.g. Mistyped the reading — actual meter value was …"
+                />
+              </div>
+              <div className="flex justify-end gap-2 pt-1">
+                <button
+                  type="button"
+                  onClick={() => setEditReading(null)}
+                  className="rounded-md border px-4 py-2 text-sm cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  disabled={
+                    updateReadingMut.isPending ||
+                    !editReason.trim() ||
+                    editValue === '' ||
+                    Number(editValue) < 0 ||
+                    Number(editValue) === Number(editReading.reading_value)
+                  }
+                  onClick={() =>
+                    updateReadingMut.mutate({
+                      id: editReading.id,
+                      data: { reading_value: Number(editValue), reason: editReason.trim() },
+                    })
+                  }
+                  className="rounded-md bg-[#B91C1C] px-4 py-2 text-sm text-white font-medium disabled:opacity-40 cursor-pointer disabled:cursor-not-allowed"
+                >
+                  {updateReadingMut.isPending ? 'Saving…' : 'Save correction'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

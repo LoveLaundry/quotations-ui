@@ -323,6 +323,8 @@ export const companySettingsApi = {
     reading_value: number
     recorded_at: string
   }) => mgmtApi.post('/api/company-settings/electricity-meter-readings', data),
+  updateMeterReading: (id: string, data: { reading_value: number; reason: string }) =>
+    mgmtApi.put(`/api/company-settings/electricity-meter-readings/${id}`, data),
 }
 
 // ── Attendance (Enhanced) ────────────────────────────────────────────────
