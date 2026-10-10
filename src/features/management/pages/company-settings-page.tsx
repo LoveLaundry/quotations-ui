@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react'
+import { Fragment, useEffect, useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { companySettingsApi } from '../api/management-api'
 import { toast } from 'sonner'
-import { Activity, AlertCircle, Minus, Pencil, Save, Settings, TrendingDown, TrendingUp, X, Zap } from 'lucide-react'
+import { Activity, AlertCircle, Minus, Pencil, Plus, Save, Settings, Trash2, TrendingDown, TrendingUp, X, Zap } from 'lucide-react'
 import {
   Bar,
   BarChart,
@@ -26,8 +26,6 @@ const DOW_LABELS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Fri
 // Backend uses Python weekday(): 0=Monday ... 6=Sunday.
 const pyToJs = (py: number) => (py + 1) % 7
 const jsToPy = (js: number) => (js + 6) % 7
-const DEFAULT_ELECTRICITY_COST_FORMULA =
-  '((meter_1_units + meter_2_units) * unit_rate_lkr + fixed_charge_lkr) * (1 + tax_rate)'
 const formatLkr = (value: number) =>
   `LKR ${Number(value).toLocaleString('en-LK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
 const formatKwh = (value: number) =>
@@ -112,6 +110,46 @@ function UsageCard({ meter, name }: { meter?: any; name: string }) {
   )
 }
 
+function SlabBreakdown({ cost, name }: { cost?: any; name: string }) {
+  if (!cost) return null
+  return (
+    <div className="rounded-md border p-3 bg-gray-50 dark:bg-gray-900/40">
+      <p className="text-xs font-semibold mb-2">{name} — {formatKwh(cost.units)}</p>
+      <table className="w-full text-xs">
+        <thead>
+          <tr className="text-left text-gray-500">
+            <th className="py-1 pr-2 font-medium">Units block</th>
+            <th className="py-1 pr-2 font-medium">Rate</th>
+            <th className="py-1 pr-2 font-medium text-right">Units</th>
+            <th className="py-1 font-medium text-right">Charge</th>
+          </tr>
+        </thead>
+        <tbody>
+          {(cost.breakdown || []).map((row: any, index: number) => (
+            <tr key={index} className="border-t border-gray-100 dark:border-gray-800">
+              <td className="py-1 pr-2">
+                {Number(row.from_units).toLocaleString()}–{row.up_to == null ? '∞' : Number(row.up_to).toLocaleString()}
+                {index === cost.applied_slab && (
+                  <span className="ml-1 text-[10px] text-amber-700">(fixed applies)</span>
+                )}
+              </td>
+              <td className="py-1 pr-2">{Number(row.rate_lkr).toLocaleString()} LKR</td>
+              <td className="py-1 pr-2 text-right">{Number(row.units).toLocaleString()}</td>
+              <td className="py-1 text-right">{formatLkr(row.charge_lkr)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <div className="mt-2 space-y-0.5 text-xs">
+        <div className="flex justify-between"><span className="text-gray-500">Energy charge</span><span>{formatLkr(cost.energy_lkr)}</span></div>
+        <div className="flex justify-between"><span className="text-gray-500">Fixed charge (stepped)</span><span>{formatLkr(cost.fixed_charge_lkr)}</span></div>
+        <div className="flex justify-between"><span className="text-gray-500">Tax ({(Number(cost.tax_rate) * 100).toLocaleString()}%)</span><span>{formatLkr(cost.amount_lkr - cost.subtotal_lkr)}</span></div>
+        <div className="flex justify-between font-semibold"><span>Total</span><span>{formatLkr(cost.amount_lkr)}</span></div>
+      </div>
+    </div>
+  )
+}
+
 export default function CompanySettingsPage() {
   const qc = useQueryClient()
   const { user } = useAuth()
@@ -126,6 +164,7 @@ export default function CompanySettingsPage() {
   const [editReading, setEditReading] = useState<any | null>(null)
   const [editValue, setEditValue] = useState('')
   const [editReason, setEditReason] = useState('')
+  const [expandedMonth, setExpandedMonth] = useState<string | null>(null)
 
   const { data: settings, isLoading } = useQuery({
     queryKey: ['company-settings'],
@@ -142,9 +181,7 @@ export default function CompanySettingsPage() {
         default_overtime_rate: settings.default_overtime_rate ?? 0,
         electricity_meter_1_name: settings.electricity_meter_1_name || 'Chilaw Connection Line',
         electricity_meter_2_name: settings.electricity_meter_2_name || 'Madampe Connection Line',
-        electricity_cost_formula: settings.electricity_cost_formula || DEFAULT_ELECTRICITY_COST_FORMULA,
-        electricity_unit_rate_lkr: settings.electricity_unit_rate_lkr ?? '',
-        electricity_fixed_charge_lkr: settings.electricity_fixed_charge_lkr ?? 0,
+        electricity_unit_slabs: settings.electricity_unit_slabs || [],
         electricity_tax_rate: settings.electricity_tax_rate ?? 0,
       })
     }
@@ -236,19 +273,83 @@ export default function CompanySettingsPage() {
     setForm({ ...form, working_days_pattern: pattern, working_days_per_week: pattern.length })
   }
 
+  const updateSlab = (index: number, field: 'up_to' | 'rate_lkr' | 'fixed_charge_lkr', value: string) => {
+    const slabs = [...(form.electricity_unit_slabs || [])]
+    slabs[index] = { ...slabs[index], [field]: value === '' ? null : Number(value) }
+    setForm({ ...form, electricity_unit_slabs: slabs })
+  }
+
+  const addSlab = () => {
+    setForm({
+      ...form,
+      electricity_unit_slabs: [
+        ...(form.electricity_unit_slabs || []),
+        { up_to: null, rate_lkr: 0, fixed_charge_lkr: 0 },
+      ],
+    })
+  }
+
+  const removeSlab = (index: number) => {
+    setForm({
+      ...form,
+      electricity_unit_slabs: (form.electricity_unit_slabs || []).filter((_: any, i: number) => i !== index),
+    })
+  }
+
+  const normalizeSlabsForSave = (): any[] | null => {
+    const slabs = form.electricity_unit_slabs || []
+    if (slabs.length === 0) return []
+    let prevTop: number | null = null
+    for (let i = 0; i < slabs.length; i++) {
+      const slab = slabs[i]
+      const last = i === slabs.length - 1
+      const rate = Number(slab.rate_lkr)
+      const fixed = Number(slab.fixed_charge_lkr)
+      if (slab.rate_lkr === null || slab.rate_lkr === '' || Number.isNaN(rate) || rate < 0) {
+        toast.error(`Slab ${i + 1}: enter a rate of 0 or more`)
+        return null
+      }
+      if (slab.fixed_charge_lkr === null || slab.fixed_charge_lkr === '' || Number.isNaN(fixed) || fixed < 0) {
+        toast.error(`Slab ${i + 1}: enter a fixed charge of 0 or more`)
+        return null
+      }
+      if (slab.up_to === null || slab.up_to === '') {
+        if (!last) {
+          toast.error(`Slab ${i + 1}: only the last slab may have no upper limit`)
+          return null
+        }
+      } else {
+        const top = Number(slab.up_to)
+        if (Number.isNaN(top) || top <= 0) {
+          toast.error(`Slab ${i + 1}: upper limit must be greater than 0`)
+          return null
+        }
+        if (prevTop !== null && top <= prevTop) {
+          toast.error('Slab limits must increase from the first row to the last')
+          return null
+        }
+        prevTop = top
+      }
+    }
+    return slabs.map((slab: any) => ({
+      up_to: slab.up_to === null || slab.up_to === '' ? null : Number(slab.up_to),
+      rate_lkr: Number(slab.rate_lkr),
+      fixed_charge_lkr: Number(slab.fixed_charge_lkr),
+    }))
+  }
+
   const handleSave = () => {
+    const slabs = isAdmin ? normalizeSlabsForSave() : []
+    if (isAdmin && !slabs) return
     const data = {
       ...form,
       working_days_pattern: (form.working_days_pattern || []).map(jsToPy),
-      electricity_unit_rate_lkr:
-        form.electricity_unit_rate_lkr === '' ? null : Number(form.electricity_unit_rate_lkr),
+      electricity_unit_slabs: slabs,
     }
     if (!isAdmin) {
       delete data.electricity_meter_1_name
       delete data.electricity_meter_2_name
-      delete data.electricity_cost_formula
-      delete data.electricity_unit_rate_lkr
-      delete data.electricity_fixed_charge_lkr
+      delete data.electricity_unit_slabs
       delete data.electricity_tax_rate
     }
     saveMut.mutate(data)
@@ -316,69 +417,116 @@ export default function CompanySettingsPage() {
             </div>
 
             <div className="border-t pt-5 space-y-4">
-              <div>
-                <h3 className="font-semibold">Electricity amount formula</h3>
-                <p className="text-sm text-gray-500 mt-1">
-                  The formula is applied once per month to the combined meter consumption. Save your tariff and formula with the main Save button.
-                </p>
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <h3 className="font-semibold">Unit slab tariff</h3>
+                  <p className="text-sm text-gray-500 mt-1">
+                    Sri Lanka style unit breakdown, applied to each meter separately. Each unit block is charged at its
+                    slab rate, and the fixed charge of the slab the month&apos;s total units fall into is added on top.
+                    Save with the main Save button.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={addSlab}
+                  className="shrink-0 inline-flex items-center gap-1 px-3 py-1.5 border rounded-lg text-xs font-medium cursor-pointer"
+                >
+                  <Plus size={14} /> Add slab
+                </button>
               </div>
-              <label className="block text-sm font-medium text-gray-600 dark:text-gray-400">
-                Formula
+              {(form.electricity_unit_slabs || []).length === 0 ? (
+                <p className="text-sm text-gray-500 py-2">
+                  No tariff slabs configured yet — add rows for your unit blocks (e.g. 0–30, 31–60, …).
+                </p>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="text-left text-gray-500 border-b">
+                        <th className="py-2 pr-3 font-medium">Slab</th>
+                        <th className="py-2 pr-3 font-medium">Up to (units)</th>
+                        <th className="py-2 pr-3 font-medium">Rate (LKR/unit)</th>
+                        <th className="py-2 pr-3 font-medium">Fixed charge (LKR)</th>
+                        <th className="py-2"></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {(form.electricity_unit_slabs || []).map((slab: any, index: number, all: any[]) => {
+                        const last = index === all.length - 1
+                        const prevTop = index === 0 ? 0 : all[index - 1].up_to
+                        return (
+                          <tr key={index} className="border-b last:border-0">
+                            <td className="py-2 pr-3 text-gray-500 whitespace-nowrap">
+                              {index === 0 ? '0' : Number(prevTop).toLocaleString()}–{slab.up_to === null || slab.up_to === '' ? '∞' : Number(slab.up_to).toLocaleString()}
+                            </td>
+                            <td className="py-2 pr-3">
+                              <input
+                                type="number"
+                                min="0"
+                                step="any"
+                                value={slab.up_to ?? ''}
+                                onChange={e => updateSlab(index, 'up_to', e.target.value)}
+                                placeholder={last ? `No limit (above ${index === 0 ? 0 : Number(prevTop).toLocaleString()})` : 'e.g. 30'}
+                                className="w-full px-3 py-1.5 border rounded-lg text-sm"
+                              />
+                            </td>
+                            <td className="py-2 pr-3">
+                              <input
+                                type="number"
+                                min="0"
+                                step="any"
+                                value={slab.rate_lkr ?? ''}
+                                onChange={e => updateSlab(index, 'rate_lkr', e.target.value)}
+                                placeholder="0.00"
+                                className="w-full px-3 py-1.5 border rounded-lg text-sm"
+                              />
+                            </td>
+                            <td className="py-2 pr-3">
+                              <input
+                                type="number"
+                                min="0"
+                                step="any"
+                                value={slab.fixed_charge_lkr ?? ''}
+                                onChange={e => updateSlab(index, 'fixed_charge_lkr', e.target.value)}
+                                placeholder="0.00"
+                                className="w-full px-3 py-1.5 border rounded-lg text-sm"
+                              />
+                            </td>
+                            <td className="py-2">
+                              <button
+                                type="button"
+                                onClick={() => removeSlab(index)}
+                                className="p-1.5 text-gray-400 hover:text-red-600 cursor-pointer"
+                                aria-label={`Remove slab ${index + 1}`}
+                              >
+                                <Trash2 size={14} />
+                              </button>
+                            </td>
+                          </tr>
+                        )
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+              <p className="text-xs text-gray-500">
+                Leave the last row&apos;s “Up to” empty for the top slab (no upper limit). Only the last row may be left empty.
+              </p>
+              <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 max-w-xs">
+                Tax rate (fraction; 0.18 = 18%)
                 <input
-                  value={form.electricity_cost_formula}
-                  onChange={e => setForm({ ...form, electricity_cost_formula: e.target.value })}
-                  maxLength={300}
-                  className="w-full mt-1 px-3 py-2 border rounded-lg font-mono text-sm"
-                  aria-describedby="electricity-formula-variables"
+                  type="number"
+                  min="0"
+                  max="1"
+                  step="0.001"
+                  value={form.electricity_tax_rate}
+                  onChange={e => setForm({ ...form, electricity_tax_rate: Number(e.target.value) || 0 })}
+                  className="w-full mt-1 px-3 py-2 border rounded-lg text-sm"
                 />
               </label>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <label className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                  Unit rate (LKR/kWh)
-                  <input
-                    type="number"
-                    min="0"
-                    step="any"
-                    value={form.electricity_unit_rate_lkr}
-                    onChange={e => setForm({
-                      ...form,
-                      electricity_unit_rate_lkr: e.target.value === '' ? '' : Number(e.target.value),
-                    })}
-                    className="w-full mt-1 px-3 py-2 border rounded-lg text-sm"
-                  />
-                  <span className="block text-xs text-gray-400 mt-1">Required before LKR calculations are shown.</span>
-                </label>
-                <label className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                  Fixed monthly charge (LKR)
-                  <input
-                    type="number"
-                    min="0"
-                    step="any"
-                    value={form.electricity_fixed_charge_lkr}
-                    onChange={e => setForm({ ...form, electricity_fixed_charge_lkr: Number(e.target.value) || 0 })}
-                    className="w-full mt-1 px-3 py-2 border rounded-lg text-sm"
-                  />
-                </label>
-                <label className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                  Tax rate (fraction; 0.18 = 18%)
-                  <input
-                    type="number"
-                    min="0"
-                    max="1"
-                    step="0.001"
-                    value={form.electricity_tax_rate}
-                    onChange={e => setForm({ ...form, electricity_tax_rate: Number(e.target.value) || 0 })}
-                    className="w-full mt-1 px-3 py-2 border rounded-lg text-sm"
-                  />
-                </label>
-              </div>
-              <p id="electricity-formula-variables" className="text-xs text-gray-500">
-                Variables: meter_1_current, meter_1_previous, meter_1_units, meter_2_current, meter_2_previous,
-                meter_2_units, unit_rate_lkr, fixed_charge_lkr, tax_rate. Use numbers, parentheses, +, -, *, /, //, %, or **.
-              </p>
             </div>
             <p className="text-xs text-gray-400">
-              Only admins can configure meters, rates, or the cost formula, or submit readings.
+              Only admins can configure meters, tariff slabs, or tax, or submit readings.
             </p>
           </div>
         ) : (
@@ -566,7 +714,7 @@ export default function CompanySettingsPage() {
 
           <div className="rounded-lg border p-4">
             <h3 className="font-medium">Monthly electricity cost (LKR)</h3>
-            <p className="text-xs text-gray-500 mt-1">Calculated by the saved admin formula.</p>
+            <p className="text-xs text-gray-500 mt-1">Calculated per meter from the saved unit-slab tariff.</p>
             {analyticsLoading ? (
               <p className="py-8 text-sm text-gray-500">Loading monthly costs…</p>
             ) : analyticsError ? (
@@ -600,7 +748,7 @@ export default function CompanySettingsPage() {
                     <Legend />
                     <Bar dataKey="meter_1_amount_lkr" name={form.electricity_meter_1_name} fill="#2563eb" />
                     <Bar dataKey="meter_2_amount_lkr" name={form.electricity_meter_2_name} fill="#dc2626" />
-                    <Bar dataKey="amount_lkr" name="Combined total (incl. shared charges/tax)" fill="#16a34a" />
+                    <Bar dataKey="amount_lkr" name="Combined total (sum of both meters)" fill="#16a34a" />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -610,7 +758,8 @@ export default function CompanySettingsPage() {
           <div className="rounded-lg border p-4 xl:col-span-2">
             <h3 className="font-medium">Monthly consumption and separate LKR amounts</h3>
             <p className="text-xs text-gray-500 mt-1">
-              Meter columns show usage-based amounts. Shared fixed charges and tax are included only in the combined total.
+              Each meter&apos;s amount includes its slab-based energy charge, the stepped fixed charge for its
+              consumption block, and tax. The combined total is the sum of both meters.
             </p>
             {analyticsLoading ? (
               <p className="py-4 text-sm text-gray-500">Loading monthly details…</p>
@@ -635,32 +784,53 @@ export default function CompanySettingsPage() {
                   </thead>
                   <tbody>
                     {monthlyAnalytics.map((month: any) => (
-                      <tr key={month.month} className="border-b last:border-0 align-top">
-                        <td className="py-2 pr-4 whitespace-nowrap">{month.month}</td>
-                        <td className="py-2 pr-4">{Number(month.meter_1_units).toLocaleString()}</td>
-                        <td className="py-2 pr-4">{Number(month.meter_2_units).toLocaleString()}</td>
-                        <td className="py-2 pr-4">{Number(month.total_units).toLocaleString()}</td>
-                        <td className="py-2 pr-4 whitespace-nowrap">
-                          {month.meter_1_amount_lkr === null ? '—' : formatLkr(month.meter_1_amount_lkr)}
-                        </td>
-                        <td className="py-2 pr-4 whitespace-nowrap">
-                          {month.meter_2_amount_lkr === null ? '—' : formatLkr(month.meter_2_amount_lkr)}
-                        </td>
-                        <td className="py-2 pr-4 whitespace-nowrap">
-                          {month.amount_lkr === null ? '—' : formatLkr(month.amount_lkr)}
-                        </td>
-                        <td className="py-2">
-                          {month.errors?.length ? (
-                            <span className="text-red-600">{month.errors.join(' ')}</span>
-                          ) : month.warnings?.length ? (
-                            <span className="text-amber-700">{month.warnings.join(' ')}</span>
-                          ) : month.amount_lkr === null ? (
-                            <span className="text-gray-500">Needs another reading</span>
-                          ) : (
-                            <span className="text-green-700">Calculated</span>
-                          )}
-                        </td>
-                      </tr>
+                      <Fragment key={month.month}>
+                        <tr className="border-b last:border-0 align-top">
+                          <td className="py-2 pr-4 whitespace-nowrap">{month.month}</td>
+                          <td className="py-2 pr-4">{Number(month.meter_1_units).toLocaleString()}</td>
+                          <td className="py-2 pr-4">{Number(month.meter_2_units).toLocaleString()}</td>
+                          <td className="py-2 pr-4">{Number(month.total_units).toLocaleString()}</td>
+                          <td className="py-2 pr-4 whitespace-nowrap">
+                            {month.meter_1_amount_lkr === null ? '—' : formatLkr(month.meter_1_amount_lkr)}
+                          </td>
+                          <td className="py-2 pr-4 whitespace-nowrap">
+                            {month.meter_2_amount_lkr === null ? '—' : formatLkr(month.meter_2_amount_lkr)}
+                          </td>
+                          <td className="py-2 pr-4 whitespace-nowrap">
+                            {month.amount_lkr === null ? '—' : formatLkr(month.amount_lkr)}
+                          </td>
+                          <td className="py-2">
+                            {month.errors?.length ? (
+                              <span className="text-red-600">{month.errors.join(' ')}</span>
+                            ) : month.warnings?.length ? (
+                              <span className="text-amber-700">{month.warnings.join(' ')}</span>
+                            ) : month.amount_lkr === null ? (
+                              <span className="text-gray-500">Needs another reading</span>
+                            ) : (
+                              <span className="text-green-700">Calculated</span>
+                            )}
+                            {(month.meter_1_cost || month.meter_2_cost) && (
+                              <button
+                                type="button"
+                                onClick={() => setExpandedMonth(current => (current === month.month ? null : month.month))}
+                                className="ml-2 text-xs text-[#B91C1C] hover:text-red-700 underline underline-offset-2 cursor-pointer"
+                              >
+                                {expandedMonth === month.month ? 'Hide breakdown' : 'Breakdown'}
+                              </button>
+                            )}
+                          </td>
+                        </tr>
+                        {expandedMonth === month.month && (month.meter_1_cost || month.meter_2_cost) && (
+                          <tr className="border-b last:border-0">
+                            <td colSpan={8} className="py-2 pr-4">
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <SlabBreakdown cost={month.meter_1_cost} name={form.electricity_meter_1_name} />
+                                <SlabBreakdown cost={month.meter_2_cost} name={form.electricity_meter_2_name} />
+                              </div>
+                            </td>
+                          </tr>
+                        )}
+                      </Fragment>
                     ))}
                   </tbody>
                 </table>
