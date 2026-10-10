@@ -190,7 +190,8 @@ function ProjectionCard({ entry, past }: { entry?: any; past: boolean }) {
         </div>
       </div>
       <p className="text-xs text-gray-400">
-        {entry.method === 'trend' ? 'Trend-adjusted pace' : 'Average pace'}
+        {entry.method_label} · {formatKwh(entry.pace_kwh_per_day)}/day pace
+        {entry.method_note ? ` · ${entry.method_note}` : ''}
         {entry.last_reading_date ? ` · last reading ${entry.last_reading_date}` : ' · no readings yet'}
       </p>
     </div>
@@ -280,6 +281,9 @@ export default function CompanySettingsPage() {
   const [projStart, setProjStart] = useState('')
   const [projEnd, setProjEnd] = useState('')
   const [projMeter, setProjMeter] = useState<'meter_1' | 'meter_2' | 'combined'>('combined')
+  const [projMethod, setProjMethod] = useState('')
+  const [formulaDraft, setFormulaDraft] = useState('')
+  const [formulaApplied, setFormulaApplied] = useState<string | null>(null)
   const projBothSet = Boolean(projStart && projEnd)
   const {
     data: meterProjection,
@@ -288,12 +292,15 @@ export default function CompanySettingsPage() {
     error: projectionErr,
     refetch: refetchProjection,
   } = useQuery({
-    queryKey: ['electricity-meter-projection', projBothSet ? projStart : 'current', projBothSet ? projEnd : 'current'],
+    queryKey: ['electricity-meter-projection', projBothSet ? projStart : 'current', projBothSet ? projEnd : 'current', projMethod || 'saved', formulaApplied || 'stored'],
     queryFn: () => companySettingsApi.projection(
       projBothSet ? projStart : undefined,
       projBothSet ? projEnd : undefined,
+      projMethod || undefined,
+      projMethod === 'custom' && formulaApplied ? formulaApplied : undefined,
     ).then(r => r.data),
   })
+  const effectiveMethod = projMethod || meterProjection?.method || 'linear_trend'
   const fmtDay = (iso?: string | null) =>
     iso ? new Date(`${iso}T00:00:00`).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) : '—'
   const periodLabel = (start?: string | null, end?: string | null, fallback?: string) =>
@@ -425,6 +432,8 @@ export default function CompanySettingsPage() {
       delete data.electricity_unit_slabs
       delete data.electricity_tax_rate
       delete data.electricity_billing_cycle_start_day
+      delete data.electricity_projection_method
+      delete data.electricity_projection_formula
     }
     saveMut.mutate(data)
   }
@@ -978,7 +987,7 @@ export default function CompanySettingsPage() {
             </h2>
             <p className="text-sm text-gray-500 mt-1">
               {meterProjection
-                ? `${periodLabel(meterProjection.period_start, meterProjection.period_end)} · trend-adjusted pace from complete days`
+                ? `${periodLabel(meterProjection.period_start, meterProjection.period_end)} · ${meterProjection.method_label}`
                 : 'Projected month-end units and slab cost.'}
             </p>
           </div>
@@ -1013,6 +1022,86 @@ export default function CompanySettingsPage() {
               </button>
             )}
           </div>
+        </div>
+
+        <div className="flex flex-col gap-3 rounded-lg border p-3 bg-gray-50 dark:bg-gray-900/40">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-end">
+            <label className="text-xs font-medium text-gray-600 dark:text-gray-400">
+              Projection method
+              <select
+                value={projMethod}
+                onChange={e => { setProjMethod(e.target.value); setFormulaApplied(null) }}
+                className="block mt-1 px-3 py-1.5 border rounded-lg text-sm bg-white dark:bg-gray-800"
+              >
+                <option value="">Saved default{meterProjection ? ` (${meterProjection.method_label})` : ''}</option>
+                {(meterProjection?.methods || []).map((m: any) => (
+                  <option key={m.id} value={m.id} title={m.description}>{m.label}</option>
+                ))}
+              </select>
+            </label>
+            {effectiveMethod === 'custom' && (
+              isAdmin ? (
+                <div className="flex-1 min-w-0">
+                  <label className="block text-xs font-medium text-gray-600 dark:text-gray-400">
+                    Custom pace formula (kWh/day)
+                  </label>
+                  <div className="flex gap-2 mt-1">
+                    <input
+                      value={formulaDraft}
+                      onChange={e => setFormulaDraft(e.target.value)}
+                      placeholder="e.g. avg_7d + trend_slope"
+                      maxLength={300}
+                      className="flex-1 min-w-0 px-3 py-1.5 border rounded-lg text-sm font-mono"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setFormulaApplied(formulaDraft.trim())}
+                      disabled={!formulaDraft.trim()}
+                      className="shrink-0 px-3 py-1.5 border rounded-lg text-xs font-medium cursor-pointer disabled:opacity-40"
+                    >
+                      Preview
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <p className="text-xs text-gray-500 self-center">Custom formula (set by an admin).</p>
+              )
+            )}
+            {isAdmin && (
+              <button
+                type="button"
+                onClick={() => {
+                  const data: any = { electricity_projection_method: effectiveMethod }
+                  if (effectiveMethod === 'custom' && formulaDraft.trim()) {
+                    data.electricity_projection_formula = formulaDraft.trim()
+                  }
+                  saveMut.mutate(data, {
+                    onSuccess: () => {
+                      setProjMethod('')
+                      setFormulaApplied(null)
+                      setFormulaDraft('')
+                    },
+                  })
+                }}
+                disabled={saveMut.isPending || (!projMethod && !formulaDraft.trim())}
+                className="shrink-0 px-3 py-1.5 rounded-lg text-xs font-medium border cursor-pointer disabled:opacity-40 lg:ml-auto"
+              >
+                {saveMut.isPending ? 'Saving…' : 'Save as default'}
+              </button>
+            )}
+          </div>
+          {effectiveMethod === 'custom' && (
+            <p className="text-xs text-gray-500">
+              Variables: units_so_far, measured_days, remaining_days, total_days, avg_daily, avg_7d, avg_14d,
+              median_daily, trend_slope, trend_intercept, last_daily. Functions: min, max, abs, round.
+              {formulaApplied ? ` Previewing “${formulaApplied}” — not saved yet.` : ''}
+            </p>
+          )}
+          {meterProjection?.methods?.find((m: any) => m.id === effectiveMethod)?.description && effectiveMethod !== 'custom' && (
+            <p className="text-xs text-gray-500">
+              {meterProjection.methods.find((m: any) => m.id === effectiveMethod).description}
+            </p>
+          )}
         </div>
 
         {(projStart && !projEnd) || (!projStart && projEnd) ? (
