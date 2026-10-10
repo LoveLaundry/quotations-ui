@@ -318,6 +318,13 @@ export const companySettingsApi = {
     mgmtApi.get(`/api/company-settings/electricity-meter-readings?limit=${limit}`),
   meterAnalytics: () => mgmtApi.get('/api/company-settings/electricity-meter-analytics'),
   meterUsage: () => mgmtApi.get('/api/company-settings/electricity-meter-usage'),
+  projection: (start?: string, end?: string) => {
+    const q = new URLSearchParams()
+    if (start) q.set('start', start)
+    if (end) q.set('end', end)
+    const suffix = q.toString() ? `?${q}` : ''
+    return mgmtApi.get(`/api/company-settings/electricity-meter-projection${suffix}`)
+  },
   addMeterReading: (data: {
     meter_id: 'meter_1' | 'meter_2'
     reading_value: number

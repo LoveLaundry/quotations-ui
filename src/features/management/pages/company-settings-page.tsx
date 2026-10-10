@@ -150,6 +150,51 @@ function SlabBreakdown({ cost, name }: { cost?: any; name: string }) {
   )
 }
 
+function ProjectionCard({ entry, past }: { entry?: any; past: boolean }) {
+  if (!entry) return null
+  return (
+    <div className="rounded-lg border p-4 space-y-3">
+      <h4 className="font-medium truncate">{entry.name}</h4>
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <p className="text-xs text-gray-500">Units so far</p>
+          <p className="font-semibold">{formatKwh(entry.units_so_far)}</p>
+        </div>
+        <div>
+          <p className="text-xs text-gray-500">Daily pace</p>
+          <p className="font-semibold">{formatKwh(entry.run_rate_kwh_per_day)}</p>
+        </div>
+        <div>
+          <p className="text-xs text-gray-500">{past ? 'Billed units' : 'Projected units'}</p>
+          <p className="font-semibold text-[#B91C1C]">{formatKwh(entry.projected_units)}</p>
+        </div>
+        <div>
+          <p className="text-xs text-gray-500">Trend</p>
+          <TrendBadge trend={entry.trend} />
+        </div>
+      </div>
+      <div className="grid grid-cols-2 gap-3 border-t pt-3">
+        <div>
+          <p className="text-xs text-gray-500">Cost so far</p>
+          <p className="font-semibold">
+            {entry.cost_so_far ? formatLkr(entry.cost_so_far.amount_lkr) : '—'}
+          </p>
+        </div>
+        <div>
+          <p className="text-xs text-gray-500">{past ? 'Billed cost' : 'Projected cost'}</p>
+          <p className="font-semibold text-[#B91C1C]">
+            {entry.projected_cost ? formatLkr(entry.projected_cost.amount_lkr) : '—'}
+          </p>
+        </div>
+      </div>
+      <p className="text-xs text-gray-400">
+        {entry.method === 'trend' ? 'Trend-adjusted pace' : 'Average pace'}
+        {entry.last_reading_date ? ` · last reading ${entry.last_reading_date}` : ' · no readings yet'}
+      </p>
+    </div>
+  )
+}
+
 export default function CompanySettingsPage() {
   const qc = useQueryClient()
   const { user } = useAuth()
@@ -183,6 +228,7 @@ export default function CompanySettingsPage() {
         electricity_meter_2_name: settings.electricity_meter_2_name || 'Madampe Connection Line',
         electricity_unit_slabs: settings.electricity_unit_slabs || [],
         electricity_tax_rate: settings.electricity_tax_rate ?? 0,
+        electricity_billing_cycle_start_day: settings.electricity_billing_cycle_start_day ?? 1,
       })
     }
   }, [settings, form])
@@ -194,6 +240,7 @@ export default function CompanySettingsPage() {
       invalidateResource(qc, 'settings')
       qc.invalidateQueries({ queryKey: ['electricity-meter-analytics'] })
       qc.invalidateQueries({ queryKey: ['electricity-meter-usage'] })
+      qc.invalidateQueries({ queryKey: ['electricity-meter-projection'] })
     },
     onError: (e: any) => toast.error(e.response?.data?.detail || 'Failed to save settings'),
   })
@@ -228,6 +275,27 @@ export default function CompanySettingsPage() {
     queryFn: () => companySettingsApi.meterUsage().then(r => r.data),
   })
 
+  const [projStart, setProjStart] = useState('')
+  const [projEnd, setProjEnd] = useState('')
+  const projBothSet = Boolean(projStart && projEnd)
+  const {
+    data: meterProjection,
+    isLoading: projectionLoading,
+    isError: projectionError,
+    error: projectionErr,
+    refetch: refetchProjection,
+  } = useQuery({
+    queryKey: ['electricity-meter-projection', projBothSet ? projStart : 'current', projBothSet ? projEnd : 'current'],
+    queryFn: () => companySettingsApi.projection(
+      projBothSet ? projStart : undefined,
+      projBothSet ? projEnd : undefined,
+    ).then(r => r.data),
+  })
+  const fmtDay = (iso?: string | null) =>
+    iso ? new Date(`${iso}T00:00:00`).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) : '—'
+  const periodLabel = (start?: string | null, end?: string | null, fallback?: string) =>
+    start && end ? `${fmtDay(start)} – ${fmtDay(end)}` : (fallback || '—')
+
   const addReadingMut = useMutation({
     mutationFn: (data: {
       meter_id: 'meter_1' | 'meter_2'
@@ -240,6 +308,7 @@ export default function CompanySettingsPage() {
       qc.invalidateQueries({ queryKey: ['electricity-meter-readings'] })
       qc.invalidateQueries({ queryKey: ['electricity-meter-analytics'] })
       qc.invalidateQueries({ queryKey: ['electricity-meter-usage'] })
+      qc.invalidateQueries({ queryKey: ['electricity-meter-projection'] })
     },
     onError: (e: any) => toast.error(e.response?.data?.detail || 'Failed to save electricity reading'),
   })
@@ -255,6 +324,7 @@ export default function CompanySettingsPage() {
       qc.invalidateQueries({ queryKey: ['electricity-meter-readings'] })
       qc.invalidateQueries({ queryKey: ['electricity-meter-analytics'] })
       qc.invalidateQueries({ queryKey: ['electricity-meter-usage'] })
+      qc.invalidateQueries({ queryKey: ['electricity-meter-projection'] })
     },
     onError: (e: any) => toast.error(e.response?.data?.detail || 'Failed to correct the reading'),
   })
@@ -351,6 +421,7 @@ export default function CompanySettingsPage() {
       delete data.electricity_meter_2_name
       delete data.electricity_unit_slabs
       delete data.electricity_tax_rate
+      delete data.electricity_billing_cycle_start_day
     }
     saveMut.mutate(data)
   }
@@ -365,7 +436,10 @@ export default function CompanySettingsPage() {
     meter_2: reading.meter_id === 'meter_2' ? Number(reading.reading_value) : null,
   }))
   const monthlyAnalytics = meterAnalytics?.months || []
-
+  const monthlyLabeled = monthlyAnalytics.map((month: any) => ({
+    ...month,
+    period: periodLabel(month.period_start, month.period_end, month.month),
+  }))
   const usageDays = meterUsage?.days || []
   const usageRows = usageRange === 'all'
     ? usageDays
@@ -512,18 +586,36 @@ export default function CompanySettingsPage() {
               <p className="text-xs text-gray-500">
                 Leave the last row&apos;s “Up to” empty for the top slab (no upper limit). Only the last row may be left empty.
               </p>
-              <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 max-w-xs">
-                Tax rate (fraction; 0.18 = 18%)
-                <input
-                  type="number"
-                  min="0"
-                  max="1"
-                  step="0.001"
-                  value={form.electricity_tax_rate}
-                  onChange={e => setForm({ ...form, electricity_tax_rate: Number(e.target.value) || 0 })}
-                  className="w-full mt-1 px-3 py-2 border rounded-lg text-sm"
-                />
-              </label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-xl">
+                <label className="block text-sm font-medium text-gray-600 dark:text-gray-400">
+                  Tax rate (fraction; 0.18 = 18%)
+                  <input
+                    type="number"
+                    min="0"
+                    max="1"
+                    step="0.001"
+                    value={form.electricity_tax_rate}
+                    onChange={e => setForm({ ...form, electricity_tax_rate: Number(e.target.value) || 0 })}
+                    className="w-full mt-1 px-3 py-2 border rounded-lg text-sm"
+                  />
+                </label>
+                <label className="block text-sm font-medium text-gray-600 dark:text-gray-400">
+                  Billing month starts on day
+                  <input
+                    type="number"
+                    min="1"
+                    max="28"
+                    step="1"
+                    value={form.electricity_billing_cycle_start_day ?? 1}
+                    onChange={e => {
+                      const day = Math.round(Number(e.target.value) || 1)
+                      setForm({ ...form, electricity_billing_cycle_start_day: Math.min(28, Math.max(1, day)) })
+                    }}
+                    className="w-full mt-1 px-3 py-2 border rounded-lg text-sm"
+                  />
+                  <span className="block text-xs text-gray-400 mt-1">1 = calendar months. E.g. 15 means billing months run 15th–14th.</span>
+                </label>
+              </div>
             </div>
             <p className="text-xs text-gray-400">
               Only admins can configure meters, tariff slabs, or tax, or submit readings.
@@ -733,9 +825,9 @@ export default function CompanySettingsPage() {
             ) : (
               <div className="h-72 mt-3">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={monthlyAnalytics}>
+                  <BarChart data={monthlyLabeled}>
                     <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="month" />
+                    <XAxis dataKey="period" />
                     <YAxis
                       tickFormatter={(value: number) => Number(value).toLocaleString()}
                       label={{ value: 'LKR', angle: -90, position: 'insideLeft' }}
@@ -786,7 +878,7 @@ export default function CompanySettingsPage() {
                     {monthlyAnalytics.map((month: any) => (
                       <Fragment key={month.month}>
                         <tr className="border-b last:border-0 align-top">
-                          <td className="py-2 pr-4 whitespace-nowrap">{month.month}</td>
+                          <td className="py-2 pr-4 whitespace-nowrap">{periodLabel(month.period_start, month.period_end, month.month)}</td>
                           <td className="py-2 pr-4">{Number(month.meter_1_units).toLocaleString()}</td>
                           <td className="py-2 pr-4">{Number(month.meter_2_units).toLocaleString()}</td>
                           <td className="py-2 pr-4">{Number(month.total_units).toLocaleString()}</td>
@@ -838,6 +930,110 @@ export default function CompanySettingsPage() {
             )}
           </div>
         </div>
+      </section>
+
+      <section className="bg-white dark:bg-gray-800 rounded-xl border p-6 space-y-5">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <h2 className="text-lg font-semibold flex items-center gap-2">
+              <TrendingUp size={20} /> Monthly projection
+            </h2>
+            <p className="text-sm text-gray-500 mt-1">
+              {meterProjection
+                ? `${periodLabel(meterProjection.period_start, meterProjection.period_end)} · trend-adjusted pace from complete days`
+                : 'Projected month-end units and slab cost.'}
+            </p>
+          </div>
+          <div className="flex flex-wrap items-end gap-2">
+            <label className="text-xs font-medium text-gray-600 dark:text-gray-400">
+              Start
+              <input
+                type="date"
+                value={projStart}
+                max={projEnd || undefined}
+                onChange={e => setProjStart(e.target.value)}
+                className="block mt-1 px-3 py-1.5 border rounded-lg text-sm"
+              />
+            </label>
+            <label className="text-xs font-medium text-gray-600 dark:text-gray-400">
+              End
+              <input
+                type="date"
+                value={projEnd}
+                min={projStart || undefined}
+                onChange={e => setProjEnd(e.target.value)}
+                className="block mt-1 px-3 py-1.5 border rounded-lg text-sm"
+              />
+            </label>
+            {(projStart || projEnd) && (
+              <button
+                type="button"
+                onClick={() => { setProjStart(''); setProjEnd('') }}
+                className="px-3 py-1.5 border rounded-lg text-xs font-medium cursor-pointer"
+              >
+                Current month
+              </button>
+            )}
+          </div>
+        </div>
+
+        {(projStart && !projEnd) || (!projStart && projEnd) ? (
+          <p className="text-sm text-amber-700">Set both the start and end dates, or clear both for the current billing month.</p>
+        ) : projectionLoading ? (
+          <p className="py-4 text-sm text-gray-500">Loading projection…</p>
+        ) : projectionError ? (
+          <button type="button" onClick={() => refetchProjection()} className="py-4 text-sm text-red-600">
+            {(projectionErr as any)?.response?.data?.detail || 'Could not load projection — retry'}
+          </button>
+        ) : !meterProjection?.has_data ? (
+          <p className="py-4 text-sm text-gray-500">No readings in this window yet — add a reading to see a projection.</p>
+        ) : (
+          <div className="space-y-4">
+            <div>
+              <div className="flex justify-between text-xs text-gray-500 mb-1">
+                <span>Day {meterProjection.elapsed_days} of {meterProjection.total_days} · {meterProjection.remaining_days} remaining</span>
+                <span>{meterProjection.is_current ? 'In progress' : 'Completed window'}</span>
+              </div>
+              <div className="h-2 rounded-full bg-gray-100 dark:bg-gray-700 overflow-hidden">
+                <div
+                  className="h-full bg-[#B91C1C] rounded-full"
+                  style={{ width: `${meterProjection.total_days ? Math.min(100, (meterProjection.elapsed_days / meterProjection.total_days) * 100) : 0}%` }}
+                />
+              </div>
+            </div>
+            {meterProjection.configuration_error && (
+              <p className="rounded-lg bg-amber-50 dark:bg-amber-950/30 px-3 py-2 text-sm text-amber-800 dark:text-amber-200">
+                {meterProjection.configuration_error} Unit totals below exclude LKR costs.
+              </p>
+            )}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <ProjectionCard entry={meterProjection.meters?.meter_1} past={!meterProjection.is_current} />
+              <ProjectionCard entry={meterProjection.meters?.meter_2} past={!meterProjection.is_current} />
+            </div>
+            <div className="rounded-lg border p-4 grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+              <div>
+                <p className="text-xs text-gray-500">Combined so far</p>
+                <p className="font-semibold">{formatKwh(meterProjection.combined?.units_so_far ?? 0)}</p>
+              </div>
+              <div>
+                <p className="text-xs text-gray-500">{meterProjection.is_current ? 'Projected total' : 'Billed total'} (kWh)</p>
+                <p className="font-semibold text-[#B91C1C]">{formatKwh(meterProjection.combined?.projected_units ?? 0)}</p>
+              </div>
+              <div>
+                <p className="text-xs text-gray-500">Cost so far</p>
+                <p className="font-semibold">
+                  {meterProjection.combined?.cost_so_far_lkr == null ? '—' : formatLkr(meterProjection.combined.cost_so_far_lkr)}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs text-gray-500">{meterProjection.is_current ? 'Projected cost' : 'Billed cost'}</p>
+                <p className="font-semibold text-[#B91C1C]">
+                  {meterProjection.combined?.projected_cost_lkr == null ? '—' : formatLkr(meterProjection.combined.projected_cost_lkr)}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
       </section>
 
       <section className="bg-white dark:bg-gray-800 rounded-xl border p-6 space-y-5">
