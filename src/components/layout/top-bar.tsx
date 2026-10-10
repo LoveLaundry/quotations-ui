@@ -1,8 +1,9 @@
 import { useState, useRef, useEffect, useId } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { MagnifyingGlass, Bell, List, SignOut, User, UserCircle, PaperPlaneTilt, FileText } from '@phosphor-icons/react'
+import { MagnifyingGlass, Bell, List, SignOut, User, UserCircle, PaperPlaneTilt, FileText, TextAa } from '@phosphor-icons/react'
 import { cn } from '../../lib/utils'
 import { useAuth } from '../../context/AuthContext'
+import { useTheme, isFontSize } from '../../context/ThemeContext'
 import { useNotifications } from '../../features/quotations/hooks/useNotifications'
 import { NotificationDetailDialog } from '../../features/quotations/components/notification-detail-dialog'
 import { HotelSelector } from './hotel-selector'
@@ -35,6 +36,17 @@ export function TopBar({
 }: TopBarProps) {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
+  const { fontSize, setFontSize } = useTheme()
+  const comfortOn = fontSize === 'xxxl'
+  const toggleComfort = () => {
+    if (comfortOn) {
+      const prev = localStorage.getItem('theme-font-size-prev')
+      setFontSize(isFontSize(prev) && prev !== 'xxxl' ? prev : 'md')
+    } else {
+      localStorage.setItem('theme-font-size-prev', fontSize)
+      setFontSize('xxxl')
+    }
+  }
   const [showNotifications, setShowNotifications] = useState(false)
   const [
     selectedNotification,
@@ -143,6 +155,25 @@ export function TopBar({
             <kbd className="ml-1 hidden rounded-[3px] border border-[var(--border)] bg-[var(--surface-2)] px-1 py-px text-[10px] font-semibold text-[var(--text-faint)] lg:inline">
               Ctrl K
             </kbd>
+          </button>
+
+          {/* Comfort text size — one tap, easy for elders */}
+          <button
+            type="button"
+            onClick={toggleComfort}
+            aria-label={comfortOn ? 'Comfort text size on — tap for normal size' : 'Comfort text size off — tap for largest text'}
+            aria-pressed={comfortOn}
+            title={comfortOn ? 'Comfort text: on' : 'Comfort text: off'}
+            className={cn(
+              iconBtn,
+              'sm:h-8 sm:w-auto sm:gap-1.5 sm:px-2.5',
+              comfortOn
+                ? 'border-[var(--brand-border)] bg-[var(--brand-soft)] text-[var(--brand-text)]'
+                : 'sm:border-[var(--border-2)]',
+            )}
+          >
+            <TextAa size={17} aria-hidden weight={comfortOn ? 'bold' : 'regular'} />
+            <span className="hidden text-[12.5px] font-medium sm:inline">Aa</span>
           </button>
 
           {/* Notifications */}

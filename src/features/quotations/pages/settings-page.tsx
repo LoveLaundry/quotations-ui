@@ -13,6 +13,7 @@ const FONT_OPTIONS: { value: FontSize; label: string; desc: string; px: string }
   { value: 'lg', label: 'Large', desc: 'Easier on the eyes', px: '15px' },
   { value: 'xl', label: 'Extra Large', desc: 'Great for presentations', px: '17px' },
   { value: 'xxl', label: 'XXL', desc: 'Maximum readability', px: '19px' },
+  { value: 'xxxl', label: 'Comfort', desc: 'Largest — easy for elders', px: '22px' },
 ]
 
 interface ThemePresetOption {
@@ -222,7 +223,7 @@ export default function SettingsPage() {
           </div>
         </CardHeader>
         <CardContent className="pt-4">
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
             {FONT_OPTIONS.map(opt => (
               <OptionButton key={opt.value} active={fontSize === opt.value} onClick={() => setFontSize(opt.value)}>
                 <span className="font-semibold" style={{ fontSize: opt.px }}>{opt.label}</span>

@@ -1,6 +1,6 @@
 ﻿import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
 
-export type FontSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'xxl'
+export type FontSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'xxl' | 'xxxl'
 export type ThemePreset = 'light' | 'contrast' | 'dark' | 'ocean' | 'forest' | 'sepia' | 'slate' | 'nightblue' | 'contrast-dark'
 
 export const DARK_THEMES: ThemePreset[] = ['dark', 'nightblue', 'contrast-dark']
@@ -31,6 +31,7 @@ const FONT_SIZE_MAP: Record<FontSize, string> = {
   lg: '15px',
   xl: '17px',
   xxl: '19px',
+  xxxl: '22px',
 }
 
 const FONT_ZOOM_MAP: Record<FontSize, number> = {
@@ -40,13 +41,18 @@ const FONT_ZOOM_MAP: Record<FontSize, number> = {
   lg: 1.08,
   xl: 1.18,
   xxl: 1.3,
+  xxxl: 1.5,
 }
+
+export const isFontSize = (value: unknown): value is FontSize =>
+  typeof value === 'string' && value in FONT_SIZE_MAP
 
 const THEME_ATTR = 'data-theme'
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [fontSize, setFontSizeState] = useState<FontSize>(() => {
-    return (localStorage.getItem('theme-font-size') as FontSize) || 'md'
+    const stored = localStorage.getItem('theme-font-size')
+    return isFontSize(stored) ? stored : 'md'
   })
   const [theme, setThemeState] = useState<ThemePreset>(() => {
     return (localStorage.getItem('theme-preset') as ThemePreset) || 'light'
@@ -80,6 +86,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const setFontSize = (s: FontSize) => {
+    if (!isFontSize(s)) return
     setFontSizeState(s)
     localStorage.setItem('theme-font-size', s)
   }
