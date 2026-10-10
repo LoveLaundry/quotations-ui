@@ -7,10 +7,12 @@ import {
   Bar,
   BarChart,
   CartesianGrid,
+  Cell,
   ComposedChart,
   Legend,
   Line,
   LineChart,
+  ReferenceLine,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -277,6 +279,7 @@ export default function CompanySettingsPage() {
 
   const [projStart, setProjStart] = useState('')
   const [projEnd, setProjEnd] = useState('')
+  const [projMeter, setProjMeter] = useState<'meter_1' | 'meter_2' | 'combined'>('combined')
   const projBothSet = Boolean(projStart && projEnd)
   const {
     data: meterProjection,
@@ -440,6 +443,29 @@ export default function CompanySettingsPage() {
     ...month,
     period: periodLabel(month.period_start, month.period_end, month.month),
   }))
+  const projChartEntry =
+    meterProjection?.is_current && meterProjection?.has_data && meterProjection?.combined?.projected_cost_lkr != null
+      ? [{
+        period: `${periodLabel(meterProjection.period_start, meterProjection.period_end)} (proj.)`,
+        meter_1_amount_lkr: meterProjection.meters?.meter_1?.projected_cost?.amount_lkr ?? null,
+        meter_2_amount_lkr: meterProjection.meters?.meter_2?.projected_cost?.amount_lkr ?? null,
+        amount_lkr: meterProjection.combined.projected_cost_lkr,
+        projected: true,
+      }]
+      : []
+  const costChartData = [...monthlyLabeled, ...projChartEntry]
+  const projSource = projMeter === 'combined' ? meterProjection?.combined : meterProjection?.meters?.[projMeter]
+  const projColor = projMeter === 'meter_1' ? '#2563eb' : projMeter === 'meter_2' ? '#dc2626' : '#16a34a'
+  const projChartData = (projSource?.series || []).map((day: any) => ({
+    date: fmtDay(day.date),
+    actual: day.actual,
+    forecast: day.forecast,
+    trend: day.trend,
+  }))
+  const projShowTrend = (projSource?.series || []).some((day: any) => day.trend != null)
+  const projAvg = projMeter === 'combined'
+    ? (meterProjection?.measured_days ? (meterProjection.combined?.units_so_far ?? 0) / meterProjection.measured_days : 0)
+    : (projSource?.run_rate_kwh_per_day ?? 0)
   const usageDays = meterUsage?.days || []
   const usageRows = usageRange === 'all'
     ? usageDays
@@ -825,7 +851,7 @@ export default function CompanySettingsPage() {
             ) : (
               <div className="h-72 mt-3">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={monthlyLabeled}>
+                  <BarChart data={costChartData}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="period" />
                     <YAxis
@@ -838,9 +864,21 @@ export default function CompanySettingsPage() {
                       }
                     />
                     <Legend />
-                    <Bar dataKey="meter_1_amount_lkr" name={form.electricity_meter_1_name} fill="#2563eb" />
-                    <Bar dataKey="meter_2_amount_lkr" name={form.electricity_meter_2_name} fill="#dc2626" />
-                    <Bar dataKey="amount_lkr" name="Combined total (sum of both meters)" fill="#16a34a" />
+                    <Bar dataKey="meter_1_amount_lkr" name={form.electricity_meter_1_name} fill="#2563eb">
+                      {costChartData.map((entry: any, index: number) => (
+                        <Cell key={index} fillOpacity={entry.projected ? 0.4 : 1} />
+                      ))}
+                    </Bar>
+                    <Bar dataKey="meter_2_amount_lkr" name={form.electricity_meter_2_name} fill="#dc2626">
+                      {costChartData.map((entry: any, index: number) => (
+                        <Cell key={index} fillOpacity={entry.projected ? 0.4 : 1} />
+                      ))}
+                    </Bar>
+                    <Bar dataKey="amount_lkr" name="Combined total (sum of both meters)" fill="#16a34a">
+                      {costChartData.map((entry: any, index: number) => (
+                        <Cell key={index} fillOpacity={entry.projected ? 0.4 : 1} />
+                      ))}
+                    </Bar>
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -1006,6 +1044,74 @@ export default function CompanySettingsPage() {
                 {meterProjection.configuration_error} Unit totals below exclude LKR costs.
               </p>
             )}
+            <div className="rounded-lg border p-4">
+              <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+                <h3 className="font-medium">Daily pace, trend and forecast (kWh)</h3>
+                <div className="flex flex-wrap gap-1">
+                  {([
+                    ['meter_1', form.electricity_meter_1_name],
+                    ['meter_2', form.electricity_meter_2_name],
+                    ['combined', 'Combined'],
+                  ] as const).map(([value, label]) => (
+                    <button
+                      key={value}
+                      type="button"
+                      onClick={() => setProjMeter(value)}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-medium border cursor-pointer ${
+                        projMeter === value
+                          ? 'bg-red-600 text-white border-red-600'
+                          : 'bg-white dark:bg-gray-700 text-gray-500 border-gray-200 dark:border-gray-600'
+                      }`}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="h-72">
+                <ResponsiveContainer width="100%" height="100%">
+                  <ComposedChart data={projChartData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="date" minTickGap={28} tick={{ fontSize: 11 }} />
+                    <YAxis
+                      tickFormatter={(value: number) => Number(value).toLocaleString()}
+                      label={{ value: 'kWh', angle: -90, position: 'insideLeft' }}
+                    />
+                    <Tooltip
+                      formatter={value =>
+                        value == null || typeof value !== 'number'
+                          ? '—'
+                          : `${Number(value).toLocaleString('en-LK', { maximumFractionDigits: 1 })} kWh`
+                      }
+                    />
+                    <Legend />
+                    <Bar dataKey="actual" name="Measured (kWh)" fill={projColor} />
+                    <Bar dataKey="forecast" name="Forecast (kWh)" fill={projColor} fillOpacity={0.35} />
+                    {projShowTrend && (
+                      <Line
+                        type="monotone"
+                        dataKey="trend"
+                        name="Trend (kWh/day)"
+                        stroke="#111827"
+                        strokeDasharray="6 4"
+                        dot={false}
+                        connectNulls
+                      />
+                    )}
+                    <ReferenceLine
+                      y={projAvg}
+                      label={{ value: 'Average pace', position: 'insideTopRight', fontSize: 11 }}
+                      stroke="#6b7280"
+                      strokeDasharray="2 3"
+                    />
+                  </ComposedChart>
+                </ResponsiveContainer>
+              </div>
+              <p className="text-xs text-gray-500 mt-2">
+                Solid bars are measured days, faded bars the forecast. The dashed line is the fitted usage trend;
+                the dotted line the average daily pace.
+              </p>
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <ProjectionCard entry={meterProjection.meters?.meter_1} past={!meterProjection.is_current} />
               <ProjectionCard entry={meterProjection.meters?.meter_2} past={!meterProjection.is_current} />
