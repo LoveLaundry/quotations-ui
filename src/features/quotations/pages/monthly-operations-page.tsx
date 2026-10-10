@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
-import { ArrowRight, CalendarDays, ClipboardList, Info, PackageOpen, Printer, Receipt, RefreshCw } from 'lucide-react'
+import { ArrowRight, CalendarDays, ClipboardList, Info, PackageOpen, Printer, Receipt, RefreshCw, Search } from 'lucide-react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useReactToPrint } from 'react-to-print'
 import { useHotelScope } from '../../../context/HotelContext'
@@ -291,6 +291,8 @@ function DayDialog({ params, day, dayState, rows, onClose }: DayDialogProps) {
     const [sourceMode, setSourceMode] = useState<MonthlySourceMode>('same_day')
     const [manual, setManual] = useState<Record<string, boolean>>({})
     const [manualQtys, setManualQtys] = useState<Record<string, number>>({})
+    const [itemSearch, setItemSearch] = useState('')
+    const [showEnteredOnly, setShowEnteredOnly] = useState(false)
 
     const save = useSaveDayQuantities(params)
     const confirm = useConfirmMonthlyDay(params)
@@ -314,6 +316,21 @@ function DayDialog({ params, day, dayState, rows, onClose }: DayDialogProps) {
         () => summarizeQuantities(rows, quantities),
         [rows, quantities],
     )
+    const enteredRowsCount = rows.filter((row) => {
+        const key = monthlyItemKey(row.item_name, row.specification)
+        return (Number(quantities[key]) || 0) > 0 || (Number(pieceQuantities[key]) || 0) > 0
+    }).length
+    const visibleRows = useMemo(() => {
+        const query = itemSearch.trim().toLocaleLowerCase()
+        return [...rows]
+            .sort((a, b) => (Number(b.usage_qty) || 0) - (Number(a.usage_qty) || 0))
+            .filter((row) => {
+            const key = monthlyItemKey(row.item_name, row.specification)
+            const entered = (Number(quantities[key]) || 0) > 0 || (Number(pieceQuantities[key]) || 0) > 0
+            const label = [row.item_name, row.specification].filter(Boolean).join(' ').toLocaleLowerCase()
+            return (!showEnteredOnly || entered) && (!query || label.includes(query))
+            })
+    }, [rows, quantities, pieceQuantities, itemSearch, showEnteredOnly])
     const totalPieces = Object.values(pieceQuantities).reduce((sum, count) => sum + (Number(count) || 0), 0)
     const hasAnyQuantities = daySummary.totalQty > 0 || daySummary.curtainKg > 0 || totalPieces > 0
     const busy = save.isPending || confirm.isPending || cancelDay.isPending
@@ -408,7 +425,7 @@ function DayDialog({ params, day, dayState, rows, onClose }: DayDialogProps) {
 
     return (
         <Dialog open onOpenChange={(open) => { if (!open) onClose() }}>
-            <DialogContent className="sm:max-w-2xl">
+            <DialogContent className="sm:max-w-4xl">
                 <DialogHeader>
                     <DialogTitle>
                         {params.kind === 'receiving' ? 'Receiving' : params.kind === 'delivery' ? 'Deliveries' : 'Rewash'} · {day} {MONTH_NAMES[params.month - 1]} {params.year}
@@ -468,6 +485,34 @@ function DayDialog({ params, day, dayState, rows, onClose }: DayDialogProps) {
                         </Notice>
                     )}
 
+                    {!isConfirmed && (
+                        <div className="flex flex-wrap items-center gap-2">
+                            <label className="relative min-w-[220px] flex-1">
+                                <Search aria-hidden="true" className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--text-faint)]" />
+                                <input
+                                    type="search"
+                                    autoFocus
+                                    aria-label="Search items"
+                                    value={itemSearch}
+                                    onChange={(e) => setItemSearch(e.target.value)}
+                                    placeholder="Find an item or specification..."
+                                    className="h-9 w-full rounded border border-[var(--border)] bg-[var(--surface)] pl-9 pr-3 text-[13px] text-[var(--text-primary)] outline-none focus:border-[var(--brand)]"
+                                />
+                            </label>
+                            <div className="flex items-center gap-1" aria-label="Item filter">
+                                <Button size="xs" variant={!showEnteredOnly ? 'secondary' : 'ghost'} aria-pressed={!showEnteredOnly} onClick={() => setShowEnteredOnly(false)}>
+                                    All {rows.length}
+                                </Button>
+                                <Button size="xs" variant={showEnteredOnly ? 'secondary' : 'ghost'} aria-pressed={showEnteredOnly} onClick={() => setShowEnteredOnly(true)}>
+                                    Entered {enteredRowsCount}
+                                </Button>
+                            </div>
+                            <span className="text-[11px] tabular-nums text-[var(--text-faint)]" aria-live="polite">
+                                Most used first · {visibleRows.length} shown
+                            </span>
+                        </div>
+                    )}
+
                     <div className="overflow-x-auto rounded border border-[var(--border)]">
                         <table className="w-full min-w-[640px] border-collapse">
                             <thead>
@@ -480,7 +525,7 @@ function DayDialog({ params, day, dayState, rows, onClose }: DayDialogProps) {
                                 </tr>
                             </thead>
                             <tbody>
-                                {rows.map((row) => {
+                                {visibleRows.map((row) => {
                                     const key = monthlyItemKey(row.item_name, row.specification)
                                     return (
                                         <tr key={key}>
@@ -497,7 +542,8 @@ function DayDialog({ params, day, dayState, rows, onClose }: DayDialogProps) {
                                                     min={0}
                                                     step={row.unit === 'kg' ? '0.01' : '1'}
                                                     disabled={isConfirmed}
-                                                    value={quantities[key] ?? 0}
+                                                    value={quantities[key] || ''}
+                                                    placeholder="0"
                                                     onChange={(e) => setQty(key, e.target.value)}
                                                     className="h-8 w-20 bg-transparent text-center text-[13px] tabular-nums outline-none focus:bg-[var(--brand-soft)] disabled:text-[var(--text-faint)]"
                                                 />
@@ -509,7 +555,8 @@ function DayDialog({ params, day, dayState, rows, onClose }: DayDialogProps) {
                                                         min={0}
                                                         step={1}
                                                         disabled={isConfirmed}
-                                                        value={pieceQuantities[key] ?? 0}
+                                                        value={pieceQuantities[key] || ''}
+                                                        placeholder="0"
                                                         onChange={(e) => setPieceQty(key, e.target.value)}
                                                         className="h-8 w-20 bg-transparent text-center text-[13px] tabular-nums outline-none focus:bg-[var(--brand-soft)] disabled:text-[var(--text-faint)]"
                                                         aria-label={`${row.item_name} pieces`}
@@ -526,6 +573,15 @@ function DayDialog({ params, day, dayState, rows, onClose }: DayDialogProps) {
                                         </tr>
                                     )
                                 })}
+                                {visibleRows.length === 0 && (
+                                    <tr>
+                                        <td colSpan={5} className="px-3 py-8 text-center text-[13px] text-[var(--text-tertiary)]">
+                                            {showEnteredOnly && enteredRowsCount === 0
+                                                ? 'No quantities entered yet.'
+                                                : 'No items match your search.'}
+                                        </td>
+                                    </tr>
+                                )}
                             </tbody>
                         </table>
                     </div>
