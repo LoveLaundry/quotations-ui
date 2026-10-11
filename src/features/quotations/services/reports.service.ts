@@ -8,6 +8,7 @@ export const reports = {
     monthlyOperations: (params: {
         start_date: string
         end_date: string
+        hotel_name?: string | null
         selected_quotations: Record<string, string | null>
         quotation_snapshots: Record<string, {
             id: string | number
@@ -15,6 +16,12 @@ export const reports = {
             line_items: unknown[]
         }>
     }) => billsApi.post('/reports/monthly-operations', params).then((r: any) => r.data),
+
+    linenCategories: () => billsApi.get('/reports/linen-categories').then((r: any) => r.data),
+    saveLinenCategoryMapping: (payload: { item_name: string; category: string }) =>
+        billsApi.put('/reports/linen-categories/mappings', payload).then((r: any) => r.data),
+    deleteLinenCategoryMapping: (itemName: string) =>
+        billsApi.delete(`/reports/linen-categories/mappings/${encodeURIComponent(itemName)}`).then((r: any) => r.data),
 
     /**
      * Per-hotel linen flow with server-computed quantities.

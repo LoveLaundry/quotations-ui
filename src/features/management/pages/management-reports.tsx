@@ -1,13 +1,15 @@
-import { useEffect, useState } from 'react'
+import { Fragment, useEffect, useState } from 'react'
 import { TableEmptyRow } from '../../../components/ui/empty-state'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { reportsApi, customersApi } from '../api/management-api'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts'
-import { Filter, Save, Pencil, Trash2, X } from 'lucide-react'
+import { Filter, Save, Pencil, Trash2, X, ChevronDown, ChevronRight, Printer, FileSpreadsheet } from 'lucide-react'
 import { currentMonth, currentYear, todayISO } from '../../../lib/time'
 import { useQuotations } from '../../quotations/hooks/useQuotations'
 import { reports as operationsReports } from '../../quotations/services/reports.service'
 import { toast } from 'sonner'
+import * as XLSX from 'xlsx'
+import { useAuth } from '../../../context/AuthContext'
 
 const COLORS = ['#ef4444', '#3b82f6', '#22c55e', '#f59e0b', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316']
 const LIST_LIMIT = 500
@@ -70,10 +72,7 @@ function normalizeClientName(value: unknown): string {
 }
 
 function dailyIncomeSeries(data: any): { date: string; income: number }[] {
-  const incomeByDate = new Map<string, number>()
-  for (const day of data?.daily_details || []) {
-    incomeByDate.set(day.date, (day.items || []).reduce((total: number, item: any) => total + Number(item.income || 0), 0))
-  }
+  const incomeByDate = new Map<string, number>((data?.daily_summary || []).map((day: any) => [day.date, Number(day.value || 0)]))
 
   const start = new Date(`${data?.start_date}T00:00:00Z`)
   const end = new Date(`${data?.end_date}T00:00:00Z`)
@@ -85,10 +84,101 @@ function dailyIncomeSeries(data: any): { date: string; income: number }[] {
   return days
 }
 
+function CategorySummaryTable({
+  categories,
+  expanded,
+  onToggle,
+  scope,
+}: {
+  categories: any[]
+  expanded: Record<string, boolean>
+  onToggle: (key: string) => void
+  scope: string
+}) {
+  const totalQuantity = categories.reduce((sum, row) => sum + Number(row.quantity || 0), 0)
+  const totalValue = categories.reduce((sum, row) => sum + Number(row.value || 0), 0)
+  return (
+    <div className="overflow-x-auto">
+      <table className="w-full min-w-155 text-sm">
+        <thead className="bg-gray-50 text-left dark:bg-gray-700">
+          <tr>
+            <th className="px-3 py-2">Linen category</th>
+            <th className="px-3 py-2 text-right">Quantity</th>
+            <th className="px-3 py-2 text-right">Rate</th>
+            <th className="px-3 py-2 text-right">Total value</th>
+          </tr>
+        </thead>
+        <tbody>
+          {categories.map(category => {
+            const key = `${scope}::${category.category}`
+            const isExpanded = Boolean(expanded[key])
+            return <Fragment key={key}>
+              <tr className="border-t font-medium">
+                <td className="px-3 py-2">
+                  <button type="button" onClick={() => onToggle(key)} aria-expanded={isExpanded} className="inline-flex items-center gap-2 text-left">
+                    {isExpanded ? <ChevronDown size={15} /> : <ChevronRight size={15} />}
+                    {category.category}
+                  </button>
+                </td>
+                <td className="px-3 py-2 text-right">{category.quantity}</td>
+                <td className="px-3 py-2 text-right">{category.rate_label}</td>
+                <td className="px-3 py-2 text-right font-semibold">{fmtMoney(category.value)}</td>
+              </tr>
+              {isExpanded && (category.variants || []).map((variant: any, index: number) => (
+                <tr key={`${key}-${variant.item_name}-${variant.specification}-${index}`} className="border-t bg-gray-50/70 text-gray-600 dark:bg-gray-900/40 dark:text-gray-300">
+                  <td className="px-3 py-2 pl-10">{variant.item_name}{variant.specification ? ` · ${variant.specification}` : ''}</td>
+                  <td className="px-3 py-2 text-right">{variant.quantity}</td>
+                  <td className="px-3 py-2 text-right">{variant.rate_label}</td>
+                  <td className="px-3 py-2 text-right">{fmtMoney(variant.value)}</td>
+                </tr>
+              ))}
+            </Fragment>
+          })}
+          {!categories.length && <tr><td colSpan={4} className="px-3 py-8 text-center text-gray-500">No received linen in this period.</td></tr>}
+        </tbody>
+        <tfoot className="border-t bg-gray-50 font-bold dark:bg-gray-700">
+          <tr><td className="px-3 py-2">Subtotal</td><td className="px-3 py-2 text-right">{totalQuantity}</td><td className="px-3 py-2 text-right">—</td><td className="px-3 py-2 text-right">{fmtMoney(totalValue)}</td></tr>
+        </tfoot>
+      </table>
+    </div>
+  )
+}
+
+function reportRange(preset: string, today: string): [string, string] | null {
+  const asDate = (value: string) => new Date(`${value}T00:00:00Z`)
+  const format = (value: Date) => value.toISOString().slice(0, 10)
+  const current = asDate(today)
+  if (preset === 'today') return [today, today]
+  if (preset === 'yesterday') {
+    current.setUTCDate(current.getUTCDate() - 1)
+    const day = format(current)
+    return [day, day]
+  }
+  if (preset === 'this-week') {
+    current.setUTCDate(current.getUTCDate() - ((current.getUTCDay() + 6) % 7))
+    return [format(current), today]
+  }
+  if (preset === 'this-month') return [`${today.slice(0, 7)}-01`, today]
+  if (preset === 'previous-month') {
+    current.setUTCDate(1)
+    current.setUTCMonth(current.getUTCMonth() - 1)
+    const start = format(current)
+    current.setUTCMonth(current.getUTCMonth() + 1)
+    current.setUTCDate(0)
+    return [start, format(current)]
+  }
+  return null
+}
+
 export default function ManagementReports() {
   const [report, setReport] = useState('master')
   const [startDate, setStartDate] = useState(() => `${todayISO().slice(0, 7)}-01`)
   const [endDate, setEndDate] = useState(() => todayISO())
+  const [selectedHotel, setSelectedHotel] = useState('')
+  const [summaryView, setSummaryView] = useState<'daily' | 'period'>('period')
+  const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({})
+  const [newMappingName, setNewMappingName] = useState('')
+  const [newMappingCategory, setNewMappingCategory] = useState('')
   const [dailyDate, setDailyDate] = useState(() => todayISO())
   const [selectedQuotations, setSelectedQuotations] = useState<Record<string, string | null>>({})
   const [savedReportTitle, setSavedReportTitle] = useState('')
@@ -103,6 +193,8 @@ export default function ManagementReports() {
   })
 
   const customers = customersData.items
+  const { user } = useAuth()
+  const isAdmin = (user?.role_id || '').toUpperCase() === 'ADMIN'
   const { data: quotations = [], isLoading: quotationsLoading } = useQuotations()
   const queryClient = useQueryClient()
 
@@ -143,10 +235,11 @@ export default function ManagementReports() {
   }, {} as Record<string, { id: string | number; client_name: string; line_items: unknown[] }>)
 
   const { data: operationsData, isLoading: operationsLoading, isFetching: operationsFetching, isError: operationsError } = useQuery({
-    queryKey: ['monthly-operations-report', startDate, endDate, selectedQuotations],
+    queryKey: ['monthly-operations-report', startDate, endDate, selectedHotel, selectedQuotations],
     queryFn: () => operationsReports.monthlyOperations({
       start_date: startDate,
       end_date: endDate,
+      hotel_name: selectedHotel || null,
       selected_quotations: selectedQuotations,
       quotation_snapshots: quotationSnapshots,
     }),
@@ -156,6 +249,12 @@ export default function ManagementReports() {
   const { data: savedReports = [] } = useQuery({
     queryKey: ['saved-master-reports'],
     queryFn: () => reportsApi.saved().then(r => r.data),
+    enabled: report === 'master',
+  })
+
+  const { data: categoryConfiguration, isLoading: categoriesLoading } = useQuery({
+    queryKey: ['linen-category-mappings'],
+    queryFn: operationsReports.linenCategories,
     enabled: report === 'master',
   })
 
@@ -198,6 +297,75 @@ export default function ManagementReports() {
     { name: 'Salary', value: Number(masterReportData?.salary_expense_total || 0), color: '#dc2626' },
     { name: 'Other expenses', value: Number(masterReportData?.other_expense_total || 0), color: '#f59e0b' },
   ].filter(row => row.value > 0)
+  const reportHotels = operationsData?.hotel_options || []
+  const selectedHotelData = operationsData?.hotel_summary?.find((hotel: any) => normalizeClientName(hotel.client_name) === normalizeClientName(selectedHotel))
+  const periodCategoryRows = selectedHotel
+    ? selectedHotelData?.categories || []
+    : operationsData?.period_summary || []
+
+  const saveCategoryMapping = async () => {
+    if (!newMappingName.trim() || !newMappingCategory) return
+    try {
+      await operationsReports.saveLinenCategoryMapping({ item_name: newMappingName, category: newMappingCategory })
+      await queryClient.invalidateQueries({ queryKey: ['linen-category-mappings'] })
+      await queryClient.invalidateQueries({ queryKey: ['monthly-operations-report'] })
+      setNewMappingName('')
+      toast.success('Linen category mapping saved')
+    } catch {
+      toast.error('Could not save category mapping')
+    }
+  }
+
+  const exportLinenExcel = () => {
+    if (!masterReportData) return
+    const workbook = XLSX.utils.book_new()
+    const dailyRows = (masterReportData.daily_details || []).flatMap((day: any) => day.items.map((item: any) => ({
+      Date: day.date,
+      Hotel: day.client_name,
+      'Gate Pass': day.gate_pass_number,
+      Category: item.category,
+      Item: item.item_name,
+      Specification: item.specification,
+      Quantity: item.quantity,
+      Unit: item.unit,
+      Pieces: item.piece_count,
+      'Unit Price LKR': item.unit_price,
+      'Value LKR': item.value,
+    })))
+    const periodRows = (periodCategoryRows || []).flatMap((category: any) => [
+      { Category: category.category, Item: 'Category total', Specification: '', Quantity: category.quantity, 'Unit price / rate': category.rate_label, 'Value LKR': category.value },
+      ...(category.variants || []).map((item: any) => ({
+        Category: category.category,
+        Item: item.item_name,
+        Specification: item.specification,
+        Quantity: item.quantity,
+        'Unit price / rate': item.rate_label,
+        'Value LKR': item.value,
+      })),
+    ])
+    const exceptionRows = [
+      ...(masterReportData.unpriced_items || []).map((row: any) => ({ Type: 'Missing price', Date: row.date, Hotel: row.client_name, Item: row.item_name, Specification: row.specification, Quantity: row.quantity, Reason: row.reason })),
+      ...(masterReportData.unmapped_items || []).map((row: any) => ({ Type: 'Unmapped item', Date: '', Hotel: '', Item: row.item_name, Specification: '', Quantity: row.quantity, Reason: 'Assigned to Other / Unclassified Items' })),
+      ...(masterReportData.draft_receiving || []).map((row: any) => ({ Type: 'Draft receiving', Date: row.date, Hotel: row.client_name, Item: row.gate_pass_number, Specification: '', Quantity: row.quantity, Reason: 'Not included until activated' })),
+    ]
+    const append = (rows: object[], name: string) => XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(rows), name)
+    append(dailyRows, 'Daily Details')
+    append(periodRows, 'Period Summary')
+    append(exceptionRows, 'Exceptions')
+    XLSX.writeFile(workbook, `linen-report-${startDate}-${endDate}.xlsx`)
+  }
+
+  const applyDatePreset = (preset: string) => {
+    const range = reportRange(preset, todayISO())
+    if (range) {
+      setStartDate(range[0])
+      setEndDate(range[1])
+    }
+  }
+
+  const toggleCategory = (key: string) => {
+    setExpandedCategories(current => ({ ...current, [key]: !current[key] }))
+  }
 
   const saveCurrentReport = async () => {
     if (!masterReportData || !startDate || !endDate) return
@@ -272,6 +440,25 @@ export default function ManagementReports() {
           <div>
             <label className="text-xs text-gray-500">To</label>
             <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} className="block px-3 py-2 border rounded-lg text-sm" />
+          </div>
+        </>}
+        {report === 'master' && <>
+          <div>
+            <label className="text-xs text-gray-500">Hotel</label>
+            <select value={selectedHotel} onChange={event => setSelectedHotel(event.target.value)} className="block h-10 min-w-52 rounded-lg border bg-white px-3 text-sm dark:bg-gray-900">
+              <option value="">All hotels</option>
+              {reportHotels.map((name: string) => <option key={name} value={name}>{name}</option>)}
+            </select>
+          </div>
+          <div className="flex flex-wrap gap-1.5" role="group" aria-label="Report date presets">
+            {[
+              ['today', 'Today'], ['yesterday', 'Yesterday'], ['this-week', 'This week'],
+              ['this-month', 'This month'], ['previous-month', 'Previous month'], ['custom', 'Custom'],
+            ].map(([value, label]) => (
+              <button key={value} type="button" onClick={() => applyDatePreset(value)} className="h-9 rounded-md border px-2.5 text-xs font-medium hover:bg-surface-hover">
+                {label}
+              </button>
+            ))}
           </div>
         </>}
         {report === 'profit-loss' && <div>
@@ -448,24 +635,24 @@ export default function ManagementReports() {
             <div className="rounded-xl border bg-white p-4 dark:bg-gray-800">
               <div className="mb-3 flex flex-wrap items-end justify-between gap-3">
                 <div>
-                  <h2 className="font-semibold">Quotation pricing by hotel</h2>
-                  <p className="mt-1 text-xs text-gray-500">Choose the contract used to price confirmed receiving items for each hotel.</p>
+                  <h2 className="font-semibold">Price coverage</h2>
+                  <p className="mt-1 text-xs text-gray-500">Saved gate-pass rates take priority. Choose a quotation only to value older passes that have no stored price snapshot.</p>
                 </div>
               </div>
-              {operationsData.hotels?.length ? (
+              {operationsData.hotel_options?.length ? (
                 <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-                  {operationsData.hotels.map((hotel: any) => {
+                  {operationsData.hotel_options.map((hotel: string) => {
                     const hotelQuotations = quotations.filter((quotation: any) =>
-                      normalizeClientName(quotation.client_name) === normalizeClientName(hotel.client_name),
+                      normalizeClientName(quotation.client_name) === normalizeClientName(hotel),
                     )
                     return (
-                      <label key={hotel.client_name} className="min-w-0">
-                        <span className="mb-1 block truncate text-xs font-medium text-gray-600 dark:text-gray-300" title={hotel.client_name}>{hotel.client_name}</span>
+                      <label key={hotel} className="min-w-0">
+                        <span className="mb-1 block truncate text-xs font-medium text-gray-600 dark:text-gray-300" title={hotel}>{hotel}</span>
                         <select
-                          value={selectedQuotations[hotel.client_name] || ''}
+                          value={selectedQuotations[hotel] || ''}
                           onChange={event => setSelectedQuotations(current => ({
                             ...current,
-                            [hotel.client_name]: event.target.value || null,
+                            [hotel]: event.target.value || null,
                           }))}
                           className="block h-10 w-full rounded-lg border bg-white px-3 text-sm dark:bg-gray-900"
                         >
@@ -482,7 +669,7 @@ export default function ManagementReports() {
                   })}
                 </div>
               ) : (
-                <p className="py-4 text-center text-sm text-gray-500">No confirmed receiving entries in this period.</p>
+                <p className="py-4 text-center text-sm text-gray-500">No active gate passes in this period.</p>
               )}
             </div>
 
@@ -497,6 +684,8 @@ export default function ManagementReports() {
                 className="inline-flex h-10 items-center gap-2 rounded-lg bg-red-600 px-4 text-sm font-medium text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50">
                 <Save size={15} />{editingSavedReportId ? 'Update saved report' : 'Save report'}
               </button>
+              <button type="button" onClick={() => window.print()} disabled={!masterReportData} title="Print or save as PDF" className="inline-flex h-10 items-center gap-2 rounded-lg border px-3 text-sm disabled:opacity-50"><Printer size={15} />PDF</button>
+              <button type="button" onClick={exportLinenExcel} disabled={!masterReportData} className="inline-flex h-10 items-center gap-2 rounded-lg border px-3 text-sm disabled:opacity-50"><FileSpreadsheet size={15} />Excel</button>
               {editingSavedReportId && <button type="button" title="Stop editing this saved report" onClick={() => setEditingSavedReportId(null)} className="inline-flex h-10 items-center gap-2 rounded-lg border px-3 text-sm"><X size={15} />Cancel edit</button>}
             </div>
 
@@ -522,11 +711,11 @@ export default function ManagementReports() {
               </div>
             ) : operationsData.hotels?.length ? (
               <div className="rounded-lg border border-green-300 bg-green-50 px-4 py-3 text-sm text-green-950 dark:bg-green-950/30 dark:text-green-100" role="status">
-                Income is calculated from {operationsData.hotels.reduce((total: number, hotel: any) => total + hotel.confirmed_days, 0)} confirmed receiving day(s), priced with the selected hotel quotations.
+                Income is calculated from {operationsData.transaction_days} calendar transaction day(s), using stored gate-pass prices where available.
               </div>
             ) : (
               <div className="rounded-lg border bg-white px-4 py-3 text-sm text-gray-600 dark:bg-gray-800" role="status">
-                No confirmed receiving days exist in this date range. Draft entries, deliveries, and rewash are not counted as income.
+                No active gate passes exist in this date range. Draft and cancelled passes, deliveries, and rewash are not counted as received linen.
               </div>
             )}
 
@@ -569,26 +758,45 @@ export default function ManagementReports() {
               </section>
             </div>
 
-            <div className="grid gap-4 xl:grid-cols-2">
-              <div className="overflow-hidden rounded-xl border bg-white dark:bg-gray-800">
-                <h3 className="border-b px-4 py-3 font-semibold">Income by hotel</h3>
-                <div className="overflow-x-auto">
-                  <table className="w-full min-w-130 text-sm">
-                    <thead className="bg-gray-50 dark:bg-gray-700"><tr><th className="px-3 py-2 text-left">Hotel</th><th className="px-3 py-2 text-right">Receiving days</th><th className="px-3 py-2 text-right">Quantity</th><th className="px-3 py-2 text-right">Income</th></tr></thead>
-                    <tbody>{(masterReportData.hotel_summary || []).map((row: any) => <tr key={row.client_name} className="border-t"><td className="px-3 py-2">{row.client_name}</td><td className="px-3 py-2 text-right">{row.confirmed_days}</td><td className="px-3 py-2 text-right">{row.quantity}</td><td className="px-3 py-2 text-right">{fmt(row.income)}</td></tr>)}</tbody>
-                  </table>
+            <section className="overflow-hidden rounded-xl border bg-white dark:bg-gray-800 print-report-section">
+              <div className="flex flex-wrap items-center justify-between gap-3 border-b px-4 py-3">
+                <div>
+                  <h3 className="font-semibold">Linen received</h3>
+                  <p className="mt-0.5 text-xs text-gray-500">Same-category items are combined; expand a row to see their original variants and rates.</p>
+                </div>
+                <div className="inline-flex rounded-md border p-0.5" role="tablist" aria-label="Summary view">
+                  {(['daily', 'period'] as const).map(mode => <button key={mode} role="tab" aria-selected={summaryView === mode} type="button" onClick={() => setSummaryView(mode)} className={`rounded px-3 py-1.5 text-xs font-semibold capitalize ${summaryView === mode ? 'bg-gray-900 text-white dark:bg-white dark:text-gray-900' : 'text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700'}`}>{mode} summary</button>)}
                 </div>
               </div>
-              <div className="overflow-hidden rounded-xl border bg-white dark:bg-gray-800">
-                <h3 className="border-b px-4 py-3 font-semibold">Income by item</h3>
-                <div className="overflow-x-auto">
-                  <table className="w-full min-w-115 text-sm">
-                    <thead className="bg-gray-50 dark:bg-gray-700"><tr><th className="px-3 py-2 text-left">Item</th><th className="px-3 py-2 text-right">Quantity</th><th className="px-3 py-2 text-right">Hotels</th><th className="px-3 py-2 text-right">Income</th></tr></thead>
-                    <tbody>{(masterReportData.item_summary || []).map((row: any) => <tr key={`${row.item_name}-${row.specification}`} className="border-t"><td className="px-3 py-2">{row.item_name}{row.specification ? ` · ${row.specification}` : ''}</td><td className="px-3 py-2 text-right">{row.quantity}</td><td className="px-3 py-2 text-right">{row.hotel_count}</td><td className="px-3 py-2 text-right">{fmt(row.income)}</td></tr>)}</tbody>
-                  </table>
+
+              {summaryView === 'period' ? (
+                <CategorySummaryTable
+                  categories={periodCategoryRows}
+                  expanded={expandedCategories}
+                  onToggle={toggleCategory}
+                  scope={selectedHotel || 'all-hotels-period'}
+                />
+              ) : (
+                <div className="divide-y">
+                  {(operationsData.daily_summary || []).map((day: any) => {
+                    const dayKey = `day::${day.date}`
+                    const isDayExpanded = Boolean(expandedCategories[dayKey])
+                    return <section key={day.date}>
+                      <button type="button" onClick={() => toggleCategory(dayKey)} aria-expanded={isDayExpanded} className="grid w-full grid-cols-[1fr_auto_auto_auto] items-center gap-3 px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-gray-900">
+                        <span className="inline-flex items-center gap-2 font-semibold">{isDayExpanded ? <ChevronDown size={15} /> : <ChevronRight size={15} />}{day.date}</span>
+                        <span className="text-right text-sm text-gray-600 dark:text-gray-300">{day.transaction_count} gate passes</span>
+                        <span className="text-right text-sm">{day.quantity} items</span>
+                        <span className="min-w-28 text-right font-semibold">{fmtMoney(day.value)}</span>
+                      </button>
+                      {isDayExpanded && <div className="border-t bg-gray-50/50 pl-4 dark:bg-gray-900/40">
+                        <CategorySummaryTable categories={day.categories || []} expanded={expandedCategories} onToggle={toggleCategory} scope={dayKey} />
+                      </div>}
+                    </section>
+                  })}
+                  {!operationsData.daily_summary?.length && <p className="px-4 py-8 text-center text-sm text-gray-500">No days in this reporting period.</p>}
                 </div>
-              </div>
-            </div>
+              )}
+            </section>
 
             <div className="overflow-hidden rounded-xl border bg-white dark:bg-gray-800">
               <h3 className="border-b px-4 py-3 font-semibold">Employee salary detail</h3>
@@ -604,6 +812,41 @@ export default function ManagementReports() {
                 </table>
               </div>
             </div>}
+
+            {isAdmin && <section className="overflow-hidden rounded-xl border bg-white dark:bg-gray-800">
+              <div className="border-b px-4 py-3">
+                <h3 className="font-semibold">Linen category mappings</h3>
+                <p className="mt-1 text-xs text-gray-500">Map exact item names. Unmapped names stay visible as Other / Unclassified.</p>
+              </div>
+              <div className="flex flex-wrap items-end gap-3 p-4">
+                <label className="min-w-56 flex-1">
+                  <span className="mb-1 block text-xs text-gray-500">Exact item name</span>
+                  <input value={newMappingName} onChange={event => setNewMappingName(event.target.value)} list="unmapped-linen-names" className="h-10 w-full rounded-lg border bg-white px-3 text-sm dark:bg-gray-900" placeholder="e.g. Bedsheet - King" />
+                  <datalist id="unmapped-linen-names">{(masterReportData.unmapped_items || []).map((item: any) => <option key={item.item_name} value={item.item_name} />)}</datalist>
+                </label>
+                <label>
+                  <span className="mb-1 block text-xs text-gray-500">Standard category</span>
+                  <select value={newMappingCategory} onChange={event => setNewMappingCategory(event.target.value)} className="h-10 min-w-48 rounded-lg border bg-white px-3 text-sm dark:bg-gray-900">
+                    <option value="">Choose category</option>
+                    {(categoryConfiguration?.categories || []).filter((category: string) => category !== 'Other / Unclassified Items').map((category: string) => <option key={category} value={category}>{category}</option>)}
+                  </select>
+                </label>
+                <button type="button" onClick={saveCategoryMapping} disabled={!newMappingName.trim() || !newMappingCategory} className="h-10 rounded-lg bg-gray-900 px-4 text-sm font-semibold text-white disabled:opacity-50 dark:bg-white dark:text-gray-900">Save mapping</button>
+              </div>
+              {categoriesLoading ? <p className="px-4 pb-4 text-xs text-gray-500">Loading mappings…</p> : categoryConfiguration?.mappings?.length > 0 && <div className="divide-y border-t">
+                {categoryConfiguration.mappings.map((mapping: any) => <div key={mapping.item_name} className="flex items-center justify-between gap-3 px-4 py-2 text-sm">
+                  <span>{mapping.item_name}</span><span className="ml-auto text-gray-500">{mapping.category}</span>
+                  <button type="button" title={`Remove mapping for ${mapping.item_name}`} onClick={async () => {
+                    try {
+                      await operationsReports.deleteLinenCategoryMapping(mapping.item_name)
+                      await queryClient.invalidateQueries({ queryKey: ['linen-category-mappings'] })
+                      await queryClient.invalidateQueries({ queryKey: ['monthly-operations-report'] })
+                      toast.success('Category mapping removed')
+                    } catch { toast.error('Could not remove mapping') }
+                  }} className="rounded border p-1.5 text-red-600 hover:bg-red-50"><Trash2 size={14} /></button>
+                </div>)}
+              </div>}
+            </section>}
 
             <div className="overflow-hidden rounded-xl border bg-white dark:bg-gray-800">
               <h3 className="border-b px-4 py-3 font-semibold">Daily receiving linen detail</h3>
