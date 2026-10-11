@@ -192,6 +192,8 @@ export const reportsApi = {
     if (month) q.set('month', String(month))
     return mgmtApi.get(`/api/reports/monthly?${q}`)
   },
+  master: (params: { start_date: string; end_date: string }) =>
+    mgmtApi.get('/api/reports/master', { params }),
   outstanding: () => mgmtApi.get('/api/reports/outstanding'),
 }
 
