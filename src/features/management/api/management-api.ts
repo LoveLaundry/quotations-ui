@@ -194,6 +194,10 @@ export const reportsApi = {
   },
   master: (params: { start_date: string; end_date: string }) =>
     mgmtApi.get('/api/reports/master', { params }),
+  saved: () => mgmtApi.get('/api/reports/saved'),
+  save: (payload: any) => mgmtApi.post('/api/reports/saved', payload),
+  updateSaved: (id: string, payload: any) => mgmtApi.put(`/api/reports/saved/${id}`, payload),
+  deleteSaved: (id: string) => mgmtApi.delete(`/api/reports/saved/${id}`),
   outstanding: () => mgmtApi.get('/api/reports/outstanding'),
 }
 

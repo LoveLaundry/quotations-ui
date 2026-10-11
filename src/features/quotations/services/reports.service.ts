@@ -5,6 +5,12 @@ import type { ClientSummary, LinenFlowResponse } from '../../../types/operations
 import { todayISO } from '../../../lib/time'
 
 export const reports = {
+    monthlyOperations: (params: {
+        start_date: string
+        end_date: string
+        selected_quotations: Record<string, string | null>
+    }) => billsApi.post('/reports/monthly-operations', params).then((r: any) => r.data),
+
     /**
      * Per-hotel linen flow with server-computed quantities.
      *

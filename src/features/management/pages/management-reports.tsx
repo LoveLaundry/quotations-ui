@@ -1,10 +1,13 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { TableEmptyRow } from '../../../components/ui/empty-state'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { reportsApi, customersApi } from '../api/management-api'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts'
-import { Filter } from 'lucide-react'
+import { Filter, Save, Pencil, Trash2, X } from 'lucide-react'
 import { currentMonth, currentYear, todayISO } from '../../../lib/time'
+import { useQuotations } from '../../quotations/hooks/useQuotations'
+import { reports as operationsReports } from '../../quotations/services/reports.service'
+import { toast } from 'sonner'
 
 const COLORS = ['#ef4444', '#3b82f6', '#22c55e', '#f59e0b', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316']
 const LIST_LIMIT = 500
@@ -63,10 +66,13 @@ function payrollRows(data: any): any[] {
 }
 
 export default function ManagementReports() {
-  const [report, setReport] = useState('profit-loss')
-  const [startDate, setStartDate] = useState('')
-  const [endDate, setEndDate] = useState('')
+  const [report, setReport] = useState('master')
+  const [startDate, setStartDate] = useState(() => `${todayISO().slice(0, 7)}-01`)
+  const [endDate, setEndDate] = useState(() => todayISO())
   const [dailyDate, setDailyDate] = useState(() => todayISO())
+  const [selectedQuotations, setSelectedQuotations] = useState<Record<string, string | null>>({})
+  const [savedReportTitle, setSavedReportTitle] = useState('')
+  const [editingSavedReportId, setEditingSavedReportId] = useState<string | null>(null)
   const [customerId, setCustomerId] = useState('')
   const [year, setYear] = useState(currentYear())
   const [month, setMonth] = useState(currentMonth())
@@ -77,6 +83,8 @@ export default function ManagementReports() {
   })
 
   const customers = customersData.items
+  const { data: quotations = [] } = useQuotations()
+  const queryClient = useQueryClient()
 
   const { data: plData } = useQuery({
     queryKey: ['mgmt-pl-report', startDate, endDate, customerId],
@@ -102,6 +110,37 @@ export default function ManagementReports() {
     enabled: report === 'master' && Boolean(startDate && endDate),
   })
 
+  const { data: operationsData, isLoading: operationsLoading, isError: operationsError } = useQuery({
+    queryKey: ['monthly-operations-report', startDate, endDate, selectedQuotations],
+    queryFn: () => operationsReports.monthlyOperations({
+      start_date: startDate,
+      end_date: endDate,
+      selected_quotations: selectedQuotations,
+    }),
+    enabled: report === 'master' && Boolean(startDate && endDate),
+  })
+
+  const { data: savedReports = [] } = useQuery({
+    queryKey: ['saved-master-reports'],
+    queryFn: () => reportsApi.saved().then(r => r.data),
+    enabled: report === 'master',
+  })
+
+  useEffect(() => {
+    if (!operationsData?.hotels?.length) return
+    setSelectedQuotations(current => {
+      let changed = false
+      const next = { ...current }
+      for (const hotel of operationsData.hotels) {
+        if (!(hotel.client_name in next)) {
+          next[hotel.client_name] = hotel.suggested_quotation_id || null
+          changed = true
+        }
+      }
+      return changed ? next : current
+    })
+  }, [operationsData?.hotels])
+
   const { data: outstandingData = [] } = useQuery({
     queryKey: ['mgmt-outstanding'],
     queryFn: () => reportsApi.outstanding().then(r => r.data),
@@ -109,6 +148,61 @@ export default function ManagementReports() {
   })
 
   const fmt = (n: number) => `LKR ${(n || 0).toLocaleString()}`
+
+  const masterReportData = masterData && operationsData ? {
+    ...masterData,
+    ...operationsData,
+    salary_expense_total: masterData.salary_expense_total,
+    other_expense_total: masterData.other_expense_total,
+    total_expenses: masterData.total_expenses,
+    net_profit: Number(operationsData.total_income || 0) - Number(masterData.total_expenses || 0),
+    salary_expenses: masterData.salary_expenses,
+    salary_period_details: masterData.salary_period_details,
+    other_expense_details: masterData.other_expense_details,
+  } : null
+
+  const saveCurrentReport = async () => {
+    if (!masterReportData || !startDate || !endDate) return
+    const payload = {
+      title: savedReportTitle.trim() || `Operations report ${startDate} to ${endDate}`,
+      start_date: startDate,
+      end_date: endDate,
+      selected_quotations: selectedQuotations,
+      report_data: masterReportData,
+    }
+    try {
+      if (editingSavedReportId) {
+        await reportsApi.updateSaved(editingSavedReportId, payload)
+        toast.success('Saved report updated')
+      } else {
+        await reportsApi.save(payload)
+        toast.success('Report saved')
+      }
+      await queryClient.invalidateQueries({ queryKey: ['saved-master-reports'] })
+    } catch {
+      toast.error('Could not save report')
+    }
+  }
+
+  const editSavedReport = (saved: any) => {
+    setEditingSavedReportId(saved.id)
+    setSavedReportTitle(saved.title || '')
+    setStartDate(saved.start_date)
+    setEndDate(saved.end_date)
+    setSelectedQuotations(saved.selected_quotations || {})
+    setReport('master')
+  }
+
+  const deleteSavedReport = async (id: string) => {
+    try {
+      await reportsApi.deleteSaved(id)
+      await queryClient.invalidateQueries({ queryKey: ['saved-master-reports'] })
+      if (editingSavedReportId === id) setEditingSavedReportId(null)
+      toast.success('Saved report deleted')
+    } catch {
+      toast.error('Could not delete report')
+    }
+  }
 
   return (
     <div className="space-y-4">
@@ -305,19 +399,77 @@ export default function ManagementReports() {
           </div>
         ) : masterLoading ? (
           <div className="rounded-xl border bg-white p-8 text-center text-sm text-gray-500 dark:bg-gray-800">Loading report…</div>
-        ) : masterError ? (
+        ) : operationsLoading ? (
+          <div className="rounded-xl border bg-white p-8 text-center text-sm text-gray-500 dark:bg-gray-800">Loading confirmed receiving records…</div>
+        ) : masterError || operationsError ? (
           <div className="rounded-xl border border-red-200 bg-white p-8 text-center text-sm text-red-600 dark:bg-gray-800" role="alert">
-            Unable to load the master report. Check the date range and management service connection.
+            Unable to load the report. Check the date range and management and bill services.
           </div>
-        ) : masterData && (
+        ) : masterReportData && (
           <div className="space-y-4">
+            <div className="rounded-xl border bg-white p-4 dark:bg-gray-800">
+              <div className="mb-3 flex flex-wrap items-end justify-between gap-3">
+                <div>
+                  <h2 className="font-semibold">Quotation pricing by hotel</h2>
+                  <p className="mt-1 text-xs text-gray-500">Choose the contract used to price confirmed receiving items for each hotel.</p>
+                </div>
+              </div>
+              {operationsData.hotels?.length ? (
+                <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                  {operationsData.hotels.map((hotel: any) => {
+                    const hotelQuotations = quotations.filter((quotation: any) =>
+                      String(quotation.client_name || '').trim().toLocaleLowerCase()
+                        === String(hotel.client_name || '').trim().toLocaleLowerCase(),
+                    )
+                    return (
+                      <label key={hotel.client_name} className="min-w-0">
+                        <span className="mb-1 block truncate text-xs font-medium text-gray-600 dark:text-gray-300" title={hotel.client_name}>{hotel.client_name}</span>
+                        <select
+                          value={selectedQuotations[hotel.client_name] || ''}
+                          onChange={event => setSelectedQuotations(current => ({
+                            ...current,
+                            [hotel.client_name]: event.target.value || null,
+                          }))}
+                          className="block h-10 w-full rounded-lg border bg-white px-3 text-sm dark:bg-gray-900"
+                        >
+                          <option value="">No quotation selected</option>
+                          {hotelQuotations.map((quotation: any) => (
+                            <option key={String(quotation.id)} value={String(quotation.id)}>
+                              {quotation.quotation_title || `Quotation ${quotation.id}`}
+                            </option>
+                          ))}
+                        </select>
+                        {!hotelQuotations.length && <span className="mt-1 block text-xs text-amber-700">No quotation found for this hotel.</span>}
+                      </label>
+                    )
+                  })}
+                </div>
+              ) : (
+                <p className="py-4 text-center text-sm text-gray-500">No confirmed receiving entries in this period.</p>
+              )}
+            </div>
+
+            <div className="flex flex-wrap items-end gap-3 rounded-xl border bg-white p-4 dark:bg-gray-800">
+              <label className="min-w-55 flex-1">
+                <span className="mb-1 block text-xs text-gray-500">Saved report name</span>
+                <input value={savedReportTitle} onChange={event => setSavedReportTitle(event.target.value)} maxLength={120}
+                  placeholder={`Operations report ${startDate} to ${endDate}`}
+                  className="h-10 w-full rounded-lg border bg-white px-3 text-sm dark:bg-gray-900" />
+              </label>
+              <button type="button" onClick={saveCurrentReport} disabled={!masterReportData}
+                className="inline-flex h-10 items-center gap-2 rounded-lg bg-red-600 px-4 text-sm font-medium text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50">
+                <Save size={15} />{editingSavedReportId ? 'Update saved report' : 'Save report'}
+              </button>
+              {editingSavedReportId && <button type="button" title="Stop editing this saved report" onClick={() => setEditingSavedReportId(null)} className="inline-flex h-10 items-center gap-2 rounded-lg border px-3 text-sm"><X size={15} />Cancel edit</button>}
+            </div>
+
             <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
               {[
-                ['Gate pass income', masterData.total_income, 'text-green-600'],
-                ['Salary expense', masterData.salary_expense_total, ''],
-                ['Other expenses', masterData.other_expense_total, ''],
-                ['Total expenses', masterData.total_expenses, ''],
-                ['Net profit', masterData.net_profit, masterData.net_profit >= 0 ? 'text-green-600' : 'text-red-600'],
+                ['Gate pass income', masterReportData.total_income, 'text-green-600'],
+                ['Salary expense', masterReportData.salary_expense_total, ''],
+                ['Other expenses', masterReportData.other_expense_total, ''],
+                ['Total expenses', masterReportData.total_expenses, ''],
+                ['Net profit', masterReportData.net_profit, masterReportData.net_profit >= 0 ? 'text-green-600' : 'text-red-600'],
               ].map(([label, amount, color]) => (
                 <div key={String(label)} className="rounded-xl border bg-white p-4 dark:bg-gray-800">
                   <p className="text-sm text-gray-500">{label}</p>
@@ -331,8 +483,8 @@ export default function ManagementReports() {
                 <h3 className="border-b px-4 py-3 font-semibold">Income by hotel</h3>
                 <div className="overflow-x-auto">
                   <table className="w-full min-w-130 text-sm">
-                    <thead className="bg-gray-50 dark:bg-gray-700"><tr><th className="px-3 py-2 text-left">Hotel</th><th className="px-3 py-2 text-right">Gate passes</th><th className="px-3 py-2 text-right">Quantity</th><th className="px-3 py-2 text-right">Income</th></tr></thead>
-                    <tbody>{(masterData.hotel_summary || []).map((row: any) => <tr key={row.client_name} className="border-t"><td className="px-3 py-2">{row.client_name}</td><td className="px-3 py-2 text-right">{row.gate_pass_count}</td><td className="px-3 py-2 text-right">{row.quantity}</td><td className="px-3 py-2 text-right">{fmt(row.income)}</td></tr>)}</tbody>
+                    <thead className="bg-gray-50 dark:bg-gray-700"><tr><th className="px-3 py-2 text-left">Hotel</th><th className="px-3 py-2 text-right">Receiving days</th><th className="px-3 py-2 text-right">Quantity</th><th className="px-3 py-2 text-right">Income</th></tr></thead>
+                    <tbody>{(masterReportData.hotel_summary || []).map((row: any) => <tr key={row.client_name} className="border-t"><td className="px-3 py-2">{row.client_name}</td><td className="px-3 py-2 text-right">{row.confirmed_days}</td><td className="px-3 py-2 text-right">{row.quantity}</td><td className="px-3 py-2 text-right">{fmt(row.income)}</td></tr>)}</tbody>
                   </table>
                 </div>
               </div>
@@ -341,7 +493,7 @@ export default function ManagementReports() {
                 <div className="overflow-x-auto">
                   <table className="w-full min-w-115 text-sm">
                     <thead className="bg-gray-50 dark:bg-gray-700"><tr><th className="px-3 py-2 text-left">Item</th><th className="px-3 py-2 text-right">Quantity</th><th className="px-3 py-2 text-right">Hotels</th><th className="px-3 py-2 text-right">Income</th></tr></thead>
-                    <tbody>{(masterData.item_summary || []).map((row: any) => <tr key={row.item_name} className="border-t"><td className="px-3 py-2">{row.item_name}</td><td className="px-3 py-2 text-right">{row.quantity}</td><td className="px-3 py-2 text-right">{row.hotel_count}</td><td className="px-3 py-2 text-right">{fmt(row.income)}</td></tr>)}</tbody>
+                    <tbody>{(masterReportData.item_summary || []).map((row: any) => <tr key={`${row.item_name}-${row.specification}`} className="border-t"><td className="px-3 py-2">{row.item_name}{row.specification ? ` · ${row.specification}` : ''}</td><td className="px-3 py-2 text-right">{row.quantity}</td><td className="px-3 py-2 text-right">{row.hotel_count}</td><td className="px-3 py-2 text-right">{fmt(row.income)}</td></tr>)}</tbody>
                   </table>
                 </div>
               </div>
@@ -349,7 +501,28 @@ export default function ManagementReports() {
 
             <div className="overflow-hidden rounded-xl border bg-white dark:bg-gray-800">
               <h3 className="border-b px-4 py-3 font-semibold">Employee salary detail</h3>
-              <PayrollBreakdown rows={payrollRows(masterData)} />
+              <PayrollBreakdown rows={payrollRows(masterReportData)} />
+            </div>
+
+            {masterReportData.unpriced_count > 0 && <div className="overflow-hidden rounded-xl border border-amber-300 bg-amber-50 dark:bg-amber-950/30">
+              <h3 className="border-b border-amber-200 px-4 py-3 font-semibold text-amber-900 dark:text-amber-200">Unpriced receiving items ({masterReportData.unpriced_count})</h3>
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-620 text-sm">
+                  <thead><tr><th className="px-3 py-2 text-left">Date</th><th className="px-3 py-2 text-left">Hotel</th><th className="px-3 py-2 text-left">Item</th><th className="px-3 py-2 text-right">Quantity</th></tr></thead>
+                  <tbody>{masterReportData.unpriced_items.map((row: any, index: number) => <tr key={`${row.date}-${row.client_name}-${row.item_name}-${index}`} className="border-t border-amber-200"><td className="px-3 py-2">{row.date}</td><td className="px-3 py-2">{row.client_name}</td><td className="px-3 py-2">{row.item_name}{row.specification ? ` · ${row.specification}` : ''}</td><td className="px-3 py-2 text-right">{row.quantity}</td></tr>)}</tbody>
+                </table>
+              </div>
+            </div>}
+
+            <div className="overflow-hidden rounded-xl border bg-white dark:bg-gray-800">
+              <h3 className="border-b px-4 py-3 font-semibold">Daily receiving linen detail</h3>
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-620 text-sm">
+                  <thead className="bg-gray-50 dark:bg-gray-700"><tr><th className="px-3 py-2 text-left">Date</th><th className="px-3 py-2 text-left">Hotel</th><th className="px-3 py-2 text-left">Item</th><th className="px-3 py-2 text-left">Specification</th><th className="px-3 py-2 text-right">Received</th><th className="px-3 py-2 text-left">Unit</th><th className="px-3 py-2 text-right">Pieces</th><th className="px-3 py-2 text-right">Unit price</th><th className="px-3 py-2 text-right">Income</th></tr></thead>
+                  <tbody>{(masterReportData.daily_details || []).flatMap((day: any) => day.items.map((item: any, index: number) => <tr key={`${day.date}-${day.client_name}-${item.item_name}-${item.specification}-${index}`} className="border-t"><td className="px-3 py-2 whitespace-nowrap">{day.date}</td><td className="px-3 py-2">{day.client_name}</td><td className="px-3 py-2">{item.item_name}</td><td className="px-3 py-2">{item.specification || '—'}</td><td className="px-3 py-2 text-right">{item.quantity}</td><td className="px-3 py-2">{item.unit}</td><td className="px-3 py-2 text-right">{item.piece_count}</td><td className="px-3 py-2 text-right">{fmt(item.unit_price)}</td><td className="px-3 py-2 text-right">{fmt(item.income)}</td></tr>))}</tbody>
+                </table>
+                {!masterReportData.daily_details?.some((day: any) => day.items.length > 0) && <p className="px-4 py-5 text-center text-sm text-gray-500">No confirmed receiving quantities in this period.</p>}
+              </div>
             </div>
 
             <div className="overflow-hidden rounded-xl border bg-white dark:bg-gray-800">
@@ -357,10 +530,28 @@ export default function ManagementReports() {
               <div className="overflow-x-auto">
                 <table className="w-full min-w-155 text-sm">
                   <thead className="bg-gray-50 dark:bg-gray-700"><tr><th className="px-3 py-2 text-left">Date</th><th className="px-3 py-2 text-left">Category</th><th className="px-3 py-2 text-left">Description</th><th className="px-3 py-2 text-left">Payment</th><th className="px-3 py-2 text-right">Amount</th></tr></thead>
-                  <tbody>{(masterData.other_expense_details || []).map((row: any, index: number) => <tr key={row.id || index} className="border-t"><td className="px-3 py-2">{row.date || '—'}</td><td className="px-3 py-2">{row.category_name || row.category_id || 'Uncategorized'}</td><td className="px-3 py-2">{row.description || '—'}</td><td className="px-3 py-2">{row.payment_method || '—'}</td><td className="px-3 py-2 text-right">{fmt(row.amount)}</td></tr>)}</tbody>
+                  <tbody>{(masterReportData.other_expense_details || []).map((row: any, index: number) => <tr key={row.id || index} className="border-t"><td className="px-3 py-2">{row.date || '—'}</td><td className="px-3 py-2">{row.category_name || row.category_id || 'Uncategorized'}</td><td className="px-3 py-2">{row.description || '—'}</td><td className="px-3 py-2">{row.payment_method || '—'}</td><td className="px-3 py-2 text-right">{fmt(row.amount)}</td></tr>)}</tbody>
                 </table>
-                {!masterData.other_expense_details?.length && <p className="px-4 py-5 text-center text-sm text-gray-500">No other expenses in this period.</p>}
+                {!masterReportData.other_expense_details?.length && <p className="px-4 py-5 text-center text-sm text-gray-500">No other expenses in this period.</p>}
               </div>
+            </div>
+
+            <div className="overflow-hidden rounded-xl border bg-white dark:bg-gray-800">
+              <h3 className="border-b px-4 py-3 font-semibold">Saved reports</h3>
+              {savedReports.length ? <div className="divide-y">
+                {savedReports.map((saved: any) => (
+                  <div key={saved.id} className="flex flex-wrap items-center justify-between gap-3 px-4 py-3">
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-medium">{saved.title}</p>
+                      <p className="text-xs text-gray-500">{saved.start_date} to {saved.end_date} · {fmt(saved.report_data?.total_income || 0)} income</p>
+                    </div>
+                    <div className="flex shrink-0 gap-1">
+                      <button type="button" title="Load and edit this report" onClick={() => editSavedReport(saved)} className="rounded-md border p-2 hover:bg-gray-50 dark:hover:bg-gray-700"><Pencil size={14} /></button>
+                      <button type="button" title="Delete saved report" onClick={() => deleteSavedReport(saved.id)} className="rounded-md border border-red-200 p-2 text-red-600 hover:bg-red-50"><Trash2 size={14} /></button>
+                    </div>
+                  </div>
+                ))}
+              </div> : <p className="px-4 py-5 text-center text-sm text-gray-500">No saved reports.</p>}
             </div>
           </div>
         )
