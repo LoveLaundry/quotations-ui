@@ -9,6 +9,11 @@ export const reports = {
         start_date: string
         end_date: string
         selected_quotations: Record<string, string | null>
+        quotation_snapshots: Record<string, {
+            id: string | number
+            client_name: string
+            line_items: unknown[]
+        }>
     }) => billsApi.post('/reports/monthly-operations', params).then((r: any) => r.data),
 
     /**

@@ -65,6 +65,26 @@ function payrollRows(data: any): any[] {
   return (data?.salary_expenses || []).flatMap((employee: any) => employee.periods || [])
 }
 
+function normalizeClientName(value: unknown): string {
+  return String(value || '').trim().replace(/\s+/g, ' ').toLocaleLowerCase()
+}
+
+function dailyIncomeSeries(data: any): { date: string; income: number }[] {
+  const incomeByDate = new Map<string, number>()
+  for (const day of data?.daily_details || []) {
+    incomeByDate.set(day.date, (day.items || []).reduce((total: number, item: any) => total + Number(item.income || 0), 0))
+  }
+
+  const start = new Date(`${data?.start_date}T00:00:00Z`)
+  const end = new Date(`${data?.end_date}T00:00:00Z`)
+  const days: { date: string; income: number }[] = []
+  for (let current = start; current <= end; current.setUTCDate(current.getUTCDate() + 1)) {
+    const key = current.toISOString().slice(0, 10)
+    days.push({ date: key.slice(5), income: incomeByDate.get(key) || 0 })
+  }
+  return days
+}
+
 export default function ManagementReports() {
   const [report, setReport] = useState('master')
   const [startDate, setStartDate] = useState(() => `${todayISO().slice(0, 7)}-01`)
@@ -83,7 +103,7 @@ export default function ManagementReports() {
   })
 
   const customers = customersData.items
-  const { data: quotations = [] } = useQuotations()
+  const { data: quotations = [], isLoading: quotationsLoading } = useQuotations()
   const queryClient = useQueryClient()
 
   const { data: plData } = useQuery({
@@ -110,14 +130,27 @@ export default function ManagementReports() {
     enabled: report === 'master' && Boolean(startDate && endDate),
   })
 
-  const { data: operationsData, isLoading: operationsLoading, isError: operationsError } = useQuery({
+  const quotationSnapshots = quotations.reduce((snapshots, quotation: any) => {
+    const quotationId = String(quotation.id)
+    if (Object.values(selectedQuotations).some(selectedId => String(selectedId || '') === quotationId)) {
+      snapshots[quotationId] = {
+        id: quotation.id,
+        client_name: quotation.client_name,
+        line_items: quotation.line_items || [],
+      }
+    }
+    return snapshots
+  }, {} as Record<string, { id: string | number; client_name: string; line_items: unknown[] }>)
+
+  const { data: operationsData, isLoading: operationsLoading, isFetching: operationsFetching, isError: operationsError } = useQuery({
     queryKey: ['monthly-operations-report', startDate, endDate, selectedQuotations],
     queryFn: () => operationsReports.monthlyOperations({
       start_date: startDate,
       end_date: endDate,
       selected_quotations: selectedQuotations,
+      quotation_snapshots: quotationSnapshots,
     }),
-    enabled: report === 'master' && Boolean(startDate && endDate),
+    enabled: report === 'master' && Boolean(startDate && endDate) && !quotationsLoading,
   })
 
   const { data: savedReports = [] } = useQuery({
@@ -160,6 +193,11 @@ export default function ManagementReports() {
     salary_period_details: masterData.salary_period_details,
     other_expense_details: masterData.other_expense_details,
   } : null
+  const receivingIncomeByDay = dailyIncomeSeries(masterReportData)
+  const expenseMix = [
+    { name: 'Salary', value: Number(masterReportData?.salary_expense_total || 0), color: '#dc2626' },
+    { name: 'Other expenses', value: Number(masterReportData?.other_expense_total || 0), color: '#f59e0b' },
+  ].filter(row => row.value > 0)
 
   const saveCurrentReport = async () => {
     if (!masterReportData || !startDate || !endDate) return
@@ -399,7 +437,7 @@ export default function ManagementReports() {
           </div>
         ) : masterLoading ? (
           <div className="rounded-xl border bg-white p-8 text-center text-sm text-gray-500 dark:bg-gray-800">Loading report…</div>
-        ) : operationsLoading ? (
+        ) : operationsLoading || operationsFetching ? (
           <div className="rounded-xl border bg-white p-8 text-center text-sm text-gray-500 dark:bg-gray-800">Loading confirmed receiving records…</div>
         ) : masterError || operationsError ? (
           <div className="rounded-xl border border-red-200 bg-white p-8 text-center text-sm text-red-600 dark:bg-gray-800" role="alert">
@@ -418,8 +456,7 @@ export default function ManagementReports() {
                 <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
                   {operationsData.hotels.map((hotel: any) => {
                     const hotelQuotations = quotations.filter((quotation: any) =>
-                      String(quotation.client_name || '').trim().toLocaleLowerCase()
-                        === String(hotel.client_name || '').trim().toLocaleLowerCase(),
+                      normalizeClientName(quotation.client_name) === normalizeClientName(hotel.client_name),
                     )
                     return (
                       <label key={hotel.client_name} className="min-w-0">
@@ -476,6 +513,60 @@ export default function ManagementReports() {
                   <p className={`text-xl font-bold ${color}`}>{fmt(Number(amount))}</p>
                 </div>
               ))}
+            </div>
+
+            {operationsData.unpriced_count > 0 ? (
+              <div className="rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-950 dark:bg-amber-950/30 dark:text-amber-100" role="status">
+                <strong>{operationsData.unpriced_count} receiving line(s) have no usable quotation price.</strong>
+                <span className="ml-1">Their quantities are listed below and excluded from income until the hotel quotation is corrected or selected.</span>
+              </div>
+            ) : operationsData.hotels?.length ? (
+              <div className="rounded-lg border border-green-300 bg-green-50 px-4 py-3 text-sm text-green-950 dark:bg-green-950/30 dark:text-green-100" role="status">
+                Income is calculated from {operationsData.hotels.reduce((total: number, hotel: any) => total + hotel.confirmed_days, 0)} confirmed receiving day(s), priced with the selected hotel quotations.
+              </div>
+            ) : (
+              <div className="rounded-lg border bg-white px-4 py-3 text-sm text-gray-600 dark:bg-gray-800" role="status">
+                No confirmed receiving days exist in this date range. Draft entries, deliveries, and rewash are not counted as income.
+              </div>
+            )}
+
+            <div className="grid gap-4 xl:grid-cols-[minmax(0,1.6fr)_minmax(280px,1fr)]">
+              <section className="min-w-0 rounded-xl border bg-white p-4 dark:bg-gray-800">
+                <div className="mb-3">
+                  <h3 className="font-semibold">Income by receiving day</h3>
+                  <p className="text-xs text-gray-500">Quotation-priced value of confirmed items received each day.</p>
+                </div>
+                <div className="h-65 min-w-0">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={receivingIncomeByDay} margin={{ top: 8, right: 12, left: 8, bottom: 4 }}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                      <XAxis dataKey="date" minTickGap={24} tick={{ fontSize: 11 }} />
+                      <YAxis tickFormatter={value => Number(value).toLocaleString()} tick={{ fontSize: 11 }} width={72} />
+                      <Tooltip formatter={(value: number) => [fmtMoney(value), 'Receiving income']} />
+                      <Bar dataKey="income" name="Receiving income" fill="#16a34a" radius={[3, 3, 0, 0]} maxBarSize={28} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </section>
+              <section className="min-w-0 rounded-xl border bg-white p-4 dark:bg-gray-800">
+                <div className="mb-3">
+                  <h3 className="font-semibold">Where expenses went</h3>
+                  <p className="text-xs text-gray-500">Payroll and other recorded expenses.</p>
+                </div>
+                {expenseMix.length ? (
+                  <div className="h-65 min-w-0">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie data={expenseMix} dataKey="value" nameKey="name" innerRadius={54} outerRadius={88} paddingAngle={3}>
+                          {expenseMix.map(entry => <Cell key={entry.name} fill={entry.color} />)}
+                        </Pie>
+                        <Tooltip formatter={(value: number) => fmtMoney(value)} />
+                        <Legend verticalAlign="bottom" height={32} />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
+                ) : <p className="py-12 text-center text-sm text-gray-500">No expenses recorded for this period.</p>}
+              </section>
             </div>
 
             <div className="grid gap-4 xl:grid-cols-2">
