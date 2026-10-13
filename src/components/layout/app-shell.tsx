@@ -4,6 +4,7 @@ import { Sidebar } from './sidebar'
 import { TopBar } from './top-bar'
 import { CommandSearch } from '../ui/command-search'
 import { OfflineSyncBar } from '../ui/offline-sync-bar'
+import { SyncFab } from '../../features/sync/components/global-sync-panel'
 import { PageLoader } from '../ui/loader'
 import { useAuth } from '../../context/AuthContext'
 import { setUnauthorizedHandler } from '../../api/interceptors'
@@ -159,6 +160,8 @@ export function AppShell() {
       <CommandSearch open={cmdOpen} onClose={() => setCmdOpen(false)} />
 
       <OfflineSyncBar />
+
+      <SyncFab />
 
       <main
         id="main-content"

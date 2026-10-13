@@ -1635,3 +1635,415 @@ body:has(.fixed.inset-0) { overflow: hidden; }
     z-index: 9999;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   8 · GLOBAL SYNC PANEL — APPLE-INSPIRED
+   Premium glassmorphism overlay, animated hotel cards, progress bars, FAB.
+   Follows the same semantic token contract as the rest of the system.
+════════════════════════════════════════════════════════════════════════════ */
+
+/* ── Overlay ──────────────────────────────────────────────────────────── */
+.sync-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgb(0 0 0 / 0.4);
+  backdrop-filter: blur(8px) saturate(160%);
+  -webkit-backdrop-filter: blur(8px) saturate(160%);
+  animation: sync-overlay-in 200ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+@keyframes sync-overlay-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ── Panel ────────────────────────────────────────────────────────────── */
+.sync-panel {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: calc(100vw - 32px);
+  max-width: 640px;
+  max-height: calc(100dvh - 48px);
+  border-radius: 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  box-shadow:
+    0 24px 80px -16px rgb(0 0 0 / 0.28),
+    0 8px 24px -8px rgb(0 0 0 / 0.14),
+    0 0 0 0.5px rgb(255 255 255 / 0.06) inset;
+  overflow: hidden;
+  animation: sync-panel-in 280ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+@keyframes sync-panel-in {
+  from { opacity: 0; transform: scale(0.96) translateY(12px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* Panel header */
+.sync-panel-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-2);
+}
+
+.sync-panel-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, var(--brand) 0%, var(--brand-hover) 100%);
+  color: white;
+  flex-shrink: 0;
+}
+
+.sync-close-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: var(--text-faint);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 120ms ease;
+}
+.sync-close-btn:hover {
+  background: var(--surface-hover);
+  color: var(--text-primary);
+}
+
+/* ── Controls bar ─────────────────────────────────────────────────────── */
+.sync-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 20px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+
+/* Month picker */
+.sync-month-picker {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border-radius: 8px;
+  border: 1px solid var(--border-2);
+  background: var(--surface-2);
+  padding: 2px;
+}
+.sync-month-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 100ms;
+}
+.sync-month-arrow:hover {
+  background: var(--surface-hover);
+  color: var(--text-primary);
+}
+.sync-month-label {
+  padding: 0 8px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+
+/* ── Summary strip ────────────────────────────────────────────────────── */
+.sync-summary-strip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  padding: 10px 20px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-sunken);
+}
+.sync-summary-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 16px;
+}
+.sync-summary-num {
+  font-size: 18px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+  color: var(--text-primary);
+}
+.sync-summary-item[data-tone="success"] .sync-summary-num { color: var(--success-text); }
+.sync-summary-item[data-tone="warning"] .sync-summary-num { color: var(--warning-text); }
+.sync-summary-item[data-tone="info"]    .sync-summary-num { color: var(--info-text); }
+.sync-summary-item[data-tone="danger"]  .sync-summary-num { color: var(--danger-text); }
+
+.sync-summary-label {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  margin-top: 1px;
+}
+.sync-summary-divider {
+  width: 1px;
+  height: 28px;
+  background: var(--border);
+}
+
+/* ── Hotel list ───────────────────────────────────────────────────────── */
+.sync-hotel-list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 12px 16px 16px;
+}
+
+.sync-loading-state,
+.sync-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+}
+
+/* ── Hotel card ───────────────────────────────────────────────────────── */
+.sync-hotel-card {
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  overflow: hidden;
+  transition: border-color 150ms, box-shadow 150ms;
+}
+.sync-hotel-card + .sync-hotel-card {
+  margin-top: 8px;
+}
+.sync-hotel-card:hover {
+  border-color: var(--border-2);
+  box-shadow: var(--shadow-sm);
+}
+.sync-hotel-card[data-status="synced"]  { border-left: 3px solid var(--success-text); }
+.sync-hotel-card[data-status="partial"] { border-left: 3px solid var(--warning-text); }
+.sync-hotel-card[data-status="pending"] { border-left: 3px solid var(--info-text); }
+.sync-hotel-card[data-status="error"]   { border-left: 3px solid var(--danger-text); }
+
+.sync-hotel-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 12px 14px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  transition: background 100ms;
+}
+.sync-hotel-header:hover {
+  background: var(--surface-hover);
+}
+
+.sync-hotel-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: var(--surface-3);
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+/* Expandable body */
+.sync-hotel-body {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 250ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.sync-hotel-body--open {
+  grid-template-rows: 1fr;
+}
+.sync-hotel-body-inner {
+  overflow: hidden;
+}
+
+/* ── Section row ──────────────────────────────────────────────────────── */
+.sync-section-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 14px;
+  border-top: 1px solid var(--border);
+}
+.sync-kind-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  background: var(--surface-3);
+  color: var(--text-muted);
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.sync-section-action {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  border: 1px solid var(--border-2);
+  background: var(--surface);
+  color: var(--text-muted);
+  cursor: pointer;
+  flex-shrink: 0;
+  margin-top: 1px;
+  transition: all 120ms;
+}
+.sync-section-action:hover {
+  background: var(--brand-soft);
+  border-color: var(--brand-border);
+  color: var(--brand-text);
+}
+.sync-section-action:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ── Progress bar ─────────────────────────────────────────────────────── */
+.sync-progress-track {
+  height: 4px;
+  border-radius: 99px;
+  background: var(--surface-3);
+  overflow: hidden;
+}
+.sync-progress-fill {
+  height: 100%;
+  border-radius: 99px;
+  background: linear-gradient(90deg, var(--brand) 0%, var(--success-text) 100%);
+  transition: width 500ms cubic-bezier(0.16, 1, 0.3, 1);
+  min-width: 0;
+}
+
+/* ── Floating Action Button ───────────────────────────────────────────── */
+.sync-fab {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  border: none;
+  background: linear-gradient(135deg, var(--brand) 0%, var(--brand-hover) 100%);
+  color: white;
+  cursor: pointer;
+  box-shadow:
+    0 8px 24px -6px rgb(0 0 0 / 0.28),
+    0 4px 10px -4px rgb(0 0 0 / 0.18),
+    0 0 0 1px rgb(255 255 255 / 0.1) inset;
+  transition: all 200ms cubic-bezier(0.16, 1, 0.3, 1);
+  animation: sync-fab-in 400ms 200ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+@keyframes sync-fab-in {
+  from { opacity: 0; transform: scale(0.7) translateY(16px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+.sync-fab:hover {
+  transform: scale(1.06);
+  box-shadow:
+    0 12px 32px -6px rgb(0 0 0 / 0.36),
+    0 6px 14px -4px rgb(0 0 0 / 0.22),
+    0 0 0 1px rgb(255 255 255 / 0.12) inset;
+}
+.sync-fab:active {
+  transform: scale(0.97);
+}
+/* Subtle pulse ring to draw attention */
+.sync-fab::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 20px;
+  border: 2px solid var(--brand);
+  opacity: 0;
+  animation: sync-fab-pulse 2.5s ease-out infinite;
+}
+@keyframes sync-fab-pulse {
+  0%   { transform: scale(0.92); opacity: 0.6; }
+  70%  { transform: scale(1.08); opacity: 0; }
+  100% { opacity: 0; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   9 · APPLE-INSPIRED REFINEMENTS
+   Enhanced micro-interactions, glassmorphism touches, and premium feel.
+════════════════════════════════════════════════════════════════════════════ */
+
+/* Smoother Sonner toasts — Apple notification style */
+[data-sonner-toaster] [data-sonner-toast] {
+  --toast-bg: var(--surface);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  box-shadow:
+    0 8px 32px -8px rgb(0 0 0 / 0.18),
+    0 2px 8px -2px rgb(0 0 0 / 0.08),
+    0 0 0 0.5px rgb(0 0 0 / 0.04);
+  border: 1px solid var(--border) !important;
+}
+
+/* Card hover lift — Apple card micro-interaction */
+.sync-hotel-card,
+[class*='stat-card'] {
+  transition: transform 200ms cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 200ms cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 150ms;
+}
+
+/* Button press spring effect */
+button:not(:disabled):active,
+[role="button"]:not(:disabled):active {
+  transition-duration: 80ms;
+}
+
+/* Focus ring — Apple blue glow */
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--ring) 12%, transparent);
+}
+
+@media print {
+  .sync-fab,
+  .sync-overlay { display: none !important; }
+}
