@@ -27,6 +27,8 @@ const CategoriesPage = lazy(() => import('../features/quotations/pages/categorie
 const SettingsPage = lazy(() => import('../features/quotations/pages/settings-page'))
 const ProfilePage = lazy(() => import('../features/quotations/pages/profile-page'))
 const BillsListPage = lazy(() => import('../features/quotations/pages/bills-list-page'))
+const IncomePage = lazy(() => import('../features/quotations/pages/income-page'))
+const LedgerPage = lazy(() => import('../features/quotations/pages/ledger-page'))
 const CreateBillPage = lazy(() => import('../features/quotations/pages/create-bill-page'))
 const BillDetailPage = lazy(() => import('../features/quotations/pages/bill-detail-page'))
 const InvoiceCreatePage = lazy(() => import('../features/quotations/pages/invoice-create-page'))
@@ -88,8 +90,6 @@ const ManagementItems = lazy(() => import('../features/management/pages/manageme
 const ManagementExpenses = lazy(() => import('../features/management/pages/management-expenses'))
 const ManagementEmployees = lazy(() => import('../features/management/pages/management-employees'))
 const ManagementTransactions = lazy(() => import('../features/management/pages/management-transactions'))
-const ManagementIncome = lazy(() => import('../features/management/pages/management-income'))
-const ManagementLedger = lazy(() => import('../features/management/pages/management-ledger'))
 const ManagementPayments = lazy(() => import('../features/management/pages/management-payments'))
 const ManagementReports = lazy(() => import('../features/management/pages/management-reports'))
 const SalarySlipPage = lazy(() => import('../features/management/pages/salary-slip-page'))
@@ -144,6 +144,8 @@ export const router = createBrowserRouter([
 
           // Billing
           { path: 'bills', element: <BillsListPage /> },
+          { path: 'income', element: <IncomePage /> },
+          { path: 'ledger', element: <LedgerPage /> },
           { path: 'bills/new', element: <CreateBillPage /> },
           { path: 'bills/:id', element: <BillDetailPage /> },
           { path: 'statements', element: <StatementPage /> },
@@ -197,8 +199,6 @@ export const router = createBrowserRouter([
           // Management Module
           { path: 'management', element: <ManagementDashboard /> },
           { path: 'management/transactions', element: <ManagementTransactions /> },
-          { path: 'management/income', element: <ManagementIncome /> },
-          { path: 'management/ledger', element: <ManagementLedger /> },
           { path: 'management/customers', element: <ManagementCustomers /> },
           { path: 'management/items', element: <ManagementItems /> },
           { path: 'management/payments', element: <ManagementPayments /> },

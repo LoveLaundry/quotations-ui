@@ -15,8 +15,29 @@ function toISODatetime(dateStr: string): string {
 }
 
 export const gatepasses = {
-    list: (params?: { client_name?: string; status?: string }): Promise<GatePass[]> =>
-        billsApi.get<GatePass[]>('/gatepasses', { params }).then(r => withItems(r.data)),
+    list: async (params?: { client_name?: string; status?: string; skip?: number; limit?: number }): Promise<GatePass[]> => {
+        // Explicit skip/limit = one page. Otherwise page through the whole
+        // history: the server caps a page (default 5000) and the Income /
+        // Ledger tabs need every received pass to stay complete.
+        if (params?.skip != null || params?.limit != null) {
+            return billsApi.get<GatePass[]>('/gatepasses', { params }).then(r => withItems(r.data))
+        }
+        const pageSize = 500
+        const all: GatePass[] = []
+        const seen = new Set<string>()
+        for (let skip = 0; skip < 50000; skip += pageSize) {
+            const page = await billsApi
+                .get<GatePass[]>('/gatepasses', { params: { ...params, skip, limit: pageSize } })
+                .then(r => withItems(r.data))
+            const fresh = page.filter(g => !seen.has(g.id))
+            fresh.forEach(g => seen.add(g.id))
+            all.push(...fresh)
+            // Short page = done. Zero fresh ids = server ignored paging
+            // (older deploy returning everything at once) = done.
+            if (page.length < pageSize || fresh.length === 0) break
+        }
+        return all
+    },
 
     get: (id: string) =>
         billsApi.get<GatePass>(`/gatepasses/${id}`).then((r: any) => r.data),

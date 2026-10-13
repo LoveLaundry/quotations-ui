@@ -49,6 +49,8 @@ const navGroups: { label: string; items: NavItem[] }[] = [
         children: [{ to: '/workers/daily-tasks', label: 'Daily Tasks', icon: UsersThree }],
       },
       { to: '/bills', label: 'Bills', icon: CurrencyCircleDollar, permission: 'view_bills' },
+      { to: '/income', label: 'Income', icon: Money, permission: 'view_bills' },
+      { to: '/ledger', label: 'Ledger', icon: Receipt, permission: 'view_bills' },
       { to: '/statements', label: 'Client Statement', icon: Wallet, permission: 'view_bills' },
       { to: '/shop-bills', label: 'Shop Bills', icon: CurrencyCircleDollar, permission: 'view_bills' },
       { to: '/shop-bills/dashboard', label: 'Shop Analytics', icon: ChartLineUp, permission: 'view_bills' },
@@ -80,8 +82,6 @@ const navGroups: { label: string; items: NavItem[] }[] = [
     items: [
       { to: '/management', label: 'Dashboard', icon: House },
       { to: '/management/transactions', label: 'Transactions', icon: ListChecks },
-      { to: '/management/income', label: 'Income', icon: Money },
-      { to: '/management/ledger', label: 'Ledger', icon: FileText },
       { to: '/management/historical-entry', label: 'Data Entry', icon: ClipboardText, roles: ['ADMIN', 'MANAGER'] },
       { to: '/management/import', label: 'Import Data', icon: Upload, roles: ['ADMIN', 'MANAGER'] },
       { to: '/management/customers', label: 'Customers', icon: Users },

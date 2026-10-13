@@ -12,7 +12,7 @@ function normalizeBaseUrl(url: string): string {
 }
 
 const workersApi = axios.create({
-  baseURL: normalizeBaseUrl(import.meta.env.VITE_WORKERS_API_URL ?? 'https://worker-service-zeta.vercel.app'),
+  baseURL: normalizeBaseUrl(import.meta.env.VITE_WORKERS_API_URL ?? 'http://localhost:8003'),
   timeout: 10000,
   headers: { 'Content-Type': 'application/json' },
 })

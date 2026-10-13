@@ -668,7 +668,7 @@ export async function collectDaySnapshot(date: string): Promise<DailyReportSnaps
       generated_at: new Date().toISOString(),
       generator: 'Lovelaundry Manager (quotations-ui)',
       api_bases: {
-        mgmt_api: import.meta.env.VITE_MGMT_API_URL ?? 'http://localhost:8001',
+        mgmt_api: import.meta.env.VITE_MGMT_API_URL ?? 'http://localhost:8004',
         bills_api: import.meta.env.VITE_BILLS_API_URL ?? 'http://localhost:8001',
       },
     },
