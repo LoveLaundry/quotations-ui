@@ -7,6 +7,7 @@ import { FilterBar } from '../../../components/ui/filter-bar'
 import { Badge } from '../../../components/ui/badge'
 import { DataTable } from '../../../components/ui/data-table'
 import { EmptyState } from '../../../components/ui/empty-state'
+import { ErrorState } from '../../../components/ui/empty-state'
 import { LoadingSpinner } from '../../../components/ui/loading-spinner'
 import { ExportButton } from '../../../components/ui/export-button'
 import { Pagination } from '../../../components/ui/pagination'
@@ -66,7 +67,7 @@ export default function IncomePage() {
   }, [from, to, client, status, search, hotel, showAllHotels])
 
   const scopeClient = showAllHotels ? undefined : hotel || undefined
-  const { rows, bills, billsTotal, quotations, isLoading } = useGatepassIncome(scopeClient)
+  const { rows, bills, billsTotal, quotations, isLoading, isError, refetch } = useGatepassIncome(scopeClient)
 
   const clients = useMemo(
     () => Array.from(new Set(rows.map((r) => r.client))).sort((a, b) => a.localeCompare(b)),
@@ -110,6 +111,7 @@ export default function IncomePage() {
   const unpricedPasses = scoped.filter((r) => r.hasUnpriced).length
 
   const pageRows = visible.slice(offset, offset + PAGE_SIZE)
+  const showError = isError && !isLoading
 
   const columns = [
     { key: 'date', header: 'Received', render: (r: IncomeRow) => <span className="whitespace-nowrap">{r.date}</span> },
@@ -222,14 +224,15 @@ export default function IncomePage() {
         actions={<ExportButton data={visible} filename="income" columns={exportCols} />}
       />
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+      {!showError && (
+        <>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
         <StatCard label="Accrued income" value={`LKR ${Math.round(totalIncome).toLocaleString()}`} icon={<Banknote size={20} />} color="green" />
         <StatCard label="Billed" value={`LKR ${Math.round(billedTotal).toLocaleString()}`} icon={<Receipt size={20} />} color="blue" to="/bills" />
         <StatCard label="Unbilled income" value={`LKR ${Math.round(unbilledIncome).toLocaleString()}`} icon={<CircleDollarSign size={20} />} color="amber" />
         <StatCard label="Received (paid)" value={`LKR ${Math.round(collected).toLocaleString()}`} icon={<Wallet size={20} />} color="green" />
         <StatCard label="Outstanding" value={`LKR ${Math.round(outstanding).toLocaleString()}`} icon={<AlertCircle size={20} />} tone="danger" to="/ledger" />
       </div>
-
       {unpricedPasses > 0 && (
         <p className="text-xs text-amber-950 bg-amber-50 border border-amber-300 dark:bg-amber-950/30 dark:text-amber-100 rounded-lg px-3 py-2">
           {unpricedQty.toLocaleString()} received items across {unpricedPasses} gate pass{unpricedPasses === 1 ? '' : 'es'} have
@@ -242,6 +245,8 @@ export default function IncomePage() {
           Showing {bills.length} of {billsTotal} bills — billed, received and outstanding totals may be
           incomplete. Narrow the client or date range for exact bill money.
         </p>
+      )}
+        </>
       )}
 
       <FilterBar>
@@ -281,6 +286,12 @@ export default function IncomePage() {
 
       {isLoading ? (
         <LoadingSpinner label="Valuing received linen..." className="py-12" />
+      ) : isError ? (
+        <ErrorState
+          title="Income could not be loaded"
+          description="Gate passes, quotations or bills did not load. Check the connection and try again."
+          onRetry={refetch}
+        />
       ) : (
         <>
           <DataTable

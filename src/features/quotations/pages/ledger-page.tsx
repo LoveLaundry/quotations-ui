@@ -7,6 +7,7 @@ import { StatCard } from '../../../components/ui/stat-card'
 import { FilterBar } from '../../../components/ui/filter-bar'
 import { DataTable } from '../../../components/ui/data-table'
 import { EmptyState } from '../../../components/ui/empty-state'
+import { ErrorState } from '../../../components/ui/empty-state'
 import { LoadingSpinner } from '../../../components/ui/loading-spinner'
 import { ExportButton } from '../../../components/ui/export-button'
 import { Pagination } from '../../../components/ui/pagination'
@@ -62,7 +63,8 @@ export default function LedgerPage() {
   }, [from, to, client, search, hotel, showAllHotels])
 
   const scopeClient = showAllHotels ? undefined : hotel || undefined
-  const { rows, bills, billsTotal, isLoading: incomeLoading } = useGatepassIncome(scopeClient)
+  const { rows, bills, billsTotal, isLoading: incomeLoading, isError: incomeError, refetch: refetchIncome } =
+    useGatepassIncome(scopeClient)
 
   // Cash received per bill; a recorded-receipt top-up covers paid_amount with
   // no payment rows so the ledger always agrees with bill totals.
@@ -71,7 +73,12 @@ export default function LedgerPage() {
     [bills],
   )
   const billIdsKey = useMemo(() => paidBills.map((b) => b.id).sort().join(','), [paidBills])
-  const { data: paymentsByBill = {}, isLoading: paysLoading } = useQuery<Record<string, Payment[]>>({
+  const {
+    data: paymentsByBill = {},
+    isLoading: paysLoading,
+    isError: paysError,
+    refetch: refetchPays,
+  } = useQuery<Record<string, Payment[]>>({
     // 'bills' first segment: persisted + invalidated with the bills namespace.
     queryKey: ['bills', 'ledger-payments', scopeClient ?? 'all', billIdsKey],
     queryFn: async () => {
@@ -255,6 +262,12 @@ export default function LedgerPage() {
 
   const pageEvents = displayEvents.slice(offset, offset + PAGE_SIZE)
   const isLoading = incomeLoading || paysLoading
+  const isError = incomeError || paysError
+  const showError = isError && !isLoading
+  const retry = () => {
+    refetchIncome()
+    void refetchPays()
+  }
   const truncated = billsTotal > bills.length
 
   const columns = [
@@ -338,13 +351,15 @@ export default function LedgerPage() {
         actions={<ExportButton data={displayEvents} filename={`ledger-${client || 'all'}`} columns={exportCols} />}
       />
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
-        <StatCard label="Opening owed" value={`LKR ${Math.round(openingBalance).toLocaleString()}`} icon={<BookOpen size={20} />} color="gray" />
-        <StatCard label="Accrued in period" value={`LKR ${Math.round(periodDebit).toLocaleString()}`} icon={<ArrowUpCircle size={20} />} color="amber" to="/income" />
-        <StatCard label="Received in period" value={`LKR ${Math.round(periodCredit).toLocaleString()}`} icon={<ArrowDownCircle size={20} />} color="green" to="/bills" />
-        <StatCard label="Owes now" value={`LKR ${Math.round(closingBalance).toLocaleString()}`} icon={<Scale size={20} />} tone="danger" />
-        <StatCard label="Billed outstanding" value={`LKR ${Math.round(billedOutstanding).toLocaleString()}`} icon={<FileText size={20} />} color="blue" to="/statements" />
-      </div>
+      {!showError && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+          <StatCard label="Opening owed" value={`LKR ${Math.round(openingBalance).toLocaleString()}`} icon={<BookOpen size={20} />} color="gray" />
+          <StatCard label="Accrued in period" value={`LKR ${Math.round(periodDebit).toLocaleString()}`} icon={<ArrowUpCircle size={20} />} color="amber" to="/income" />
+          <StatCard label="Received in period" value={`LKR ${Math.round(periodCredit).toLocaleString()}`} icon={<ArrowDownCircle size={20} />} color="green" to="/bills" />
+          <StatCard label="Owes now" value={`LKR ${Math.round(closingBalance).toLocaleString()}`} icon={<Scale size={20} />} tone="danger" />
+          <StatCard label="Billed outstanding" value={`LKR ${Math.round(billedOutstanding).toLocaleString()}`} icon={<FileText size={20} />} color="blue" to="/statements" />
+        </div>
+      )}
 
       <FilterBar>
         {showAllHotels && (
@@ -382,6 +397,12 @@ export default function LedgerPage() {
 
       {isLoading ? (
         <LoadingSpinner label="Building ledger..." className="py-12" />
+      ) : isError ? (
+        <ErrorState
+          title="Ledger could not be loaded"
+          description="Income, bills or receipts did not load, so balances would be wrong. Check the connection and try again."
+          onRetry={retry}
+        />
       ) : (
         <>
           <DataTable
@@ -393,7 +414,7 @@ export default function LedgerPage() {
         </>
       )}
 
-      {balancesByClient.length > 1 && (
+      {showError ? null : balancesByClient.length > 1 && (
         <div className="overflow-x-auto rounded-xl border">
           <table className="w-full text-sm">
             <thead className="bg-gray-50 dark:bg-gray-800">

@@ -57,6 +57,8 @@ export interface GatepassIncome {
   billsTotal: number
   rows: IncomeRow[]
   isLoading: boolean
+  isError: boolean
+  refetch: () => void
 }
 
 /**
@@ -65,15 +67,32 @@ export interface GatepassIncome {
  * on what a pass is worth and whether it is billed.
  */
 export function useGatepassIncome(scopeClient?: string): GatepassIncome {
-  const { data: passes = [], isLoading: passesLoading } = useGatePasses(
-    scopeClient ? { client_name: scopeClient } : undefined,
-  )
-  const { data: quotations = [], isLoading: quotesLoading } = useQuotations()
-  const { data: billsResp, isLoading: billsLoading } = useBills({
+  const {
+    data: passes = [],
+    isLoading: passesLoading,
+    isError: passesError,
+    refetch: refetchPasses,
+  } = useGatePasses(scopeClient ? { client_name: scopeClient } : undefined)
+  const {
+    data: quotations = [],
+    isLoading: quotesLoading,
+    isError: quotesError,
+    refetch: refetchQuotes,
+  } = useQuotations()
+  const {
+    data: billsResp,
+    isLoading: billsLoading,
+    isError: billsError,
+    refetch: refetchBills,
+  } = useBills({
     client_name: scopeClient,
     limit: 500,
   })
-  const { data: unbilled = [] } = useUnbilledGatePasses(scopeClient)
+  const {
+    data: unbilled = [],
+    isLoading: unbilledLoading,
+    isError: unbilledError,
+  } = useUnbilledGatePasses(scopeClient)
 
   const bills = useMemo(
     () => (billsResp?.items ?? []).filter((b) => b.payment_status !== 'CANCELLED'),
@@ -126,7 +145,10 @@ export function useGatepassIncome(scopeClient?: string): GatepassIncome {
         billedVia = 'gate-pass'
         billedStatus =
           paidAmount >= billedAmount && billedAmount > 0 ? 'PAID' : paidAmount > 0 ? 'PARTIAL' : 'BILLED'
-      } else if (!inUnbilled && valued.receivedQty > 0) {
+      } else if (!unbilledError && !inUnbilled && valued.receivedQty > 0) {
+        // Absent from the unbilled list with no direct bill: billed through
+        // its deliveries. When the unbilled lookup itself failed, stay
+        // UNBILLED rather than claiming billed without evidence.
         billedVia = 'delivery'
         billedStatus = 'BILLED'
       }
@@ -152,13 +174,19 @@ export function useGatepassIncome(scopeClient?: string): GatepassIncome {
     }
     out.sort((a, b) => (a.date === b.date ? b.gpNumber.localeCompare(a.gpNumber) : a.date < b.date ? 1 : -1))
     return out
-  }, [passes, quotations, bills, unbilled])
+  }, [passes, quotations, bills, unbilled, unbilledError])
 
   return {
     quotations,
     bills,
     billsTotal: billsResp?.total ?? bills.length,
     rows,
-    isLoading: passesLoading || quotesLoading || billsLoading,
+    isLoading: passesLoading || quotesLoading || billsLoading || unbilledLoading,
+    isError: passesError || quotesError || billsError,
+    refetch: () => {
+      refetchPasses()
+      refetchQuotes()
+      refetchBills()
+    },
   }
 }
