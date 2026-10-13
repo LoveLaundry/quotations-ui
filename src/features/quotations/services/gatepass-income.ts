@@ -117,31 +117,20 @@ export interface ValuedLine {
 export interface ValuedPass {
   income: number
   receivedQty: number
-  pricedQty: number
   unpricedQty: number
-  rewashQty: number
-  pricedLines: number
-  unpricedLines: ValuedLine[]
   lines: ValuedLine[]
 }
 
 /** Value one pass's received lines at quotation prices. */
 export function valueGatePass(pass: GatePass, index: PriceIndex | null): ValuedPass {
   const lines: ValuedLine[] = []
-  const unpricedLines: ValuedLine[] = []
   let income = 0
   let receivedQty = 0
-  let pricedQty = 0
   let unpricedQty = 0
-  let rewashQty = 0
-  let pricedLines = 0
 
   for (const item of pass.items ?? []) {
     const qty = Number(item.received_qty) || 0
-    if (item.rewashed) {
-      rewashQty += qty
-      continue
-    }
+    if (item.rewashed) continue
     if (!(qty > 0)) continue
     receivedQty += qty
     const unit = index ? priceFor(index, item.item_name, item.specification) : null
@@ -158,22 +147,15 @@ export function valueGatePass(pass: GatePass, index: PriceIndex | null): ValuedP
     lines.push(line)
     if (priced) {
       income += lineTotal
-      pricedQty += qty
-      pricedLines += 1
     } else {
       unpricedQty += qty
-      unpricedLines.push(line)
     }
   }
 
   return {
     income: Math.round(income * 100) / 100,
     receivedQty,
-    pricedQty,
     unpricedQty,
-    rewashQty,
-    pricedLines,
-    unpricedLines,
     lines,
   }
 }

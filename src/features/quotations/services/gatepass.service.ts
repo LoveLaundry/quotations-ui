@@ -16,9 +16,7 @@ function toISODatetime(dateStr: string): string {
 
 export const gatepasses = {
     list: async (params?: { client_name?: string; status?: string; skip?: number; limit?: number }): Promise<GatePass[]> => {
-        // Explicit skip/limit = one page. Otherwise page through the whole
-        // history: the server caps a page (default 5000) and the Income /
-        // Ledger tabs need every received pass to stay complete.
+        // Explicit skip/limit = one page; otherwise page through everything.
         if (params?.skip != null || params?.limit != null) {
             return billsApi.get<GatePass[]>('/gatepasses', { params }).then(r => withItems(r.data))
         }
@@ -32,8 +30,7 @@ export const gatepasses = {
             const fresh = page.filter(g => !seen.has(g.id))
             fresh.forEach(g => seen.add(g.id))
             all.push(...fresh)
-            // Short page = done. Zero fresh ids = server ignored paging
-            // (older deploy returning everything at once) = done.
+            // Short page, or zero fresh ids when an older server ignores paging.
             if (page.length < pageSize || fresh.length === 0) break
         }
         return all

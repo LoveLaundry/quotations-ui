@@ -41,18 +41,8 @@ interface LedgerEvent {
 const KIND_ORDER: Record<LedgerKind, number> = { INCOME: 0, BILL: 1, PAYMENT: 2 }
 
 /**
- * Ledger — the money trail per client, in chronological order.
- *
- * - INCOME (debit): gate-pass receiving valued at quotation prices. This is
- *   where income accrues — bills never create income.
- * - BILL (memo): what the bill says — billed or not, and for billed passes
- *   the bill total. Memos never move the balance.
- * - PAYMENT / receipt (credit): bill payments. A bill with `paid_amount`
- *   but no payment records still counts via a recorded-receipt top-up, so
- *   the ledger always agrees with the bills.
- *
- * Balance = accrued income − cash received: what is still owed, including
- * work received but not yet billed.
+ * Ledger: INCOME debits (gate-pass receiving value), BILL memos (billed-or-not,
+ * never move the balance), PAYMENT credits. Balance = accrued - received.
  */
 export default function LedgerPage() {
   const { hotel, showAllHotels } = useHotelScope()
@@ -74,18 +64,15 @@ export default function LedgerPage() {
   const scopeClient = showAllHotels ? undefined : hotel || undefined
   const { rows, bills, billsTotal, isLoading: incomeLoading } = useGatepassIncome(scopeClient)
 
-  // Cash received per bill. Only bills carrying money are queried; a bill
-  // whose paid_amount exceeds its payment records gets a recorded-receipt
-  // top-up so the ledger matches the bill totals.
+  // Cash received per bill; a recorded-receipt top-up covers paid_amount with
+  // no payment rows so the ledger always agrees with bill totals.
   const paidBills = useMemo(
     () => bills.filter((b) => billPaid(b) > 0),
     [bills],
   )
   const billIdsKey = useMemo(() => paidBills.map((b) => b.id).sort().join(','), [paidBills])
   const { data: paymentsByBill = {}, isLoading: paysLoading } = useQuery<Record<string, Payment[]>>({
-    // First segment 'bills' keeps this under the persisted + invalidated bills
-    // namespace (see cache-config / invalidation): any bill, gate-pass or
-    // payment write refreshes the ledger, and offline reloads keep receipts.
+    // 'bills' first segment: persisted + invalidated with the bills namespace.
     queryKey: ['bills', 'ledger-payments', scopeClient ?? 'all', billIdsKey],
     queryFn: async () => {
       const entries = await Promise.all(
@@ -172,8 +159,7 @@ export default function LedgerPage() {
           link: `/bills/${bill.id}`,
         })
       }
-      // Instant-paid (and manually adjusted) bills carry paid_amount with no
-      // payment rows — book the difference as a recorded receipt.
+      // Instant-paid bills carry paid_amount with no payment rows.
       const topUp = Math.round((paid - recorded) * 100) / 100
       if (topUp > 0) {
         events.push({

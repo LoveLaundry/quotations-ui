@@ -43,14 +43,8 @@ const STATUS_LABEL: Record<IncomeBilledStatus, string> = {
 }
 
 /**
- * Income — every received gate pass valued at its quotation prices.
- *
- * Income accrues at RECEIVING (`received_qty × quotation unit price`), not
- * from bills. Bills only say whether that income has been billed, and a
- * bill's payments say whether it has been received as cash:
- *
- * - accrued income = Σ gate-pass receiving value (priced lines)
- * - billed / collected / outstanding come from the bills in scope
+ * Income accrues at RECEIVING (received_qty x quotation price), not from
+ * bills. Bills record billed-or-not; bill payments record received-or-not.
  */
 export default function IncomePage() {
   const { hotel, showAllHotels } = useHotelScope()
@@ -62,7 +56,6 @@ export default function IncomePage() {
   const [viewRow, setViewRow] = useState<IncomeRow | null>(null)
   const [offset, setOffset] = useState(0)
 
-  // Hotel-scoped staff see their hotel; admins start unscoped.
   useEffect(() => {
     if (!showAllHotels && hotel) setClient(hotel)
     if (showAllHotels) setClient('')
@@ -96,8 +89,8 @@ export default function IncomePage() {
     [scoped, status],
   )
 
-  // Bill money is authoritative across both billing legs (gate-pass bills and
-  // delivery bills); per-pass amounts only cover the gate-pass leg.
+  // Bill totals cover both billing legs (gate-pass and delivery bills);
+  // per-pass amounts only cover the gate-pass leg.
   const scopedBills = useMemo(() => {
     return bills.filter((b) => {
       if (client && b.client_name !== client) return false

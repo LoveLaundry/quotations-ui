@@ -50,7 +50,6 @@ export function billOutstanding(bill: Bill): number {
 }
 
 export interface GatepassIncome {
-  passes: GatePass[]
   quotations: Quotation[]
   /** Non-cancelled bills in scope (the money-bearing set). */
   bills: Bill[]
@@ -61,12 +60,9 @@ export interface GatepassIncome {
 }
 
 /**
- * Gate-pass income in one place: every received pass valued at its quotation
- * prices, joined with the bills raised against it.
- *
- * Shared by the Income tab (per-pass income + billed/received status) and the
- * Ledger tab (accrued vs received running balance) so the two can never
- * disagree on what a pass is worth or whether it is billed.
+ * Every received pass valued at its quotation prices, joined with the bills
+ * raised against it. Shared by the Income and Ledger tabs so the two agree
+ * on what a pass is worth and whether it is billed.
  */
 export function useGatepassIncome(scopeClient?: string): GatepassIncome {
   const { data: passes = [], isLoading: passesLoading } = useGatePasses(
@@ -159,7 +155,6 @@ export function useGatepassIncome(scopeClient?: string): GatepassIncome {
   }, [passes, quotations, bills, unbilled])
 
   return {
-    passes,
     quotations,
     bills,
     billsTotal: billsResp?.total ?? bills.length,
