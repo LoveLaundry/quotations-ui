@@ -88,6 +88,8 @@ const ManagementItems = lazy(() => import('../features/management/pages/manageme
 const ManagementExpenses = lazy(() => import('../features/management/pages/management-expenses'))
 const ManagementEmployees = lazy(() => import('../features/management/pages/management-employees'))
 const ManagementTransactions = lazy(() => import('../features/management/pages/management-transactions'))
+const ManagementIncome = lazy(() => import('../features/management/pages/management-income'))
+const ManagementLedger = lazy(() => import('../features/management/pages/management-ledger'))
 const ManagementPayments = lazy(() => import('../features/management/pages/management-payments'))
 const ManagementReports = lazy(() => import('../features/management/pages/management-reports'))
 const SalarySlipPage = lazy(() => import('../features/management/pages/salary-slip-page'))
@@ -195,6 +197,8 @@ export const router = createBrowserRouter([
           // Management Module
           { path: 'management', element: <ManagementDashboard /> },
           { path: 'management/transactions', element: <ManagementTransactions /> },
+          { path: 'management/income', element: <ManagementIncome /> },
+          { path: 'management/ledger', element: <ManagementLedger /> },
           { path: 'management/customers', element: <ManagementCustomers /> },
           { path: 'management/items', element: <ManagementItems /> },
           { path: 'management/payments', element: <ManagementPayments /> },

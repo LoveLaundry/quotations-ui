@@ -80,6 +80,8 @@ const navGroups: { label: string; items: NavItem[] }[] = [
     items: [
       { to: '/management', label: 'Dashboard', icon: House },
       { to: '/management/transactions', label: 'Transactions', icon: ListChecks },
+      { to: '/management/income', label: 'Income', icon: Money },
+      { to: '/management/ledger', label: 'Ledger', icon: FileText },
       { to: '/management/historical-entry', label: 'Data Entry', icon: ClipboardText, roles: ['ADMIN', 'MANAGER'] },
       { to: '/management/import', label: 'Import Data', icon: Upload, roles: ['ADMIN', 'MANAGER'] },
       { to: '/management/customers', label: 'Customers', icon: Users },

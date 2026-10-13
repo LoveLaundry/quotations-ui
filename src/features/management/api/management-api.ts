@@ -168,6 +168,8 @@ export const paymentsApi = {
   list: (params?: any) => {
     const q = new URLSearchParams()
     if (params?.customer_id) q.set('customer_id', params.customer_id)
+    if (params?.start_date) q.set('start_date', params.start_date)
+    if (params?.end_date) q.set('end_date', params.end_date)
     if (params?.limit != null) q.set('limit', String(params.limit))
     if (params?.offset != null) q.set('offset', String(params.offset))
     return mgmtApi.get(`/api/payments?${q}`)
