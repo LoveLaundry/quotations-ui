@@ -73,7 +73,7 @@ export default function IncomePage() {
   }, [from, to, client, status, search, hotel, showAllHotels])
 
   const scopeClient = showAllHotels ? undefined : hotel || undefined
-  const { rows, bills, quotations, isLoading } = useGatepassIncome(scopeClient)
+  const { rows, bills, billsTotal, quotations, isLoading } = useGatepassIncome(scopeClient)
 
   const clients = useMemo(
     () => Array.from(new Set(rows.map((r) => r.client))).sort((a, b) => a.localeCompare(b)),
@@ -241,6 +241,13 @@ export default function IncomePage() {
         <p className="text-xs text-amber-950 bg-amber-50 border border-amber-300 dark:bg-amber-950/30 dark:text-amber-100 rounded-lg px-3 py-2">
           {unpricedQty.toLocaleString()} received items across {unpricedPasses} gate pass{unpricedPasses === 1 ? '' : 'es'} have
           no quotation price and are valued at LKR 0. Link a quotation to the gate pass to count them as income.
+        </p>
+      )}
+
+      {billsTotal > bills.length && (
+        <p className="text-xs text-amber-950 bg-amber-50 border border-amber-300 dark:bg-amber-950/30 dark:text-amber-100 rounded-lg px-3 py-2">
+          Showing {bills.length} of {billsTotal} bills — billed, received and outstanding totals may be
+          incomplete. Narrow the client or date range for exact bill money.
         </p>
       )}
 

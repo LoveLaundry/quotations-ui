@@ -34,6 +34,8 @@ const NAV_ITEMS: NavTarget[] = [
   { label: 'Bills', keywords: 'bills invoices list', path: '/bills', permission: 'view_bills' },
   { label: 'New Bill', keywords: 'bill create invoice', path: '/bills/new', permission: 'view_bills' },
   { label: 'Client Statement', keywords: 'statement client ledger history balance', path: '/statements', permission: 'view_bills' },
+  { label: 'Income', keywords: 'income revenue received gate passes billed', path: '/income', permission: 'view_bills' },
+  { label: 'Ledger', keywords: 'ledger balance owed accrued payments bills', path: '/ledger', permission: 'view_bills' },
   { label: 'Consolidated Invoice', keywords: 'invoice new consolidated', path: '/invoices/new', permission: 'view_bills' },
   { label: 'Gate Passes', keywords: 'gate passes receiving received', path: '/gate-passes', permission: 'view_gate_passes' },
   { label: 'New Gate Pass', keywords: 'gate pass new receive', path: '/gate-passes/new', permission: 'view_gate_passes' },
