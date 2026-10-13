@@ -7,7 +7,7 @@ import {
 import { cn } from '../../../lib/utils'
 import { Button } from '../../../components/ui/button'
 import { toast } from 'sonner'
-import type { SyncHotelStatus, SyncSection, SyncResult } from '../api/sync-api'
+import type { SyncHotelStatus, SyncSection } from '../api/sync-api'
 import { fetchSyncStatus, triggerHotelSync, triggerGlobalSync } from '../api/sync-api'
 
 /* ────────────────────────────────────────────────────────────────────────── */

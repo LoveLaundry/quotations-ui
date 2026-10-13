@@ -2,6 +2,7 @@ import React from 'react'
 import { COMPANY } from '../../../config/company'
 import type { MonthlyAnalysis } from '../pages/monthly-operations-page'
 import type { MonthlyMatrixResponse } from '../../../types/monthly'
+import { formatBillNumber } from '../../../lib/bill-number'
 
 export type MonthlyReportSection = 'summary' | 'daily' | 'items' | 'balances'
 
@@ -9,6 +10,8 @@ interface MonthlyOperationsReportProps {
   data: MonthlyMatrixResponse
   analysis: MonthlyAnalysis
   sections: MonthlyReportSection[]
+  /** Show the hotel-code prefix on bill numbers (default: yes). */
+  includePrefix?: boolean
 }
 
 const reportStyles = `
@@ -51,7 +54,7 @@ function formatPeriod(year: number, month: number): string {
 export const MonthlyOperationsReport = React.forwardRef<
   HTMLDivElement,
   MonthlyOperationsReportProps
->(({ data, analysis, sections }, ref) => {
+>(({ data, analysis, sections, includePrefix = true }, ref) => {
   const included = new Set(sections)
   const activeDays = data.days.filter(
     (day) => day.status !== 'EMPTY' && day.status !== 'CANCELLED',
@@ -97,13 +100,14 @@ export const MonthlyOperationsReport = React.forwardRef<
         <section className="mor-section">
           <h2>Daily operations</h2>
           <table className="mor-table">
-            <thead><tr><th>Date</th><th>Status</th><th>Qty</th><th>Curtain kg</th><th>Curtain pcs</th><th>Quoted value</th><th>Gate passes</th><th>Deliveries</th></tr></thead>
+            <thead><tr><th>Date</th><th>Bill no.</th><th>Status</th><th>Qty</th><th>Curtain kg</th><th>Curtain pcs</th><th>Quoted value</th><th>Gate passes</th><th>Deliveries</th></tr></thead>
             <tbody>
               {activeDays.length === 0 ? (
-                <tr><td colSpan={8}>No recorded days.</td></tr>
+                <tr><td colSpan={9}>No recorded days.</td></tr>
               ) : activeDays.map((day) => (
                 <tr key={day.day}>
                   <td>{day.date || `${data.year}-${String(data.month).padStart(2, '0')}-${String(day.day).padStart(2, '0')}`}</td>
+                  <td>{day.bill_number ? formatBillNumber(day.bill_number, includePrefix) : '—'}</td>
                   <td>{day.status}</td>
                   <td className="num">{quantity(analysis.dayQuantities[day.day] ?? 0)}</td>
                   <td className="num">{quantity(analysis.dayCurtainKg[day.day] ?? 0)}</td>

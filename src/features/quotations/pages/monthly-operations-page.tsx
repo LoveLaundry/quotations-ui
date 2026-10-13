@@ -45,6 +45,7 @@ import {
 } from '../../../components/ui'
 import { cn } from '../../../lib/utils'
 import { PrintTarget } from '../../../components/ui/print-target'
+import { usePrintPrefixChoice } from '../../../lib/use-print-prefix-choice'
 import {
     MONTHLY_KINDS,
     MONTHLY_KIND_LABELS,
@@ -964,10 +965,16 @@ export default function MonthlyOperationsPage() {
         contentRef: reportRef,
         documentTitle: `Monthly-Operations-${hotel ?? 'Hotel'}-${year}-${String(month).padStart(2, '0')}`,
     })
+    const [includePrefix, setIncludePrefix] = useState(true)
+    const { choose: choosePrefix, dialog: prefixDialog } = usePrintPrefixChoice()
     const confirmReportPrint = () => {
         if (!reportSections.length) return
         setReportDialogOpen(false)
-        window.setTimeout(() => printReport(), 180)
+        void choosePrefix().then((choice) => {
+            if (choice === null) return
+            setIncludePrefix(choice)
+            window.setTimeout(() => printReport(), 180)
+        })
     }
 
     const hotelQuotations = useMemo(
@@ -1323,6 +1330,7 @@ export default function MonthlyOperationsPage() {
                         data={data}
                         analysis={analysis}
                         sections={reportSections}
+                        includePrefix={includePrefix}
                     />
                 </PrintTarget>
             )}
@@ -1395,6 +1403,8 @@ export default function MonthlyOperationsPage() {
                     </DialogContent>
                 </Dialog>
             )}
+
+            {prefixDialog}
         </div>
     )
 }

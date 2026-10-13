@@ -1,5 +1,6 @@
 import React from 'react'
 import { type Bill } from '../../../types/bill'
+import { formatBillNumber } from '../../../lib/bill-number'
 
 interface BillPrintTemplateProps {
   bill: Bill
@@ -8,6 +9,8 @@ interface BillPrintTemplateProps {
   receivedDate?: string
   deliveryDate?: string
   gatePass?: string
+  /** Show the hotel-code prefix on the bill number (default: yes). */
+  includePrefix?: boolean
 }
 
 const billPrintStyles = `
@@ -200,12 +203,15 @@ const billPrintStyles = `
 `
 
 export const BillPrintTemplate = React.forwardRef<HTMLDivElement, BillPrintTemplateProps>(
-  ({ bill, contactNo, address, receivedDate, deliveryDate, gatePass }, ref) => {
+  ({ bill, contactNo, address, receivedDate, deliveryDate, gatePass, includePrefix = true }, ref) => {
     const paddedItems = [...(bill.items ?? [])]
     while (paddedItems.length < 15) {
       paddedItems.push({ item_name: '', quantity: 0, unit_price: 0, line_total: 0 })
     }
     const displayItems = paddedItems.slice(0, 15)
+    const billNumber = bill.manual_bill_number
+      ? formatBillNumber(bill.manual_bill_number, includePrefix)
+      : `BILL-${bill.id.slice(-6).toUpperCase()}`
 
     return (
       <div ref={ref} className="bill-print-page">
@@ -337,7 +343,7 @@ export const BillPrintTemplate = React.forwardRef<HTMLDivElement, BillPrintTempl
               <div className="bp-sig-line">Cashier Signature</div>
             </div>
             <div className="bp-sig-box">
-              <div className="bp-id-line">{bill.id.slice(0, 10).toUpperCase()}</div>
+              <div className="bp-id-line">{billNumber}</div>
               <div>Bill Number</div>
             </div>
             <div className="bp-sig-box">

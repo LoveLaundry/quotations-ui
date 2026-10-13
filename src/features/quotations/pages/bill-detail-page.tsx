@@ -10,6 +10,7 @@ import { Skeleton } from '../../../components/ui/skeleton'
 import { Breadcrumb } from '../../../components/ui/breadcrumb'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogBody, DialogFooter } from '../../../components/ui/dialog'
 import { ConfirmDialog } from '../../../components/ui/confirm-dialog'
+import { usePrintPrefixChoice } from '../../../lib/use-print-prefix-choice'
 import { formatDate } from '../../../lib/utils'
 import { useBill, useDeleteBill, useEditBill } from '../hooks/useBills'
 import { usePayments, useCreatePayment } from '../hooks/usePayments'
@@ -165,6 +166,14 @@ export default function BillDetailPage() {
     contentRef: printRef,
     documentTitle: bill ? `Bill-${bill.client_name}-${bill.id}` : 'Bill',
   })
+  const { choose: choosePrefix, dialog: prefixDialog } = usePrintPrefixChoice()
+  const [includePrefix, setIncludePrefix] = useState(true)
+  const handlePrintClick = async () => {
+    const choice = await choosePrefix()
+    if (choice === null) return
+    setIncludePrefix(choice)
+    window.setTimeout(() => handlePrint(), 180)
+  }
 
   const handleDelete = () => {
     if (!bill) return
@@ -223,7 +232,7 @@ export default function BillDetailPage() {
 
         {bill && (
           <div className="flex flex-wrap items-center gap-2">
-            <Button variant="secondary" size="sm" onClick={() => handlePrint()}>
+            <Button variant="secondary" size="sm" onClick={handlePrintClick}>
               <Printer className="h-3.5 w-3.5" /> Print
             </Button>
             {bill.payment_status !== 'PAID' && bill.payment_status !== 'CANCELLED' && (
@@ -484,6 +493,7 @@ export default function BillDetailPage() {
             receivedDate={formatDate(bill.created_at)}
             deliveryDate=""
             gatePass=""
+            includePrefix={includePrefix}
           />
         </PrintTarget>
       )}
@@ -498,6 +508,8 @@ export default function BillDetailPage() {
         onConfirm={confirmDelete}
         onCancel={() => setShowDeleteConfirm(false)}
       />
+
+      {prefixDialog}
     </div>
   )
 }

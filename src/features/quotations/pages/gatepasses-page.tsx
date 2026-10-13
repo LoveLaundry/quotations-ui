@@ -28,6 +28,7 @@ import { useGatePasses } from '../hooks/useGatePasses'
 import { GatePassStatusPill } from '../components/operations-status'
 import { CompactMetrics, type MetricItem } from '../components/compact-metrics'
 import { GatePassPrintSheet } from '../components/gate-pass-print-sheet'
+import { usePrintPrefixChoice } from '../../../lib/use-print-prefix-choice'
 import { QuickViewModal } from '../components/quick-view-modal'
 import { EntityCardActions } from '../components/entity-card-actions'
 import { HotelBadge } from '../components/hotel-badge'
@@ -123,6 +124,9 @@ export default function GatePassesPage() {
         handlePrintRef.current = handlePrint
     }, [handlePrint])
 
+    const [includePrefix, setIncludePrefix] = useState(true)
+    const { choose: choosePrefix, dialog: prefixDialog } = usePrintPrefixChoice()
+
     useEffect(() => {
         if (!printTarget) return
         const timer = setTimeout(() => {
@@ -132,7 +136,12 @@ export default function GatePassesPage() {
         return () => clearTimeout(timer)
     }, [printTarget])
 
-    const requestPrint = (gp: GatePass) => setPrintTarget(gp)
+    const requestPrint = async (gp: GatePass) => {
+        const choice = await choosePrefix()
+        if (choice === null) return
+        setIncludePrefix(choice)
+        setPrintTarget(gp)
+    }
 
     const kpis: MetricItem[] = useMemo(() => {
         const today = todayISO()
@@ -344,9 +353,11 @@ export default function GatePassesPage() {
             {/* Hidden print sheet */}
             {printTarget && (
                 <PrintTarget>
-                    <GatePassPrintSheet ref={printRef} gp={printTarget} />
+                    <GatePassPrintSheet ref={printRef} gp={printTarget} includePrefix={includePrefix} />
                 </PrintTarget>
             )}
+
+            {prefixDialog}
         </div>
     )
 }
