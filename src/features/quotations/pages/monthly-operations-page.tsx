@@ -970,7 +970,7 @@ export default function MonthlyOperationsPage() {
     const confirmReportPrint = () => {
         if (!reportSections.length) return
         setReportDialogOpen(false)
-        void choosePrefix().then((choice) => {
+        void choosePrefix().then((choice: boolean | null) => {
             if (choice === null) return
             setIncludePrefix(choice)
             window.setTimeout(() => printReport(), 180)

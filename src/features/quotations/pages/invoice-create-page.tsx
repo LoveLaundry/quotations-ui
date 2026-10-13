@@ -159,7 +159,7 @@ export default function InvoiceCreatePage() {
     setManagerSignature(signatures.manager)
     setBankDetails(details)
     setPrintDialogOpen(false)
-    void choosePrefix().then((choice) => {
+    void choosePrefix().then((choice: boolean | null) => {
       if (choice === null) return
       setIncludePrefix(choice)
       window.setTimeout(() => handlePrint(), 180)
