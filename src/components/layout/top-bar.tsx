@@ -84,7 +84,7 @@ export function TopBar({
   const roleLabel = user?.role_id ? String(user.role_id).toLowerCase() : 'staff'
 
   const iconBtn =
-    'inline-flex size-8 items-center justify-center rounded-[6px] border border-transparent text-[var(--text-muted)] transition-colors duration-100 hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]'
+    'pressable inline-flex size-8 items-center justify-center rounded-[6px] border border-transparent text-[var(--text-muted)] transition-colors duration-100 hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]'
 
   const userMenu: MenuGroup[] = [
     {

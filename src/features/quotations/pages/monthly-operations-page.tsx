@@ -930,7 +930,7 @@ function Matrix({
 export default function MonthlyOperationsPage() {
     const navigate = useNavigate()
     const queryClient = useQueryClient()
-    const { hotel, showAllHotels } = useHotelScope()
+    const { hotel } = useHotelScope()
     const [kind, setKind] = useState<MonthlyKind>('receiving')
     const [year, setYear] = useState(MONTH_YEAR.year)
     const [month, setMonth] = useState(MONTH_YEAR.month)
@@ -1066,7 +1066,7 @@ export default function MonthlyOperationsPage() {
             <div className="space-y-4">
                 <h1 className="text-[18px] font-semibold">Monthly Operations</h1>
                 <EmptyState
-                    title={showAllHotels ? 'Pick a hotel' : 'No hotel selected'}
+                    title="Pick a hotel"
                     description="Monthly entry is per hotel, so one hotel must be selected before the grid can load. Use the hotel selector in the top bar."
                 />
             </div>

@@ -3,12 +3,12 @@ import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { Search, BookOpen, Scale, ArrowDownCircle, ArrowUpCircle, FileText } from 'lucide-react'
 import { PageHeader } from '../../../components/ui/page-header'
-import { StatCard } from '../../../components/ui/stat-card'
+import { StatCard, StatCardSkeleton } from '../../../components/ui/stat-card'
 import { FilterBar } from '../../../components/ui/filter-bar'
 import { DataTable } from '../../../components/ui/data-table'
 import { EmptyState } from '../../../components/ui/empty-state'
+import { SkeletonTable } from '../../../components/ui/skeleton'
 import { ErrorState } from '../../../components/ui/empty-state'
-import { LoadingSpinner } from '../../../components/ui/loading-spinner'
 import { ExportButton } from '../../../components/ui/export-button'
 import { Pagination } from '../../../components/ui/pagination'
 import { useHotelScope } from '../../../context/HotelContext'
@@ -46,7 +46,7 @@ const KIND_ORDER: Record<LedgerKind, number> = { INCOME: 0, BILL: 1, PAYMENT: 2 
  * never move the balance), PAYMENT credits. Balance = accrued - received.
  */
 export default function LedgerPage() {
-  const { hotel, showAllHotels } = useHotelScope()
+  const { hotel, isAllScope } = useHotelScope()
   const [from, setFrom] = useState('')
   const [to, setTo] = useState('')
   const [client, setClient] = useState('')
@@ -54,15 +54,15 @@ export default function LedgerPage() {
   const [offset, setOffset] = useState(0)
 
   useEffect(() => {
-    if (!showAllHotels && hotel) setClient(hotel)
-    if (showAllHotels) setClient('')
-  }, [hotel, showAllHotels])
+    if (!isAllScope && hotel) setClient(hotel)
+    if (isAllScope) setClient('')
+  }, [hotel, isAllScope])
 
   useEffect(() => {
     setOffset(0)
-  }, [from, to, client, search, hotel, showAllHotels])
+  }, [from, to, client, search, hotel, isAllScope])
 
-  const scopeClient = showAllHotels ? undefined : hotel || undefined
+  const scopeClient = isAllScope ? undefined : hotel
   const { rows, bills, billsTotal, isLoading: incomeLoading, isError: incomeError, refetch: refetchIncome } =
     useGatepassIncome(scopeClient)
 
@@ -381,18 +381,20 @@ export default function LedgerPage() {
         actions={<ExportButton data={displayEvents} filename={`ledger-${client || 'all'}`} columns={exportCols} />}
       />
 
-      {!showError && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+      {!showError && (isLoading ? (
+        <StatCardSkeleton />
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 stagger">
           <StatCard label="Opening owed" value={`LKR ${Math.round(openingBalance).toLocaleString()}`} icon={<BookOpen size={20} />} color="gray" />
           <StatCard label="Accrued in period" value={`LKR ${Math.round(periodDebit).toLocaleString()}`} icon={<ArrowUpCircle size={20} />} color="amber" to="/income" />
           <StatCard label="Received in period" value={`LKR ${Math.round(periodCredit).toLocaleString()}`} icon={<ArrowDownCircle size={20} />} color="green" to="/bills" />
           <StatCard label="Owes now" value={`LKR ${Math.round(closingBalance).toLocaleString()}`} icon={<Scale size={20} />} tone="danger" />
           <StatCard label="Billed outstanding" value={`LKR ${Math.round(billedOutstanding).toLocaleString()}`} icon={<FileText size={20} />} color="blue" to="/statements" />
         </div>
-      )}
+      ))}
 
       <FilterBar>
-        {showAllHotels && (
+        {isAllScope && (
           <select value={client} onChange={(e) => setClient(e.target.value)} className="px-3 py-2 border rounded-lg text-sm">
             <option value="">All Clients</option>
             {clients.map((c) => (
@@ -426,7 +428,7 @@ export default function LedgerPage() {
       )}
 
       {isLoading ? (
-        <LoadingSpinner label="Building ledger..." className="py-12" />
+        <SkeletonTable rows={8} cols={7} />
       ) : isError ? (
         <ErrorState
           title="Ledger could not be loaded"

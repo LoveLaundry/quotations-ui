@@ -98,7 +98,7 @@ export default function LoginPage() {
             <Logo size="lg" />
           </div>
 
-          <div className="rounded-[10px] border border-[var(--border-2)] bg-[var(--surface)] p-5 sm:p-6">
+          <div className="route-enter rounded-[10px] border border-[var(--border-2)] bg-[var(--surface)] p-5 sm:p-6">
             <div className="mb-5">
               <h1 className="text-[17px] font-semibold tracking-[-0.015em] text-[var(--text-primary)]">
                 {mode === 'setup' ? 'Create admin account' : 'Sign in'}

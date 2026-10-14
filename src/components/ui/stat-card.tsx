@@ -2,6 +2,7 @@ import * as React from 'react'
 import { TrendingDown, TrendingUp } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { cn } from '../../lib/utils'
+import { Skeleton } from './skeleton'
 
 type Tone = 'neutral' | 'brand' | 'success' | 'warning' | 'danger' | 'info'
 
@@ -92,7 +93,7 @@ export function StatCard({
       className={cn(
         'min-w-0 rounded-[10px] border border-[var(--border)] bg-[var(--surface)] px-3.5 py-3',
         clickable &&
-          'card-interactive cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:ring-offset-1',
+          'card-interactive pressable lift cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:ring-offset-1',
         className,
       )}
     >
@@ -141,6 +142,28 @@ export function StatCard({
           )}
         </div>
       )}
+    </div>
+  )
+}
+
+/** Placeholder grid matching StatCard geometry so numbers landing never jumps. */
+export function StatCardSkeleton({ count = 5 }: { count?: number }) {
+  return (
+    <div
+      className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3"
+      aria-busy="true"
+      aria-live="polite"
+      aria-label="Loading summary"
+    >
+      {Array.from({ length: count }).map((_, i) => (
+        <div
+          key={i}
+          className="rounded-[10px] border border-[var(--border)] bg-[var(--surface)] px-3.5 py-3"
+        >
+          <Skeleton className="h-3 w-1/2" />
+          <Skeleton className="mt-2 h-6 w-3/4" />
+        </div>
+      ))}
     </div>
   )
 }

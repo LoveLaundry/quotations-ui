@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { useAuth } from './AuthContext'
 import { useGatePasses } from '../features/quotations/hooks/useGatePasses'
 import { useDeliveries } from '../features/quotations/hooks/useDeliveries'
@@ -37,6 +37,21 @@ export function HotelProvider({ children }: { children: ReactNode }) {
         }
     })
 
+    // Whether the user ever picked a scope explicitly. Staff with no stored
+    // choice start scoped to their first hotel; an explicit '' (Select All)
+    // is honoured for every role.
+    const choiceWasStored = useRef<{ key: string; value: boolean } | null>(null)
+    if (choiceWasStored.current?.key !== storageKey) {
+        try {
+            choiceWasStored.current = {
+                key: storageKey,
+                value: localStorage.getItem(storageKey) !== null,
+            }
+        } catch {
+            choiceWasStored.current = { key: storageKey, value: false }
+        }
+    }
+
     const { data: gatePasses = [] } = useGatePasses()
     const { data: deliveries = [] } = useDeliveries()
     const { data: billsResp } = useBills({ limit: 1000 })
@@ -52,6 +67,7 @@ export function HotelProvider({ children }: { children: ReactNode }) {
     }, [gatePasses, deliveries, billsResp, quotations])
 
     const setSelectedHotel = useCallback((name: string) => {
+        if (choiceWasStored.current) choiceWasStored.current.value = true
         setSelectedHotelState(name)
         try {
             localStorage.setItem(storageKey, name)
@@ -60,20 +76,25 @@ export function HotelProvider({ children }: { children: ReactNode }) {
         }
     }, [storageKey])
 
-    // Keep the stored choice valid:
-    //  - admins may keep "" (All Hotels) or any hotel;
-    //  - non-admins must always be scoped to a real hotel.
+    // Keep the stored choice valid. '' (Select All) is a deliberate scope for
+    // every role; only a stale hotel name gets repaired. Staff with no stored
+    // choice start on their first hotel instead of the aggregate view.
+    const storedChoice = choiceWasStored.current?.value ?? false
     useEffect(() => {
         if (hotels.length === 0) return
-        if (selectedHotel && hotels.includes(selectedHotel)) return
-        const fallback = !isAdmin && hotels[0] ? hotels[0] : ''
-        if (selectedHotel !== fallback) setSelectedHotelState(fallback)
-    }, [hotels, selectedHotel, isAdmin])
+        if (selectedHotel && !hotels.includes(selectedHotel)) {
+            setSelectedHotelState(isAdmin ? '' : (hotels[0] ?? ''))
+            return
+        }
+        if (selectedHotel === '' && !storedChoice && !isAdmin && hotels[0]) {
+            setSelectedHotelState(hotels[0])
+        }
+    }, [hotels, selectedHotel, isAdmin, storedChoice])
 
     const value = useMemo(
         () => ({
             hotels,
-            selectedHotel: isAdmin ? selectedHotel : (hotels[0] ?? ''),
+            selectedHotel,
             setSelectedHotel,
             isAdmin,
             showAllHotels: isAdmin && selectedHotel === '',
@@ -97,5 +118,7 @@ export function useHotelScope() {
         hotel: selectedHotel || undefined,
         isAdmin,
         showAllHotels,
+        /** True whenever the scope covers every hotel, for any role. */
+        isAllScope: selectedHotel === '',
     }
 }

@@ -21,6 +21,8 @@ const pageTitles: Record<string, string> = {
   '/profile': 'My Profile',
   '/bills': 'Bills',
   '/bills/new': 'Create Bill',
+  '/income': 'Income',
+  '/ledger': 'Ledger',
   '/statements': 'Client Statement',
   '/invoices/new': 'Consolidated Invoice',
   '/gate-passes': 'Gate Passes',
@@ -173,7 +175,10 @@ export function AppShell() {
             gets 16px of gutter, a desktop gets a comfortable measure. */}
         <div className="mx-auto w-full max-w-[1480px] px-4 py-4 sm:px-5 sm:py-5 lg:px-7 lg:py-6">
           <Suspense fallback={<PageLoader />}>
-            <Outlet />
+            {/* Keyed by route so each page arrival plays the enter motion once. */}
+            <div key={location.pathname} className="route-enter">
+              <Outlet />
+            </div>
           </Suspense>
         </div>
       </main>

@@ -2,13 +2,13 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Eye, Search, X, Banknote, Receipt, Wallet, AlertCircle, CircleDollarSign } from 'lucide-react'
 import { PageHeader } from '../../../components/ui/page-header'
-import { StatCard } from '../../../components/ui/stat-card'
+import { StatCard, StatCardSkeleton } from '../../../components/ui/stat-card'
 import { FilterBar } from '../../../components/ui/filter-bar'
 import { Badge } from '../../../components/ui/badge'
 import { DataTable } from '../../../components/ui/data-table'
 import { EmptyState } from '../../../components/ui/empty-state'
+import { SkeletonTable } from '../../../components/ui/skeleton'
 import { ErrorState } from '../../../components/ui/empty-state'
-import { LoadingSpinner } from '../../../components/ui/loading-spinner'
 import { ExportButton } from '../../../components/ui/export-button'
 import { Pagination } from '../../../components/ui/pagination'
 import { useHotelScope } from '../../../context/HotelContext'
@@ -48,7 +48,7 @@ const STATUS_LABEL: Record<IncomeBilledStatus, string> = {
  * bills. Bills record billed-or-not; bill payments record received-or-not.
  */
 export default function IncomePage() {
-  const { hotel, showAllHotels } = useHotelScope()
+  const { hotel, isAllScope } = useHotelScope()
   const [from, setFrom] = useState('')
   const [to, setTo] = useState('')
   const [client, setClient] = useState('')
@@ -58,15 +58,15 @@ export default function IncomePage() {
   const [offset, setOffset] = useState(0)
 
   useEffect(() => {
-    if (!showAllHotels && hotel) setClient(hotel)
-    if (showAllHotels) setClient('')
-  }, [hotel, showAllHotels])
+    if (!isAllScope && hotel) setClient(hotel)
+    if (isAllScope) setClient('')
+  }, [hotel, isAllScope])
 
   useEffect(() => {
     setOffset(0)
-  }, [from, to, client, status, search, hotel, showAllHotels])
+  }, [from, to, client, status, search, hotel, isAllScope])
 
-  const scopeClient = showAllHotels ? undefined : hotel || undefined
+  const scopeClient = isAllScope ? undefined : hotel
   const { rows, bills, billsTotal, quotations, isLoading, isError, refetch } = useGatepassIncome(scopeClient)
 
   const clients = useMemo(
@@ -224,9 +224,11 @@ export default function IncomePage() {
         actions={<ExportButton data={visible} filename="income" columns={exportCols} />}
       />
 
-      {!showError && (
+      {!showError && (isLoading ? (
+        <StatCardSkeleton />
+      ) : (
         <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 stagger">
         <StatCard label="Accrued income" value={`LKR ${Math.round(totalIncome).toLocaleString()}`} icon={<Banknote size={20} />} color="green" />
         <StatCard label="Billed" value={`LKR ${Math.round(billedTotal).toLocaleString()}`} icon={<Receipt size={20} />} color="blue" to="/bills" />
         <StatCard label="Unbilled income" value={`LKR ${Math.round(unbilledIncome).toLocaleString()}`} icon={<CircleDollarSign size={20} />} color="amber" />
@@ -247,7 +249,7 @@ export default function IncomePage() {
         </p>
       )}
         </>
-      )}
+      ))}
 
       <FilterBar>
         <div>
@@ -258,7 +260,7 @@ export default function IncomePage() {
           <label className="text-xs text-gray-500">To</label>
           <input type="date" value={to} onChange={(e) => setTo(e.target.value)} className="block px-3 py-2 border rounded-lg text-sm" />
         </div>
-        {showAllHotels && (
+        {isAllScope && (
           <select value={client} onChange={(e) => setClient(e.target.value)} className="px-3 py-2 border rounded-lg text-sm">
             <option value="">All Clients</option>
             {clients.map((c) => (
@@ -285,7 +287,7 @@ export default function IncomePage() {
       </FilterBar>
 
       {isLoading ? (
-        <LoadingSpinner label="Valuing received linen..." className="py-12" />
+        <SkeletonTable rows={8} cols={10} />
       ) : isError ? (
         <ErrorState
           title="Income could not be loaded"
