@@ -10,7 +10,7 @@ import { ThemeProvider } from './context/ThemeContext'
 import { HotelProvider } from './context/HotelContext'
 import { useAuth } from './context/AuthContext'
 import { DefaultsProvider } from './components/ops/defaults-provider'
-import { sanitizeScope } from './cache/db'
+import { cacheScopeFor } from './cache/scope'
 import { createIndexedDbPersister } from './cache/persister'
 import { invalidateDerived } from './cache/invalidation'
 import { PendingSyncProvider } from './cache/pending-sync'
@@ -85,7 +85,7 @@ configureQueryDefaults(queryClient)
  */
 function CacheHostProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth()
-  const scope = sanitizeScope(user?.id ?? '')
+  const scope = cacheScopeFor(user)
   const persister = useMemo(() => createIndexedDbPersister(scope), [scope])
   const prevScope = useRef(scope)
 

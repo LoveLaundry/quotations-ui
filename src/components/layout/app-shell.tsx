@@ -35,6 +35,7 @@ const pageTitles: Record<string, string> = {
   '/deliveries/new': 'New Delivery',
   '/reports': 'Reports',
   '/users': 'Users',
+  '/laundries': 'Laundries',
   '/database-sync': 'Database Sync',
   '/live-chat': 'Live Chat',
   '/notifications': 'Notifications',
@@ -96,7 +97,7 @@ export function AppShell() {
   const [cmdOpen, setCmdOpen] = useState(false)
   const location = useLocation()
   const navigate = useNavigate()
-  const { logout } = useAuth()
+  const { logout, support, exitSupport } = useAuth()
 
   useEffect(() => {
     setUnauthorizedHandler(() => {
@@ -165,11 +166,30 @@ export function AppShell() {
 
       <SyncFab />
 
+      {/* Platform support entry: unmissable, always one tap from exit. */}
+      {support && (
+        <div
+          role="status"
+          className="fixed inset-x-0 top-0 z-50 flex h-9 items-center justify-center gap-x-3 gap-2 overflow-hidden bg-amber-500 px-4 text-[12.5px] font-semibold whitespace-nowrap text-amber-950 shadow-md"
+        >
+          <span className="min-w-0 truncate">
+            Support session in {support.laundryName} — audited.
+          </span>
+          <button
+            type="button"
+            onClick={exitSupport}
+            className="shrink-0 cursor-pointer rounded-[6px] bg-amber-950/90 px-2.5 py-1 text-[12px] font-bold text-amber-50 transition-colors hover:bg-amber-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+          >
+            Exit support
+          </button>
+        </div>
+      )}
+
       <main
         id="main-content"
-        className={`min-h-dvh pt-13 transition-[padding-left] duration-150 ease-out ${
+        className={`min-h-dvh transition-[padding-left] duration-150 ease-out ${
           collapsed ? 'lg:pl-[60px]' : 'lg:pl-[236px]'
-        }`}
+        } ${support ? 'pt-22' : 'pt-13'}`}
       >
         {/* Wide cap with a tighter margin on small screens: a 320px viewport
             gets 16px of gutter, a desktop gets a comfortable measure. */}

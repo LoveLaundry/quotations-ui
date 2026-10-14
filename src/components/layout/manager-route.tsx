@@ -20,7 +20,7 @@ export function ManagerRoute() {
     }
 
     const role = user?.role_id?.toUpperCase() ?? ''
-    if (role !== 'ADMIN' && role !== 'MANAGER') {
+    if (role !== 'ADMIN' && role !== 'MANAGER' && role !== 'PLATFORM_ADMIN') {
         return <Navigate to="/management" replace />
     }
 

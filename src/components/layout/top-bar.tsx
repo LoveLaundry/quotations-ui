@@ -35,6 +35,7 @@ export function TopBar({
   onOpenSearch,
 }: TopBarProps) {
   const { user, logout } = useAuth()
+  const { support } = useAuth()
   const navigate = useNavigate()
   const { fontSize, setFontSize } = useTheme()
   const comfortOn = fontSize === 'xxxl'
@@ -111,8 +112,9 @@ export function TopBar({
     <>
       <header
         className={cn(
-          'app-topbar fixed top-0 right-0 z-30 flex h-13 items-center gap-2 border-b border-[var(--border)] bg-[var(--surface)]',
+          'app-topbar fixed right-0 z-30 flex h-13 items-center gap-2 border-b border-[var(--border)] bg-[var(--surface)]',
           'px-3 transition-[left] duration-150 ease-out sm:px-4',
+          support ? 'top-9' : 'top-0',
           sidebarCollapsed ? 'left-0 lg:left-[60px]' : 'left-0 lg:left-[236px]',
         )}
       >

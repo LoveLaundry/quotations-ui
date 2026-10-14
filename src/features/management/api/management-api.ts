@@ -1,6 +1,7 @@
 import axios from 'axios'
 import { installOfflineAdapter } from '../../../cache/offline-adapter'
 import { attachResponseInterceptor } from '../../../api/interceptors'
+import { getActiveToken } from '../../../lib/auth-token'
 
 export interface Paginated<T> {
   items: T[]
@@ -16,7 +17,7 @@ export const mgmtApi = axios.create({
 })
 
 mgmtApi.interceptors.request.use((config) => {
-  const token = localStorage.getItem('ll_token')
+  const token = getActiveToken()
   if (token) config.headers.Authorization = `Bearer ${token}`
   return config
 })

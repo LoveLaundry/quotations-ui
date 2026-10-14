@@ -194,7 +194,8 @@ export default function ManagementReports() {
 
   const customers = customersData.items
   const { user } = useAuth()
-  const isAdmin = (user?.role_id || '').toUpperCase() === 'ADMIN'
+  const _role = (user?.role_id || '').toUpperCase()
+  const isAdmin = _role === 'ADMIN' || _role === 'PLATFORM_ADMIN'
   const { data: quotations = [], isLoading: quotationsLoading } = useQuotations()
   const queryClient = useQueryClient()
 

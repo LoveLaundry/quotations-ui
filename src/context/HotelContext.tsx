@@ -25,7 +25,8 @@ const HotelContext = createContext<HotelContextValue | null>(null)
 
 export function HotelProvider({ children }: { children: ReactNode }) {
     const { user } = useAuth()
-    const isAdmin = user?.role_id?.toUpperCase() === 'ADMIN'
+    const _role = user?.role_id?.toUpperCase()
+    const isAdmin = _role === 'ADMIN' || _role === 'PLATFORM_ADMIN'
 
     const storageKey = useMemo(() => `ll_hotel_${user?.id ?? ''}`, [user?.id])
 

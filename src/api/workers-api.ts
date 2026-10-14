@@ -1,5 +1,6 @@
 import axios from 'axios'
 import { attachResponseInterceptor } from './interceptors'
+import { getActiveToken } from '../lib/auth-token'
 import { installOfflineAdapter } from '../cache/offline-adapter'
 
 function normalizeBaseUrl(url: string): string {
@@ -18,7 +19,7 @@ const workersApi = axios.create({
 })
 
 workersApi.interceptors.request.use((config) => {
-  const token = localStorage.getItem('ll_token')
+  const token = getActiveToken()
   if (token) config.headers.Authorization = `Bearer ${token}`
   return config
 })

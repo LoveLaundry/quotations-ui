@@ -190,7 +190,7 @@ export default function UsersPage() {
                 {[
                     { label: 'Total Users', value: users.length, color: 'text-[#101828]' },
                     { label: 'Active', value: users.filter(u => u.status === 'active').length, color: 'text-[#16A34A]' },
-                    { label: 'Admins', value: users.filter(u => u.role_id?.toUpperCase() === 'ADMIN').length, color: 'text-[#92400E]' },
+                    { label: 'Admins', value: users.filter(u => ['ADMIN', 'PLATFORM_ADMIN'].includes(u.role_id?.toUpperCase() ?? '')).length, color: 'text-[#92400E]' },
                 ].map(stat => (
                     <Card key={stat.label}>
                         <CardContent className="pt-4 pb-4 text-center">

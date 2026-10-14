@@ -201,7 +201,8 @@ function ProjectionCard({ entry, past }: { entry?: any; past: boolean }) {
 export default function CompanySettingsPage() {
   const qc = useQueryClient()
   const { user } = useAuth()
-  const isAdmin = user?.role_id?.toUpperCase() === 'ADMIN'
+  const _role = user?.role_id?.toUpperCase()
+  const isAdmin = _role === 'ADMIN' || _role === 'PLATFORM_ADMIN'
   const [form, setForm] = useState<any>(null)
   const [readingAt, setReadingAt] = useState(() => toSriLankaDateTimeInput())
   const [readingValues, setReadingValues] = useState<Record<string, string>>({

@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { getActiveToken } from '../lib/auth-token'
 import { attachResponseInterceptor } from './interceptors'
 
 const authApi = axios.create({
@@ -8,7 +9,7 @@ const authApi = axios.create({
 })
 
 authApi.interceptors.request.use((config) => {
-  const token = localStorage.getItem('ll_token')
+  const token = getActiveToken()
   if (token) config.headers.Authorization = `Bearer ${token}`
   return config
 })
