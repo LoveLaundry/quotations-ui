@@ -40,6 +40,11 @@ const queryClientConfig: QueryClientConfig = {
         if (status === 401 || status === 404 || status === 400 || status === 403) {
           return false
         }
+        // No HTTP response at all means the request died on the wire
+        // (network handover, tunnel drop). Those deserve more attempts than
+        // server errors: each retry waits longer (see retryDelay) and often
+        // lands after the connection settles.
+        if (status === undefined) return failureCount < 5
         return failureCount < 2
       },
       retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 5000),
