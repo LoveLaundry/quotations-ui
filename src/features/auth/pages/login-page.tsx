@@ -24,8 +24,11 @@ export default function LoginPage() {
   const errorRef = useRef<HTMLDivElement>(null)
   const usernameRef = useRef<HTMLInputElement>(null)
 
+  const [mode, setMode] = useState<'signin' | 'setup'>('signin')
   const [username, setUsername] = useState('')
+  const [displayName, setDisplayName] = useState('')
   const [password, setPassword] = useState('')
+  const [confirm, setConfirm] = useState('')
   const [showPw, setShowPw] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -36,16 +39,45 @@ export default function LoginPage() {
     if (error) errorRef.current?.focus()
   }, [error])
 
+  const switchMode = (next: 'signin' | 'setup') => {
+    setMode(next)
+    setError('')
+    setPassword('')
+    setConfirm('')
+    setDisplayName('')
+  }
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
     setError('')
     setLoading(true)
     try {
+      if (mode === 'setup') {
+        if (password !== confirm) {
+          setError('Passwords do not match.')
+          return
+        }
+        const res = await authService.bootstrap({
+          auth_id: username.trim(),
+          user_name: displayName.trim() || username.trim(),
+          password,
+        })
+        login(res.access_token, res.user)
+        navigate(from, { replace: true })
+        return
+      }
       const res = await authService.login({ username: username.trim(), password })
       login(res.access_token, res.user)
       navigate(from, { replace: true })
     } catch (err: any) {
-      setError(err?.message || 'Invalid username or password')
+      const status = err?.response?.status ?? err?.status
+      if (mode === 'setup' && status === 403) {
+        setError('An admin already exists — sign in instead.')
+      } else if (mode === 'setup' && (status === 404 || status === 405)) {
+        setError('Server update is still deploying — wait a minute and try again.')
+      } else {
+        setError(err?.message || 'Invalid username or password')
+      }
       // Put focus back where the correction happens.
       usernameRef.current?.select()
     } finally {
@@ -53,7 +85,10 @@ export default function LoginPage() {
     }
   }
 
-  const canSubmit = Boolean(username.trim() && password) && !loading
+  const canSubmit =
+    mode === 'setup'
+      ? Boolean(username.trim() && password && confirm && password.length >= 8) && !loading
+      : Boolean(username.trim() && password) && !loading
 
   return (
     <div className="flex min-h-dvh flex-col bg-[var(--bg)]">
@@ -66,18 +101,20 @@ export default function LoginPage() {
           <div className="rounded-[10px] border border-[var(--border-2)] bg-[var(--surface)] p-5 sm:p-6">
             <div className="mb-5">
               <h1 className="text-[17px] font-semibold tracking-[-0.015em] text-[var(--text-primary)]">
-                Sign in
+                {mode === 'setup' ? 'Create admin account' : 'Sign in'}
               </h1>
               <p className="mt-0.5 text-[12.5px] text-[var(--text-muted)]">
-                Use the account your administrator gave you.
+                {mode === 'setup'
+                  ? 'First-time setup. Works once — afterwards sign in instead.'
+                  : 'Use the account your administrator gave you.'}
               </p>
             </div>
 
             <form onSubmit={handleSubmit} noValidate className="space-y-3.5">
               <Field
                 id="username"
-                label="Username or email"
-                hint={error ? undefined : 'Case-insensitive.'}
+                label={mode === 'setup' ? 'Admin username' : 'Username or email'}
+                hint={error ? undefined : mode === 'setup' ? 'At least 3 characters.' : 'Case-insensitive.'}
               >
                 <Input
                   ref={usernameRef}
@@ -100,7 +137,25 @@ export default function LoginPage() {
                 />
               </Field>
 
-              <Field id="password" label="Password">
+              {mode === 'setup' && (
+                <Field id="displayName" label="Display name">
+                  <Input
+                    id="displayName"
+                    name="displayName"
+                    type="text"
+                    autoComplete="nickname"
+                    placeholder="e.g. Company Owner"
+                    value={displayName}
+                    onChange={(e) => {
+                      setDisplayName(e.target.value)
+                      if (error) setError('')
+                    }}
+                    className="h-10"
+                  />
+                </Field>
+              )}
+
+              <Field id="password" label={mode === 'setup' ? 'Password (min 8 characters)' : 'Password'}>
                 <div className="relative">
                   <Input
                     id="password"
@@ -129,6 +184,26 @@ export default function LoginPage() {
                 </div>
               </Field>
 
+              {mode === 'setup' && (
+                <Field id="confirm" label="Confirm password">
+                  <Input
+                    id="confirm"
+                    name="confirm"
+                    type={showPw ? 'text' : 'password'}
+                    autoComplete="new-password"
+                    placeholder="Repeat the password"
+                    value={confirm}
+                    onChange={(e) => {
+                      setConfirm(e.target.value)
+                      if (error) setError('')
+                    }}
+                    required
+                    invalid={Boolean(error)}
+                    className="h-10"
+                  />
+                </Field>
+              )}
+
               <div
                 ref={errorRef}
                 role="alert"
@@ -152,12 +227,32 @@ export default function LoginPage() {
                 className="mt-1 w-full"
                 size="lg"
               >
-                {loading ? 'Signing in' : 'Sign in'}
+                {loading ? (mode === 'setup' ? 'Creating admin' : 'Signing in') : mode === 'setup' ? 'Create admin & sign in' : 'Sign in'}
               </Button>
 
               <p className="pt-1 text-center text-[11.5px] text-[var(--text-faint)]">
-                Password forgotten? Ask an administrator to reset it.
+                {mode === 'setup' ? (
+                  <>
+                    Already set up?{' '}
+                    <button type="button" onClick={() => switchMode('signin')} className="font-medium text-[var(--brand-text)] hover:underline">
+                      Sign in instead
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    First time here?{' '}
+                    <button type="button" onClick={() => switchMode('setup')} className="font-medium text-[var(--brand-text)] hover:underline">
+                      Create the admin account
+                    </button>
+                  </>
+                )}
               </p>
+
+              {mode === 'signin' && (
+                <p className="pt-1 text-center text-[11.5px] text-[var(--text-faint)]">
+                  Password forgotten? Ask an administrator to reset it.
+                </p>
+              )}
             </form>
           </div>
 
