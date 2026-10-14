@@ -111,7 +111,12 @@ export default function IncomePage() {
   const unpricedPasses = scoped.filter((r) => r.hasUnpriced).length
 
   const pageRows = visible.slice(offset, offset + PAGE_SIZE)
-  const showError = isError && !isLoading
+  // Flapping networks fail background refetches while good cached data sits
+  // in the query cache. Only the truly-empty state is an error; otherwise
+  // keep showing data with a slim retry notice.
+  const hasData = rows.length > 0 || bills.length > 0
+  const showError = isError && !isLoading && !hasData
+  const showStale = isError && !isLoading && hasData
 
   const columns = [
     { key: 'date', header: 'Received', render: (r: IncomeRow) => <span className="whitespace-nowrap">{r.date}</span> },
@@ -250,6 +255,15 @@ export default function IncomePage() {
       )}
         </>
       ))}
+
+      {showStale && (
+        <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-950 dark:bg-amber-950/30 dark:text-amber-100" role="status">
+          <span>Connection dropped — showing saved data. It will refresh when the network is back.</span>
+          <button type="button" onClick={refetch} className="font-semibold underline underline-offset-2 hover:no-underline">
+            Retry now
+          </button>
+        </div>
+      )}
 
       <FilterBar>
         <div>

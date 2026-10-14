@@ -292,7 +292,11 @@ export default function LedgerPage() {
   const pageEvents = displayEvents.slice(offset, offset + PAGE_SIZE)
   const isLoading = incomeLoading || paysLoading
   const isError = incomeError || paysError
-  const showError = isError && !isLoading
+  // Same stale-data tolerance as Income: a failed background refresh must
+  // never wipe the cached ledger on a flapping connection.
+  const hasData = allEvents.length > 0
+  const showError = isError && !isLoading && !hasData
+  const showStale = isError && !isLoading && hasData
   const retry = () => {
     refetchIncome()
     void refetchBulk()
@@ -392,6 +396,15 @@ export default function LedgerPage() {
           <StatCard label="Billed outstanding" value={`LKR ${Math.round(billedOutstanding).toLocaleString()}`} icon={<FileText size={20} />} color="blue" to="/statements" />
         </div>
       ))}
+
+      {showStale && (
+        <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-950 dark:bg-amber-950/30 dark:text-amber-100" role="status">
+          <span>Connection dropped — showing saved ledger. Balances refresh when the network is back.</span>
+          <button type="button" onClick={retry} className="font-semibold underline underline-offset-2 hover:no-underline">
+            Retry now
+          </button>
+        </div>
+      )}
 
       <FilterBar>
         {isAllScope && (
