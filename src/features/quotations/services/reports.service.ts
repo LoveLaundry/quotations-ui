@@ -91,6 +91,10 @@ export const payments = {
     listForBill: (billId: string) =>
         billsApi.get<Payment[]>(`/bills/${billId}/payments`).then((r: any) => r.data),
 
+    /** All receipts in scope — one request instead of N per-bill calls. */
+    listAll: (params?: { client_name?: string; limit?: number }) =>
+        billsApi.get<Payment[]>('/bills/payments', { params }).then((r: any) => r.data),
+
     create: async (billId: string, data: PaymentCreate) => {
         const key = await idempotencyKey({ bill_id: billId, ...data })
         return billsApi.post<Payment>(`/bills/${billId}/payments`, data, {

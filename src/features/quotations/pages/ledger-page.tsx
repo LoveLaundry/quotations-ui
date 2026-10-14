@@ -66,20 +66,34 @@ export default function LedgerPage() {
   const { rows, bills, billsTotal, isLoading: incomeLoading, isError: incomeError, refetch: refetchIncome } =
     useGatepassIncome(scopeClient)
 
-  // Cash received per bill; a recorded-receipt top-up covers paid_amount with
-  // no payment rows so the ledger always agrees with bill totals.
+  // Cash received: one bulk request; per-bill fan-out only as fallback for
+  // servers predating GET /bills/payments. A recorded-receipt top-up covers
+  // paid_amount with no payment rows so the ledger agrees with bill totals.
   const paidBills = useMemo(
     () => bills.filter((b) => billPaid(b) > 0),
     [bills],
   )
   const billIdsKey = useMemo(() => paidBills.map((b) => b.id).sort().join(','), [paidBills])
+  const scopedBillIds = useMemo(() => new Set(bills.map((b) => b.id)), [bills])
   const {
-    data: paymentsByBill = {},
-    isLoading: paysLoading,
-    isError: paysError,
+    data: bulkReceipts,
+    isLoading: bulkLoading,
+    isError: bulkFailed,
+    refetch: refetchBulk,
+  } = useQuery<Payment[]>({
+    queryKey: ['bills', 'ledger-receipts', scopeClient ?? 'all'],
+    queryFn: () =>
+      payments.listAll({ client_name: scopeClient || undefined, limit: 5000 }),
+    enabled: !incomeLoading,
+    retry: false,
+    staleTime: 180_000,
+  })
+  const {
+    data: fanoutReceipts = {},
+    isLoading: fanoutLoading,
+    isError: fanoutError,
     refetch: refetchPays,
   } = useQuery<Record<string, Payment[]>>({
-    // 'bills' first segment: persisted + invalidated with the bills namespace.
     queryKey: ['bills', 'ledger-payments', scopeClient ?? 'all', billIdsKey],
     queryFn: async () => {
       const entries = await Promise.all(
@@ -93,9 +107,24 @@ export default function LedgerPage() {
       )
       return Object.fromEntries(entries)
     },
-    enabled: !incomeLoading && paidBills.length > 0,
+    enabled: bulkFailed && !incomeLoading && paidBills.length > 0,
     staleTime: 60_000,
   })
+  const paymentsByBill: Record<string, Payment[]> = useMemo(() => {
+    if (!bulkFailed) {
+      // Only receipts for bills in scope count — anyone else's money stays out.
+      const map: Record<string, Payment[]> = {}
+      for (const p of bulkReceipts ?? []) {
+        if (!p.bill_id || !scopedBillIds.has(p.bill_id)) continue
+        if (!map[p.bill_id]) map[p.bill_id] = []
+        map[p.bill_id].push(p)
+      }
+      return map
+    }
+    return fanoutReceipts
+  }, [bulkFailed, bulkReceipts, fanoutReceipts, scopedBillIds])
+  const paysLoading = bulkLoading || (bulkFailed && fanoutLoading)
+  const paysError = bulkFailed && fanoutError
 
   const clients = useMemo(
     () =>
@@ -266,6 +295,7 @@ export default function LedgerPage() {
   const showError = isError && !isLoading
   const retry = () => {
     refetchIncome()
+    void refetchBulk()
     void refetchPays()
   }
   const truncated = billsTotal > bills.length
