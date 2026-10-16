@@ -1,6 +1,7 @@
 import axios, { type AxiosInstance } from 'axios'
 import { AI_SERVICE, canonicalJson, hmacSha256Hex, sha256Hex } from '../../../config/ai'
 import { extractResponseMessage } from '../../../api/interceptors'
+import { getActiveToken } from '../../../lib/auth-token'
 
 /**
  * Secured Love AI client.
@@ -49,12 +50,18 @@ class LoveAiClient {
     const bodyHash = await sha256Hex(body)
     const canonical = [method.toUpperCase(), path, timestamp, bodyHash].join('\n')
     const signature = await hmacSha256Hex(AI_SERVICE.apiKey, canonical)
-    return {
+    const headers: Record<string, string> = {
       'X-API-Key': AI_SERVICE.apiKey,
       'X-Timestamp': timestamp,
       'X-Body-Hash': bodyHash,
       'X-Signature': signature,
     }
+    // The signature proves integrity; the JWT is what tells love-ai *which*
+    // laundry to read. Without it the service rejects the call (401) rather
+    // than running an unscoped, all-tenant aggregation.
+    const token = getActiveToken()
+    if (token) headers.Authorization = `Bearer ${token}`
+    return headers
   }
 
   private async get<T>(path: string): Promise<AiEnvelope<T>> {
