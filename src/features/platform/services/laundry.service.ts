@@ -56,4 +56,11 @@ export const laundryService = {
     authApi
       .post<{ access_token: string; token_type: string; user: User }>(`/laundries/${id}/enter`)
       .then((r) => r.data),
+
+  switch: (laundryId: string) =>
+    authApi
+      .post<{ access_token: string; token_type: string; user: User }>('/auth/laundry', {
+        laundry_id: laundryId,
+      })
+      .then((r) => r.data),
 }

@@ -7,6 +7,7 @@ import { useTheme, isFontSize } from '../../context/ThemeContext'
 import { useNotifications } from '../../features/quotations/hooks/useNotifications'
 import { NotificationDetailDialog } from '../../features/quotations/components/notification-detail-dialog'
 import { HotelSelector } from './hotel-selector'
+import { LaundrySwitcher } from './laundry-switcher'
 import { DropdownMenu, type MenuGroup } from '../ui/dropdown-menu'
 import type { Quotation } from '../../types/quotation'
 import type { GatePassPendingEntry, NotificationType } from '../../types/notification'
@@ -141,6 +142,7 @@ export function TopBar({
         {/* Right: scope, search, notifications, account */}
         <div className="flex shrink-0 items-center gap-1.5">
           <HotelSelector />
+          <LaundrySwitcher />
 
           <button
             type="button"

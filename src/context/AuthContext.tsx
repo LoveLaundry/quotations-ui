@@ -3,6 +3,7 @@ import type { User } from '../types/auth'
 import { deleteCacheDb } from '../cache/db'
 import { cacheScopeFor } from '../cache/scope'
 import { setSupportToken } from '../lib/auth-token'
+import authApi from '../api/auth-api'
 
 export interface SupportSession {
     token: string
@@ -17,6 +18,8 @@ interface AuthCtx {
     setUser: (user: User) => void
     login: (token: string, user: User) => void
     logout: () => void
+    /** Swap the active laundry for a multi-laundry user. */
+    switchLaundry: (laundryId: string) => Promise<void>
     isAuthenticated: boolean
     /** Audited platform support entry (short-lived, memory-only). */
     support: SupportSession | null
@@ -58,6 +61,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(usr)
     }, [support])
 
+    const switchLaundry = useCallback(
+        async (laundryId: string) => {
+            const previous = user
+            const res = await authApi.post('/auth/laundry', { laundry_id: laundryId })
+            const { access_token, user: nextUser } = res.data as {
+                access_token: string
+                token_type: string
+                user: User
+            }
+            localStorage.setItem('ll_token', access_token)
+            localStorage.setItem('ll_user', JSON.stringify(nextUser))
+            setToken(access_token)
+            setUser(nextUser)
+            if (previous) void deleteCacheDb(cacheScopeFor(previous))
+        },
+        [user],
+    )
+
     // Platform support entry: the admin's own session stays stored; the
     // support token lives only in memory, so a reload always drops back to
     // the platform session instead of stranding anyone in support mode.
@@ -97,7 +118,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }, [token, logout])
 
     return (
-        <AuthContext.Provider value={{ token, user, setUser: updateUser, login, logout, isAuthenticated: !!token, support, enterSupport, exitSupport }}>
+        <AuthContext.Provider
+            value={{
+                token,
+                user,
+                setUser: updateUser,
+                login,
+                logout,
+                switchLaundry,
+                isAuthenticated: !!token,
+                support,
+                enterSupport,
+                exitSupport,
+            }}
+        >
             {children}
         </AuthContext.Provider>
     )
