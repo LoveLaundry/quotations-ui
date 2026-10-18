@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
 import { useAuth } from '../context/AuthContext'
-import { sanitizeScope } from './db'
+import { cacheScopeFor } from './scope'
 import { listAll, subscribeOutbox, type OutboxKind, type OutboxRow, type OutboxStatus } from './outbox'
 import { subscribeConnectivity } from './offline'
 
@@ -46,7 +46,7 @@ const PendingSyncCtx = createContext<PendingSyncCtxValue>({
 
 export function PendingSyncProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth()
-  const scope = sanitizeScope(user?.id ?? '')
+  const scope = cacheScopeFor(user)
   const [value, setValue] = useState<PendingSyncCtxValue>({ byEntity: new Map(), byResource: new Map() })
 
   useEffect(() => {

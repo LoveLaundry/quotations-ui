@@ -21,6 +21,7 @@ import type { Bill } from '../../../types/bill'
 import { startOfMonthISO, todayISO } from '../../../lib/time'
 import { customersApi } from '../../management/api/management-api'
 import { SignatureUploadDialog } from '../../../components/ui/signature-upload-dialog'
+import { usePrintPrefixChoice } from '../../../lib/use-print-prefix-choice'
 
 interface InvoiceBankDetails {
   bankName: string
@@ -134,6 +135,8 @@ export default function InvoiceCreatePage() {
     contentRef: printRef,
     documentTitle: `Consolidated-Invoice-${dateFrom}-${dateTo}`,
   })
+  const [includePrefix, setIncludePrefix] = useState(true)
+  const { choose: choosePrefix, dialog: prefixDialog } = usePrintPrefixChoice()
   const signatureSlots = useMemo(
     () => [{ id: 'manager', label: 'Laundry manager signature', value: managerSignature }],
     [managerSignature],
@@ -156,7 +159,11 @@ export default function InvoiceCreatePage() {
     setManagerSignature(signatures.manager)
     setBankDetails(details)
     setPrintDialogOpen(false)
-    window.setTimeout(() => handlePrint(), 180)
+    void choosePrefix().then((choice: boolean | null) => {
+      if (choice === null) return
+      setIncludePrefix(choice)
+      window.setTimeout(() => handlePrint(), 180)
+    })
   }
 
   return (
@@ -322,6 +329,7 @@ export default function InvoiceCreatePage() {
           invoiceNo={invoiceNo}
           clientAddress={clientAddress}
           managerSignature={managerSignature}
+          includePrefix={includePrefix}
           bankDetails={bankDetails}
         />
       </PrintTarget>
@@ -366,6 +374,8 @@ export default function InvoiceCreatePage() {
           </div>
         </div>
       </SignatureUploadDialog>
+
+      {prefixDialog}
     </div>
   )
 }

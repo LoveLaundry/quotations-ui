@@ -7,6 +7,7 @@ import { useTheme, isFontSize } from '../../context/ThemeContext'
 import { useNotifications } from '../../features/quotations/hooks/useNotifications'
 import { NotificationDetailDialog } from '../../features/quotations/components/notification-detail-dialog'
 import { HotelSelector } from './hotel-selector'
+import { LaundrySwitcher } from './laundry-switcher'
 import { DropdownMenu, type MenuGroup } from '../ui/dropdown-menu'
 import type { Quotation } from '../../types/quotation'
 import type { GatePassPendingEntry, NotificationType } from '../../types/notification'
@@ -35,6 +36,7 @@ export function TopBar({
   onOpenSearch,
 }: TopBarProps) {
   const { user, logout } = useAuth()
+  const { support } = useAuth()
   const navigate = useNavigate()
   const { fontSize, setFontSize } = useTheme()
   const comfortOn = fontSize === 'xxxl'
@@ -84,7 +86,7 @@ export function TopBar({
   const roleLabel = user?.role_id ? String(user.role_id).toLowerCase() : 'staff'
 
   const iconBtn =
-    'inline-flex size-8 items-center justify-center rounded-[6px] border border-transparent text-[var(--text-muted)] transition-colors duration-100 hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]'
+    'pressable inline-flex size-8 items-center justify-center rounded-[6px] border border-transparent text-[var(--text-muted)] transition-colors duration-100 hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]'
 
   const userMenu: MenuGroup[] = [
     {
@@ -111,8 +113,9 @@ export function TopBar({
     <>
       <header
         className={cn(
-          'app-topbar fixed top-0 right-0 z-30 flex h-13 items-center gap-2 border-b border-[var(--border)] bg-[var(--surface)]',
+          'app-topbar fixed right-0 z-30 flex h-13 items-center gap-2 border-b border-[var(--border)] bg-[var(--surface)]',
           'px-3 transition-[left] duration-150 ease-out sm:px-4',
+          support ? 'top-9' : 'top-0',
           sidebarCollapsed ? 'left-0 lg:left-[60px]' : 'left-0 lg:left-[236px]',
         )}
       >
@@ -139,6 +142,7 @@ export function TopBar({
         {/* Right: scope, search, notifications, account */}
         <div className="flex shrink-0 items-center gap-1.5">
           <HotelSelector />
+          <LaundrySwitcher />
 
           <button
             type="button"

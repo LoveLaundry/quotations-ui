@@ -14,9 +14,44 @@ function toISODatetime(dateStr: string): string {
     return dateToStartOfDayISO(dateStr)
 }
 
+const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms))
+
+/** One page fetch with patient retries — a single flap mid-loop must not
+ *  discard the pages already collected on a shaky connection. */
+async function fetchGatePassPage(
+    params: { client_name?: string; status?: string; skip?: number; limit?: number },
+): Promise<GatePass[]> {
+    let lastError: unknown = null
+    for (let attempt = 0; attempt < 4; attempt += 1) {
+        try {
+            return await billsApi.get<GatePass[]>('/gatepasses', { params }).then((r) => withItems(r.data))
+        } catch (err) {
+            lastError = err
+            await sleep(750 * (attempt + 1))
+        }
+    }
+    throw lastError
+}
+
 export const gatepasses = {
-    list: (params?: { client_name?: string; status?: string }): Promise<GatePass[]> =>
-        billsApi.get<GatePass[]>('/gatepasses', { params }).then(r => withItems(r.data)),
+    list: async (params?: { client_name?: string; status?: string; skip?: number; limit?: number }): Promise<GatePass[]> => {
+        // Explicit skip/limit = one page; otherwise page through everything.
+        if (params?.skip != null || params?.limit != null) {
+            return billsApi.get<GatePass[]>('/gatepasses', { params }).then(r => withItems(r.data))
+        }
+        const pageSize = 500
+        const all: GatePass[] = []
+        const seen = new Set<string>()
+        for (let skip = 0; skip < 50000; skip += pageSize) {
+            const page = await fetchGatePassPage({ ...params, skip, limit: pageSize })
+            const fresh = page.filter(g => !seen.has(g.id))
+            fresh.forEach(g => seen.add(g.id))
+            all.push(...fresh)
+            // Short page, or zero fresh ids when an older server ignores paging.
+            if (page.length < pageSize || fresh.length === 0) break
+        }
+        return all
+    },
 
     get: (id: string) =>
         billsApi.get<GatePass>(`/gatepasses/${id}`).then((r: any) => r.data),

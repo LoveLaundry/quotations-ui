@@ -1,5 +1,6 @@
 import axios from 'axios'
 import { attachResponseInterceptor } from './interceptors'
+import { getActiveToken } from '../lib/auth-token'
 import { installOfflineAdapter } from '../cache/offline-adapter'
 
 function normalizeBaseUrl(url: string): string {
@@ -12,13 +13,13 @@ function normalizeBaseUrl(url: string): string {
 }
 
 const workersApi = axios.create({
-  baseURL: normalizeBaseUrl(import.meta.env.VITE_WORKERS_API_URL ?? 'https://worker-service-zeta.vercel.app'),
+  baseURL: normalizeBaseUrl(import.meta.env.VITE_WORKERS_API_URL ?? 'http://localhost:8003'),
   timeout: 10000,
   headers: { 'Content-Type': 'application/json' },
 })
 
 workersApi.interceptors.request.use((config) => {
-  const token = localStorage.getItem('ll_token')
+  const token = getActiveToken()
   if (token) config.headers.Authorization = `Bearer ${token}`
   return config
 })

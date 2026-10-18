@@ -2,6 +2,7 @@ import React from 'react'
 import type { GatePass } from '../../../types/operations'
 import { GATE_PASS_STATUSES } from './operations-status'
 import { formatCalendarDate } from '../../../lib/time'
+import { formatBillNumber } from '../../../lib/bill-number'
 
 const gatePassPrintStyles = `
   @media print {
@@ -171,8 +172,11 @@ const gatePassPrintStyles = `
   }
 `
 
-export const GatePassPrintSheet = React.forwardRef<HTMLDivElement, { gp: GatePass }>(
-    ({ gp }, ref) => {
+export const GatePassPrintSheet = React.forwardRef<
+    HTMLDivElement,
+    { gp: GatePass; includePrefix?: boolean }
+>(
+    ({ gp, includePrefix = true }, ref) => {
         const items = gp.items ?? []
         const totalPieces = items.reduce((sum, item) => sum + (item.received_qty || 0), 0)
         const mismatchedItems = items.filter(item => item.difference !== 0)
@@ -214,6 +218,9 @@ export const GatePassPrintSheet = React.forwardRef<HTMLDivElement, { gp: GatePas
                         <p className="gps-title">Gate Pass</p>
                         <div className="gps-title-meta">
                             <div>No: {gp.gate_pass_number}</div>
+                            {gp.manual_bill_number && (
+                                <div>Bill No: {formatBillNumber(gp.manual_bill_number, includePrefix)}</div>
+                            )}
                             <div>Status: {status}</div>
                         </div>
                     </div>

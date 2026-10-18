@@ -12,7 +12,8 @@ export function AdminRoute() {
         return <Navigate to="/login" replace />
     }
 
-    const isAdmin = user?.role_id?.toUpperCase() === 'ADMIN'
+const role = user?.role_id?.toUpperCase()
+    const isAdmin = role === 'ADMIN' || role === 'PLATFORM_ADMIN'
 
     if (!isAdmin) {
         return <Navigate to="/" replace />

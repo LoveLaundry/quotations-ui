@@ -32,9 +32,21 @@ async function loadStatement(clientName: string): Promise<StatementData> {
     returnsApi.list({ client_name: clientName, limit: 200 }),
   ])
   const bills = billsRes.items ?? []
-  const paymentsEntries = await Promise.all(
-    bills.map(async (b) => [b.id, await payments.listForBill(b.id)] as [string, Payment[]]),
-  )
+  let paymentsEntries: [string, Payment[]][]
+  try {
+    // One bulk request; per-bill fan-out only on servers predating it.
+    const all = await payments.listAll({ client_name: clientName, limit: 5000 })
+    const byBill = new Map<string, Payment[]>()
+    for (const p of all ?? []) {
+      if (!byBill.has(p.bill_id)) byBill.set(p.bill_id, [])
+      byBill.get(p.bill_id)?.push(p)
+    }
+    paymentsEntries = bills.map((b) => [b.id, byBill.get(b.id) ?? []] as [string, Payment[]])
+  } catch {
+    paymentsEntries = await Promise.all(
+      bills.map(async (b) => [b.id, await payments.listForBill(b.id)] as [string, Payment[]]),
+    )
+  }
   return { bills, deliveries: dels, returns: rets.items ?? [], paymentsByBill: Object.fromEntries(paymentsEntries) }
 }
 

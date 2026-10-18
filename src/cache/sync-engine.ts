@@ -15,6 +15,7 @@
  *  - network error  → row returns to `pending`, retried on the next drain.
  */
 import axios from 'axios'
+import { getActiveToken } from '../lib/auth-token'
 import {
   countPending,
   listPending,
@@ -119,7 +120,7 @@ async function replayOne(item: {
   await setSyncing(item.id)
   setReplaying(item.service, true)
   try {
-    const token = typeof localStorage !== 'undefined' ? localStorage.getItem('ll_token') : null
+    const token = getActiveToken()
     const headers: Record<string, string> = { 'Content-Type': 'application/json' }
     if (token) headers.Authorization = `Bearer ${token}`
     if (item.idempotency_key) headers['X-Idempotency-Key'] = item.idempotency_key

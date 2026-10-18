@@ -60,7 +60,7 @@ type DeliveryRow = { delivery: Delivery; status: DeliveryStatus }
 
 export default function DeliveriesPage() {
     const navigate = useNavigate()
-    const { hotel, showAllHotels } = useHotelScope()
+    const { hotel } = useHotelScope()
 
     const [searchInput, setSearchInput] = useState('')
     const [gpFilter, setGpFilter] = useState('')
@@ -289,8 +289,8 @@ export default function DeliveriesPage() {
                                 DLV-{delivery.id.slice(-8).toUpperCase()}
                             </p>
                             <div className="mt-0.5 flex flex-wrap items-center gap-1.5">
-                                {showAllHotels && <HotelBadge name={delivery.client_name} />}
-                                {!showAllHotels && (
+                                {!hotel && <HotelBadge name={delivery.client_name} />}
+                                {hotel && (
                                     <p className="truncate text-[12px] text-[var(--text-muted)]">{delivery.client_name || '—'}</p>
                                 )}
                             </div>

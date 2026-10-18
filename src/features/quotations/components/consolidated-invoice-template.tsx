@@ -1,6 +1,7 @@
 import React from 'react'
 import { type Bill, type BillItem } from '../../../types/bill'
 import { COMPANY } from '../../../config/company'
+import { formatBillNumber } from '../../../lib/bill-number'
 
 interface ConsolidatedInvoiceTemplateProps {
   bills: Bill[]
@@ -9,6 +10,8 @@ interface ConsolidatedInvoiceTemplateProps {
   invoiceNo: string
   clientAddress?: string
   managerSignature?: string
+  /** Show the hotel-code prefix on bill numbers (default: yes). */
+  includePrefix?: boolean
   bankDetails?: {
     bankName: string
     branch: string
@@ -112,7 +115,7 @@ function quantityFor(bill: Bill, column: InvoiceColumn): number {
 }
 
 export const ConsolidatedInvoiceTemplate = React.forwardRef<HTMLDivElement, ConsolidatedInvoiceTemplateProps>(
-  ({ bills, dateFrom, dateTo, invoiceNo, clientAddress, managerSignature, bankDetails }, ref) => {
+  ({ bills, dateFrom, dateTo, invoiceNo, clientAddress, managerSignature, includePrefix = true, bankDetails }, ref) => {
     const invoiceBills = bills.filter((bill) => bill.payment_status !== 'CANCELLED')
     const itemColumns = buildItemColumns(invoiceBills)
     const clientNames = [...new Set(invoiceBills.map((bill) => bill.client_name))]
@@ -182,7 +185,7 @@ export const ConsolidatedInvoiceTemplate = React.forwardRef<HTMLDivElement, Cons
               ) : invoiceBills.map((bill) => (
                 <tr key={bill.id}>
                   <td style={{ fontSize: 7, lineHeight: 1.5 }}>
-                    <div><strong>Bill:</strong> {bill.manual_bill_number || `BILL-${bill.id.slice(-6).toUpperCase()}`}</div>
+                    <div><strong>Bill:</strong> {bill.manual_bill_number ? formatBillNumber(bill.manual_bill_number, includePrefix) : `BILL-${bill.id.slice(-6).toUpperCase()}`}</div>
                     {bill.manual_gate_pass_number && <div><strong>Gate pass:</strong> {bill.manual_gate_pass_number}</div>}
                     {bill.alrs_number && <div><strong>ALRS:</strong> {bill.alrs_number}</div>}
                   </td>

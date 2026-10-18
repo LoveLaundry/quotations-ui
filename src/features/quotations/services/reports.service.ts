@@ -5,6 +5,24 @@ import type { ClientSummary, LinenFlowResponse } from '../../../types/operations
 import { todayISO } from '../../../lib/time'
 
 export const reports = {
+    monthlyOperations: (params: {
+        start_date: string
+        end_date: string
+        hotel_name?: string | null
+        selected_quotations: Record<string, string | null>
+        quotation_snapshots: Record<string, {
+            id: string | number
+            client_name: string
+            line_items: unknown[]
+        }>
+    }) => billsApi.post('/reports/monthly-operations', params).then((r: any) => r.data),
+
+    linenCategories: () => billsApi.get('/reports/linen-categories').then((r: any) => r.data),
+    saveLinenCategoryMapping: (payload: { item_name: string; category: string }) =>
+        billsApi.put('/reports/linen-categories/mappings', payload).then((r: any) => r.data),
+    deleteLinenCategoryMapping: (itemName: string) =>
+        billsApi.delete(`/reports/linen-categories/mappings/${encodeURIComponent(itemName)}`).then((r: any) => r.data),
+
     /**
      * Per-hotel linen flow with server-computed quantities.
      *
@@ -72,6 +90,10 @@ export const reports = {
 export const payments = {
     listForBill: (billId: string) =>
         billsApi.get<Payment[]>(`/bills/${billId}/payments`).then((r: any) => r.data),
+
+    /** All receipts in scope — one request instead of N per-bill calls. */
+    listAll: (params?: { client_name?: string; limit?: number }) =>
+        billsApi.get<Payment[]>('/bills/payments', { params }).then((r: any) => r.data),
 
     create: async (billId: string, data: PaymentCreate) => {
         const key = await idempotencyKey({ bill_id: billId, ...data })

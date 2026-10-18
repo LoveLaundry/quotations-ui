@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
 import {
-  House, ChartBar, ClipboardText, Truck, UsersThree, CurrencyCircleDollar, FileText,
+  House, ChartBar, ClipboardText, Truck, UsersThree, CurrencyCircleDollar, FileText, Buildings,
   FolderOpen, GearSix, Users, Database, CaretLeft, CaretRight, ChatCircleDots, Scan, Upload,
   ListChecks, Receipt, UserCircle, Package, Wallet, Money, CalendarBlank, CalendarPlus, X,
   Lightning, Brain, CloudArrowDown, FlowArrow, Package as PackageIcon, CaretDown, ChartLineUp,
@@ -49,6 +49,8 @@ const navGroups: { label: string; items: NavItem[] }[] = [
         children: [{ to: '/workers/daily-tasks', label: 'Daily Tasks', icon: UsersThree }],
       },
       { to: '/bills', label: 'Bills', icon: CurrencyCircleDollar, permission: 'view_bills' },
+      { to: '/income', label: 'Income', icon: Money, permission: 'view_bills' },
+      { to: '/ledger', label: 'Ledger', icon: Receipt, permission: 'view_bills' },
       { to: '/statements', label: 'Client Statement', icon: Wallet, permission: 'view_bills' },
       { to: '/shop-bills', label: 'Shop Bills', icon: CurrencyCircleDollar, permission: 'view_bills' },
       { to: '/shop-bills/dashboard', label: 'Shop Analytics', icon: ChartLineUp, permission: 'view_bills' },
@@ -123,6 +125,7 @@ interface SidebarProps {
 
 export function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose }: SidebarProps) {
   const location = useLocation()
+  const { support } = useAuth()
   const mobileDrawerRef = useRef<HTMLElement>(null)
   const closeMobileRef = useRef(onMobileClose)
 
@@ -190,8 +193,9 @@ export function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose }: Side
           animation so the shell padding tracks it exactly. */}
       <aside
         className={cn(
-          'sidebar-dark fixed inset-y-0 left-0 z-40 hidden flex-col overflow-hidden lg:flex',
+          'sidebar-dark fixed bottom-0 left-0 z-40 hidden flex-col overflow-hidden lg:flex',
           'transition-[width] duration-150 ease-out',
+          support ? 'top-9' : 'top-0',
           collapsed ? 'w-[60px]' : 'w-[236px]',
         )}
       >
@@ -242,12 +246,16 @@ interface SidebarContentProps {
 function SidebarContent({ collapsed, onToggle, isMobile, onMobileClose }: SidebarContentProps) {
   const { user } = useAuth()
   const { hasPermission } = usePermissions()
-  const isAdmin = user?.role_id?.toUpperCase() === 'ADMIN'
+  const roleUpper = user?.role_id?.toUpperCase()
+  const isAdmin = roleUpper === 'ADMIN' || roleUpper === 'PLATFORM_ADMIN'
   const role = user?.role_id ? String(user.role_id).toUpperCase() : ''
 
   const groups = useMemo(() => {
     const system: NavItem[] = [
       { to: '/settings', label: 'Settings', icon: GearSix },
+      ...(role === 'PLATFORM_ADMIN'
+        ? [{ to: '/laundries', label: 'Laundries', icon: Buildings, roles: ['PLATFORM_ADMIN'] }]
+        : []),
       ...(isAdmin
         ? [
             { to: '/users', label: 'Users', icon: Users },

@@ -28,6 +28,7 @@ import { useGatePasses } from '../hooks/useGatePasses'
 import { GatePassStatusPill } from '../components/operations-status'
 import { CompactMetrics, type MetricItem } from '../components/compact-metrics'
 import { GatePassPrintSheet } from '../components/gate-pass-print-sheet'
+import { usePrintPrefixChoice } from '../../../lib/use-print-prefix-choice'
 import { QuickViewModal } from '../components/quick-view-modal'
 import { EntityCardActions } from '../components/entity-card-actions'
 import { HotelBadge } from '../components/hotel-badge'
@@ -50,7 +51,7 @@ function sectionKeyFor(gp: GatePass): SectionKey {
 
 export default function GatePassesPage() {
     const navigate = useNavigate()
-    const { hotel, showAllHotels } = useHotelScope()
+    const { hotel } = useHotelScope()
 
     const [searchInput, setSearchInput] = useState('')
     const [dateFrom, setDateFrom] = useState('')
@@ -123,6 +124,9 @@ export default function GatePassesPage() {
         handlePrintRef.current = handlePrint
     }, [handlePrint])
 
+    const [includePrefix, setIncludePrefix] = useState(true)
+    const { choose: choosePrefix, dialog: prefixDialog } = usePrintPrefixChoice()
+
     useEffect(() => {
         if (!printTarget) return
         const timer = setTimeout(() => {
@@ -132,7 +136,12 @@ export default function GatePassesPage() {
         return () => clearTimeout(timer)
     }, [printTarget])
 
-    const requestPrint = (gp: GatePass) => setPrintTarget(gp)
+    const requestPrint = async (gp: GatePass) => {
+        const choice = await choosePrefix()
+        if (choice === null) return
+        setIncludePrefix(choice)
+        setPrintTarget(gp)
+    }
 
     const kpis: MetricItem[] = useMemo(() => {
         const today = todayISO()
@@ -161,8 +170,8 @@ export default function GatePassesPage() {
                         <div className="min-w-0">
                             <p className="font-mono text-[12px] font-semibold text-[#101828]">{gp.gate_pass_number}</p>
                             <div className="mt-0.5 flex flex-wrap items-center gap-1.5">
-                                {showAllHotels && <HotelBadge name={gp.client_name} />}
-                                {!showAllHotels && (
+                                {!hotel && <HotelBadge name={gp.client_name} />}
+                                {hotel && (
                                     <p className="truncate text-[12px] text-[var(--text-muted)]">{gp.client_name || '—'}</p>
                                 )}
                             </div>
@@ -344,9 +353,11 @@ export default function GatePassesPage() {
             {/* Hidden print sheet */}
             {printTarget && (
                 <PrintTarget>
-                    <GatePassPrintSheet ref={printRef} gp={printTarget} />
+                    <GatePassPrintSheet ref={printRef} gp={printTarget} includePrefix={includePrefix} />
                 </PrintTarget>
             )}
+
+            {prefixDialog}
         </div>
     )
 }

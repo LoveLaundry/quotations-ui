@@ -185,7 +185,7 @@ export function DropdownMenu({
           aria-label={label}
           onKeyDown={onMenuKeyDown}
           className={cn(
-            'absolute z-50 min-w-[184px] max-w-[min(260px,calc(100vw-16px))] overflow-y-auto overscroll-contain',
+            'menu-pop absolute z-50 min-w-[184px] max-w-[min(260px,calc(100vw-16px))] overflow-y-auto overscroll-contain',
             'rounded-md border border-[var(--border-2)] bg-[var(--surface)] p-1 shadow-[var(--shadow-pop)]',
             upward ? 'bottom-full mb-1' : 'top-full mt-1',
             flipLeft ? 'right-0 left-auto' : align === 'end' ? 'right-0' : 'left-0',

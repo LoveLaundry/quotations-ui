@@ -3,6 +3,7 @@ import { createBrowserRouter, Navigate } from 'react-router-dom'
 import { AppShell } from '../components/layout/app-shell'
 import { ProtectedRoute } from '../components/layout/protected-route'
 import { AdminRoute } from '../components/layout/admin-route'
+import { PlatformAdminRoute } from '../components/layout/platform-admin-route'
 import { ManagerRoute } from '../components/layout/manager-route'
 // Eager: must always be available to render if a lazy chunk fails to load.
 import ErrorPage from '../features/quotations/pages/error-page'
@@ -27,6 +28,9 @@ const CategoriesPage = lazy(() => import('../features/quotations/pages/categorie
 const SettingsPage = lazy(() => import('../features/quotations/pages/settings-page'))
 const ProfilePage = lazy(() => import('../features/quotations/pages/profile-page'))
 const BillsListPage = lazy(() => import('../features/quotations/pages/bills-list-page'))
+const IncomePage = lazy(() => import('../features/quotations/pages/income-page'))
+const LedgerPage = lazy(() => import('../features/quotations/pages/ledger-page'))
+const LaundriesPage = lazy(() => import('../features/platform/pages/laundries-page'))
 const CreateBillPage = lazy(() => import('../features/quotations/pages/create-bill-page'))
 const BillDetailPage = lazy(() => import('../features/quotations/pages/bill-detail-page'))
 const InvoiceCreatePage = lazy(() => import('../features/quotations/pages/invoice-create-page'))
@@ -142,6 +146,8 @@ export const router = createBrowserRouter([
 
           // Billing
           { path: 'bills', element: <BillsListPage /> },
+          { path: 'income', element: <IncomePage /> },
+          { path: 'ledger', element: <LedgerPage /> },
           { path: 'bills/new', element: <CreateBillPage /> },
           { path: 'bills/:id', element: <BillDetailPage /> },
           { path: 'statements', element: <StatementPage /> },
@@ -238,6 +244,14 @@ export const router = createBrowserRouter([
               { path: 'users', element: <UsersPage /> },
               { path: 'database-sync', element: <DatabaseSyncPage /> },
               { path: 'reports-backup', element: <ReportsBackupPage /> },
+            ],
+          },
+
+          // Platform-only routes (laundry registry — never tenant admins)
+          {
+            element: <PlatformAdminRoute />,
+            children: [
+              { path: 'laundries', element: <LaundriesPage /> },
             ],
           },
 

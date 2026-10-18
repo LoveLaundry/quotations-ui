@@ -1,8 +1,10 @@
 import { useRef, useState, type ElementType, type SyntheticEvent } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { Search, BarChart3, Users, Package, ClipboardList, Banknote, History, TrendingUp, AlertTriangle, CheckCircle, Clock, Download, Printer } from 'lucide-react'
+import { Search, BarChart3, Users, Package, ClipboardList, Banknote, History, TrendingUp, AlertTriangle, CheckCircle, Clock, Download, Printer, ArrowRight } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { useReactToPrint } from 'react-to-print'
+import { Link } from 'react-router-dom'
+import { useAuth } from '../../../context/AuthContext'
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card'
 import { Skeleton } from '../../../components/ui/skeleton'
 import { ErrorState } from '../../../components/ui/error-state'
@@ -197,7 +199,7 @@ function StatusBadge({ status }: { status: string }) {
             ? 'bg-[#F3F4F6] text-[#4B5563] border-[#E5E7EB]'
             : 'bg-[#F9FAFB] text-[#374151] border-[#E4E7EC]'
   return (
-    <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-semibold capitalize ${cfg}`}>
+    <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-micro font-semibold capitalize ${cfg}`}>
       {status || '—'}
     </span>
   )
@@ -211,7 +213,7 @@ function ActionBadge({ action }: { action: string }) {
         a.includes('DELETE') || a.includes('REMOVE') ? 'bg-[#FFF1F1] text-[#DC2626] border-[#FECACA]' :
           'bg-[#F9FAFB] text-[#374151] border-[#E4E7EC]'
   return (
-    <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-semibold ${cfg}`}>
+    <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-micro font-semibold ${cfg}`}>
       {action || '—'}
     </span>
   )
@@ -465,7 +467,7 @@ function ItemWiseReport() {
               </td>
               <td className="px-4 py-3">
                 {row.mismatch_count > 0
-                  ? <span className="inline-flex items-center gap-1 rounded-full bg-[#FFF1F1] border border-[#FECACA] px-2 py-0.5 text-[10px] font-semibold text-[#DC2626]">
+                  ? <span className="inline-flex items-center gap-1 rounded-full bg-[#FFF1F1] border border-[#FECACA] px-2 py-0.5 text-micro font-semibold text-[#DC2626]">
                     <AlertTriangle className="h-2.5 w-2.5" />{row.mismatch_count}
                   </span>
                   : <span className="text-[#16A34A]">—</span>
@@ -519,7 +521,7 @@ function GatePassReport() {
               <td className="px-4 py-3 font-semibold text-[#16A34A]">{row.total_delivered ?? '—'}</td>
               <td className="px-4 py-3">
                 {row.mismatch_count > 0
-                  ? <span className="inline-flex items-center gap-1 rounded-full bg-[#FFF1F1] border border-[#FECACA] px-2 py-0.5 text-[10px] font-semibold text-[#DC2626]">
+                  ? <span className="inline-flex items-center gap-1 rounded-full bg-[#FFF1F1] border border-[#FECACA] px-2 py-0.5 text-micro font-semibold text-[#DC2626]">
                     <AlertTriangle className="h-2.5 w-2.5" />{row.mismatch_count}
                   </span>
                   : <span style={{ color: 'var(--text-tertiary)' }}>—</span>
@@ -654,7 +656,7 @@ function AuditLog() {
               <td className="px-4 py-3"><ActionBadge action={row.action} /></td>
               <td className="px-4 py-3 font-medium" style={{ color: 'var(--text-secondary)' }}>{row.entity || '—'}</td>
               <td className="px-4 py-3 font-mono text-[11px]" style={{ color: 'var(--text-tertiary)' }}>{row.entity_id ? String(row.entity_id).slice(-8) : '—'}</td>
-              <td className="px-4 py-3 max-w-[200px] truncate text-[12px]" style={{ color: 'var(--text-tertiary)' }} title={row.details ? JSON.stringify(row.details) : ''}>
+              <td className="px-4 py-3 max-w-50 truncate text-[12px]" style={{ color: 'var(--text-tertiary)' }} title={row.details ? JSON.stringify(row.details) : ''}>
                 {row.details
                   ? typeof row.details === 'object'
                     ? Object.entries(row.details)
@@ -679,6 +681,8 @@ function AuditLog() {
 // ── Main Page ─────────────────────────────────────────────────────────────────
 
 export default function ReportsPage() {
+  const { user } = useAuth()
+  const canViewOperationalReports = ['ADMIN', 'MANAGER'].includes((user?.role_id || '').toUpperCase())
   const [activeTab, setActiveTab] = useState<ReportTab>('client')
   const [selectedAnalytics, setSelectedAnalytics] = useState<AnalyticsSection[]>(['clients', 'items', 'gatepasses', 'billing'])
   const printRef = useRef<HTMLDivElement>(null)
@@ -749,10 +753,23 @@ export default function ReportsPage() {
         </div>
       </div>
 
+      {canViewOperationalReports && (
+        <Link
+          to="/management/reports"
+          className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-green-200 bg-green-50 px-4 py-3 transition hover:bg-green-100 dark:border-green-900 dark:bg-green-950/30 dark:hover:bg-green-950/50"
+        >
+          <span>
+            <span className="block text-sm font-semibold text-green-950 dark:text-green-100">Master operating report</span>
+            <span className="mt-0.5 block text-xs text-green-800 dark:text-green-200">Confirmed daily receiving, quotation-priced income, payroll, expenses, and net result</span>
+          </span>
+          <span className="inline-flex items-center gap-2 text-sm font-semibold text-green-900 dark:text-green-100">Open report <ArrowRight size={16} /></span>
+        </Link>
+      )}
+
       <Card className="p-4">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <h2 className="text-[14px] font-semibold" style={{ color: 'var(--text-primary)' }}>Build a printable report</h2>
+            <h2 className="text-md font-semibold" style={{ color: 'var(--text-primary)' }}>Build a printable report</h2>
             <p className="mt-1 text-[12px]" style={{ color: 'var(--text-tertiary)' }}>
               Choose the analytics to include, then print or save the invoice-style report as a PDF.
             </p>
@@ -761,7 +778,7 @@ export default function ReportsPage() {
             <button
               type="button"
               onClick={() => setSelectedAnalytics(ANALYTICS_SECTIONS.map(section => section.id))}
-              className="rounded-lg border px-3 py-2 text-[12px] font-medium transition hover:bg-[var(--surface-hover)]"
+              className="rounded-lg border px-3 py-2 text-[12px] font-medium transition hover:bg-surface-hover"
               style={{ borderColor: 'var(--border)', color: 'var(--text-secondary)' }}
             >
               Select all
@@ -769,7 +786,7 @@ export default function ReportsPage() {
             <button
               type="button"
               onClick={() => setSelectedAnalytics([])}
-              className="rounded-lg border px-3 py-2 text-[12px] font-medium transition hover:bg-[var(--surface-hover)]"
+              className="rounded-lg border px-3 py-2 text-[12px] font-medium transition hover:bg-surface-hover"
               style={{ borderColor: 'var(--border)', color: 'var(--text-secondary)' }}
             >
               Clear
@@ -792,7 +809,7 @@ export default function ReportsPage() {
             return (
               <label
                 key={section.id}
-                className="flex cursor-pointer items-start gap-2.5 rounded-lg border p-3 transition hover:bg-[var(--surface-hover)]"
+                className="flex cursor-pointer items-start gap-2.5 rounded-lg border p-3 transition hover:bg-surface-hover"
                 style={{ borderColor: checked ? '#FECACA' : 'var(--border)', backgroundColor: checked ? '#FFF8F8' : undefined }}
               >
                 <input
@@ -848,7 +865,7 @@ export default function ReportsPage() {
             <div key={exp.type} className="flex gap-1">
               <button
                 onClick={() => handleExport(exp.type, 'csv')}
-                className="flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-[11px] font-medium whitespace-nowrap transition cursor-pointer hover:bg-[var(--surface-hover)]"
+                className="flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-[11px] font-medium whitespace-nowrap transition cursor-pointer hover:bg-surface-hover"
                 style={{ borderColor: 'var(--border)', color: 'var(--text-secondary)' }}
               >
                 <Download className="h-3 w-3" />
@@ -856,7 +873,7 @@ export default function ReportsPage() {
               </button>
               <button
                 onClick={() => handleExport(exp.type, 'xlsx')}
-                className="flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-[11px] font-medium whitespace-nowrap transition cursor-pointer hover:bg-[var(--surface-hover)]"
+                className="flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-[11px] font-medium whitespace-nowrap transition cursor-pointer hover:bg-surface-hover"
                 style={{ borderColor: 'var(--border)', color: 'var(--text-secondary)' }}
               >
                 <Download className="h-3 w-3" />

@@ -7,13 +7,12 @@ import { cn } from '../../lib/utils'
 /**
  * HotelSelector — the scope every record query is filtered by.
  *
- * It lives in the top bar rather than inside each page because the selection is
- * global. The control reads as a field (it holds a value), and it is labelled
- * "Scope" instead of "Hotel" on wide screens so the all-hotels state is not
- * ambiguous: picking "All Hotels" is a deliberate act, not a leftover default.
+ * "Select All" is a first-class, always-visible option for every role: an
+ * aggregate view over all hotels plus a per-hotel list below it. Staff start
+ * scoped to their first hotel (see HotelContext) but are one tap from All.
  */
 export function HotelSelector() {
-  const { hotels, selectedHotel, setSelectedHotel, showAllHotels } = useHotel()
+  const { hotels, selectedHotel, setSelectedHotel } = useHotel()
 
   const groups = useMemo<MenuGroup[]>(() => {
     const hotelItems = hotels.map((hotel) => ({
@@ -23,29 +22,26 @@ export function HotelSelector() {
       onSelect: () => setSelectedHotel(hotel),
     }))
 
-    if (showAllHotels) {
-      return [
-        {
-          label: 'Aggregate',
-          items: [
-            {
-              id: '__all',
-              label: 'All hotels',
-              icon: <Stack size={16} />,
-              selected: selectedHotel === '',
-              onSelect: () => setSelectedHotel(''),
-            },
-          ],
-        },
-        { label: 'Scope to one hotel', items: hotelItems },
-      ]
-    }
-
-    return [{ items: hotelItems }]
-  }, [hotels, selectedHotel, setSelectedHotel, showAllHotels])
+    return [
+      {
+        label: 'Scope',
+        items: [
+          {
+            id: '__all',
+            label: 'Select All',
+            icon: <Stack size={16} />,
+            hint: hotels.length ? `${hotels.length} hotels` : undefined,
+            selected: selectedHotel === '',
+            onSelect: () => setSelectedHotel(''),
+          },
+        ],
+      },
+      { label: 'Scope to one hotel', items: hotelItems },
+    ]
+  }, [hotels, selectedHotel, setSelectedHotel])
 
   const isAggregate = selectedHotel === ''
-  const label = isAggregate ? 'All hotels' : selectedHotel || 'Select hotel'
+  const label = isAggregate ? 'Select All' : selectedHotel || 'Select hotel'
 
   return (
     <DropdownMenu

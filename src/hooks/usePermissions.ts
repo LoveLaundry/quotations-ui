@@ -5,7 +5,8 @@ export function usePermissions() {
     
     const hasPermission = (permission: string) => {
         if (!user) return false
-        if (user.role_id?.toUpperCase() === 'ADMIN') return true
+        const role = user.role_id?.toUpperCase()
+        if (role === 'ADMIN' || role === 'PLATFORM_ADMIN') return true
         
         if (!user.permissions) return false
         

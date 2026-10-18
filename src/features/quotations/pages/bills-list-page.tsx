@@ -37,7 +37,7 @@ function bucketFor(bill: Bill): SectionKey {
 
 export default function BillsListPage() {
     const navigate = useNavigate()
-    const { hotel, showAllHotels } = useHotelScope()
+    const { hotel } = useHotelScope()
 
     const [searchInput, setSearchInput] = useState('')
     const [search, setSearch] = useState('')
@@ -200,8 +200,8 @@ export default function BillsListPage() {
                         </div>
                         <div className="min-w-0">
                             <div className="flex flex-wrap items-center gap-1.5">
-                                {showAllHotels && <HotelBadge name={bill.client_name} />}
-                                {!showAllHotels && (
+                                {!hotel && <HotelBadge name={bill.client_name} />}
+                                {hotel && (
                                     <p className="truncate text-[13px] font-semibold text-[#101828]">{bill.client_name}</p>
                                 )}
                             </div>
@@ -264,8 +264,8 @@ export default function BillsListPage() {
                         <div className="min-w-0">
                             <p className="font-mono text-[12px] font-semibold text-[#101828]">{gp.gate_pass_number}</p>
                             <div className="mt-0.5 flex flex-wrap items-center gap-1.5">
-                                {showAllHotels && <HotelBadge name={gp.client_name} />}
-                                {!showAllHotels && (
+                                {!hotel && <HotelBadge name={gp.client_name} />}
+                                {hotel && (
                                     <p className="truncate text-[12px] text-[var(--text-muted)]">{gp.client_name || '—'}</p>
                                 )}
                             </div>

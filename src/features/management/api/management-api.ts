@@ -1,6 +1,7 @@
 import axios from 'axios'
 import { installOfflineAdapter } from '../../../cache/offline-adapter'
 import { attachResponseInterceptor } from '../../../api/interceptors'
+import { getActiveToken } from '../../../lib/auth-token'
 
 export interface Paginated<T> {
   items: T[]
@@ -10,13 +11,13 @@ export interface Paginated<T> {
 }
 
 export const mgmtApi = axios.create({
-  baseURL: import.meta.env.VITE_MGMT_API_URL ?? 'http://localhost:8001',
+  baseURL: import.meta.env.VITE_MGMT_API_URL ?? 'http://localhost:8004',
   timeout: 15000,
   headers: { 'Content-Type': 'application/json' },
 })
 
 mgmtApi.interceptors.request.use((config) => {
-  const token = localStorage.getItem('ll_token')
+  const token = getActiveToken()
   if (token) config.headers.Authorization = `Bearer ${token}`
   return config
 })
@@ -168,6 +169,8 @@ export const paymentsApi = {
   list: (params?: any) => {
     const q = new URLSearchParams()
     if (params?.customer_id) q.set('customer_id', params.customer_id)
+    if (params?.start_date) q.set('start_date', params.start_date)
+    if (params?.end_date) q.set('end_date', params.end_date)
     if (params?.limit != null) q.set('limit', String(params.limit))
     if (params?.offset != null) q.set('offset', String(params.offset))
     return mgmtApi.get(`/api/payments?${q}`)
@@ -192,6 +195,12 @@ export const reportsApi = {
     if (month) q.set('month', String(month))
     return mgmtApi.get(`/api/reports/monthly?${q}`)
   },
+  master: (params: { start_date: string; end_date: string }) =>
+    mgmtApi.get('/api/reports/master', { params }),
+  saved: () => mgmtApi.get('/api/reports/saved'),
+  save: (payload: any) => mgmtApi.post('/api/reports/saved', payload),
+  updateSaved: (id: string, payload: any) => mgmtApi.put(`/api/reports/saved/${id}`, payload),
+  deleteSaved: (id: string) => mgmtApi.delete(`/api/reports/saved/${id}`),
   outstanding: () => mgmtApi.get('/api/reports/outstanding'),
 }
 

@@ -1,5 +1,6 @@
 import axios from 'axios'
 import { attachResponseInterceptor } from './interceptors'
+import { getActiveToken } from '../lib/auth-token'
 import { installOfflineAdapter } from '../cache/offline-adapter'
 
 const billsApi = axios.create({
@@ -9,7 +10,7 @@ const billsApi = axios.create({
 })
 
 billsApi.interceptors.request.use((config) => {
-  const token = localStorage.getItem('ll_token')
+  const token = getActiveToken()
   if (token) config.headers.Authorization = `Bearer ${token}`
   return config
 })

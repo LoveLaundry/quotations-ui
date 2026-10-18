@@ -36,6 +36,9 @@ export interface MarkedDeliveredInfo {
 export interface GatePass {
     id: string
     gate_pass_number: string
+    manual_bill_number?: string | null
+    manual_gate_pass_number?: string | null
+    alrs_number?: string | null
     client_name: string
     receiving_date: string
     received_by: string

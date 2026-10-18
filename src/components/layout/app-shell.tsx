@@ -4,6 +4,7 @@ import { Sidebar } from './sidebar'
 import { TopBar } from './top-bar'
 import { CommandSearch } from '../ui/command-search'
 import { OfflineSyncBar } from '../ui/offline-sync-bar'
+import { SyncFab } from '../../features/sync/components/global-sync-panel'
 import { PageLoader } from '../ui/loader'
 import { useAuth } from '../../context/AuthContext'
 import { setUnauthorizedHandler } from '../../api/interceptors'
@@ -20,6 +21,8 @@ const pageTitles: Record<string, string> = {
   '/profile': 'My Profile',
   '/bills': 'Bills',
   '/bills/new': 'Create Bill',
+  '/income': 'Income',
+  '/ledger': 'Ledger',
   '/statements': 'Client Statement',
   '/invoices/new': 'Consolidated Invoice',
   '/gate-passes': 'Gate Passes',
@@ -32,6 +35,7 @@ const pageTitles: Record<string, string> = {
   '/deliveries/new': 'New Delivery',
   '/reports': 'Reports',
   '/users': 'Users',
+  '/laundries': 'Laundries',
   '/database-sync': 'Database Sync',
   '/live-chat': 'Live Chat',
   '/notifications': 'Notifications',
@@ -93,7 +97,7 @@ export function AppShell() {
   const [cmdOpen, setCmdOpen] = useState(false)
   const location = useLocation()
   const navigate = useNavigate()
-  const { logout } = useAuth()
+  const { logout, support, exitSupport } = useAuth()
 
   useEffect(() => {
     setUnauthorizedHandler(() => {
@@ -160,17 +164,41 @@ export function AppShell() {
 
       <OfflineSyncBar />
 
+      <SyncFab />
+
+      {/* Platform support entry: unmissable, always one tap from exit. */}
+      {support && (
+        <div
+          role="status"
+          className="fixed inset-x-0 top-0 z-50 flex h-9 items-center justify-center gap-x-3 gap-2 overflow-hidden bg-amber-500 px-4 text-[12.5px] font-semibold whitespace-nowrap text-amber-950 shadow-md"
+        >
+          <span className="min-w-0 truncate">
+            Support session in {support.laundryName} — audited.
+          </span>
+          <button
+            type="button"
+            onClick={exitSupport}
+            className="shrink-0 cursor-pointer rounded-[6px] bg-amber-950/90 px-2.5 py-1 text-[12px] font-bold text-amber-50 transition-colors hover:bg-amber-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+          >
+            Exit support
+          </button>
+        </div>
+      )}
+
       <main
         id="main-content"
-        className={`min-h-dvh pt-13 transition-[padding-left] duration-150 ease-out ${
+        className={`min-h-dvh transition-[padding-left] duration-150 ease-out ${
           collapsed ? 'lg:pl-[60px]' : 'lg:pl-[236px]'
-        }`}
+        } ${support ? 'pt-22' : 'pt-13'}`}
       >
         {/* Wide cap with a tighter margin on small screens: a 320px viewport
             gets 16px of gutter, a desktop gets a comfortable measure. */}
         <div className="mx-auto w-full max-w-[1480px] px-4 py-4 sm:px-5 sm:py-5 lg:px-7 lg:py-6">
           <Suspense fallback={<PageLoader />}>
-            <Outlet />
+            {/* Keyed by route so each page arrival plays the enter motion once. */}
+            <div key={location.pathname} className="route-enter">
+              <Outlet />
+            </div>
           </Suspense>
         </div>
       </main>
