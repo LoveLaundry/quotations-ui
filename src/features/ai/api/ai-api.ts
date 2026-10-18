@@ -1,5 +1,5 @@
 import axios, { type AxiosInstance } from 'axios'
-import { AI_SERVICE, canonicalJson, hmacSha256Hex, sha256Hex } from '../../../config/ai'
+import { AI_SERVICE, assertAiConfiguration, canonicalJson, hmacSha256Hex, sha256Hex } from '../../../config/ai'
 import { extractResponseMessage } from '../../../api/interceptors'
 
 /**
@@ -45,6 +45,7 @@ class LoveAiClient {
   }
 
   private async signHeaders(method: string, path: string, body: string): Promise<Record<string, string>> {
+    assertAiConfiguration()
     const timestamp = String(Math.floor(Date.now() / 1000))
     const bodyHash = await sha256Hex(body)
     const canonical = [method.toUpperCase(), path, timestamp, bodyHash].join('\n')

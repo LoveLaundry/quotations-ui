@@ -1,8 +1,21 @@
+const baseUrl = import.meta.env.VITE_AI_API_URL
+const apiKey = import.meta.env.VITE_AI_API_KEY
+
+/**
+ * AI requests use a signed API key. Never ship a fallback key in the bundle:
+ * public Vite variables are readable by every browser user and are not secrets.
+ */
 export const AI_SERVICE = {
-  baseUrl: import.meta.env.VITE_AI_API_URL ?? 'http://localhost:8009',
-  apiKey: import.meta.env.VITE_AI_API_KEY ?? 'dev-key-change-me',
+  baseUrl: baseUrl ?? '',
+  apiKey: apiKey ?? '',
   timeoutMs: 20000,
 } as const
+
+export function assertAiConfiguration(): void {
+  if (!AI_SERVICE.baseUrl || !AI_SERVICE.apiKey) {
+    throw new Error('AI service is not configured. Set VITE_AI_API_URL and VITE_AI_API_KEY.')
+  }
+}
 
 /** SHA-256 hex digest of a UTF-8 string — used for response integrity checks. */
 export async function sha256Hex(input: string): Promise<string> {

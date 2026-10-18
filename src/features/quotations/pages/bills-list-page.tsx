@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Plus, Search, Receipt, X, Calendar, Download, BadgeCheck, Archive, AlertTriangle, Wallet, Boxes, RotateCw } from 'lucide-react'
-import * as XLSX from 'xlsx'
 import { Button } from '../../../components/ui/button'
 import { Badge } from '../../../components/ui/badge'
 import { BillStatusBadge } from '../../../components/ui/bill-status-badge'
@@ -138,24 +137,41 @@ export default function BillsListPage() {
         return sections
     }, [bills, unbilled])
 
-    const handleExportExcel = () => {
+    const handleExportCsv = () => {
         if (!bills.length) return
-        const dataForExcel = bills.map(bill => ({
-            'Bill ID': bill.id,
-            'Client Name': bill.client_name,
-            'Quotation Title': bill.quotation_title || 'N/A',
-            'Total Quantity': bill.total_quantity,
-            'Total Amount': bill.total_amount,
-            'Grand Total': bill.grand_total ?? bill.total_amount,
-            'Paid Amount': bill.paid_amount || 0,
-            'Outstanding Amount': bill.outstanding_amount ?? bill.total_amount,
-            'Status': bill.payment_status || 'DRAFT',
-            'Date': formatDate(bill.created_at),
-        }))
-        const ws = XLSX.utils.json_to_sheet(dataForExcel)
-        const wb = XLSX.utils.book_new()
-        XLSX.utils.book_append_sheet(wb, ws, 'Bills')
-        XLSX.writeFile(wb, 'bills_export.xlsx')
+        const headers = [
+            'Bill ID',
+            'Client Name',
+            'Quotation Title',
+            'Total Quantity',
+            'Total Amount',
+            'Grand Total',
+            'Paid Amount',
+            'Outstanding Amount',
+            'Status',
+            'Date',
+        ]
+        const rows = bills.map(bill => [
+            bill.id,
+            bill.client_name,
+            bill.quotation_title || 'N/A',
+            bill.total_quantity,
+            bill.total_amount,
+            bill.grand_total ?? bill.total_amount,
+            bill.paid_amount || 0,
+            bill.outstanding_amount ?? bill.total_amount,
+            bill.payment_status || 'DRAFT',
+            formatDate(bill.created_at),
+        ])
+        const escapeCsv = (value: unknown) => `"${String(value ?? '').replaceAll('"', '""')}"`
+        const csv = [headers, ...rows].map(row => row.map(escapeCsv).join(',')).join('\r\n')
+        const blob = new Blob([`\uFEFF${csv}`], { type: 'text/csv;charset=utf-8' })
+        const url = URL.createObjectURL(blob)
+        const anchor = document.createElement('a')
+        anchor.href = url
+        anchor.download = 'bills_export.csv'
+        anchor.click()
+        URL.revokeObjectURL(url)
     }
 
     const confirmDelete = () => {
@@ -319,8 +335,8 @@ export default function BillsListPage() {
                     </div>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
-                    <Button variant="secondary" onClick={handleExportExcel} disabled={!bills.length}>
-                        <Download className="h-4 w-4 mr-2" /> Export
+                    <Button variant="secondary" onClick={handleExportCsv} disabled={!bills.length}>
+                        <Download className="h-4 w-4 mr-2" /> Export CSV
                     </Button>
                     <Link to="/bills/new">
                         <Button>
