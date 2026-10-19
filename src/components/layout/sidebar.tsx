@@ -253,7 +253,7 @@ function SidebarContent({ collapsed, onToggle, isMobile, onMobileClose }: Sideba
   const groups = useMemo(() => {
     const system: NavItem[] = [
       { to: '/settings', label: 'Settings', icon: GearSix },
-      ...(role === 'PLATFORM_ADMIN'
+      ...(role === 'PLATFORM_ADMIN' || user?.platform_admin === true
         ? [{ to: '/laundries', label: 'Laundries', icon: Buildings, roles: ['PLATFORM_ADMIN'] }]
         : []),
       ...(isAdmin
