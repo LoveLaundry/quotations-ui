@@ -1,5 +1,5 @@
 import { Suspense, useEffect, useState } from 'react'
-import { Outlet, useLocation, useNavigate } from 'react-router-dom'
+import { Navigate, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { Sidebar } from './sidebar'
 import { TopBar } from './top-bar'
 import { CommandSearch } from '../ui/command-search'
@@ -7,6 +7,7 @@ import { OfflineSyncBar } from '../ui/offline-sync-bar'
 import { SyncFab } from '../../features/sync/components/global-sync-panel'
 import { PageLoader } from '../ui/loader'
 import { useAuth } from '../../context/AuthContext'
+import { PLATFORM_PATHS, isPlatformOnly } from '../../lib/session-scope'
 import { setUnauthorizedHandler } from '../../api/interceptors'
 
 const pageTitles: Record<string, string> = {
@@ -97,7 +98,7 @@ export function AppShell() {
   const [cmdOpen, setCmdOpen] = useState(false)
   const location = useLocation()
   const navigate = useNavigate()
-  const { logout, support, exitSupport } = useAuth()
+  const { user, logout, support, exitSupport } = useAuth()
 
   useEffect(() => {
     setUnauthorizedHandler(() => {
@@ -135,6 +136,15 @@ export function AppShell() {
     mq.addEventListener('change', onChange)
     return () => mq.removeEventListener('change', onChange)
   }, [])
+
+  // Keep platform-only sessions out of tenant screens. Rendering them would
+  // mount their data hooks (quotations, bills, customers) and 403 on load.
+  if (isPlatformOnly(user, Boolean(support))) {
+    const allowed = PLATFORM_PATHS.some(
+      (path) => location.pathname === path || location.pathname.startsWith(path + '/'),
+    )
+    if (!allowed) return <Navigate to="/laundries" replace />
+  }
 
   return (
     <div className="min-h-dvh bg-[var(--bg)]">

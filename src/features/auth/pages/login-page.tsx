@@ -81,7 +81,12 @@ export default function LoginPage() {
       }
       const res = await authService.login({ username: username.trim(), password })
       login(res.access_token, res.user)
-      navigate(from, { replace: true })
+
+      // A platform administrator has no tenant dashboards to land on.
+      const platformSession =
+        res.user?.platform_admin === true ||
+        String(res.user?.role_id ?? '').toUpperCase() === 'PLATFORM_ADMIN'
+      navigate(platformSession && from === '/' ? '/laundries' : from, { replace: true })
     } catch (err: any) {
       const status = err?.response?.status ?? err?.status
       if (mode === 'setup' && status === 403) {
