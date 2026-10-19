@@ -26,6 +26,7 @@ import { toQuotationOptions, type QuotationOption } from './create-gatepass-page
 import type { GatePassBalanceItem, Return } from '../../../types/operations'
 import { ops, type TransactionEvent } from '../../today/services/ops.service'
 import { todayISO } from '../../../lib/time'
+import { Portal } from '../../../components/ui/portal'
 
 /** Stable empty array so `?? NO_ITEMS` doesn't invalidate memos on every render. */
 const NO_ITEMS: never[] = []
@@ -1155,7 +1156,7 @@ export default function GatePassDetailPage() {
 
             {/* Mark Delivered (catch-up) modal */}
             {markOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+                <Portal><div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
                     <div className="w-full max-w-md rounded-xl border border-[#E4E7EC] bg-white p-5 shadow-xl">
                         <div className="flex items-center justify-between mb-3">
                             <p className="text-[14px] font-semibold text-[#101828]">Mark Delivered & Complete</p>
@@ -1215,7 +1216,7 @@ export default function GatePassDetailPage() {
                             </Button>
                         </div>
                     </div>
-                </div>
+                </div></Portal>
             )}
 
             {/* Reopen legacy closure modal */}

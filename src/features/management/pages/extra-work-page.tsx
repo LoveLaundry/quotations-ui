@@ -11,6 +11,7 @@ import { useEnterFlow } from '../../../hooks/use-enter-flow'
 import { useEscape } from '../../../hooks/use-escape'
 import { todayISO } from '../../../lib/date'
 import { invalidateResource } from '../../../cache/invalidation'
+import { Portal } from '../../../components/ui/portal'
 
 const PAGE_SIZE = 20
 
@@ -154,7 +155,7 @@ export default function ExtraWorkPage() {
       <Pagination total={recordsData.total} limit={limit} offset={offset} onChange={setOffset} className="px-1" />
 
       {showCatForm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+        <Portal><div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-md">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-lg font-semibold">New Category</h2>
@@ -201,11 +202,11 @@ export default function ExtraWorkPage() {
               </div>
             </form>
           </div>
-        </div>
+        </div></Portal>
       )}
 
       {showRecordForm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+        <Portal><div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-md">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-lg font-semibold">Add Extra Work Record</h2>
@@ -269,7 +270,7 @@ export default function ExtraWorkPage() {
               </div>
             </form>
           </div>
-        </div>
+        </div></Portal>
       )}
 
       <ConfirmDialog

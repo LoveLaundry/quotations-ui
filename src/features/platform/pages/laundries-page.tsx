@@ -18,6 +18,7 @@ import { ConfirmDialog } from '../../../components/ui/confirm-dialog'
 import { useAuth } from '../../../context/AuthContext'
 import { laundryService, type LaundryPayload } from '../services/laundry.service'
 import type { Laundry } from '../../../types/auth'
+import { Portal } from '../../../components/ui/portal'
 
 const PAGE_SIZE = 20
 const STATUSES = ['ACTIVE', 'SUSPENDED', 'ARCHIVED'] as const
@@ -343,7 +344,7 @@ function LaundryForm({
   onSubmit: (data: LaundryPayload) => void
 }) {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+    <Portal><div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
       <div className="menu-pop max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-xl bg-[var(--surface)] p-4 sm:p-6">
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-lg font-semibold">{initial ? 'Edit laundry' : 'Register laundry'}</h2>
@@ -443,7 +444,7 @@ function LaundryForm({
           </div>
         </form>
       </div>
-    </div>
+    </div></Portal>
   )
 }
 
@@ -496,7 +497,7 @@ function LaundryDetail({
   })
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+    <Portal><div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
       <div className="menu-pop max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-xl bg-[var(--surface)] p-4 sm:p-6">
         <div className="mb-4 flex items-start justify-between gap-3">
           <div className="flex min-w-0 items-center gap-3">
@@ -641,6 +642,6 @@ function LaundryDetail({
         onConfirm={() => removeTarget && removeMut.mutate(removeTarget)}
         onCancel={() => setRemoveTarget(null)}
       />
-    </div>
+    </div></Portal>
   )
 }

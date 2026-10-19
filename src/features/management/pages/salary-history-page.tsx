@@ -11,6 +11,7 @@ import { LoadingSpinner } from '../../../components/ui/loading-spinner'
 import { Pagination } from '../../../components/ui/pagination'
 import { currentMonth, currentYear } from '../../../lib/time'
 import { invalidateResource } from '../../../cache/invalidation'
+import { Portal } from '../../../components/ui/portal'
 
 const PAGE_SIZE = 20
 
@@ -598,7 +599,7 @@ export default function SalaryHistoryPage() {
       <Pagination total={slipsData.total} limit={limit} offset={offset} onChange={setOffset} className="px-1" />
 
       {overrideEmp && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+        <Portal><div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-1">
               <h3 className="font-semibold flex items-center gap-2"><Settings2 size={18} /> Adjust Month Arrangement</h3>
@@ -686,11 +687,11 @@ export default function SalaryHistoryPage() {
               </div>
             </form>
           </div>
-        </div>
+        </div></Portal>
       )}
 
       {viewSlip && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+        <Portal><div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="bg-white dark:bg-gray-800 rounded-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
             <div className="sticky top-0 bg-white dark:bg-gray-800 border-b px-6 py-3 flex items-center justify-between z-10 flex-wrap gap-2">
               <h3 className="font-semibold">{viewSlip.slip_number} — {viewSlip.employee_name}</h3>
@@ -793,7 +794,7 @@ export default function SalaryHistoryPage() {
               )}
             </div>
           </div>
-        </div>
+        </div></Portal>
       )}
     </div>
   )

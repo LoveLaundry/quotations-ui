@@ -18,6 +18,7 @@ import { ErrorState } from '../../../components/ui/error-state'
 import { Skeleton } from '../../../components/ui/skeleton'
 import { useEnterFlow } from '../../../hooks/use-enter-flow'
 import { useEscape } from '../../../hooks/use-escape'
+import { Portal } from '../../../components/ui/portal'
 
 const statusColors = {
   active: 'bg-emerald-50 text-emerald-700 border border-emerald-200',
@@ -251,7 +252,7 @@ export function WorkersPage() {
 
       <AnimatePresence>
         {dialogOpen && (
-          <motion.div
+          <Portal><motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -359,13 +360,13 @@ export function WorkersPage() {
                 </button>
               </div>
             </motion.div>
-          </motion.div>
+          </motion.div></Portal>
         )}
       </AnimatePresence>
 
       <AnimatePresence>
         {deleteConfirm && (
-          <motion.div
+          <Portal><motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -407,7 +408,7 @@ export function WorkersPage() {
                 </button>
               </div>
             </motion.div>
-          </motion.div>
+          </motion.div></Portal>
         )}
       </AnimatePresence>
     </div>

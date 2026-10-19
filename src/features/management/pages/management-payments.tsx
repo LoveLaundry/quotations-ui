@@ -11,6 +11,7 @@ import { useEscape } from '../../../hooks/use-escape'
 import { todayISO } from '../../../lib/date'
 import { useDefaults } from '../../../components/ops'
 import { invalidateResource } from '../../../cache/invalidation'
+import { Portal } from '../../../components/ui/portal'
 
 const METHODS = ['CASH', 'BANK_TRANSFER', 'CHEQUE', 'CARD', 'ONLINE']
 const PAGE_SIZE = 20
@@ -123,7 +124,7 @@ export default function ManagementPayments() {
       <Pagination total={paymentsData.total} limit={limit} offset={offset} onChange={setOffset} className="px-1" />
 
       {showForm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+        <Portal><div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-md">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-lg font-semibold">Record Payment</h2>
@@ -155,7 +156,7 @@ export default function ManagementPayments() {
               </div>
             </form>
           </div>
-        </div>
+        </div></Portal>
       )}
 
       <ConfirmDialog

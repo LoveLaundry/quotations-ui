@@ -382,7 +382,7 @@ export default function UsersPage() {
                             className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm"
                             onClick={() => setShowModal(false)}
                         />
-                        <motion.div
+                        <Portal><motion.div
                             key="modal"
                             initial={{ opacity: 0, scale: 0.96, y: 12 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -583,7 +583,7 @@ export default function UsersPage() {
                                     </div>
                                 </form>
                             </div>
-                        </motion.div>
+                        </motion.div></Portal>
                     </>
                 )}
             </AnimatePresence>

@@ -18,6 +18,7 @@ import { useEscape } from '../../../hooks/use-escape'
 import { todayISO } from '../../../lib/date'
 import { currentMonth, currentYear, daysInMonth, monthName } from '../../../lib/time'
 import { invalidateResource } from '../../../cache/invalidation'
+import { Portal } from '../../../components/ui/portal'
 
 const PAGE_SIZE = 12
 
@@ -320,7 +321,7 @@ export default function ManagementEmployees() {
 
       {/* Add/Edit Employee */}
       {showForm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+        <Portal><div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-lg font-semibold">{editing ? 'Edit' : 'Add'} Employee</h2>
@@ -455,12 +456,12 @@ export default function ManagementEmployees() {
               </div>
             </form>
           </div>
-        </div>
+        </div></Portal>
       )}
 
       {/* Record Salary Modal */}
       {showSalary && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+        <Portal><div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-md">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-lg font-semibold">Record Salary - {showSalary.name}</h2>
@@ -548,7 +549,7 @@ export default function ManagementEmployees() {
               </div>
             </form>
           </div>
-        </div>
+        </div></Portal>
       )}
 
       <ConfirmDialog

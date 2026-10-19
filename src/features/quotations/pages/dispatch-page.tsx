@@ -14,6 +14,7 @@ import {
 } from '../hooks/useDispatch'
 import type { DispatchJob, DispatchStatus, RoutePlan } from '../../../types/operations'
 import { toISODateTime } from '../../../lib/time'
+import { Portal } from '../../../components/ui/portal'
 
 const STATUS_STYLE: Record<DispatchStatus, string> = {
   SCHEDULED: 'bg-[#EFF4FF] text-[#3538CD] border-[#C7D7FE]',
@@ -300,7 +301,7 @@ function NewJobModal({
   const set = (k: string, v: string) => setForm((f) => ({ ...f, [k]: v }))
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+    <Portal><div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
       <div className="w-full max-w-md rounded-2xl bg-white shadow-xl">
         <div className="flex items-center justify-between border-b border-[#F2F2F2] px-5 py-4">
           <h3 className="text-[15px] font-semibold text-[#101828]">New Dispatch Job</h3>
@@ -419,7 +420,7 @@ function NewJobModal({
           </Button>
         </div>
       </div>
-    </div>
+    </div></Portal>
   )
 }
 
@@ -438,7 +439,7 @@ function RoutePlannerModal({
   const [date, setDate] = useState('')
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+    <Portal><div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
       <div className="w-full max-w-md rounded-2xl bg-white shadow-xl">
         <div className="flex items-center justify-between border-b border-[#F2F2F2] px-5 py-4">
           <h3 className="text-[15px] font-semibold text-[#101828]">Plan Driver Route</h3>
@@ -502,7 +503,7 @@ function RoutePlannerModal({
           </Button>
         </div>
       </div>
-    </div>
+    </div></Portal>
   )
 }
 

@@ -27,6 +27,7 @@ import type { GatePass, GatePassItem } from '../../../types/operations'
 import { ErrorState } from '../../../components/ui/error-state'
 import { useDataGrid } from '../../../hooks/use-data-grid'
 import { addDaysISO, todayISO } from '../../../lib/time'
+import { Portal } from '../../../components/ui/portal'
 
 const taskTypes = [
   { value: 'WASHING', label: 'Washing', icon: ArrowsClockwise, color: 'bg-blue-50 text-blue-600' },
@@ -411,7 +412,7 @@ export function DailyTasksPage() {
 
       <AnimatePresence>
         {deleteConfirm && (
-          <motion.div
+          <Portal><motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -453,7 +454,7 @@ export function DailyTasksPage() {
                 </button>
               </div>
             </motion.div>
-          </motion.div>
+          </motion.div></Portal>
         )}
       </AnimatePresence>
     </div>
@@ -687,7 +688,7 @@ function TaskDialog({ open, onClose, editEntry, workers, gatePasses, onSubmit, i
   if (!open) return null
 
   return (
-    <motion.div
+    <Portal><motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
@@ -1030,6 +1031,6 @@ function TaskDialog({ open, onClose, editEntry, workers, gatePasses, onSubmit, i
           </button>
         </div>
       </motion.div>
-    </motion.div>
+    </motion.div></Portal>
   )
 }

@@ -12,6 +12,7 @@ import { buildStaffSummary, type AttendanceRecord } from '../utils/attendance-su
 import { buildSalaryForecast } from '../utils/salary-forecast'
 import { addDaysISO, currentMonth, currentYear, daysInMonth, todayISO, weekdayOfISO } from '../../../lib/time'
 import { invalidateResource } from '../../../cache/invalidation'
+import { Portal } from '../../../components/ui/portal'
 
 const STATUSES = ['PRESENT', 'HALF_DAY', 'PAID_LEAVE', 'UNPAID_LEAVE', 'ABSENT'] as const
 const STATUS_LABEL: Record<string, string> = {
@@ -525,7 +526,7 @@ export default function AttendancePage() {
 
       {/* Edit modal */}
       {editDate && editForm && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" onClick={() => setEditDate(null)}>
+        <Portal><div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" onClick={() => setEditDate(null)}>
           <div className="bg-white dark:bg-gray-800 rounded-lg border p-6 w-[380px] max-w-[calc(100vw-24px)] space-y-4 shadow-xl" onClick={e => e.stopPropagation()} ref={editFlow.ref} onKeyDown={editFlow.handleKeyDown}>
             <div className="flex items-center justify-between">
               <h3 className="font-semibold flex items-center gap-2">
@@ -589,11 +590,11 @@ export default function AttendancePage() {
               )}
             </div>
           </div>
-        </div>
+        </div></Portal>
       )}
     {/* Quick save card */}
       {quickDate && (
-        <div className="fixed inset-0 bg-black/20 flex items-center justify-center z-40" onClick={() => setQuickDate(null)}>
+        <Portal><div className="fixed inset-0 bg-black/20 flex items-center justify-center z-40" onClick={() => setQuickDate(null)}>
           <div className="bg-white dark:bg-gray-800 rounded-xl border p-5 w-[300px] max-w-[calc(100vw-24px)] space-y-3 shadow-xl" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between">
               <h3 className="font-semibold flex items-center gap-2 text-sm">
@@ -635,7 +636,7 @@ export default function AttendancePage() {
               </button>
             </div>
           </div>
-        </div>
+        </div></Portal>
       )}
 
       <ConfirmDialog

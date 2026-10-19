@@ -13,6 +13,7 @@ import { LoadingSpinner } from '../../../components/ui/loading-spinner'
 import { ExportButton } from '../../../components/ui/export-button'
 import { Pagination } from '../../../components/ui/pagination'
 import { invalidateResource } from '../../../cache/invalidation'
+import { Portal } from '../../../components/ui/portal'
 
 const PAGE_SIZE = 20
 
@@ -136,7 +137,7 @@ export default function ManagementTransactions() {
       )}
 
       {viewTxn && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+        <Portal><div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="bg-white dark:bg-gray-800 rounded-xl p-4 sm:p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-lg font-semibold">Transaction Details</h2>
@@ -180,7 +181,7 @@ export default function ManagementTransactions() {
               <span className="text-green-600">Profit: LKR {viewTxn.total_profit.toLocaleString()}</span>
             </div>
           </div>
-        </div>
+        </div></Portal>
       )}
     </div>
   )

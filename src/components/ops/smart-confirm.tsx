@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { ArrowRight, ShieldCheck } from 'lucide-react'
 import { Button } from '../ui/button'
+import { Portal } from '../../components/ui/portal'
 
 export interface ConfirmChange {
   label: string
@@ -47,7 +48,7 @@ export function SmartConfirm({
   if (!open) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
+    <Portal><div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="absolute inset-0 bg-black/40" onClick={() => !loading && onCancel()} />
       <div
         className="relative w-full max-w-md mx-4 rounded-xl border border-[var(--border)] bg-[var(--surface)] shadow-lg"
@@ -107,6 +108,6 @@ export function SmartConfirm({
           </Button>
         </div>
       </div>
-    </div>
+    </div></Portal>
   )
 }

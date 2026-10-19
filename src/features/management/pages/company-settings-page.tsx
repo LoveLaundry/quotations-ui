@@ -21,6 +21,7 @@ import {
 import { invalidateResource } from '../../../cache/invalidation'
 import { useAuth } from '../../../context/AuthContext'
 import { formatTimestamp, fromSriLankaDateTimeInput, toSriLankaDateTimeInput } from '../../../lib/time'
+import { Portal } from '../../../components/ui/portal'
 
 // Order follows JS Date.getDay(): 0=Sunday ... 6=Saturday.
 const DOW_LABELS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
@@ -1397,7 +1398,7 @@ export default function CompanySettingsPage() {
       </div>
 
       {editReading && isAdmin && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => setEditReading(null)}>
+        <Portal><div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => setEditReading(null)}>
           <div className="w-full max-w-md rounded-xl bg-white p-5 shadow-xl" onClick={e => e.stopPropagation()}>
             <div className="flex items-start justify-between gap-3 mb-3">
               <div>
@@ -1464,7 +1465,7 @@ export default function CompanySettingsPage() {
               </div>
             </div>
           </div>
-        </div>
+        </div></Portal>
       )}
     </div>
   )
