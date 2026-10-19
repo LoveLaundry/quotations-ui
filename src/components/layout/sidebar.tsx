@@ -250,12 +250,26 @@ function SidebarContent({ collapsed, onToggle, isMobile, onMobileClose }: Sideba
   const isAdmin = roleUpper === 'ADMIN' || roleUpper === 'PLATFORM_ADMIN'
   const role = user?.role_id ? String(user.role_id).toUpperCase() : ''
 
+  // A platform administrator manages identities and the laundry registry. They
+  // deliberately get no operational pages: bills, customers and salaries belong
+  // to a laundry, and a platform operator has no business inside one.
+  const isPlatformAdmin = user?.platform_admin === true || role === 'PLATFORM_ADMIN'
+
   const groups = useMemo(() => {
+    if (isPlatformAdmin) {
+      return [
+        {
+          label: 'Platform',
+          items: [
+            { to: '/laundries', label: 'Laundries', icon: Buildings },
+            { to: '/users', label: 'Users', icon: Users },
+          ] as NavItem[],
+        },
+      ]
+    }
+
     const system: NavItem[] = [
       { to: '/settings', label: 'Settings', icon: GearSix },
-      ...(role === 'PLATFORM_ADMIN' || role === 'ADMIN' || user?.platform_admin === true
-        ? [{ to: '/laundries', label: 'Laundries', icon: Buildings, roles: ['PLATFORM_ADMIN'] }]
-        : []),
       ...(isAdmin
         ? [
             { to: '/users', label: 'Users', icon: Users },
@@ -276,7 +290,7 @@ function SidebarContent({ collapsed, onToggle, isMobile, onMobileClose }: Sideba
     return all
       .map((g) => ({ ...g, items: g.items.map(allowed).filter(Boolean) as NavItem[] }))
       .filter((g) => g.items.length > 0)
-  }, [hasPermission, isAdmin, role])
+  }, [hasPermission, isAdmin, role, isPlatformAdmin])
 
   return (
     <div className="flex h-full min-h-0 flex-col bg-[var(--sidebar-bg)]">

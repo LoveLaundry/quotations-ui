@@ -17,13 +17,11 @@ export function PlatformAdminRoute() {
     // `platform_admin` is the authoritative flag (it comes from the database and
     // is re-checked on every request). `role_id` is kept as a fallback for older
     // sessions issued before the flag existed.
-    // ADMIN is the operator of this deployment, so it qualifies by default —
-    // otherwise an account created before the registry existed could never
-    // reach the page. Deployments that host several laundries (where their own
-    // owners also hold ADMIN) turn this off with PLATFORM_ADMIN_STRICT.
+    // Platform scope is explicit: the flag or the dedicated role. An ADMIN runs
+    // one laundry and must not reach the registry.
     const role = user?.role_id?.toUpperCase()
     const isPlatformAdmin =
-        user?.platform_admin === true || role === 'PLATFORM_ADMIN' || role === 'ADMIN'
+        user?.platform_admin === true || role === 'PLATFORM_ADMIN'
 
     if (!isPlatformAdmin) {
         return <Navigate to="/" replace />
