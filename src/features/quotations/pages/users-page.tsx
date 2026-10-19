@@ -16,6 +16,7 @@ import { Breadcrumb } from '../../../components/ui/breadcrumb'
 import { Card, CardContent } from '../../../components/ui/card'
 import { Button } from '../../../components/ui/button'
 import { useEnterFlow } from '../../../hooks/use-enter-flow'
+import { Portal } from '../../../components/ui/portal'
 import { useEscape } from '../../../hooks/use-escape'
 
 interface UserForm {
@@ -345,6 +346,7 @@ export default function UsersPage() {
                                                         type="button"
                                                         onClick={() => setManageUser(u)}
                                                         title="Manage laundries"
+                                                        aria-label="Manage laundries"
                                                         className="flex h-7 w-7 items-center justify-center rounded-lg text-[#6B7280] hover:bg-[#F3F4F6] hover:text-[#101828] transition-colors"
                                                     >
                                                         <RiBuilding2Line size={15} />
@@ -646,8 +648,11 @@ function ManageLaundriesModal({
     const roleOf = new Map(memberships.map(m => [m.laundry_id, m.role]))
     const busy = addMut.isPending || removeMut.isPending
 
+    // Portalled: the page tree sits under animated (transformed) wrappers, which
+    // would otherwise capture the fixed overlay and centre it on the panel.
     return (
-        <AnimatePresence>
+        <Portal>
+            <AnimatePresence>
             {user && (
                 <>
                     <motion.div
@@ -718,7 +723,8 @@ function ManageLaundriesModal({
                     </motion.div>
                 </>
             )}
-        </AnimatePresence>
+            </AnimatePresence>
+        </Portal>
     )
 }
 
