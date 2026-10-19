@@ -206,7 +206,7 @@
   }
 
   /* One focus treatment for the whole application. */
-  :where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  :where(a, button, summary, [tabindex]):focus-visible {
     outline: 2px solid var(--ring);
     outline-offset: 2px;
     border-radius: var(--radius-sm);
@@ -2036,7 +2036,7 @@ button:not(:disabled):active,
 }
 
 /* Focus ring — Apple blue glow */
-:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+:where(a, button, summary, [tabindex]):focus-visible {
   outline: 2px solid var(--ring);
   outline-offset: 2px;
   border-radius: var(--radius-sm);

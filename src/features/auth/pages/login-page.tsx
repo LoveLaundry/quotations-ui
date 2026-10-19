@@ -50,6 +50,19 @@ export default function LoginPage() {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
     setError('')
+
+    // Validate here rather than disabling the button. A disabled primary action
+    // tells a first-time user nothing about what is wrong, and on a fresh
+    // database the setup form is the only way forward — hiding it strands them.
+    if (!username.trim() || !password) {
+      setError('Enter your username and password.')
+      return
+    }
+    if (mode === 'setup' && password.length < 8) {
+      setError('Choose a password of at least 8 characters.')
+      return
+    }
+
     setLoading(true)
     try {
       if (mode === 'setup') {
@@ -85,32 +98,36 @@ export default function LoginPage() {
     }
   }
 
-  const canSubmit =
-    mode === 'setup'
-      ? Boolean(username.trim() && password && confirm && password.length >= 8) && !loading
-      : Boolean(username.trim() && password) && !loading
 
   return (
-    <div className="flex min-h-dvh flex-col bg-[var(--bg)]">
-      <main className="flex flex-1 items-center justify-center px-4 py-10 sm:px-6">
-        <div className="w-full max-w-[380px]">
+    <div className="relative flex min-h-dvh flex-col bg-[var(--bg)]">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-0 h-[440px]"
+        style={{
+          background:
+            'radial-gradient(58% 100% at 50% 0%, color-mix(in srgb, var(--brand) 7%, transparent), transparent 72%)',
+        }}
+      />
+      <main className="relative flex flex-1 items-center justify-center px-4 py-10 sm:px-6">
+        <div className="w-full max-w-[400px]">
           <div className="mb-7 flex justify-center">
             <Logo size="lg" />
           </div>
 
-          <div className="route-enter rounded-[10px] border border-[var(--border-2)] bg-[var(--surface)] p-5 sm:p-6">
+          <div className="route-enter rounded-[14px] border border-[var(--border)] bg-[var(--surface)] p-6 shadow-[var(--shadow-sm)] sm:p-7">
             <div className="mb-5">
-              <h1 className="text-[17px] font-semibold tracking-[-0.015em] text-[var(--text-primary)]">
+              <h1 className="text-[19px] font-semibold tracking-[-0.02em] text-[var(--text-primary)]">
                 {mode === 'setup' ? 'Create admin account' : 'Sign in'}
               </h1>
-              <p className="mt-0.5 text-[12.5px] text-[var(--text-muted)]">
+              <p className="mt-1 text-[13px] text-[var(--text-muted)]">
                 {mode === 'setup'
                   ? 'First-time setup. Works once — afterwards sign in instead.'
                   : 'Use the account your administrator gave you.'}
               </p>
             </div>
 
-            <form onSubmit={handleSubmit} noValidate className="space-y-3.5">
+            <form onSubmit={handleSubmit} noValidate className="space-y-4">
               <Field
                 id="username"
                 label={mode === 'setup' ? 'Admin username' : 'Username or email'}
@@ -222,9 +239,9 @@ export default function LoginPage() {
               <Button
                 id="login-submit"
                 type="submit"
-                disabled={!canSubmit}
+                variant="primary"
                 loading={loading}
-                className="mt-1 w-full"
+                className="mt-2 w-full"
                 size="lg"
               >
                 {loading ? (mode === 'setup' ? 'Creating admin' : 'Signing in') : mode === 'setup' ? 'Create admin & sign in' : 'Sign in'}
@@ -263,7 +280,7 @@ export default function LoginPage() {
             <button
               type="button"
               onClick={() => navigate('/guest/shop')}
-              className="group flex w-full cursor-pointer items-center justify-between gap-3 rounded-[10px] border border-[var(--border-2)] bg-[var(--surface)] px-4 py-3 text-left transition-colors duration-100 hover:bg-[var(--surface-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
+              className="group flex w-full cursor-pointer items-center justify-between gap-3 rounded-[12px] border border-[var(--border)] bg-[var(--surface-2)] px-4 py-3 text-left transition-colors duration-100 hover:bg-[var(--surface-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
             >
               <span className="min-w-0">
                 <span className="block text-[13px] font-medium text-[var(--text-primary)]">
