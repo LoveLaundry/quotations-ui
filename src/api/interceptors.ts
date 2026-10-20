@@ -23,10 +23,8 @@ export function setUnauthorizedHandler(handler: UnauthorizedHandler | null) {
  * and sometimes an array of objects. Rendering the latter directly produces
  * "[object Object]" in the UI, so it is serialised here instead.
  *
- * Exported for clients that must not run the session-expiry path — the AI
- * service authenticates with a request signature, so a 401 there means a bad
- * signature rather than a logged-out user, and tearing the session down would
- * be wrong.
+ * Exported for clients that must normalize messages without running the
+ * session-expiry path.
  */
 export function extractResponseMessage(err: unknown): string {
   const detail = (err as AxiosError | undefined)?.response?.data as
