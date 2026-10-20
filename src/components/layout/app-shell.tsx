@@ -7,7 +7,7 @@ import { OfflineSyncBar } from '../ui/offline-sync-bar'
 import { SyncFab } from '../../features/sync/components/global-sync-panel'
 import { PageLoader } from '../ui/loader'
 import { useAuth } from '../../context/AuthContext'
-import { PLATFORM_PATHS, isPlatformOnly } from '../../lib/session-scope'
+import { PLATFORM_LANDING, PLATFORM_PATHS, isPlatformOnly } from '../../lib/session-scope'
 import { setUnauthorizedHandler } from '../../api/interceptors'
 
 const pageTitles: Record<string, string> = {
@@ -143,7 +143,7 @@ export function AppShell() {
     const allowed = PLATFORM_PATHS.some(
       (path) => location.pathname === path || location.pathname.startsWith(path + '/'),
     )
-    if (!allowed) return <Navigate to="/laundries" replace />
+    if (!allowed) return <Navigate to={PLATFORM_LANDING} replace />
   }
 
   return (

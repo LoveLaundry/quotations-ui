@@ -5,6 +5,7 @@ import { ProtectedRoute } from '../components/layout/protected-route'
 import { AdminRoute } from '../components/layout/admin-route'
 import { PlatformAdminRoute } from '../components/layout/platform-admin-route'
 import { ManagerRoute } from '../components/layout/manager-route'
+import { LandingRedirect } from '../components/layout/landing-redirect'
 // Eager: must always be available to render if a lazy chunk fails to load.
 import ErrorPage from '../features/quotations/pages/error-page'
 
@@ -131,7 +132,7 @@ export const router = createBrowserRouter([
         path: '/',
         element: <AppShell />,
         children: [
-          { index: true, element: <Navigate to="/today" replace /> },
+          { index: true, element: <LandingRedirect /> },
           { path: 'today', element: <TodayPage /> },
           { path: 'dashboard', element: <DashboardPage /> },
           { path: 'business-dashboard', element: <BusinessDashboardPage /> },

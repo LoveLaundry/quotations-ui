@@ -7,7 +7,13 @@ import { StatCard } from '../../../components/ui/stat-card'
 import { PageHeader } from '../../../components/ui/page-header'
 import { SyncStatusBar } from '../../../components/ui/sync-status-bar'
 import { LoadingSpinner } from '../../../components/ui/loading-spinner'
+import { usePermissions } from '../../../hooks/usePermissions'
 
+/**
+ * All eight targets are admin-only routes. A STAFF session may open this
+ * dashboard, so the row is filtered through the same access rule the route
+ * guards enforce — otherwise it would offer links that bounce straight back.
+ */
 const QUICK_ACTIONS = [
   { to: '/management/employees', label: 'Employees', icon: UserCircle, color: 'bg-rose-500' },
   { to: '/management/attendance-log', label: 'Log Attendance', icon: CalendarPlus, color: 'bg-teal-500' },
@@ -20,10 +26,12 @@ const QUICK_ACTIONS = [
 ]
 
 export default function ManagementDashboard() {
+  const { canAccess } = usePermissions()
   const { data, isLoading } = useQuery({
     queryKey: ['mgmt-dashboard'],
     queryFn: () => dashboardApi.get().then(r => r.data),
   })
+  const quickActions = QUICK_ACTIONS.filter(() => canAccess({ adminOnly: true }))
 
   if (isLoading) return <div className="flex items-center justify-center h-64"><LoadingSpinner /></div>
 
@@ -59,7 +67,7 @@ export default function ManagementDashboard() {
       <div className="bg-white dark:bg-gray-800 rounded-xl border p-5">
         <h3 className="font-semibold mb-4">Quick Actions</h3>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          {QUICK_ACTIONS.map(a => (
+          {quickActions.map(a => (
             <Link
               key={a.to}
               to={a.to}

@@ -4,7 +4,7 @@ import { Search, BarChart3, Users, Package, ClipboardList, Banknote, History, Tr
 import { motion } from 'framer-motion'
 import { useReactToPrint } from 'react-to-print'
 import { Link } from 'react-router-dom'
-import { useAuth } from '../../../context/AuthContext'
+import { usePermissions } from '../../../hooks/usePermissions'
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card'
 import { Skeleton } from '../../../components/ui/skeleton'
 import { ErrorState } from '../../../components/ui/error-state'
@@ -681,8 +681,8 @@ function AuditLog() {
 // ── Main Page ─────────────────────────────────────────────────────────────────
 
 export default function ReportsPage() {
-  const { user } = useAuth()
-  const canViewOperationalReports = ['ADMIN', 'MANAGER'].includes((user?.role_id || '').toUpperCase())
+  const { canAccess } = usePermissions()
+  const canViewOperationalReports = canAccess({ adminOnly: true })
   const [activeTab, setActiveTab] = useState<ReportTab>('client')
   const [selectedAnalytics, setSelectedAnalytics] = useState<AnalyticsSection[]>(['clients', 'items', 'gatepasses', 'billing'])
   const printRef = useRef<HTMLDivElement>(null)

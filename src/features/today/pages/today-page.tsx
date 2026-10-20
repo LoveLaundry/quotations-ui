@@ -9,7 +9,8 @@ import {
 } from '@phosphor-icons/react'
 import { cn } from '../../../lib/utils'
 import { addDaysISO, TIME_ZONE, todayISO } from '../../../lib/time'
-import { useAuth } from '../../../context/AuthContext'
+import { usePermissions } from '../../../hooks/usePermissions'
+import type { AccessSpec } from '../../../lib/access'
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card'
 import { Button } from '../../../components/ui/button'
 import { Skeleton } from '../../../components/ui/skeleton'
@@ -108,7 +109,7 @@ const QUICK_ACTIONS: {
   hint: string
   icon: typeof ClipboardText
   primary?: boolean
-  roles?: string[]
+  spec?: AccessSpec
 }[] = [
   { to: '/gate-passes/new', label: 'Receive', hint: 'New gate pass', icon: ClipboardText, primary: true },
   { to: '/deliveries/new', label: 'Deliver', hint: 'Record delivery', icon: Truck, primary: true },
@@ -116,18 +117,17 @@ const QUICK_ACTIONS: {
   { to: '/returns/new', label: 'Return', hint: 'Record return', icon: ArrowCounterClockwise },
   {
     to: '/management/expenses', label: 'Expense', hint: 'Record expense', icon: Receipt,
-    roles: ['ADMIN', 'MANAGER'],
+    spec: { adminOnly: true },
   },
   {
     to: '/management/attendance-log', label: 'Attendance', hint: 'Log staff', icon: CalendarBlank,
-    roles: ['ADMIN', 'MANAGER'],
+    spec: { adminOnly: true },
   },
 ]
 
 function QuickActions() {
-  const { user } = useAuth()
-  const role = user?.role_id?.toUpperCase() ?? ''
-  const actions = QUICK_ACTIONS.filter((action) => !action.roles || action.roles.includes(role))
+  const { canAccess } = usePermissions()
+  const actions = QUICK_ACTIONS.filter((action) => !action.spec || canAccess(action.spec))
 
   return (
     <nav aria-label="Quick actions">

@@ -1,19 +1,18 @@
 import type { User } from '../types/auth'
+import { isPlatformOnly as isPlatformOnlyFor, landingPathFor } from './access'
 
 /**
- * True when this session may only use the platform surface (Laundries, Users).
- *
- * A support session is the exception: a platform administrator who has entered a
- * laundry is operating *as* that laundry and must load its data. Support tokens
- * are memory-only, so `supportActive` is the reliable signal.
+ * Re-exported from lib/access.ts so the session-scope helpers and the access
+ * helpers are one implementation. Existing imports keep working.
  */
 export function isPlatformOnly(user: User | null, supportActive: boolean): boolean {
-  if (supportActive || !user) return false
-  return (
-    user.platform_admin === true ||
-    String(user.role_id ?? '').toUpperCase() === 'PLATFORM_ADMIN'
-  )
+  return isPlatformOnlyFor(user, supportActive)
 }
 
 /** Routes a platform-only session is allowed to mount. */
 export const PLATFORM_PATHS = ['/laundries', '/users', '/profile']
+
+/** Where a platform-only session is sent when it strays off the platform surface. */
+export const PLATFORM_LANDING = '/laundries'
+
+export { landingPathFor }

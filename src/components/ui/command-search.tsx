@@ -7,8 +7,9 @@ import type { Icon } from '@phosphor-icons/react'
 import { useQuotations } from '../../features/quotations/hooks/useQuotations'
 import { cn } from '../../lib/utils'
 import { Dialog, DialogContent, DialogTitle } from './dialog'
-import { useAuth } from '../../context/AuthContext'
+import { ROUTES } from '../../config/route-meta'
 import { usePermissions } from '../../hooks/usePermissions'
+import type { AccessSpec } from '../../lib/access'
 
 interface CommandSearchProps {
   open: boolean
@@ -19,85 +20,33 @@ interface NavTarget {
   label: string
   keywords: string
   path: string
-  permission?: string
-  roles?: string[]
+  spec: AccessSpec
 }
 
-const NAV_ITEMS: NavTarget[] = [
-  { label: 'Today', keywords: 'today daily operations home', path: '/today' },
-  { label: 'Dashboard', keywords: 'dashboard overview', path: '/dashboard' },
-  { label: 'Business Intelligence', keywords: 'business dashboard analytics insights', path: '/business-dashboard' },
-  { label: 'Notifications', keywords: 'alerts inbox', path: '/notifications' },
-  { label: 'New Quotation', keywords: 'quote new quotation create', path: '/quotations/new', permission: 'view_quotations' },
-  { label: 'Quotations', keywords: 'quotations quotes list price', path: '/quotations', permission: 'view_quotations' },
-  { label: 'Categories', keywords: 'categories clients price list', path: '/categories', permission: 'view_clients' },
-  { label: 'Bills', keywords: 'bills invoices list', path: '/bills', permission: 'view_bills' },
-  { label: 'New Bill', keywords: 'bill create invoice', path: '/bills/new', permission: 'view_bills' },
-  { label: 'Client Statement', keywords: 'statement client ledger history balance', path: '/statements', permission: 'view_bills' },
-  { label: 'Income', keywords: 'income revenue received gate passes billed', path: '/income', permission: 'view_bills' },
-  { label: 'Ledger', keywords: 'ledger balance owed accrued payments bills', path: '/ledger', permission: 'view_bills' },
-  { label: 'Consolidated Invoice', keywords: 'invoice new consolidated', path: '/invoices/new', permission: 'view_bills' },
-  { label: 'Gate Passes', keywords: 'gate passes receiving received', path: '/gate-passes', permission: 'view_gate_passes' },
-  { label: 'New Gate Pass', keywords: 'gate pass new receive', path: '/gate-passes/new', permission: 'view_gate_passes' },
-  { label: 'Deliveries', keywords: 'deliveries sent delivery', path: '/deliveries', permission: 'view_deliveries' },
-  { label: 'New Delivery', keywords: 'delivery new deliver', path: '/deliveries/new', permission: 'view_deliveries' },
-  { label: 'Dispatch', keywords: 'dispatch pickup schedule delivery', path: '/dispatch', permission: 'view_deliveries' },
-  { label: 'Hotel Linen Flow', keywords: 'hotel linen movement tracking', path: '/hotel-linen-flow' },
-  { label: 'Returns', keywords: 'returns refunds', path: '/returns', permission: 'view_gate_passes' },
-  { label: 'Record Return', keywords: 'return new record', path: '/returns/new', permission: 'view_gate_passes' },
-  { label: 'Customers 360', keywords: 'customers clients', path: '/customers' },
-  { label: 'Reports', keywords: 'reports export sales', path: '/reports', permission: 'view_reports' },
-  { label: 'Users', keywords: 'users staff accounts', path: '/users', roles: ['ADMIN', 'PLATFORM_ADMIN'] },
-  { label: 'Laundries', keywords: 'laundries platform tenants registry businesses', path: '/laundries', roles: ['PLATFORM_ADMIN'] },
-  { label: 'Shop Bills', keywords: 'shop bills cash', path: '/shop-bills', permission: 'view_bills' },
-  { label: 'Shop Analytics', keywords: 'shop bills dashboard analytics summary', path: '/shop-bills/dashboard', permission: 'view_bills' },
-  { label: 'Create Shop Bill', keywords: 'shop bill create new', path: '/shop-bills/new', permission: 'view_bills' },
-  { label: 'Legacy Invoice', keywords: 'legacy invoice old bills', path: '/legacy-invoice', permission: 'view_bills' },
-  { label: 'Staff Management', keywords: 'workers staff employees', path: '/workers' },
-  { label: 'Daily Tasks', keywords: 'daily tasks work', path: '/workers/daily-tasks' },
-  { label: 'Management Dashboard', keywords: 'management overview', path: '/management' },
-  { label: 'All Transactions', keywords: 'transactions all management', path: '/management/transactions' },
-  { label: 'Manage Customers', keywords: 'management customers', path: '/management/customers' },
-  { label: 'Items & Categories', keywords: 'items categories management', path: '/management/items' },
-  { label: 'Expense Management', keywords: 'expenses management', path: '/management/expenses', roles: ['ADMIN', 'MANAGER'] },
-  { label: 'Employees & Salaries', keywords: 'employees salaries management', path: '/management/employees', roles: ['ADMIN', 'MANAGER'] },
-  { label: 'Historical Data Entry', keywords: 'historical data entry', path: '/management/historical-entry', roles: ['ADMIN', 'MANAGER'] },
-  { label: 'Import Data', keywords: 'import historical data upload', path: '/management/import', roles: ['ADMIN', 'MANAGER'] },
-  { label: 'Generate Salary Slip', keywords: 'salary slip payroll', path: '/management/salary-slip', roles: ['ADMIN', 'MANAGER'] },
-  { label: 'Salary History', keywords: 'salary history payroll', path: '/management/salary-history', roles: ['ADMIN', 'MANAGER'] },
-  { label: 'Salary Advances', keywords: 'advances salary loans', path: '/management/advances', roles: ['ADMIN', 'MANAGER'] },
-  { label: 'Holiday Calendar', keywords: 'holidays calendar', path: '/management/holidays', roles: ['ADMIN', 'MANAGER'] },
-  { label: 'Extra Work', keywords: 'extra work overtime', path: '/management/extra-work', roles: ['ADMIN', 'MANAGER'] },
-  { label: 'Attendance', keywords: 'attendance present', path: '/management/attendance', roles: ['ADMIN', 'MANAGER'] },
-  { label: 'Attendance Log', keywords: 'log staff attendance', path: '/management/attendance-log', roles: ['ADMIN', 'MANAGER'] },
-  { label: 'Company Settings', keywords: 'company settings', path: '/management/company-settings', roles: ['ADMIN', 'MANAGER'] },
-  { label: 'Payments', keywords: 'payments management', path: '/management/payments' },
-  { label: 'Management Reports', keywords: 'management payroll reports', path: '/management/reports', roles: ['ADMIN', 'MANAGER'] },
-  { label: 'Linen Dashboard', keywords: 'linen tracking dashboard', path: '/linen' },
-  { label: 'Linen Inventory', keywords: 'linen stock inventory', path: '/linen/inventory' },
-  { label: 'Scan Linen', keywords: 'linen scan barcode', path: '/linen/scanner' },
-  { label: 'Bulk Scan Linen', keywords: 'linen bulk scan barcode', path: '/linen/bulk-scan' },
-  { label: 'Tag Generator', keywords: 'linen tags qr barcode', path: '/linen/tags' },
-  { label: 'Camelot Gate Pass', keywords: 'linen receipt uniform camelot', path: '/linen/gate-pass' },
-  { label: 'Live Chat', keywords: 'chat assistant', path: '/live-chat', roles: ['ADMIN', 'MANAGER'] },
-  { label: 'Database Sync', keywords: 'database synchronization offline', path: '/database-sync', roles: ['ADMIN', 'PLATFORM_ADMIN'] },
-  { label: 'Reports & Backup', keywords: 'backup restore export', path: '/reports-backup', roles: ['ADMIN'] },
-  { label: 'AI Insights', keywords: 'ai analytics insights', path: '/ai-insights' },
-  { label: 'My Profile', keywords: 'profile account', path: '/profile' },
-  { label: 'Settings', keywords: 'settings preferences', path: '/settings' },
-]
+/**
+ * Every navigable page, derived from the route registry. The palette therefore
+ * offers exactly what the guard would admit — no link it would bounce, and no
+ * route the registry knows about that the palette forgets.
+ */
+const NAV_ITEMS: NavTarget[] = ROUTES.filter(
+  (r) => !r.path.includes(':') && r.navLabel !== undefined,
+).map((r) => ({
+  label: r.navLabel ?? r.title,
+  keywords: `${r.title} ${r.keywords ?? ''}`,
+  path: r.path,
+  spec: { permissions: r.permissions, roles: r.roles, adminOnly: r.adminOnly, platformOnly: r.platformOnly },
+}))
 
 const QUICK_ACTIONS: {
   label: string
   path: string
   icon: Icon
-  permission?: string
-  roles?: string[]
+  spec: AccessSpec
 }[] = [
-  { label: 'New Quotation', path: '/quotations/new', icon: FilePlus, permission: 'view_quotations' },
-  { label: 'New Bill', path: '/bills/new', icon: Receipt, permission: 'view_bills' },
-  { label: 'New Gate Pass', path: '/gate-passes/new', icon: ClipboardText, permission: 'view_gate_passes' },
-  { label: 'New Shop Bill', path: '/shop-bills/new', icon: ShoppingCart, permission: 'view_bills' },
+  { label: 'New Quotation', path: '/quotations/new', icon: FilePlus, spec: { permissions: ['view_quotations'] } },
+  { label: 'New Bill', path: '/bills/new', icon: Receipt, spec: { permissions: ['view_bills'] } },
+  { label: 'New Gate Pass', path: '/gate-passes/new', icon: ClipboardText, spec: { permissions: ['view_gate_passes'] } },
+  { label: 'New Shop Bill', path: '/shop-bills/new', icon: ShoppingCart, spec: { permissions: ['view_bills'] } },
 ]
 
 /**
@@ -115,12 +64,10 @@ function QuickActionIcon({ path }: { path: string }) {
 }
 
 function hasRouteAccess(
-  target: Pick<NavTarget, 'permission' | 'roles'>,
-  role: string,
-  hasPermission: (permission: string) => boolean,
+  spec: AccessSpec,
+  canAccess: (spec: AccessSpec) => boolean,
 ): boolean {
-  if (target.roles && !target.roles.includes(role)) return false
-  return !target.permission || hasPermission(target.permission)
+  return canAccess(spec)
 }
 
 type Result =
@@ -139,19 +86,17 @@ export function CommandSearch({ open, onClose }: CommandSearchProps) {
   const [query, setQuery] = useState('')
   const [active, setActive] = useState(0)
   const navigate = useNavigate()
-  const { user } = useAuth()
-  const { hasPermission } = usePermissions()
+  const { canAccess } = usePermissions()
   const { data: quotations = [] } = useQuotations()
   const listRef = useRef<HTMLDivElement>(null)
 
   const q = query.trim().toLowerCase()
-  const role = user?.role_id?.toUpperCase() ?? ''
 
   const results = useMemo<Result[]>(() => {
     const out: Result[] = []
 
     if (!q) {
-      return QUICK_ACTIONS.filter((action) => hasRouteAccess(action, role, hasPermission)).map((a) => ({
+      return QUICK_ACTIONS.filter((action) => hasRouteAccess(action.spec, canAccess)).map((a) => ({
         kind: 'page' as const,
         key: `quick-${a.path}`,
         label: a.label,
@@ -160,7 +105,7 @@ export function CommandSearch({ open, onClose }: CommandSearchProps) {
     }
 
     for (const item of NAV_ITEMS) {
-      if (!hasRouteAccess(item, role, hasPermission)) continue
+      if (!hasRouteAccess(item.spec, canAccess)) continue
       if (`${item.label} ${item.keywords}`.toLowerCase().includes(q)) {
         out.push({ kind: 'page', key: `page-${item.path}`, label: item.label, path: item.path })
       }
@@ -186,7 +131,7 @@ export function CommandSearch({ open, onClose }: CommandSearchProps) {
     }
 
     return out
-  }, [q, quotations, role, hasPermission])
+  }, [q, quotations, canAccess])
 
   // Keep the roving index inside the current result set.
   useEffect(() => {

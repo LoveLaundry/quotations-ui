@@ -1,120 +1,66 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
+import type { Icon } from '@phosphor-icons/react'
 import {
   House, ChartBar, ClipboardText, Truck, UsersThree, CurrencyCircleDollar, FileText, Buildings,
   FolderOpen, GearSix, Users, Database, CaretLeft, CaretRight, ChatCircleDots, Scan, Upload,
   ListChecks, Receipt, UserCircle, Package, Wallet, Money, CalendarBlank, CalendarPlus, X,
-  Lightning, Brain, CloudArrowDown, FlowArrow, Package as PackageIcon, CaretDown, ChartLineUp,
+  Lightning, Brain, CloudArrowDown, FlowArrow, CaretDown, ChartLineUp,
 } from '@phosphor-icons/react'
 import { LogoOnDark } from '../brand/logo'
 import { cn } from '../../lib/utils'
 import { useAuth } from '../../context/AuthContext'
+import { NAV_GROUPS, ROUTES, type NavGroupId } from '../../config/route-meta'
 import { usePermissions } from '../../hooks/usePermissions'
+import type { AccessSpec } from '../../lib/access'
+
+/**
+ * Icon lookup. `route-meta.ts` stores icon *keys* so it stays a plain data
+ * module with no React import; the keys are resolved here, where the icons
+ * already live. A key with no entry falls back to a neutral glyph rather than
+ * crashing the rail.
+ */
+const ICONS: Record<string, Icon> = {
+  House, ChartBar, ClipboardText, Truck, UsersThree, CurrencyCircleDollar, FileText, Buildings,
+  FolderOpen, GearSix, Users, Database, ChatCircleDots, Scan, Upload, ListChecks, Receipt,
+  UserCircle, Package, Wallet, Money, CalendarBlank, CalendarPlus, Lightning, Brain,
+  CloudArrowDown, FlowArrow, ChartLineUp,
+}
+
+function iconFor(key?: string): Icon {
+  return (key && ICONS[key]) || FileText
+}
 
 interface NavItem {
   to: string
   label: string
-  icon: any
+  icon: Icon
   end?: boolean
-  indent?: boolean
-  permission?: string
-  roles?: string[]
   children?: NavItem[]
 }
 
-const navGroups: { label: string; items: NavItem[] }[] = [
-  {
-    label: 'Overview',
-    items: [
-      { to: '/today', label: 'Today', icon: Lightning },
-      { to: '/dashboard', label: 'Dashboard', icon: House },
-      { to: '/business-dashboard', label: 'Business Intelligence', icon: ChartBar },
-      { to: '/live-chat', label: 'Live Chat', icon: ChatCircleDots, roles: ['ADMIN', 'MANAGER'] },
-    ],
-  },
-  {
-    label: 'Operations',
-    items: [
-      { to: '/gate-passes', label: 'Gate Passes', icon: ClipboardText, permission: 'view_gate_passes' },
-      { to: '/monthly-operations', label: 'Monthly Operations', icon: CalendarBlank, permission: 'view_gate_passes' },
-      { to: '/deliveries', label: 'Deliveries', icon: Truck, permission: 'view_deliveries' },
-      { to: '/dispatch', label: 'Dispatch', icon: PackageIcon, permission: 'view_deliveries' },
-      { to: '/hotel-linen-flow', label: 'Hotel Linen Flow', icon: FlowArrow },
-      { to: '/returns', label: 'Returns', icon: ClipboardText, permission: 'view_gate_passes' },
-      {
-        to: '/workers',
-        label: 'Staff',
-        icon: Users,
-        end: true,
-        children: [{ to: '/workers/daily-tasks', label: 'Daily Tasks', icon: UsersThree }],
-      },
-      { to: '/bills', label: 'Bills', icon: CurrencyCircleDollar, permission: 'view_bills' },
-      { to: '/income', label: 'Income', icon: Money, permission: 'view_bills' },
-      { to: '/ledger', label: 'Ledger', icon: Receipt, permission: 'view_bills' },
-      { to: '/statements', label: 'Client Statement', icon: Wallet, permission: 'view_bills' },
-      { to: '/shop-bills', label: 'Shop Bills', icon: CurrencyCircleDollar, permission: 'view_bills' },
-      { to: '/shop-bills/dashboard', label: 'Shop Analytics', icon: ChartLineUp, permission: 'view_bills' },
-      { to: '/legacy-invoice', label: 'Legacy Invoice', icon: FileText, permission: 'view_bills' },
-      { to: '/invoices/new', label: 'Invoices', icon: FileText, permission: 'view_bills' },
-    ],
-  },
-  {
-    label: 'Linen Tracking',
-    items: [
-      { to: '/linen', label: 'Dashboard', icon: House },
-      { to: '/linen/inventory', label: 'Inventory', icon: ClipboardText },
-      { to: '/linen/scanner', label: 'Scan Linen', icon: Scan },
-      { to: '/linen/bulk-scan', label: 'Bulk Scan', icon: Scan },
-      { to: '/linen/tags', label: 'Tag Generator', icon: FileText },
-      { to: '/linen/gate-pass', label: 'Gate Pass (Camelot)', icon: FileText },
-    ],
-  },
-  {
-    label: 'Contracts',
-    items: [
-      { to: '/quotations', label: 'Quotations', icon: FileText, permission: 'view_quotations' },
-      { to: '/categories', label: 'By Client', icon: FolderOpen, permission: 'view_clients' },
-      { to: '/customers', label: 'Customers 360', icon: Users },
-    ],
-  },
-  {
-    label: 'Management',
-    items: [
-      { to: '/management', label: 'Dashboard', icon: House },
-      { to: '/management/transactions', label: 'Transactions', icon: ListChecks },
-      { to: '/management/historical-entry', label: 'Data Entry', icon: ClipboardText, roles: ['ADMIN', 'MANAGER'] },
-      { to: '/management/import', label: 'Import Data', icon: Upload, roles: ['ADMIN', 'MANAGER'] },
-      { to: '/management/customers', label: 'Customers', icon: Users },
-      { to: '/management/items', label: 'Items & Categories', icon: Package },
-      { to: '/management/expenses', label: 'Expenses', icon: Receipt, roles: ['ADMIN', 'MANAGER'] },
-      {
-        to: '/management/employees',
-        label: 'Employees',
-        icon: UserCircle,
-        roles: ['ADMIN', 'MANAGER'],
-        children: [
-          { to: '/management/salary-slip', label: 'Generate Slip', icon: Money },
-          { to: '/management/salary-history', label: 'Salary History', icon: ListChecks },
-          { to: '/management/advances', label: 'Advances', icon: Wallet },
-          { to: '/management/holidays', label: 'Holidays', icon: CalendarBlank },
-          { to: '/management/extra-work', label: 'Extra Work', icon: Lightning },
-          { to: '/management/attendance', label: 'Attendance', icon: CalendarBlank },
-          { to: '/management/attendance-log', label: 'Log Attendance', icon: CalendarPlus },
-        ],
-      },
-      { to: '/management/company-settings', label: 'Company Settings', icon: GearSix, roles: ['ADMIN', 'MANAGER'] },
-      { to: '/management/payments', label: 'Payments', icon: Wallet },
-      { to: '/management/reports', label: 'Management Reports', icon: ChartBar, roles: ['ADMIN', 'MANAGER'] },
-    ],
-  },
-  {
-    label: 'Analytics',
-    items: [
-      { to: '/reports', label: 'Reports', icon: ChartBar, permission: 'view_reports' },
-      { to: '/ai-insights', label: 'AI Insights', icon: Brain },
-    ],
-  },
-]
+/**
+ * Children grouped under a parent row. The registry lists these routes
+ * flat (the command palette wants them flat); the sidebar nests them.
+ */
+const CHILDREN: Record<string, string[]> = {
+  '/workers': ['/workers/daily-tasks'],
+  '/management/employees': [
+    '/management/salary-slip',
+    '/management/salary-history',
+    '/management/advances',
+    '/management/holidays',
+    '/management/extra-work',
+    '/management/attendance',
+    '/management/attendance-log',
+  ],
+}
+
+/** Routes whose access spec is inherited from a parent (children of a guarded
+ *  group) rather than declared on the route itself. */
+const INHERIT: Record<string, string> = Object.fromEntries(
+  Object.entries(CHILDREN).flatMap(([parent, kids]) => kids.map((k) => [k, parent])),
+)
 
 interface SidebarProps {
   collapsed: boolean
@@ -244,53 +190,54 @@ interface SidebarContentProps {
 }
 
 function SidebarContent({ collapsed, onToggle, isMobile, onMobileClose }: SidebarContentProps) {
-  const { user } = useAuth()
-  const { hasPermission } = usePermissions()
-  const roleUpper = user?.role_id?.toUpperCase()
-  const isAdmin = roleUpper === 'ADMIN' || roleUpper === 'PLATFORM_ADMIN'
-  const role = user?.role_id ? String(user.role_id).toUpperCase() : ''
+  const { canAccess } = usePermissions()
 
-  // A platform administrator manages identities and the laundry registry. They
-  // deliberately get no operational pages: bills, customers and salaries belong
-  // to a laundry, and a platform operator has no business inside one.
-  const isPlatformAdmin = user?.platform_admin === true || role === 'PLATFORM_ADMIN'
-
+  /**
+   * The rail is built from the route registry, so a listed link and an allowed
+   * route are decided by the same rule. A platform-only session sees only the
+   * Platform group (canAccess rejects every tenant group for it); a tenant
+   * session sees whatever its capabilities allow. Groups with nothing left
+   * after filtering are dropped.
+   */
   const groups = useMemo(() => {
-    if (isPlatformAdmin) {
-      return [
-        {
-          label: 'Platform',
-          items: [
-            { to: '/laundries', label: 'Laundries', icon: Buildings },
-            { to: '/users', label: 'Users', icon: Users },
-          ] as NavItem[],
-        },
-      ]
+    const specFor = (path: string): AccessSpec => {
+      const target = INHERIT[path] ? specFor(INHERIT[path]) : ROUTES.find((r) => r.path === path)
+      if (!target) return {}
+      return {
+        permissions: target.permissions,
+        roles: target.roles,
+        adminOnly: target.adminOnly,
+        platformOnly: target.platformOnly,
+        tenantOnly: target.tenantOnly,
+      }
     }
 
-    const system: NavItem[] = [
-      { to: '/settings', label: 'Settings', icon: GearSix },
-      ...(isAdmin
-        ? [
-            { to: '/users', label: 'Users', icon: Users },
-            { to: '/database-sync', label: 'Database Sync', icon: Database },
-            { to: '/reports-backup', label: 'Reports & Backup', icon: CloudArrowDown },
-          ]
-        : []),
-    ]
-
-    const allowed = (i: NavItem): NavItem | null => {
-      if (i.permission && !hasPermission(i.permission)) return null
-      if (i.roles && !i.roles.includes(role)) return null
-      const children = i.children?.filter(Boolean).map(allowed).filter(Boolean) as NavItem[] | undefined
-      return { ...i, children: children?.length ? children : undefined }
-    }
-
-    const all = [...navGroups, { label: 'System', items: system }]
-    return all
-      .map((g) => ({ ...g, items: g.items.map(allowed).filter(Boolean) as NavItem[] }))
-      .filter((g) => g.items.length > 0)
-  }, [hasPermission, isAdmin, role, isPlatformAdmin])
+    return NAV_GROUPS.map((group) => {
+      const items = ROUTES.filter(
+        (r) => r.group === group.id && r.navLabel && canAccess(specFor(r.path)),
+      )
+        .filter((r) => !INHERIT[r.path])
+        .map<NavItem>((r) => {
+          const kids =
+            CHILDREN[r.path]
+              ?.map((p) => ROUTES.find((x) => x.path === p))
+              .filter((x): x is (typeof ROUTES)[number] => Boolean(x) && canAccess(specFor(x!.path)))
+              .map<NavItem>((x) => ({
+                to: x.path,
+                label: x.navLabel ?? x.title,
+                icon: iconFor(x.icon),
+              })) ?? []
+          return {
+            to: r.path,
+            label: r.navLabel ?? r.title,
+            icon: iconFor(r.icon),
+            end: r.path === '/workers',
+            children: kids.length ? kids : undefined,
+          }
+        })
+      return { id: group.id as NavGroupId, label: group.label, items }
+    }).filter((g) => g.items.length > 0)
+  }, [canAccess])
 
   return (
     <div className="flex h-full min-h-0 flex-col bg-[var(--sidebar-bg)]">
