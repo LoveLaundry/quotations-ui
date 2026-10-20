@@ -331,6 +331,8 @@
   --sidebar-hover-bg: #1d2939;
   --sidebar-hover-text: #ffffff;
   --sidebar-indicator: #f04438;
+  --sidebar-active-bg: #1e293b;
+  --sidebar-active-border: #334155;
 
   --skeleton-from: #eef0f4;
   --skeleton-via: #e3e7ed;
@@ -402,6 +404,8 @@
   --sidebar-hover-bg: #1d2939;
   --sidebar-hover-text: #ffffff;
   --sidebar-indicator: #f04438;
+  --sidebar-active-bg: #182234;
+  --sidebar-active-border: #2b3a52;
 
   --skeleton-from: #e4e8ed;
   --skeleton-via: #c3cbd6;
@@ -476,6 +480,8 @@
   --sidebar-hover-bg: #1a2c49;
   --sidebar-hover-text: #ffffff;
   --sidebar-indicator: #60a5fa;
+  --sidebar-active-bg: #16283f;
+  --sidebar-active-border: #2b466b;
 
   --skeleton-from: #e9f0fa;
   --skeleton-via: #d9e2f0;
@@ -550,6 +556,8 @@
   --sidebar-hover-bg: #17351f;
   --sidebar-hover-text: #ffffff;
   --sidebar-indicator: #4ade80;
+  --sidebar-active-bg: #13301f;
+  --sidebar-active-border: #245c37;
 
   --skeleton-from: #e9f4ec;
   --skeleton-via: #d7e6db;
@@ -624,6 +632,8 @@
   --sidebar-hover-bg: #3b3222;
   --sidebar-hover-text: #fffdfa;
   --sidebar-indicator: #ea8a4a;
+  --sidebar-active-bg: #3a3120;
+  --sidebar-active-border: #5a4a2e;
 
   --skeleton-from: #efe9df;
   --skeleton-via: #e2dbcd;
@@ -698,6 +708,8 @@
   --sidebar-hover-bg: #2a3547;
   --sidebar-hover-text: #ffffff;
   --sidebar-indicator: #f04438;
+  --sidebar-active-bg: #2a3547;
+  --sidebar-active-border: #3c4a60;
 
   --skeleton-from: #e6eaef;
   --skeleton-via: #cbd2dc;
@@ -772,6 +784,8 @@
   --sidebar-hover-bg: #182031;
   --sidebar-hover-text: #ffffff;
   --sidebar-indicator: #f97066;
+  --sidebar-active-bg: #131b2a;
+  --sidebar-active-border: #25303f;
 
   --skeleton-from: #171e2b;
   --skeleton-via: #232c3d;
@@ -846,6 +860,8 @@
   --sidebar-hover-bg: #1a212b;
   --sidebar-hover-text: #ffffff;
   --sidebar-indicator: #f04438;
+  --sidebar-active-bg: #151b24;
+  --sidebar-active-border: #262e3a;
 
   --skeleton-from: #1a2029;
   --skeleton-via: #262e3a;
@@ -920,6 +936,8 @@
   --sidebar-hover-bg: #1a1a1a;
   --sidebar-hover-text: #ffffff;
   --sidebar-indicator: #ff6b6b;
+  --sidebar-active-bg: #1f1f1f;
+  --sidebar-active-border: #383838;
 
   --skeleton-from: #131313;
   --skeleton-via: #2b2b2b;

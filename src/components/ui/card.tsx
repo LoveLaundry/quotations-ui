@@ -4,9 +4,10 @@ import { cn } from '../../lib/utils'
 /**
  * Card — a bordered block of related content.
  *
- * Separation comes from the hairline border, not a shadow, so a page of cards
- * reads as one document rather than a pile of floating boxes. `hover` only
- * exists for cards that are themselves a link or a click target.
+ * Soft/rounded language: a generous radius plus one whisper-soft shadow lift
+ * the panel off the canvas, while the hairline border keeps a page of cards
+ * reading as one document. `hover` only exists for cards that are themselves a
+ * link or a click target.
  */
 interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
   /** Only for cards that are themselves a link or click target. */
@@ -18,7 +19,7 @@ export const Card = React.forwardRef<HTMLDivElement, CardProps>(
     <div
       ref={ref}
       className={cn(
-        'rounded border border-[var(--border)] bg-[var(--surface)]',
+        'rounded-md border border-[var(--border)] bg-[var(--surface)] shadow-[var(--shadow-xs)]',
         hover && 'card-interactive cursor-pointer',
         className,
       )}
@@ -32,13 +33,14 @@ Card.displayName = 'Card'
 
 /**
  * CardHeader — a 48px-tall band that separates a block's title from its body.
- * The bottom rule is what makes a stack of panels scannable; keep it.
+ * The bottom rule is what makes a stack of panels scannable; keep it. Rounded
+ * at the top so it hugs the card's radius instead of squaring it off.
  */
 export function CardHeader({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
   return (
     <div
       className={cn(
-        'flex min-h-12 flex-wrap items-center justify-between gap-2 border-b border-[var(--border)] px-4 py-2.5',
+        'flex min-h-12 flex-wrap items-center justify-between gap-2 rounded-t-md border-b border-[var(--border)] px-4 py-2.5',
         className,
       )}
       {...props}
@@ -62,7 +64,7 @@ export function CardFooter({ className, ...props }: React.HTMLAttributes<HTMLDiv
   return (
     <div
       className={cn(
-        'flex flex-wrap items-center justify-end gap-2 border-t border-[var(--border)] bg-[var(--surface-2)] px-4 py-3',
+        'flex flex-wrap items-center justify-end gap-2 rounded-b-md border-t border-[var(--border)] bg-[var(--surface-2)] px-4 py-3',
         className,
       )}
       {...props}

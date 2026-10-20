@@ -347,13 +347,14 @@ function SidebarNavItem({
           aria-current={undefined}
           className={({ isActive }) =>
             cn(
-              'group relative flex items-center gap-2.5 rounded py-2 pr-2.5 pl-2.5',
+              'group relative flex items-center gap-2.5 rounded-md py-2 pr-2.5 pl-2.5',
               'text-[13px] font-medium transition-colors duration-100',
               'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]',
               collapsed && 'justify-center px-0',
-              // Active = filled brand surface. Inactive = transparent until hover.
+              // Active = soft branded chip (a whisper of the brand, not a slab).
+              // Inactive = transparent until hover.
               isActive
-                ? 'bg-[var(--brand)] text-white'
+                ? 'bg-[var(--sidebar-active-bg)] font-semibold text-[var(--sidebar-active)] shadow-[inset_0_0_0_1px_var(--sidebar-active-border)]'
                 : 'text-[var(--sidebar-text)] hover:bg-[var(--sidebar-hover-bg)] hover:text-[var(--sidebar-hover-text)]',
             )
           }
@@ -367,7 +368,7 @@ function SidebarNavItem({
                 className={cn(
                   'shrink-0',
                   isActive
-                    ? 'text-white'
+                    ? 'text-[var(--sidebar-active)]'
                     : 'text-[var(--sidebar-label)] group-hover:text-[var(--sidebar-hover-text)]',
                 )}
               />
@@ -401,7 +402,7 @@ function SidebarNavItem({
                     'transition-colors duration-100',
                     'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]',
                     isActive
-                      ? 'bg-[var(--sidebar-hover-bg)] text-[var(--sidebar-active)]'
+                      ? 'bg-[var(--sidebar-active-bg)] text-[var(--sidebar-active)]'
                       : 'text-[var(--sidebar-text)] hover:bg-[var(--sidebar-hover-bg)] hover:text-[var(--sidebar-hover-text)]',
                   )
                 }

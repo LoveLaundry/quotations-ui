@@ -39,6 +39,16 @@ const ICON_TONE: Record<Tone, string> = {
   info: 'text-[var(--info-text)]',
 }
 
+/** Soft tinted chips behind the stat icon — the one decorative lift allowed. */
+const ICON_CHIP: Record<Tone, string> = {
+  neutral: 'bg-[var(--surface-3)]',
+  brand: 'bg-[var(--brand-soft)]',
+  success: 'bg-[var(--success-soft)]',
+  warning: 'bg-[var(--warning-soft)]',
+  danger: 'bg-[var(--danger-soft)]',
+  info: 'bg-[var(--info-soft)]',
+}
+
 /**
  * StatCard — one number, its label, and optionally its movement.
  *
@@ -91,7 +101,7 @@ export function StatCard({
           : undefined
       }
       className={cn(
-        'min-w-0 rounded border border-[var(--border)] bg-[var(--surface)] px-3.5 py-3',
+        'min-w-0 rounded-md border border-[var(--border)] bg-[var(--surface)] px-3.5 py-3 shadow-[var(--shadow-xs)]',
         clickable &&
           'card-interactive pressable lift cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:ring-offset-1',
         className,
@@ -102,7 +112,13 @@ export function StatCard({
           {label}
         </p>
         {icon && (
-          <span className={cn('flex size-4 shrink-0 items-center justify-center [&_svg]:size-4', ICON_TONE[resolved])}>
+          <span
+            className={cn(
+              'flex size-7 shrink-0 items-center justify-center rounded-sm [&_svg]:size-4',
+              ICON_CHIP[resolved],
+              ICON_TONE[resolved],
+            )}
+          >
             {icon}
           </span>
         )}
@@ -158,7 +174,7 @@ export function StatCardSkeleton({ count = 5 }: { count?: number }) {
       {Array.from({ length: count }).map((_, i) => (
         <div
           key={i}
-          className="rounded border border-[var(--border)] bg-[var(--surface)] px-3.5 py-3"
+          className="rounded-md border border-[var(--border)] bg-[var(--surface)] px-3.5 py-3 shadow-[var(--shadow-xs)]"
         >
           <Skeleton className="h-3 w-1/2" />
           <Skeleton className="mt-2 h-6 w-3/4" />
