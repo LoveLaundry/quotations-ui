@@ -1,4 +1,9 @@
-import { CloudSlash, WarningCircle, ArrowsClockwise, Spinner } from '@phosphor-icons/react'
+import {
+  CloudOff as CloudSlash,
+  CircleAlert as WarningCircle,
+  RefreshCw as ArrowsClockwise,
+  LoaderCircle as Spinner,
+} from 'lucide-react'
 import { useOfflineSync } from '../../cache/offline-hooks'
 import { drain, retryFailedSync } from '../../cache/sync-engine'
 import { cn } from '../../lib/utils'
@@ -14,7 +19,7 @@ export function OfflineSyncBar() {
   if (sync.failed > 0) {
     return (
       <Bar tone="error" onClick={() => void retryFailedSync()}>
-        <WarningCircle weight="fill" className="h-3.5 w-3.5" />
+        <WarningCircle className="h-3.5 w-3.5" />
         <span>
           {sync.failed} saved change{sync.failed === 1 ? '' : 's'} was rejected while offline
         </span>
@@ -26,7 +31,7 @@ export function OfflineSyncBar() {
   if (!sync.online && queued > 0) {
     return (
       <Bar tone="warn">
-        <CloudSlash weight="fill" className="h-3.5 w-3.5" />
+        <CloudSlash className="h-3.5 w-3.5" />
         <span>
           Offline — {queued} change{queued === 1 ? '' : 's'} saved locally, will sync automatically
         </span>
@@ -37,7 +42,7 @@ export function OfflineSyncBar() {
   if (!sync.online) {
     return (
       <Bar tone="muted">
-        <CloudSlash weight="fill" className="h-3.5 w-3.5" />
+        <CloudSlash className="h-3.5 w-3.5" />
         <span>Offline — showing saved data</span>
       </Bar>
     )
@@ -47,7 +52,7 @@ export function OfflineSyncBar() {
     return (
       <Bar tone="info" onClick={() => void drain()}>
         {sync.syncing > 0 ? (
-          <Spinner weight="fill" className="h-3.5 w-3.5 animate-spin" />
+          <Spinner className="h-3.5 w-3.5 animate-spin" />
         ) : (
           <ArrowsClockwise className="h-3.5 w-3.5" />
         )}

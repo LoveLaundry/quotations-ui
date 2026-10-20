@@ -1,21 +1,21 @@
 import { useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import {
-  CalendarBlank,
-  CheckCircle,
-  CloudArrowDown,
+  CalendarDays as CalendarBlank,
+  CircleCheck as CheckCircle,
+  CloudDownload as CloudArrowDown,
   Database,
-  FileArchive,
-  FilePdf,
-  FolderSimplePlus,
-  FolderSimple,
-  GearSix,
-  LockKey,
-  MagnifyingGlass,
+  Archive as FileArchive,
+  FileText as FilePdf,
+  FolderPlus as FolderSimplePlus,
+  Folder as FolderSimple,
+  Settings as GearSix,
+  LockKeyhole as LockKey,
+  Search as MagnifyingGlass,
   ShieldCheck,
   Triangle,
-  WarningCircle,
-} from '@phosphor-icons/react'
+  CircleAlert as WarningCircle,
+} from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card'
 import { Breadcrumb } from '../../components/ui/breadcrumb'
 import { Button } from '../../components/ui/button'

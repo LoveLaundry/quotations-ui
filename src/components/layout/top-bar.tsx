@@ -1,6 +1,16 @@
 import { useState, useRef, useEffect, useId } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { MagnifyingGlass, Bell, List, SignOut, User, UserCircle, PaperPlaneTilt, FileText, TextAa } from '@phosphor-icons/react'
+import {
+  Search as MagnifyingGlass,
+  Bell,
+  Menu as List,
+  LogOut as SignOut,
+  User,
+  CircleUser as UserCircle,
+  Send as PaperPlaneTilt,
+  FileText,
+  CaseSensitive as TextAa,
+} from 'lucide-react'
 import { cn } from '../../lib/utils'
 import { useAuth } from '../../context/AuthContext'
 import { useTheme, isFontSize } from '../../context/ThemeContext'
@@ -176,7 +186,7 @@ export function TopBar({
                 : 'sm:border-[var(--border-2)]',
             )}
           >
-            <TextAa size={17} aria-hidden weight={comfortOn ? 'bold' : 'regular'} />
+            <TextAa size={17} aria-hidden />
             <span className="hidden text-[12.5px] font-medium sm:inline">Aa</span>
           </button>
 

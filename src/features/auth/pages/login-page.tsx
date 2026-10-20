@@ -1,6 +1,11 @@
 import { useState, useRef, useEffect, type FormEvent } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { Eye, EyeSlash, ArrowRight, WarningCircle } from '@phosphor-icons/react'
+import {
+  Eye,
+  EyeOff as EyeSlash,
+  ArrowRight,
+  CircleAlert as WarningCircle,
+} from 'lucide-react'
 import { useAuth } from '../../../context/AuthContext'
 import { authService } from '../services/auth.service'
 import { Logo } from '../../../components/brand/logo'

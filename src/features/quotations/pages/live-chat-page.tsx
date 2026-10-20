@@ -1,15 +1,15 @@
 import { useEffect, useRef, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import {
-  ChatCircleDots,
-  Robot,
-  UserCircle,
-  PaperPlaneTilt,
-  CircleNotch,
-  XCircle,
-  CheckCircle,
+  MessageCircle as ChatCircleDots,
+  Bot as Robot,
+  CircleUser as UserCircle,
+  Send as PaperPlaneTilt,
+  LoaderCircle as CircleNotch,
+  CircleX as XCircle,
+  CircleCheck as CheckCircle,
   ArrowLeft,
-} from '@phosphor-icons/react'
+} from 'lucide-react'
 import { chatApi, type ConversationDetail, type ConversationSummary } from '../../../api/chat.service'
 import { TIME_ZONE } from '../../../lib/time'
 
@@ -112,7 +112,7 @@ export default function LiveChatPage() {
           above mobile browser chrome. */}
       <div className="border-b border-[var(--border)] px-4 py-4 sm:px-6">
         <h1 className="flex items-center gap-2 text-lg font-semibold text-[#111827]">
-          <ChatCircleDots size={20} weight="fill" className="text-[#DC2626]" />
+          <ChatCircleDots size={20} className="text-[#DC2626]" />
           Live Chat
         </h1>
         <p className="text-[13px] text-[#6B7280]">

@@ -1,9 +1,16 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
-  MagnifyingGlass, ArrowRight, FilePlus, Receipt, ClipboardText, ShoppingCart, FileText, X,
-} from '@phosphor-icons/react'
-import type { Icon } from '@phosphor-icons/react'
+  Search as MagnifyingGlass,
+  ArrowRight,
+  FilePlus,
+  Receipt,
+  ClipboardList as ClipboardText,
+  ShoppingCart,
+  FileText,
+  X,
+} from 'lucide-react'
+import type { LucideIcon as Icon } from 'lucide-react'
 import { useQuotations } from '../../features/quotations/hooks/useQuotations'
 import { cn } from '../../lib/utils'
 import { Dialog, DialogContent, DialogTitle } from './dialog'
