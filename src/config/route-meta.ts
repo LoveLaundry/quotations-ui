@@ -9,7 +9,7 @@ import type { AccessSpec } from '../lib/access'
  * on all travel together, so they cannot disagree.
  *
  * `icon` is a *key*, not a component, so this module stays a plain data file
- * with no React import. The sidebar and palette resolve the key to a Phosphor
+ * with no React import. The sidebar and palette resolve the key to a Lucide
  * icon through their own maps.
  */
 

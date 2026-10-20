@@ -1,12 +1,40 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
-import type { Icon } from '@phosphor-icons/react'
+import type { LucideIcon as Icon } from 'lucide-react'
 import {
-  House, ChartBar, ClipboardText, Truck, UsersThree, CurrencyCircleDollar, FileText, Buildings,
-  FolderOpen, GearSix, Users, Database, CaretLeft, CaretRight, ChatCircleDots, Scan, Upload,
-  ListChecks, Receipt, UserCircle, Package, Wallet, Money, CalendarBlank, CalendarPlus, X,
-  Lightning, Brain, CloudArrowDown, FlowArrow, CaretDown, ChartLineUp,
-} from '@phosphor-icons/react'
+  House,
+  ChartColumn as ChartBar,
+  ClipboardList as ClipboardText,
+  Truck,
+  UsersRound as UsersThree,
+  CircleDollarSign as CurrencyCircleDollar,
+  FileText,
+  Building2 as Buildings,
+  FolderOpen,
+  Settings as GearSix,
+  Users,
+  Database,
+  ChevronLeft as CaretLeft,
+  ChevronRight as CaretRight,
+  MessageCircle as ChatCircleDots,
+  ScanLine as Scan,
+  Upload,
+  ListChecks,
+  Receipt,
+  CircleUser as UserCircle,
+  Package,
+  Wallet,
+  Banknote as Money,
+  CalendarDays as CalendarBlank,
+  CalendarPlus,
+  X,
+  Zap as Lightning,
+  Brain,
+  CloudDownload as CloudArrowDown,
+  Workflow as FlowArrow,
+  ChevronDown as CaretDown,
+  ChartNoAxesCombined as ChartLineUp,
+} from 'lucide-react'
 import { LogoOnDark } from '../brand/logo'
 import { cn } from '../../lib/utils'
 import { useAuth } from '../../context/AuthContext'
@@ -363,7 +391,6 @@ function SidebarNavItem({
             <>
               <Icon
                 size={17}
-                weight={isActive ? 'fill' : 'regular'}
                 aria-hidden
                 className={cn(
                   'shrink-0',

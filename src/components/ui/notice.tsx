@@ -1,5 +1,10 @@
 import { cn } from '../../lib/utils'
-import { CheckCircle, Warning, Info, XCircle } from '@phosphor-icons/react'
+import {
+  CircleCheck as CheckCircle,
+  TriangleAlert as Warning,
+  Info,
+  CircleX as XCircle,
+} from 'lucide-react'
 
 export type NoticeTone = 'success' | 'warning' | 'danger' | 'info' | 'neutral'
 

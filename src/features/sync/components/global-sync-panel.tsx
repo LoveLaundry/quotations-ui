@@ -1,9 +1,21 @@
 import { useState, useCallback, useEffect, useRef } from 'react'
 import {
-  ArrowsClockwise, CheckCircle, WarningCircle, Clock, Buildings,
-  CaretDown, CaretRight, Package, Truck, ArrowCounterClockwise,
-  CircleNotch, Receipt, FlowArrow, X, ArrowClockwise,
-} from '@phosphor-icons/react'
+  RefreshCw as ArrowsClockwise,
+  CircleCheck as CheckCircle,
+  CircleAlert as WarningCircle,
+  Clock,
+  Building2 as Buildings,
+  ChevronDown as CaretDown,
+  ChevronRight as CaretRight,
+  Package,
+  Truck,
+  RotateCcw as ArrowCounterClockwise,
+  LoaderCircle as CircleNotch,
+  Receipt,
+  Workflow as FlowArrow,
+  X,
+  RefreshCw as ArrowClockwise,
+} from 'lucide-react'
 import { cn } from '../../../lib/utils'
 import { Button } from '../../../components/ui/button'
 import { toast } from 'sonner'
@@ -39,7 +51,7 @@ function StatusPill({ status }: { status: keyof typeof STATUS_META }) {
         border: `1px solid ${meta.border}`,
       }}
     >
-      <Icon size={12} weight="fill" />
+      <Icon size={12} />
       {meta.label}
     </span>
   )
@@ -100,7 +112,7 @@ function SectionRow({
     <div className="sync-section-row">
       <div className="flex items-center gap-2.5 min-w-0 flex-1">
         <span className="sync-kind-icon">
-          <KindIcon size={14} weight="duotone" />
+          <KindIcon size={14} />
         </span>
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
@@ -182,7 +194,7 @@ function HotelCard({
       >
         <div className="flex items-center gap-3 min-w-0 flex-1">
           <span className="sync-hotel-avatar">
-            <Buildings size={18} weight="duotone" />
+            <Buildings size={18} />
           </span>
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
@@ -352,7 +364,7 @@ export function GlobalSyncPanel({
         <div className="sync-panel-header">
           <div className="flex items-center gap-3 min-w-0 flex-1">
             <span className="sync-panel-icon">
-              <ArrowsClockwise size={20} weight="bold" />
+              <ArrowsClockwise size={20} />
             </span>
             <div>
               <h2 className="text-[15px] font-bold tracking-[-0.02em] text-[var(--text-primary)]">
@@ -400,7 +412,7 @@ export function GlobalSyncPanel({
               {globalSyncing ? (
                 <CircleNotch size={13} className="animate-spin" />
               ) : (
-                <ArrowsClockwise size={13} weight="bold" />
+                <ArrowsClockwise size={13} />
               )}
               Sync All
             </Button>
@@ -446,7 +458,7 @@ export function GlobalSyncPanel({
             </div>
           ) : hotels.length === 0 ? (
             <div className="sync-empty-state">
-              <ArrowsClockwise size={36} weight="thin" className="text-[var(--text-faint)]" />
+              <ArrowsClockwise size={36} className="text-[var(--text-faint)]" />
               <p className="mt-2 text-[13px] font-medium text-[var(--text-secondary)]">
                 No hotels found for this month
               </p>
@@ -487,7 +499,7 @@ export function SyncFab() {
         aria-label="Open Operations Sync panel"
         title="Operations Sync"
       >
-        <ArrowsClockwise size={22} weight="bold" />
+        <ArrowsClockwise size={22} />
       </button>
       <GlobalSyncPanel open={open} onClose={() => setOpen(false)} />
     </>

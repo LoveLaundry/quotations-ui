@@ -1,25 +1,25 @@
 import { useState, useMemo, useEffect } from 'react'
 import {
   Plus,
-  MagnifyingGlass,
-  CalendarBlank,
+  Search as MagnifyingGlass,
+  CalendarDays as CalendarBlank,
   Clock,
-  ClipboardText,
-  FunnelSimple,
+  ClipboardList as ClipboardText,
+  ListFilter as FunnelSimple,
   X,
   Check,
-  TrashSimple,
-  PencilSimple,
+  Trash2 as TrashSimple,
+  Pencil as PencilSimple,
   User,
   Users,
   Package,
-  TShirt,
-  ArrowsClockwise,
-  HandPalm,
-  Cube,
+  Shirt as TShirt,
+  RefreshCw as ArrowsClockwise,
+  Hand as HandPalm,
+  Box as Cube,
   Tag,
   ListChecks,
-} from '@phosphor-icons/react'
+} from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useWorkers, useDailyTasks, useCreateDailyTask, useUpdateDailyTask, useDeleteDailyTask, useGatePassesForWorker } from '../hooks/useWorkers'
 import type { DailyLog, DailyLogCreate, TaskEntry, Worker } from '../types'
@@ -155,7 +155,7 @@ export function DailyTasksPage() {
           onClick={openCreate}
           className="flex items-center gap-2 rounded-lg bg-[#DC2626] px-4 py-2.5 text-[13px] font-semibold text-white hover:bg-[#B91C1C] transition-colors shadow-sm cursor-pointer"
         >
-          <Plus size={16} weight="bold" />
+          <Plus size={16} />
           Log Task
         </button>
       </div>
@@ -274,7 +274,7 @@ export function DailyTasksPage() {
                 onClick={openCreate}
                 className="mt-4 inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#DC2626] text-[13px] font-semibold text-white hover:bg-[#B91C1C] transition-colors cursor-pointer"
               >
-                <Plus size={14} weight="bold" />
+                <Plus size={14} />
                 Log First Task
               </button>
             )}
@@ -927,7 +927,7 @@ function TaskDialog({ open, onClose, editEntry, workers, gatePasses, onSubmit, i
                   onClick={addManualRow}
                   className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-[var(--border)] text-[12px] font-medium text-[#374151] hover:bg-[var(--surface-2)] transition-colors cursor-pointer"
                 >
-                  <Plus size={13} weight="bold" /> Add item manually
+                  <Plus size={13} /> Add item manually
                 </button>
               </div>
 
@@ -1025,7 +1025,7 @@ function TaskDialog({ open, onClose, editEntry, workers, gatePasses, onSubmit, i
             {isPending ? (
               <div className="animate-spin w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full" />
             ) : (
-              <Check size={14} weight="bold" />
+              <Check size={14} />
             )}
             {editEntry ? 'Save Changes' : 'Log Task'}
           </button>

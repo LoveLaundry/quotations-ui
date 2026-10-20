@@ -1,15 +1,15 @@
 import { useState } from 'react'
 import {
   Plus,
-  MagnifyingGlass,
-  UsersThree,
-  UserCircle,
-  PencilSimple,
-  TrashSimple,
+  Search as MagnifyingGlass,
+  UsersRound as UsersThree,
+  CircleUser as UserCircle,
+  Pencil as PencilSimple,
+  Trash2 as TrashSimple,
   X,
   Check,
-  FunnelSimple,
-} from '@phosphor-icons/react'
+  ListFilter as FunnelSimple,
+} from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useWorkers, useCreateWorker, useUpdateWorker, useDeleteWorker } from '../hooks/useWorkers'
 import { DEPARTMENTS } from '../types'
@@ -105,7 +105,7 @@ export function WorkersPage() {
           onClick={openCreate}
           className="flex items-center gap-2 rounded-lg bg-[#DC2626] px-4 py-2.5 text-[13px] font-semibold text-white hover:bg-[#B91C1C] transition-colors shadow-sm cursor-pointer"
         >
-          <Plus size={16} weight="bold" />
+          <Plus size={16} />
           Add Staff
         </button>
       </div>
@@ -354,7 +354,7 @@ export function WorkersPage() {
                   {(createWorker.isPending || updateWorker.isPending) ? (
                     <div className="animate-spin w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full" />
                   ) : (
-                    <Check size={14} weight="bold" />
+                    <Check size={14} />
                   )}
                   {editWorker ? 'Save Changes' : 'Add Staff'}
                 </button>

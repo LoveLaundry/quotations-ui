@@ -1,5 +1,8 @@
 import { useMemo } from 'react'
-import { Buildings, Stack } from '@phosphor-icons/react'
+import {
+  Building2 as Buildings,
+  Layers as Stack,
+} from 'lucide-react'
 import { useHotel } from '../../context/HotelContext'
 import { DropdownMenu, type MenuGroup } from '../ui/dropdown-menu'
 import { cn } from '../../lib/utils'
@@ -65,7 +68,6 @@ export function HotelSelector() {
           <Buildings
             size={15}
             aria-hidden
-            weight={isAggregate ? 'regular' : 'fill'}
             className="shrink-0"
           />
           <span className="hidden shrink-0 text-[11px] font-semibold tracking-[0.03em] uppercase lg:inline">

@@ -1,5 +1,10 @@
 import { useEffect, useState } from 'react'
-import { FileText, Storefront, X, Phone } from '@phosphor-icons/react'
+import {
+  FileText,
+  Store as Storefront,
+  X,
+  Phone,
+} from 'lucide-react'
 import api from '../../../api/api'
 import type { Quotation } from '../../../types/quotation'
 import { formatCalendarDate } from '../../../lib/time'

@@ -1,4 +1,10 @@
-import { FilePlus, Eye, PencilSimple, Trash, FileText } from '@phosphor-icons/react'
+import {
+  FilePlus,
+  Eye,
+  Pencil as PencilSimple,
+  Trash2 as Trash,
+  FileText,
+} from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Button } from '../../../components/ui/button'

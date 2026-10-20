@@ -1,5 +1,7 @@
 import { useState } from 'react'
-import { Storefront } from '@phosphor-icons/react'
+import {
+  Store as Storefront,
+} from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
@@ -78,7 +80,7 @@ export function LaundrySwitcher() {
             switching && 'cursor-not-allowed opacity-60',
           )}
         >
-          <Storefront size={15} aria-hidden weight="regular" className="shrink-0" />
+          <Storefront size={15} aria-hidden className="shrink-0" />
           <span className="hidden shrink-0 text-[11px] font-semibold tracking-[0.03em] uppercase lg:inline">
             Laundry
           </span>

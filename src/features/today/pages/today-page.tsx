@@ -3,10 +3,26 @@ import { Link } from 'react-router-dom'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import {
-  ArrowRight, CaretLeft, CaretRight, ClipboardText, Clock, Flag, Package, Plus, Receipt, CalendarBlank,
-  ArrowCounterClockwise, Truck, Wallet, CheckCircle, XCircle, WarningCircle, ShieldWarning,
-  FileText, Pulse,
-} from '@phosphor-icons/react'
+  ArrowRight,
+  ChevronLeft as CaretLeft,
+  ChevronRight as CaretRight,
+  ClipboardList as ClipboardText,
+  Clock,
+  Flag,
+  Package,
+  Plus,
+  Receipt,
+  CalendarDays as CalendarBlank,
+  RotateCcw as ArrowCounterClockwise,
+  Truck,
+  Wallet,
+  CircleCheck as CheckCircle,
+  CircleX as XCircle,
+  CircleAlert as WarningCircle,
+  ShieldAlert as ShieldWarning,
+  FileText,
+  Activity as Pulse,
+} from 'lucide-react'
 import { cn } from '../../../lib/utils'
 import { addDaysISO, TIME_ZONE, todayISO } from '../../../lib/time'
 import { usePermissions } from '../../../hooks/usePermissions'
