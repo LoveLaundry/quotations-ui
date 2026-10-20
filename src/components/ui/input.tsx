@@ -10,7 +10,7 @@ import { cn } from '../../lib/utils'
  * touch devices and bumps the font to 16px so iOS does not zoom on focus.
  */
 export const controlBase =
-  'w-full rounded-[6px] border border-[var(--border-2)] bg-[var(--surface)] text-[13px] text-[var(--text-primary)] ' +
+  'w-full rounded border border-[var(--border-2)] bg-[var(--surface)] text-[13px] text-[var(--text-primary)] ' +
   'placeholder:text-[var(--text-placeholder)] ' +
   'transition-[border-color,box-shadow] duration-100 ' +
   'hover:border-[var(--border-strong)] ' +
@@ -118,7 +118,7 @@ const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
         ref={ref}
         type="checkbox"
         className={cn(
-          'size-4 shrink-0 cursor-pointer appearance-none rounded-[3px] border border-[var(--border-2)] bg-[var(--surface)]',
+          'size-4 shrink-0 cursor-pointer appearance-none rounded-xs border border-[var(--border-2)] bg-[var(--surface)]',
           'transition-[background-color,border-color] duration-100',
           'checked:border-[var(--brand)] checked:bg-[var(--brand)]',
           'indeterminate:border-[var(--brand)] indeterminate:bg-[var(--brand)]',

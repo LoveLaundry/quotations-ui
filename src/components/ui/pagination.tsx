@@ -43,7 +43,7 @@ export function Pagination({ total, limit, offset, onChange, className, itemLabe
   )
 
   const navBtn =
-    'inline-flex h-8 items-center justify-center gap-1 rounded-[6px] border px-2 text-[12.5px] font-medium transition-colors duration-100 disabled:pointer-events-none disabled:opacity-40'
+    'inline-flex h-8 items-center justify-center gap-1 rounded border px-2 text-[12.5px] font-medium transition-colors duration-100 disabled:pointer-events-none disabled:opacity-40'
 
   return (
     <nav
@@ -88,7 +88,7 @@ export function Pagination({ total, limit, offset, onChange, className, itemLabe
                   aria-current={p === currentPage ? 'page' : undefined}
                   aria-label={`Page ${p}`}
                   className={cn(
-                    'inline-flex h-8 min-w-8 items-center justify-center rounded-[6px] border px-2 text-[12.5px] font-medium tabular-nums transition-colors duration-100',
+                    'inline-flex h-8 min-w-8 items-center justify-center rounded border px-2 text-[12.5px] font-medium tabular-nums transition-colors duration-100',
                     p === currentPage
                       ? 'border-[var(--brand)] bg-[var(--brand)] text-white'
                       : 'border-[var(--border-2)] bg-[var(--surface)] text-[var(--text-secondary)] hover:bg-[var(--surface-hover)]',

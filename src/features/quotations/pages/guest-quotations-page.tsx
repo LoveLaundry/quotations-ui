@@ -66,7 +66,7 @@ export default function GuestQuotationsPage() {
       <header className="sticky top-0 z-20 border-b border-[var(--border)] bg-[var(--surface)]">
         <div className="mx-auto flex w-full max-w-5xl items-center justify-between gap-3 px-4 py-3 sm:px-6">
           <Logo size="sm" tagline="Shop services" />
-          <span className="inline-flex items-center gap-1.5 rounded-[5px] border border-[var(--border-2)] bg-[var(--surface-2)] px-2 py-1 text-[11px] font-medium text-[var(--text-muted)]">
+          <span className="inline-flex items-center gap-1.5 rounded-sm border border-[var(--border-2)] bg-[var(--surface-2)] px-2 py-1 text-[11px] font-medium text-[var(--text-muted)]">
             <Storefront size={13} aria-hidden />
             Public price list
           </span>
@@ -88,7 +88,7 @@ export default function GuestQuotationsPage() {
         </div>
 
         {loading ? (
-          <div className="divide-y divide-[var(--border)] overflow-hidden rounded-[10px] border border-[var(--border)] bg-[var(--surface)]">
+          <div className="divide-y divide-[var(--border)] overflow-hidden rounded border border-[var(--border)] bg-[var(--surface)]">
             {[0, 1, 2].map((i) => (
               <div key={i} className="flex items-center gap-4 px-4 py-4">
                 <div className="min-w-0 flex-1 space-y-2">
@@ -119,7 +119,7 @@ export default function GuestQuotationsPage() {
         ) : (
           <>
             {/* Desktop: price list as a table */}
-            <div className="hidden overflow-hidden rounded-[10px] border border-[var(--border)] bg-[var(--surface)] sm:block">
+            <div className="hidden overflow-hidden rounded border border-[var(--border)] bg-[var(--surface)] sm:block">
               <table className="w-full border-collapse text-left">
                 <thead>
                   <tr className="border-b border-[var(--border)] bg-[var(--surface-2)]">
@@ -186,7 +186,7 @@ export default function GuestQuotationsPage() {
             </div>
 
             {/* Mobile: labelled rows, no horizontal scroll */}
-            <ul className="divide-y divide-[var(--border)] overflow-hidden rounded-[10px] border border-[var(--border)] bg-[var(--surface)] sm:hidden">
+            <ul className="divide-y divide-[var(--border)] overflow-hidden rounded border border-[var(--border)] bg-[var(--surface)] sm:hidden">
               {quotations.map((q) => (
                 <li key={q.id}>
                   <button

@@ -86,7 +86,7 @@ export function TopBar({
   const roleLabel = user?.role_id ? String(user.role_id).toLowerCase() : 'staff'
 
   const iconBtn =
-    'pressable inline-flex size-8 items-center justify-center rounded-[6px] border border-transparent text-[var(--text-muted)] transition-colors duration-100 hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]'
+    'pressable inline-flex size-8 items-center justify-center rounded border border-transparent text-[var(--text-muted)] transition-colors duration-100 hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]'
 
   const userMenu: MenuGroup[] = [
     {
@@ -156,7 +156,7 @@ export function TopBar({
           >
             <MagnifyingGlass size={16} aria-hidden />
             <span className="hidden text-[12.5px] font-medium sm:inline">Search</span>
-            <kbd className="ml-1 hidden rounded-[3px] border border-[var(--border)] bg-[var(--surface-2)] px-1 py-px text-[10px] font-semibold text-[var(--text-faint)] lg:inline">
+            <kbd className="ml-1 hidden rounded-xs border border-[var(--border)] bg-[var(--surface-2)] px-1 py-px text-[10px] font-semibold text-[var(--text-faint)] lg:inline">
               Ctrl K
             </kbd>
           </button>
@@ -210,7 +210,7 @@ export function TopBar({
             {showNotifications && (
               <div
                 id={notifId}
-                className="absolute right-0 z-50 mt-1.5 w-[min(360px,calc(100vw-24px))] overflow-hidden rounded-[10px] border border-[var(--border-2)] bg-[var(--surface)] shadow-[var(--shadow-pop)]"
+                className="absolute right-0 z-50 mt-1.5 w-[min(360px,calc(100vw-24px))] overflow-hidden rounded border border-[var(--border-2)] bg-[var(--surface)] shadow-[var(--shadow-pop)]"
               >
                 <div className="flex min-h-11 items-center justify-between gap-2 border-b border-[var(--border)] px-3.5 py-2">
                   <h2 className="text-[13px] font-semibold text-[var(--text-primary)]">
@@ -274,7 +274,7 @@ export function TopBar({
                                 <span
                                   aria-hidden
                                   className={cn(
-                                    'mt-px flex size-7 shrink-0 items-center justify-center rounded-[6px] border',
+                                    'mt-px flex size-7 shrink-0 items-center justify-center rounded border',
                                     notification.type === 'gatepass_pending'
                                       ? 'border-[var(--brand-border)] bg-[var(--brand-soft)] text-[var(--brand-text)]'
                                       : 'border-[var(--info-border)] bg-[var(--info-soft)] text-[var(--info-text)]',
@@ -303,7 +303,7 @@ export function TopBar({
                                             e.stopPropagation()
                                             setSelectedNotification({ item, type: notification.type })
                                           }}
-                                          className="max-w-[9rem] truncate rounded-[4px] border border-[var(--border)] bg-[var(--surface-2)] px-1.5 py-0.5 text-[10.5px] font-medium text-[var(--text-tertiary)] transition-colors hover:bg-[var(--surface-hover)]"
+                                          className="max-w-[9rem] truncate rounded-xs border border-[var(--border)] bg-[var(--surface-2)] px-1.5 py-0.5 text-[10.5px] font-medium text-[var(--text-tertiary)] transition-colors hover:bg-[var(--surface-hover)]"
                                         >
                                           {item.client_name}
                                         </button>
@@ -338,12 +338,12 @@ export function TopBar({
                 type="button"
                 aria-label={`Account menu for ${user?.user_name ?? 'user'}`}
                 className={cn(
-                  'flex max-w-[168px] items-center gap-2 rounded-[6px] border border-transparent py-1 pr-1 pl-1',
+                  'flex max-w-[168px] items-center gap-2 rounded border border-transparent py-1 pr-1 pl-1',
                   'transition-colors duration-100 hover:bg-[var(--surface-hover)]',
                   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]',
                 )}
               >
-                <span className="flex size-7 shrink-0 items-center justify-center overflow-hidden rounded-[6px] bg-[var(--surface-3)] text-[11px] font-semibold text-[var(--text-secondary)]">
+                <span className="flex size-7 shrink-0 items-center justify-center overflow-hidden rounded bg-[var(--surface-3)] text-[11px] font-semibold text-[var(--text-secondary)]">
                   {user?.user_dp ? (
                     <img src={user.user_dp} alt="" className="size-full object-cover" />
                   ) : user ? (

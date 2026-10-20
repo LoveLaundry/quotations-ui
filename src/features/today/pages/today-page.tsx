@@ -136,7 +136,7 @@ function QuickActions() {
           <li key={a.to}>
             <Link
               to={a.to}
-              className="flex h-full items-center gap-2.5 rounded-[8px] border border-[var(--border-2)] bg-[var(--surface)] px-3 py-2.5 transition-colors duration-100 hover:border-[var(--border-strong)] hover:bg-[var(--surface-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
+              className="flex h-full items-center gap-2.5 rounded-sm border border-[var(--border-2)] bg-[var(--surface)] px-3 py-2.5 transition-colors duration-100 hover:border-[var(--border-strong)] hover:bg-[var(--surface-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
             >
               <a.icon size={16} aria-hidden className="shrink-0 text-[var(--text-muted)]" />
               <span className="min-w-0 flex-1 leading-tight">
@@ -206,7 +206,7 @@ function AttentionQueue() {
             {pendingAdj.length > 0 && (
               <div>
                 <p className="section-label">Quantity adjustments awaiting approval</p>
-                <div className="divide-y divide-[var(--border)] overflow-hidden rounded-[7px] border border-[var(--border)]">
+                <div className="divide-y divide-[var(--border)] overflow-hidden rounded border border-[var(--border)]">
                   {pendingAdj.map(a => (
                     <div key={a.id} className="flex items-center gap-3 px-3 py-2.5">
                       <div className="min-w-0 flex-1">
@@ -268,7 +268,7 @@ function AttentionQueue() {
                     </Button>
                   )}
                 </div>
-                <ul className="divide-y divide-[var(--border)] overflow-hidden rounded-[7px] border border-[var(--border)]">
+                <ul className="divide-y divide-[var(--border)] overflow-hidden rounded border border-[var(--border)]">
                   {issues.slice(0, 8).map((row) => (
                     <li key={row.id}>
                       <Link
@@ -377,9 +377,9 @@ function PendingDeliveries() {
               <li key={r.gate_pass_id}>
                 <Link
                   to={`/gate-passes/${r.gate_pass_id}`}
-                  className="-mx-1 flex items-center gap-3 rounded-[6px] px-1 py-2.5 transition-colors duration-100 hover:bg-[var(--surface-hover)]"
+                  className="-mx-1 flex items-center gap-3 rounded px-1 py-2.5 transition-colors duration-100 hover:bg-[var(--surface-hover)]"
                 >
-                  <span className="flex size-7 shrink-0 items-center justify-center rounded-[6px] border border-[var(--warning-border)] bg-[var(--warning-soft)] text-[11px] font-semibold tabular-nums text-[var(--warning-text)]">
+                  <span className="flex size-7 shrink-0 items-center justify-center rounded border border-[var(--warning-border)] bg-[var(--warning-soft)] text-[11px] font-semibold tabular-nums text-[var(--warning-text)]">
                     {r.total_pending}
                   </span>
                   <span className="min-w-0 flex-1">
@@ -420,7 +420,7 @@ const MONEY_TONE: Record<string, string> = {
  */
 function MoneyTile({ label, value, accent }: { label: string; value: number; accent?: 'green' | 'amber' | 'red' }) {
   return (
-    <div className="rounded-[7px] border border-[var(--border)] bg-[var(--surface)] px-3 py-2.5">
+    <div className="rounded border border-[var(--border)] bg-[var(--surface)] px-3 py-2.5">
       <p className="text-[11px] text-[var(--text-muted)]">{label}</p>
       <p className={cn('mt-0.5 text-[16px] font-semibold tabular-nums', accent ? MONEY_TONE[accent] : 'text-[var(--text-primary)]')}>
         {fmtMoney(value)}
@@ -661,7 +661,7 @@ function FastReturnCard() {
                 placeholder="Search gate pass number or client…"
                 aria-label="Search gate passes"
               />
-              <div className="mt-2 max-h-52 divide-y divide-[var(--border)] overflow-y-auto rounded-[7px] border border-[var(--border)]">
+              <div className="mt-2 max-h-52 divide-y divide-[var(--border)] overflow-y-auto rounded border border-[var(--border)]">
                 {matches.map(g => (
                   <button
                     key={g.id}
@@ -691,7 +691,7 @@ function FastReturnCard() {
             </div>
           ) : (
             <>
-              <div className="flex items-center justify-between gap-2 rounded-[7px] border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2.5">
+              <div className="flex items-center justify-between gap-2 rounded border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2.5">
                 <div className="min-w-0">
                   <p className="truncate text-[13px] font-medium text-[var(--text-primary)]">
                     #{gp.gate_pass_number} · {gp.client_name}
@@ -705,7 +705,7 @@ function FastReturnCard() {
                 </Button>
               </div>
 
-              <div className="divide-y divide-[var(--border)] overflow-hidden rounded-[7px] border border-[var(--border)]">
+              <div className="divide-y divide-[var(--border)] overflow-hidden rounded border border-[var(--border)]">
                 {(gp.items ?? []).filter(i => (i.received_qty || 0) > 0).map(it => {
                   const key = gpItemKey(it.item_name, it.specification)
                   const line = lines[key] ?? { qty: 0, action: 'RECEIVE_BACK', reason: 'OTHER' }
@@ -960,7 +960,7 @@ function CloseDayCard({ date }: { date: string }) {
           <>
             <dl className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
               {summaryRows.map((row) => (
-                <div key={row.key} className="rounded-[7px] border border-[var(--border)] bg-[var(--surface)] px-3 py-2.5">
+                <div key={row.key} className="rounded border border-[var(--border)] bg-[var(--surface)] px-3 py-2.5">
                   <dt className="text-[11px] text-[var(--text-muted)]">{row.label}</dt>
                   <dd
                     className={cn(

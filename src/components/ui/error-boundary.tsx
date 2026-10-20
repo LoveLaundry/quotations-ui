@@ -38,9 +38,9 @@ export class ErrorBoundary extends Component<Props, State> {
 
         return (
             <div className="flex min-h-screen items-center justify-center bg-[var(--bg)] px-4 py-10">
-                <div className="w-full max-w-md rounded-[10px] border border-[var(--border)] bg-[var(--surface)] p-6 shadow-[var(--shadow-md)] sm:p-7">
+                <div className="w-full max-w-md rounded border border-[var(--border)] bg-[var(--surface)] p-6 shadow-[var(--shadow-md)] sm:p-7">
                     <div className="flex items-start gap-3.5">
-                        <div className="flex size-9 shrink-0 items-center justify-center rounded-[8px] border border-[var(--danger-border)] bg-[var(--danger-soft)]">
+                        <div className="flex size-9 shrink-0 items-center justify-center rounded-sm border border-[var(--danger-border)] bg-[var(--danger-soft)]">
                             <AlertTriangle className="size-[18px] text-[var(--danger-text)]" aria-hidden />
                         </div>
                         <div className="min-w-0 flex-1">
@@ -55,7 +55,7 @@ export class ErrorBoundary extends Component<Props, State> {
                     </div>
 
                     {this.state.error?.message && (
-                        <details className="mt-5 rounded-[8px] border border-[var(--border)] bg-[var(--surface-2)]">
+                        <details className="mt-5 rounded-sm border border-[var(--border)] bg-[var(--surface-2)]">
                             <summary className="cursor-pointer select-none px-3 py-2 text-[12.5px] font-medium text-[var(--text-secondary)]">
                                 Error details
                             </summary>

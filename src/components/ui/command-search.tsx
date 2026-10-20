@@ -196,14 +196,14 @@ export function CommandSearch({ open, onClose }: CommandSearchProps) {
           placeholder="Search pages, hotels, quotations…"
           className="min-w-0 flex-1 bg-transparent text-[14px] text-[var(--text-primary)] outline-none placeholder:text-[var(--text-faint)]"
         />
-        <kbd className="hidden shrink-0 rounded-[3px] border border-[var(--border)] bg-[var(--surface-2)] px-1.5 py-0.5 text-[10.5px] font-semibold text-[var(--text-faint)] sm:inline">
+        <kbd className="hidden shrink-0 rounded-xs border border-[var(--border)] bg-[var(--surface-2)] px-1.5 py-0.5 text-[10.5px] font-semibold text-[var(--text-faint)] sm:inline">
           Esc
         </kbd>
         <button
           type="button"
           onClick={onClose}
           aria-label="Close search"
-          className="flex size-7 shrink-0 items-center justify-center rounded-[6px] text-[var(--text-faint)] transition-colors duration-100 hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] sm:hidden"
+          className="flex size-7 shrink-0 items-center justify-center rounded text-[var(--text-faint)] transition-colors duration-100 hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] sm:hidden"
         >
           <X size={16} />
         </button>
@@ -235,14 +235,14 @@ export function CommandSearch({ open, onClose }: CommandSearchProps) {
                   onMouseEnter={() => setActive(i)}
                   onClick={() => go(r.path)}
                   className={cn(
-                    'flex cursor-pointer items-center gap-2.5 rounded-[6px] px-2 py-2',
+                    'flex cursor-pointer items-center gap-2.5 rounded px-2 py-2',
                     isActive && 'bg-[var(--surface-hover)]',
                   )}
                 >
                   <span
                     aria-hidden
                     className={cn(
-                      'flex size-7 shrink-0 items-center justify-center rounded-[6px] border text-[11.5px] font-semibold',
+                      'flex size-7 shrink-0 items-center justify-center rounded border text-[11.5px] font-semibold',
                       isActive
                         ? 'border-[var(--brand-border)] bg-[var(--brand-soft)] text-[var(--brand-text)]'
                         : 'border-[var(--border)] bg-[var(--surface-2)] text-[var(--text-muted)]',
@@ -289,11 +289,11 @@ export function CommandSearch({ open, onClose }: CommandSearchProps) {
                     aria-selected={false}
                     tabIndex={-1}
                     onClick={() => go(`/quotations/${quo.id}`)}
-                    className="flex cursor-pointer items-center gap-2.5 rounded-[6px] px-2 py-2 hover:bg-[var(--surface-hover)]"
+                    className="flex cursor-pointer items-center gap-2.5 rounded px-2 py-2 hover:bg-[var(--surface-hover)]"
                   >
                     <span
                       aria-hidden
-                      className="flex size-7 shrink-0 items-center justify-center rounded-[6px] border border-[var(--border)] bg-[var(--surface-2)] text-[11.5px] font-semibold text-[var(--text-muted)]"
+                      className="flex size-7 shrink-0 items-center justify-center rounded border border-[var(--border)] bg-[var(--surface-2)] text-[11.5px] font-semibold text-[var(--text-muted)]"
                     >
                       {quo.client_name.slice(0, 1).toUpperCase()}
                     </span>

@@ -11,7 +11,7 @@ export function Skeleton({ className }: { className?: string }) {
   return (
     <div
       aria-hidden
-      className={cn('animate-shimmer rounded-[6px] bg-[var(--skeleton-from)]', className)}
+      className={cn('animate-shimmer rounded bg-[var(--skeleton-from)]', className)}
     />
   )
 }
@@ -19,7 +19,7 @@ export function Skeleton({ className }: { className?: string }) {
 /** A ledger-shaped placeholder: header rules plus body rows. */
 export function SkeletonTable({ rows = 6, cols = 5 }: { rows?: number; cols?: number }) {
   return (
-    <div className="rounded-[10px] border border-[var(--border)]" aria-busy="true" aria-live="polite">
+    <div className="rounded border border-[var(--border)]" aria-busy="true" aria-live="polite">
       <div className="flex gap-4 border-b border-[var(--border)] bg-[var(--surface-2)] px-3 py-2.5">
         {Array.from({ length: cols }).map((_, i) => (
           <Skeleton key={i} className="h-3 flex-1" />
@@ -41,7 +41,7 @@ export function SkeletonTable({ rows = 6, cols = 5 }: { rows?: number; cols?: nu
 /** A panel-shaped placeholder matching the standard panel header + body. */
 export function SkeletonPanel({ className }: { className?: string }) {
   return (
-    <div className={cn('rounded-[10px] border border-[var(--border)] p-4', className)} aria-busy="true">
+    <div className={cn('rounded border border-[var(--border)] p-4', className)} aria-busy="true">
       <Skeleton className="h-3.5 w-40" />
       <div className="mt-3 space-y-2">
         <Skeleton className="h-3.5 w-full" />

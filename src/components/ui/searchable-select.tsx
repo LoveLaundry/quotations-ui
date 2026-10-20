@@ -172,14 +172,14 @@ export function SearchableSelect({
       </button>
 
       {open && filtered.length > 0 && (
-        <div className="absolute z-50 mt-1 max-h-64 w-full overflow-hidden overflow-y-auto rounded-[8px] border border-[var(--border-2)] bg-[var(--surface)] p-1 shadow-[var(--shadow-pop)]">
+        <div className="absolute z-50 mt-1 max-h-64 w-full overflow-hidden overflow-y-auto rounded-sm border border-[var(--border-2)] bg-[var(--surface)] p-1 shadow-[var(--shadow-pop)]">
           {filtered.map((opt, i) => (
             <button
               key={opt.value}
               type="button"
               onMouseDown={e => { e.preventDefault(); commit(opt, false) }}
               onMouseEnter={() => setHighlight(i)}
-              className={`flex w-full cursor-pointer items-center gap-2 rounded-[6px] px-2.5 py-2 text-left text-[13px] transition-colors duration-75 ${
+              className={`flex w-full cursor-pointer items-center gap-2 rounded px-2.5 py-2 text-left text-[13px] transition-colors duration-75 ${
                 i === highlight ? 'bg-[var(--brand-soft)]' : 'hover:bg-[var(--surface-hover)]'
               }`}
             >

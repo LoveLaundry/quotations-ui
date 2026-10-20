@@ -140,7 +140,7 @@ export default function LaundriesPage() {
       header: 'Laundry',
       render: (l: Laundry) => (
         <span className="flex items-center gap-2">
-          <span className="flex size-8 shrink-0 items-center justify-center rounded-[8px] bg-[var(--surface-2)] text-[16px]" aria-hidden>
+          <span className="flex size-8 shrink-0 items-center justify-center rounded-sm bg-[var(--surface-2)] text-[16px]" aria-hidden>
             {l.icon || l.logo_url ? (l.icon ?? '🏭') : '🏭'}
           </span>
           <span className="min-w-0">
@@ -322,7 +322,7 @@ function LoadingState() {
   return (
     <div className="space-y-3" aria-busy="true" aria-live="polite" aria-label="Loading laundries">
       {[0, 1, 2, 3].map((i) => (
-        <div key={i} className="animate-shimmer h-14 rounded-[10px] bg-[var(--skeleton-from)]" aria-hidden />
+        <div key={i} className="animate-shimmer h-14 rounded bg-[var(--skeleton-from)]" aria-hidden />
       ))}
     </div>
   )
@@ -417,7 +417,7 @@ function LaundryForm({
                   role="radio"
                   aria-checked={icon === candidate}
                   onClick={() => setIcon(candidate)}
-                  className={`flex size-9 items-center justify-center rounded-[8px] border text-[18px] transition-colors ${icon === candidate ? 'border-[var(--brand)] bg-[var(--brand-soft)]' : 'border-[var(--border-2)] hover:bg-[var(--surface-hover)]'}`}
+                  className={`flex size-9 items-center justify-center rounded-sm border text-[18px] transition-colors ${icon === candidate ? 'border-[var(--brand)] bg-[var(--brand-soft)]' : 'border-[var(--border-2)] hover:bg-[var(--surface-hover)]'}`}
                 >
                   {candidate}
                 </button>
@@ -501,7 +501,7 @@ function LaundryDetail({
       <div className="menu-pop max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-xl bg-[var(--surface)] p-4 sm:p-6">
         <div className="mb-4 flex items-start justify-between gap-3">
           <div className="flex min-w-0 items-center gap-3">
-            <span className="flex size-11 shrink-0 items-center justify-center rounded-[10px] bg-[var(--surface-2)] text-[24px]" aria-hidden>
+            <span className="flex size-11 shrink-0 items-center justify-center rounded bg-[var(--surface-2)] text-[24px]" aria-hidden>
               {laundry.icon ?? '🏭'}
             </span>
             <div className="min-w-0">

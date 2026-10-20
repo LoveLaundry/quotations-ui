@@ -26,7 +26,7 @@ export function CompactMetrics({ items, className }: { items: MetricItem[]; clas
                 return (
                     <div
                         key={metric.id}
-                        className="flex items-center gap-3 rounded-xl border border-[#E4E7EC] bg-white px-3.5 py-3 shadow-[0_1px_2px_rgba(16,24,40,0.05)]"
+                        className="flex items-center gap-3 rounded-xl border border-[#E4E7EC] bg-white px-3.5 py-3 shadow-[var(--shadow-xs)]"
                     >
                         {metric.icon && (
                             <div className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border', tone.iconBg)}>

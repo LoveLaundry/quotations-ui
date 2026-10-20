@@ -71,7 +71,7 @@ export function LaundrySwitcher() {
           title="Switch active laundry"
           disabled={switching}
           className={cn(
-            'flex h-8 max-w-[184px] items-center gap-1.5 rounded-[6px] border px-2',
+            'flex h-8 max-w-[184px] items-center gap-1.5 rounded border px-2',
             'text-[12.5px] transition-colors duration-100 sm:max-w-[240px]',
             'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]',
             'border-[var(--border-2)] bg-[var(--surface)] text-[var(--text-tertiary)] hover:bg-[var(--surface-hover)]',

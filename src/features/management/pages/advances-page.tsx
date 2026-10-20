@@ -125,7 +125,7 @@ export default function AdvancesPage() {
         </div>
       </div>
 
-      <div className="overflow-x-auto rounded-[10px] border border-[var(--border)] bg-[var(--surface)]">
+      <div className="overflow-x-auto rounded border border-[var(--border)] bg-[var(--surface)]">
         <table className="w-full min-w-[720px] text-sm">
           <thead>
             <tr className="border-b bg-gray-50 dark:bg-gray-700/50">

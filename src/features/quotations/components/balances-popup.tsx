@@ -92,7 +92,7 @@ export function BalancesPopup({
               {lkr(totalOutstanding)}
             </p>
 
-            <dl className="mt-4 grid grid-cols-3 gap-px overflow-hidden rounded-[6px] border border-[var(--border)] bg-[var(--border)] sm:grid-cols-5">
+            <dl className="mt-4 grid grid-cols-3 gap-px overflow-hidden rounded border border-[var(--border)] bg-[var(--border)] sm:grid-cols-5">
               {AGING_BUCKETS.map((b) => {
                 const value = aging[b.key] as number
                 const pct = agingTotal > 0 ? (value / agingTotal) * 100 : 0
@@ -131,7 +131,7 @@ export function BalancesPopup({
             <div
               role="group"
               aria-label="Sort clients"
-              className="flex gap-0.5 rounded-[6px] border border-[var(--border)] bg-[var(--surface-2)] p-0.5"
+              className="flex gap-0.5 rounded border border-[var(--border)] bg-[var(--surface-2)] p-0.5"
             >
               {([
                 { key: 'outstanding' as const, label: 'Amount' },
@@ -142,9 +142,9 @@ export function BalancesPopup({
                   type="button"
                   onClick={() => setSortBy(s.key)}
                   aria-pressed={sortBy === s.key}
-                  className={`rounded-[4px] px-2.5 py-1 text-[12px] font-medium transition-colors duration-100 ${
+                  className={`rounded-xs px-2.5 py-1 text-[12px] font-medium transition-colors duration-100 ${
                     sortBy === s.key
-                      ? 'bg-[var(--surface)] text-[var(--text-primary)] shadow-[0_1px_2px_rgb(16_24_40/0.06)]'
+                      ? 'bg-[var(--surface)] text-[var(--text-primary)] shadow-[var(--shadow-xs)]'
                       : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'
                   }`}
                 >
@@ -215,7 +215,7 @@ export function BalancesPopup({
                         id={detailId}
                         className="border-t border-[var(--border)] bg-[var(--surface-2)] px-4 py-3 sm:px-5"
                       >
-                        <dl className="mb-3 grid grid-cols-1 sm:grid-cols-3 gap-px overflow-hidden rounded-[6px] border border-[var(--border)] bg-[var(--border)]">
+                        <dl className="mb-3 grid grid-cols-1 sm:grid-cols-3 gap-px overflow-hidden rounded border border-[var(--border)] bg-[var(--border)]">
                           {[
                             { label: 'Billed', value: client.total_billed },
                             { label: 'Paid', value: client.paid_amount },
@@ -241,7 +241,7 @@ export function BalancesPopup({
                               {client.gate_passes.map((gp) => (
                                 <li
                                   key={gp.gate_pass_number}
-                                  className="rounded-[6px] border border-[var(--border)] bg-[var(--surface)] px-2.5 py-2"
+                                  className="rounded border border-[var(--border)] bg-[var(--surface)] px-2.5 py-2"
                                 >
                                   <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
                                     <span className="font-[family-name:var(--font-mono)] text-[12px] font-semibold">
@@ -258,7 +258,7 @@ export function BalancesPopup({
                                     {(gp.items ?? []).map((item) => (
                                       <li
                                         key={`${item.item_name}-${item.specification}`}
-                                        className="inline-flex items-center gap-1.5 rounded-[4px] border border-[var(--border-2)] bg-[var(--surface-2)] px-1.5 py-0.5 text-[11px]"
+                                        className="inline-flex items-center gap-1.5 rounded-xs border border-[var(--border-2)] bg-[var(--surface-2)] px-1.5 py-0.5 text-[11px]"
                                       >
                                         <span className="font-medium">{item.item_name}</span>
                                         {item.specification && (
@@ -281,7 +281,7 @@ export function BalancesPopup({
                         {client.items && client.items.length > 0 && (
                           <div>
                             <p className="section-label mb-1.5">Pending items</p>
-                            <ul className="divide-y divide-[var(--border)] rounded-[6px] border border-[var(--border)] bg-[var(--surface)]">
+                            <ul className="divide-y divide-[var(--border)] rounded border border-[var(--border)] bg-[var(--surface)]">
                               {(client.items ?? []).map((item) => (
                                 <li
                                   key={`${item.item_name}-${item.specification}`}

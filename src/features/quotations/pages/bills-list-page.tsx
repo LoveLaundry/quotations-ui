@@ -186,7 +186,7 @@ export default function BillsListPage() {
         const paid = bill.paid_amount ?? 0
         const owed = bill.payment_status === 'CANCELLED' ? 0 : Math.max(0, bill.outstanding_amount ?? (grandTotal - paid))
         return (
-            <div className="rounded-xl border border-[#E4E7EC] bg-white p-4 shadow-[0_1px_2px_rgba(16,24,40,0.05)] transition-shadow hover:shadow-md">
+            <div className="rounded-xl border border-[#E4E7EC] bg-white p-4 shadow-[var(--shadow-xs)] transition-shadow hover:shadow-md">
                 <div className="flex items-start justify-between gap-2">
                     <div className="flex min-w-0 items-start gap-3">
                         <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border ${
@@ -255,7 +255,7 @@ export default function BillsListPage() {
 
     const renderUnbilledCard = (gp: UnbilledGatePass) => {
         return (
-            <div className="rounded-xl border border-[#E4E7EC] bg-white p-4 shadow-[0_1px_2px_rgba(16,24,40,0.05)] transition-shadow hover:shadow-md">
+            <div className="rounded-xl border border-[#E4E7EC] bg-white p-4 shadow-[var(--shadow-xs)] transition-shadow hover:shadow-md">
                 <div className="flex items-start justify-between gap-2">
                     <div className="flex min-w-0 items-start gap-3">
                         <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-[#FFEAD5] bg-[#FFF7ED] text-[#C2410C]">

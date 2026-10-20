@@ -25,7 +25,7 @@ export function PrintPrefixDialog({ open, onChoose, onCancel }: PrintPrefixDialo
       <DialogContent size="sm">
         <DialogHeader className="border-0 pb-0 pr-10">
           <div className="flex items-start gap-3">
-            <div className="flex size-9 shrink-0 items-center justify-center rounded-[8px] border border-[var(--brand-border)] bg-[var(--brand-soft)] text-[var(--brand-text)]">
+            <div className="flex size-9 shrink-0 items-center justify-center rounded-sm border border-[var(--brand-border)] bg-[var(--brand-soft)] text-[var(--brand-text)]">
               <Tag className="size-[18px]" aria-hidden />
             </div>
             <div className="min-w-0 pt-0.5">

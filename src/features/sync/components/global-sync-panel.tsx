@@ -189,7 +189,7 @@ function HotelCard({
               <span className="truncate text-[13px] font-semibold text-[var(--text-primary)]">
                 {hotel.client_name}
               </span>
-              <span className="shrink-0 rounded-[4px] bg-[var(--surface-3)] px-1.5 py-px text-[10px] font-bold text-[var(--text-muted)] tracking-wider uppercase">
+              <span className="shrink-0 rounded-xs bg-[var(--surface-3)] px-1.5 py-px text-[10px] font-bold text-[var(--text-muted)] tracking-wider uppercase">
                 {hotel.hotel_code}
               </span>
             </div>

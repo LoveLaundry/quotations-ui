@@ -120,7 +120,7 @@ export default function LoginPage() {
             <Logo size="lg" />
           </div>
 
-          <div className="route-enter rounded-[14px] border border-[var(--border)] bg-[var(--surface)] p-6 shadow-[var(--shadow-sm)] sm:p-7">
+          <div className="route-enter rounded-lg border border-[var(--border)] bg-[var(--surface)] p-6 shadow-[var(--shadow-sm)] sm:p-7">
             <div className="mb-5">
               <h1 className="text-[19px] font-semibold tracking-[-0.02em] text-[var(--text-primary)]">
                 {mode === 'setup' ? 'Create admin account' : 'Sign in'}
@@ -199,7 +199,7 @@ export default function LoginPage() {
                     onClick={() => setShowPw((v) => !v)}
                     aria-label={showPw ? 'Hide password' : 'Show password'}
                     aria-pressed={showPw}
-                    className="absolute top-1/2 right-1 flex size-8 -translate-y-1/2 cursor-pointer items-center justify-center rounded-[5px] text-[var(--text-faint)] transition-colors duration-100 hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
+                    className="absolute top-1/2 right-1 flex size-8 -translate-y-1/2 cursor-pointer items-center justify-center rounded-sm text-[var(--text-faint)] transition-colors duration-100 hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
                   >
                     {showPw ? <EyeSlash size={16} aria-hidden /> : <Eye size={16} aria-hidden />}
                   </button>
@@ -234,7 +234,7 @@ export default function LoginPage() {
                 className="empty:hidden"
               >
                 {error && (
-                  <div className="flex items-start gap-2 rounded-[7px] border border-[var(--danger-border)] bg-[var(--danger-soft)] px-3 py-2.5 text-[12.5px] text-[var(--danger-text)] outline-none">
+                  <div className="flex items-start gap-2 rounded border border-[var(--danger-border)] bg-[var(--danger-soft)] px-3 py-2.5 text-[12.5px] text-[var(--danger-text)] outline-none">
                     <WarningCircle size={15} aria-hidden className="mt-px shrink-0" />
                     <span className="min-w-0 flex-1">{error}</span>
                   </div>
@@ -285,7 +285,7 @@ export default function LoginPage() {
             <button
               type="button"
               onClick={() => navigate('/guest/shop')}
-              className="group flex w-full cursor-pointer items-center justify-between gap-3 rounded-[12px] border border-[var(--border)] bg-[var(--surface-2)] px-4 py-3 text-left transition-colors duration-100 hover:bg-[var(--surface-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
+              className="group flex w-full cursor-pointer items-center justify-between gap-3 rounded-md border border-[var(--border)] bg-[var(--surface-2)] px-4 py-3 text-left transition-colors duration-100 hover:bg-[var(--surface-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
             >
               <span className="min-w-0">
                 <span className="block text-[13px] font-medium text-[var(--text-primary)]">

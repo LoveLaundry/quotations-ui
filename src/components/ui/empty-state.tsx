@@ -102,7 +102,7 @@ export function TableEmptyRow({
     <tr>
       <td colSpan={colSpan} className={cn('px-4 py-10 text-center', className)}>
         <div className="flex flex-col items-center justify-center">
-          <div className="mb-2.5 flex size-9 items-center justify-center rounded-[8px] border border-[var(--border)] bg-[var(--surface)] text-[var(--text-faint)]">
+          <div className="mb-2.5 flex size-9 items-center justify-center rounded-sm border border-[var(--border)] bg-[var(--surface)] text-[var(--text-faint)]">
             {icon ?? <Inbox className="size-[18px]" aria-hidden />}
           </div>
           <p className="text-[13.5px] font-semibold text-[var(--text-primary)]">{title}</p>

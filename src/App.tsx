@@ -158,7 +158,7 @@ function App() {
               className: 'toast-custom',
               style: {
                 padding: '16px',
-                borderRadius: '12px',
+                borderRadius: 'var(--radius-md)',
                 fontSize: '14px',
                 fontWeight: '500',
               },

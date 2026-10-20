@@ -49,7 +49,7 @@ export function PageHeader({
               aria-label="Go back"
               title="Go back"
               className={cn(
-                'mt-0.5 inline-flex size-8 shrink-0 items-center justify-center rounded-[6px]',
+                'mt-0.5 inline-flex size-8 shrink-0 items-center justify-center rounded',
                 'border border-[var(--border-2)] bg-[var(--surface)] text-[var(--text-secondary)]',
                 'transition-colors duration-100 hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]',
               )}

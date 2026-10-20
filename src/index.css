@@ -103,18 +103,27 @@
   --text-lg: 15px;
   --text-xl: 16px;
 
-  --radius-xs: 3px;
-  --radius-sm: 4px;
-  --radius-DEFAULT: 6px;
-  --radius-md: 8px;
-  --radius-lg: 10px;
-  --radius-xl: 12px;
+  /* Soft/rounded product scale: generous radii on every surface so cards,
+     inputs and chips read as one tactile family. The ramp stays monotonic so
+     nesting (card > inner panel > chip) always steps up by a fixed amount.
+     `--radius` is the bare `rounded` utility's target so the unqualified class
+     follows the scale rather than Tailwind's 4px built-in. */
+  --radius: 10px;
+  --radius-xs: 6px;
+  --radius-sm: 8px;
+  --radius-DEFAULT: 10px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-2xl: 24px;
 
-  --shadow-xs: 0 1px 2px 0 rgb(16 24 40 / 0.05);
-  --shadow-sm: 0 1px 3px 0 rgb(16 24 40 / 0.08), 0 1px 2px -1px rgb(16 24 40 / 0.06);
-  --shadow-md: 0 4px 8px -2px rgb(16 24 40 / 0.08), 0 2px 4px -2px rgb(16 24 40 / 0.05);
-  --shadow-lg: 0 14px 24px -8px rgb(16 24 40 / 0.12), 0 4px 8px -4px rgb(16 24 40 / 0.06);
-  --shadow-pop: 0 10px 32px -8px rgb(16 24 40 / 0.18), 0 2px 6px -2px rgb(16 24 40 / 0.08);
+  /* Softer, more diffuse depth. Shadows stay low-opacity and wide so surfaces
+     lift without the hard edge that read as "boxy". */
+  --shadow-xs: 0 1px 2px 0 rgb(16 24 40 / 0.04);
+  --shadow-sm: 0 1px 3px 0 rgb(16 24 40 / 0.06), 0 1px 2px -1px rgb(16 24 40 / 0.05);
+  --shadow-md: 0 6px 16px -6px rgb(16 24 40 / 0.10), 0 2px 6px -2px rgb(16 24 40 / 0.05);
+  --shadow-lg: 0 18px 32px -12px rgb(16 24 40 / 0.14), 0 6px 12px -6px rgb(16 24 40 / 0.06);
+  --shadow-pop: 0 16px 40px -10px rgb(16 24 40 / 0.20), 0 4px 10px -3px rgb(16 24 40 / 0.08);
 
   --animate-fade-in: fade-in 120ms ease-out;
   --animate-slide-up: slide-up 160ms cubic-bezier(0.16, 1, 0.3, 1);
@@ -327,11 +336,7 @@
   --skeleton-via: #e3e7ed;
   --skeleton-to: #eef0f4;
 
-  --shadow-xs: 0 1px 2px 0 rgb(16 24 40 / 0.05);
-  --shadow-sm: 0 1px 3px 0 rgb(16 24 40 / 0.08), 0 1px 2px -1px rgb(16 24 40 / 0.06);
-  --shadow-md: 0 4px 8px -2px rgb(16 24 40 / 0.08), 0 2px 4px -2px rgb(16 24 40 / 0.05);
-  --shadow-lg: 0 14px 24px -8px rgb(16 24 40 / 0.12), 0 4px 8px -4px rgb(16 24 40 / 0.06);
-  --shadow-pop: 0 10px 32px -8px rgb(16 24 40 / 0.18), 0 2px 6px -2px rgb(16 24 40 / 0.08);
+  /* Light inherits the soft depth scale from @theme — no per-theme override. */
 
   /* Legacy aliases — pre-token code still references these names. */
   --red-50: #fef3f2;
@@ -402,11 +407,11 @@
   --skeleton-via: #c3cbd6;
   --skeleton-to: #e4e8ed;
 
-  --shadow-xs: 0 1px 2px 0 rgb(16 24 40 / 0.09);
-  --shadow-sm: 0 1px 3px 0 rgb(16 24 40 / 0.12), 0 1px 2px -1px rgb(16 24 40 / 0.08);
-  --shadow-md: 0 4px 8px -2px rgb(16 24 40 / 0.14), 0 2px 4px -2px rgb(16 24 40 / 0.08);
-  --shadow-lg: 0 14px 24px -8px rgb(16 24 40 / 0.18), 0 4px 8px -4px rgb(16 24 40 / 0.1);
-  --shadow-pop: 0 10px 32px -8px rgb(16 24 40 / 0.22), 0 2px 6px -2px rgb(16 24 40 / 0.1);
+  --shadow-xs: 0 1px 2px 0 rgb(16 24 40 / 0.07);
+  --shadow-sm: 0 1px 3px 0 rgb(16 24 40 / 0.10), 0 1px 2px -1px rgb(16 24 40 / 0.07);
+  --shadow-md: 0 6px 16px -6px rgb(16 24 40 / 0.14), 0 2px 6px -2px rgb(16 24 40 / 0.08);
+  --shadow-lg: 0 18px 32px -12px rgb(16 24 40 / 0.18), 0 6px 12px -6px rgb(16 24 40 / 0.10);
+  --shadow-pop: 0 16px 40px -10px rgb(16 24 40 / 0.22), 0 4px 10px -3px rgb(16 24 40 / 0.10);
 
   --red-50: #fdecec;
   --red-100: #f8d4d4;
@@ -476,11 +481,11 @@
   --skeleton-via: #d9e2f0;
   --skeleton-to: #e9f0fa;
 
-  --shadow-xs: 0 1px 2px 0 rgb(12 27 46 / 0.06);
-  --shadow-sm: 0 1px 3px 0 rgb(12 27 46 / 0.09), 0 1px 2px -1px rgb(12 27 46 / 0.06);
-  --shadow-md: 0 4px 8px -2px rgb(12 27 46 / 0.09), 0 2px 4px -2px rgb(12 27 46 / 0.05);
-  --shadow-lg: 0 14px 24px -8px rgb(12 27 46 / 0.14), 0 4px 8px -4px rgb(12 27 46 / 0.07);
-  --shadow-pop: 0 10px 32px -8px rgb(12 27 46 / 0.2), 0 2px 6px -2px rgb(12 27 46 / 0.08);
+  --shadow-xs: 0 1px 2px 0 rgb(12 27 46 / 0.05);
+  --shadow-sm: 0 1px 3px 0 rgb(12 27 46 / 0.08), 0 1px 2px -1px rgb(12 27 46 / 0.05);
+  --shadow-md: 0 6px 16px -6px rgb(12 27 46 / 0.11), 0 2px 6px -2px rgb(12 27 46 / 0.06);
+  --shadow-lg: 0 18px 32px -12px rgb(12 27 46 / 0.15), 0 6px 12px -6px rgb(12 27 46 / 0.07);
+  --shadow-pop: 0 16px 40px -10px rgb(12 27 46 / 0.22), 0 4px 10px -3px rgb(12 27 46 / 0.09);
 
   --red-50: #eff6ff;
   --red-100: #dbeafe;
@@ -550,11 +555,11 @@
   --skeleton-via: #d7e6db;
   --skeleton-to: #e9f4ec;
 
-  --shadow-xs: 0 1px 2px 0 rgb(10 31 18 / 0.06);
-  --shadow-sm: 0 1px 3px 0 rgb(10 31 18 / 0.09), 0 1px 2px -1px rgb(10 31 18 / 0.06);
-  --shadow-md: 0 4px 8px -2px rgb(10 31 18 / 0.09), 0 2px 4px -2px rgb(10 31 18 / 0.05);
-  --shadow-lg: 0 14px 24px -8px rgb(10 31 18 / 0.14), 0 4px 8px -4px rgb(10 31 18 / 0.07);
-  --shadow-pop: 0 10px 32px -8px rgb(10 31 18 / 0.2), 0 2px 6px -2px rgb(10 31 18 / 0.08);
+  --shadow-xs: 0 1px 2px 0 rgb(10 31 18 / 0.05);
+  --shadow-sm: 0 1px 3px 0 rgb(10 31 18 / 0.08), 0 1px 2px -1px rgb(10 31 18 / 0.05);
+  --shadow-md: 0 6px 16px -6px rgb(10 31 18 / 0.11), 0 2px 6px -2px rgb(10 31 18 / 0.06);
+  --shadow-lg: 0 18px 32px -12px rgb(10 31 18 / 0.15), 0 6px 12px -6px rgb(10 31 18 / 0.07);
+  --shadow-pop: 0 16px 40px -10px rgb(10 31 18 / 0.22), 0 4px 10px -3px rgb(10 31 18 / 0.09);
 
   --red-50: #f0fdf4;
   --red-100: #dcfce7;
@@ -624,11 +629,11 @@
   --skeleton-via: #e2dbcd;
   --skeleton-to: #efe9df;
 
-  --shadow-xs: 0 1px 2px 0 rgb(42 35 23 / 0.06);
-  --shadow-sm: 0 1px 3px 0 rgb(42 35 23 / 0.09), 0 1px 2px -1px rgb(42 35 23 / 0.06);
-  --shadow-md: 0 4px 8px -2px rgb(42 35 23 / 0.09), 0 2px 4px -2px rgb(42 35 23 / 0.05);
-  --shadow-lg: 0 14px 24px -8px rgb(42 35 23 / 0.14), 0 4px 8px -4px rgb(42 35 23 / 0.07);
-  --shadow-pop: 0 10px 32px -8px rgb(42 35 23 / 0.2), 0 2px 6px -2px rgb(42 35 23 / 0.08);
+  --shadow-xs: 0 1px 2px 0 rgb(42 35 23 / 0.05);
+  --shadow-sm: 0 1px 3px 0 rgb(42 35 23 / 0.08), 0 1px 2px -1px rgb(42 35 23 / 0.05);
+  --shadow-md: 0 6px 16px -6px rgb(42 35 23 / 0.11), 0 2px 6px -2px rgb(42 35 23 / 0.06);
+  --shadow-lg: 0 18px 32px -12px rgb(42 35 23 / 0.15), 0 6px 12px -6px rgb(42 35 23 / 0.07);
+  --shadow-pop: 0 16px 40px -10px rgb(42 35 23 / 0.22), 0 4px 10px -3px rgb(42 35 23 / 0.09);
 
   --red-50: #fdf3ec;
   --red-100: #f9ddc9;
@@ -698,11 +703,11 @@
   --skeleton-via: #cbd2dc;
   --skeleton-to: #e6eaef;
 
-  --shadow-xs: 0 1px 2px 0 rgb(15 23 42 / 0.07);
-  --shadow-sm: 0 1px 3px 0 rgb(15 23 42 / 0.1), 0 1px 2px -1px rgb(15 23 42 / 0.06);
-  --shadow-md: 0 4px 8px -2px rgb(15 23 42 / 0.1), 0 2px 4px -2px rgb(15 23 42 / 0.06);
-  --shadow-lg: 0 14px 24px -8px rgb(15 23 42 / 0.15), 0 4px 8px -4px rgb(15 23 42 / 0.07);
-  --shadow-pop: 0 10px 32px -8px rgb(15 23 42 / 0.22), 0 2px 6px -2px rgb(15 23 42 / 0.08);
+  --shadow-xs: 0 1px 2px 0 rgb(15 23 42 / 0.06);
+  --shadow-sm: 0 1px 3px 0 rgb(15 23 42 / 0.09), 0 1px 2px -1px rgb(15 23 42 / 0.05);
+  --shadow-md: 0 6px 16px -6px rgb(15 23 42 / 0.12), 0 2px 6px -2px rgb(15 23 42 / 0.07);
+  --shadow-lg: 0 18px 32px -12px rgb(15 23 42 / 0.16), 0 6px 12px -6px rgb(15 23 42 / 0.08);
+  --shadow-pop: 0 16px 40px -10px rgb(15 23 42 / 0.22), 0 4px 10px -3px rgb(15 23 42 / 0.09);
 
   --red-50: #fdecec;
   --red-100: #f8d4d4;
@@ -772,11 +777,11 @@
   --skeleton-via: #232c3d;
   --skeleton-to: #171e2b;
 
-  --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.4);
-  --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.5), 0 1px 2px -1px rgb(0 0 0 / 0.4);
-  --shadow-md: 0 4px 8px -2px rgb(0 0 0 / 0.55);
-  --shadow-lg: 0 14px 24px -8px rgb(0 0 0 / 0.6);
-  --shadow-pop: 0 10px 32px -8px rgb(0 0 0 / 0.7), 0 2px 6px -2px rgb(0 0 0 / 0.5);
+  --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.35);
+  --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.45), 0 1px 2px -1px rgb(0 0 0 / 0.35);
+  --shadow-md: 0 6px 16px -6px rgb(0 0 0 / 0.55), 0 2px 6px -2px rgb(0 0 0 / 0.4);
+  --shadow-lg: 0 18px 32px -12px rgb(0 0 0 / 0.6), 0 6px 12px -6px rgb(0 0 0 / 0.45);
+  --shadow-pop: 0 16px 40px -10px rgb(0 0 0 / 0.7), 0 4px 10px -3px rgb(0 0 0 / 0.5);
 
   --red-50: #2a1618;
   --red-100: #4d2325;
@@ -846,11 +851,11 @@
   --skeleton-via: #262e3a;
   --skeleton-to: #1a2029;
 
-  --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.4);
-  --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.5), 0 1px 2px -1px rgb(0 0 0 / 0.4);
-  --shadow-md: 0 4px 8px -2px rgb(0 0 0 / 0.55);
-  --shadow-lg: 0 14px 24px -8px rgb(0 0 0 / 0.6);
-  --shadow-pop: 0 10px 32px -8px rgb(0 0 0 / 0.7), 0 2px 6px -2px rgb(0 0 0 / 0.5);
+  --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.35);
+  --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.45), 0 1px 2px -1px rgb(0 0 0 / 0.35);
+  --shadow-md: 0 6px 16px -6px rgb(0 0 0 / 0.55), 0 2px 6px -2px rgb(0 0 0 / 0.4);
+  --shadow-lg: 0 18px 32px -12px rgb(0 0 0 / 0.6), 0 6px 12px -6px rgb(0 0 0 / 0.45);
+  --shadow-pop: 0 16px 40px -10px rgb(0 0 0 / 0.7), 0 4px 10px -3px rgb(0 0 0 / 0.5);
 
   --red-50: #2a1518;
   --red-100: #4a2022;
@@ -920,11 +925,11 @@
   --skeleton-via: #2b2b2b;
   --skeleton-to: #131313;
 
-  --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.8);
-  --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.9);
-  --shadow-md: 0 4px 8px -2px rgb(0 0 0 / 0.9);
-  --shadow-lg: 0 14px 24px -8px rgb(0 0 0 / 0.95);
-  --shadow-pop: 0 10px 32px -8px rgb(0 0 0 / 0.95), 0 2px 6px -2px rgb(0 0 0 / 0.8);
+  --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.7);
+  --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.85), 0 1px 2px -1px rgb(0 0 0 / 0.7);
+  --shadow-md: 0 6px 16px -6px rgb(0 0 0 / 0.9), 0 2px 6px -2px rgb(0 0 0 / 0.75);
+  --shadow-lg: 0 18px 32px -12px rgb(0 0 0 / 0.95), 0 6px 12px -6px rgb(0 0 0 / 0.8);
+  --shadow-pop: 0 16px 40px -10px rgb(0 0 0 / 0.95), 0 4px 10px -3px rgb(0 0 0 / 0.85);
 
   --red-50: #2a0d0d;
   --red-100: #5c1f1f;

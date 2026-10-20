@@ -81,7 +81,7 @@ export function ConfirmDialog({
       >
         <DialogHeader className="border-0 pb-0 pr-10">
           <div className="flex items-start gap-3">
-            <div className={cn(tone.icon, 'flex size-9 shrink-0 items-center justify-center rounded-[8px] border')}>
+            <div className={cn(tone.icon, 'flex size-9 shrink-0 items-center justify-center rounded-sm border')}>
               <Icon className="size-[18px]" aria-hidden />
             </div>
             <div className="min-w-0 pt-0.5">

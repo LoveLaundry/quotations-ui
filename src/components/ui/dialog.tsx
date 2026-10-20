@@ -60,8 +60,8 @@ const DialogContent = React.forwardRef<
       className={cn(
         // Mobile: bottom sheet. Desktop: centred dialog.
         'fixed z-50 flex flex-col bg-[var(--surface)] shadow-[var(--shadow-pop)]',
-        'inset-x-0 bottom-0 max-h-[92dvh] w-full rounded-t-[12px] border-t border-[var(--border)]',
-        'sm:inset-x-auto sm:top-1/2 sm:bottom-auto sm:left-1/2 sm:max-h-[calc(100dvh-48px)] sm:w-[calc(100vw-48px)] sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-[10px] sm:border',
+        'inset-x-0 bottom-0 max-h-[92dvh] w-full rounded-t-md border-t border-[var(--border)]',
+        'sm:inset-x-auto sm:top-1/2 sm:bottom-auto sm:left-1/2 sm:max-h-[calc(100dvh-48px)] sm:w-[calc(100vw-48px)] sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded sm:border',
         'outline-none',
         'data-[state=open]:animate-[slide-up_160ms_cubic-bezier(0.16,1,0.3,1)]',
         'data-[state=closed]:animate-[fade-in_100ms_ease-out_reverse]',
@@ -74,7 +74,7 @@ const DialogContent = React.forwardRef<
       {!hideClose && (
         <DialogPrimitive.Close
           className={cn(
-            'absolute top-2.5 right-2.5 z-10 flex size-7 items-center justify-center rounded-[6px]',
+            'absolute top-2.5 right-2.5 z-10 flex size-7 items-center justify-center rounded',
             'text-[var(--text-faint)] transition-colors duration-100',
             'hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]',
             'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]',

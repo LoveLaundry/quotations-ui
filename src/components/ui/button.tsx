@@ -20,7 +20,7 @@ import { cn } from '../../lib/utils'
 const buttonVariants = cva(
   [
     'relative inline-flex shrink-0 select-none items-center justify-center gap-1.5',
-    'whitespace-nowrap rounded-[6px] font-medium',
+    'whitespace-nowrap rounded font-medium',
     'border transition-[background-color,border-color,color,box-shadow] duration-100',
     'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--ring-offset)]',
     'disabled:pointer-events-none disabled:opacity-45',
@@ -33,11 +33,11 @@ const buttonVariants = cva(
           'border-[var(--brand)] bg-[var(--brand)] text-white',
           'hover:border-[var(--brand-hover)] hover:bg-[var(--brand-hover)]',
           'active:bg-[var(--brand-active)]',
-          'shadow-[0_1px_2px_rgb(16_24_40/0.08)]',
+          'shadow-[var(--shadow-xs)]',
         ].join(' '),
         secondary: [
           'border-[var(--border-2)] bg-[var(--surface)] text-[var(--text-secondary)]',
-          'shadow-[0_1px_2px_rgb(16_24_40/0.04)]',
+          'shadow-[var(--shadow-xs)]',
           'hover:border-[var(--border-strong)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]',
         ].join(' '),
         ghost: [

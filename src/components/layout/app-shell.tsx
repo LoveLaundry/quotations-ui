@@ -150,7 +150,7 @@ export function AppShell() {
     <div className="min-h-dvh bg-[var(--bg)]">
       <a
         href="#main-content"
-        className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:rounded-[6px] focus:bg-[var(--brand)] focus:px-3 focus:py-2 focus:text-[13px] focus:font-medium focus:text-white"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:rounded focus:bg-[var(--brand)] focus:px-3 focus:py-2 focus:text-[13px] focus:font-medium focus:text-white"
       >
         Skip to content
       </a>
@@ -188,7 +188,7 @@ export function AppShell() {
           <button
             type="button"
             onClick={exitSupport}
-            className="shrink-0 cursor-pointer rounded-[6px] bg-amber-950/90 px-2.5 py-1 text-[12px] font-bold text-amber-50 transition-colors hover:bg-amber-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+            className="shrink-0 cursor-pointer rounded bg-amber-950/90 px-2.5 py-1 text-[12px] font-bold text-amber-50 transition-colors hover:bg-amber-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
           >
             Exit support
           </button>

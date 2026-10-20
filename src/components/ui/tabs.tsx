@@ -86,7 +86,7 @@ export function Tabs({
             {item.count !== undefined && (
               <span
                 className={cn(
-                  'rounded-[3px] px-1 text-[11px] font-semibold tabular-nums',
+                  'rounded-xs px-1 text-[11px] font-semibold tabular-nums',
                   active
                     ? 'bg-[var(--brand-soft)] text-[var(--brand-text)]'
                     : 'bg-[var(--surface-3)] text-[var(--text-muted)]',

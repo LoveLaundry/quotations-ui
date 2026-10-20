@@ -161,7 +161,7 @@ export default function GatePassesPage() {
         const rewashed = (gp.items ?? []).filter(item => item.rewashed)
         const rewashedQty = rewashed.reduce((sum, item) => sum + (item.received_qty || 0), 0)
         return (
-            <div className="rounded-xl border border-[#E4E7EC] bg-white p-4 shadow-[0_1px_2px_rgba(16,24,40,0.05)] transition-shadow hover:shadow-md">
+            <div className="rounded-xl border border-[#E4E7EC] bg-white p-4 shadow-[var(--shadow-xs)] transition-shadow hover:shadow-md">
                 <div className="flex items-start justify-between gap-2">
                     <div className="flex min-w-0 items-start gap-3">
                         <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-[#BFDBFE] bg-[#EFF6FF] text-[#2563EB]">
@@ -238,7 +238,7 @@ export default function GatePassesPage() {
             <CompactMetrics items={kpis} />
 
             {/* Filters */}
-            <div className="rounded-xl border border-[#E4E7EC] bg-white p-3 shadow-[0_1px_2px_rgba(16,24,40,0.05)]">
+            <div className="rounded-xl border border-[#E4E7EC] bg-white p-3 shadow-[var(--shadow-xs)]">
                 <div className="flex flex-col gap-2.5 lg:flex-row lg:items-center">
                     <div className="relative flex-1">
                         <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#98A2B3]" />

@@ -302,7 +302,7 @@ export default function BillDetailPage() {
                   column), so on a phone they cannot fit. `overflow-hidden`
                   clipped the amounts off with no way to reach them — the
                   item column now yields and the frame scrolls. */}
-              <div className="overflow-x-auto rounded-[10px] border border-[var(--border)]">
+              <div className="overflow-x-auto rounded border border-[var(--border)]">
                 <table className="w-full min-w-[420px] text-left text-[13px]">
                   <thead className="border-b border-[var(--border)] bg-[var(--surface-2)] text-[11px] font-semibold uppercase tracking-wide text-[var(--text-muted)]">
                     <tr>

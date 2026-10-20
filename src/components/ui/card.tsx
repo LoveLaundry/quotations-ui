@@ -18,7 +18,7 @@ export const Card = React.forwardRef<HTMLDivElement, CardProps>(
     <div
       ref={ref}
       className={cn(
-        'rounded-[10px] border border-[var(--border)] bg-[var(--surface)]',
+        'rounded border border-[var(--border)] bg-[var(--surface)]',
         hover && 'card-interactive cursor-pointer',
         className,
       )}

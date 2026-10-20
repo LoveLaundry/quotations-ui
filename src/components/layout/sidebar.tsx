@@ -254,7 +254,7 @@ function SidebarContent({ collapsed, onToggle, isMobile, onMobileClose }: Sideba
             type="button"
             onClick={onMobileClose}
             aria-label="Close navigation"
-            className="ml-auto flex size-8 shrink-0 items-center justify-center rounded-[6px] text-[var(--sidebar-label)] transition-colors hover:bg-[var(--sidebar-hover-bg)] hover:text-[var(--sidebar-hover-text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
+            className="ml-auto flex size-8 shrink-0 items-center justify-center rounded text-[var(--sidebar-label)] transition-colors hover:bg-[var(--sidebar-hover-bg)] hover:text-[var(--sidebar-hover-text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
           >
             <X size={17} aria-hidden />
           </button>
@@ -295,7 +295,7 @@ function SidebarContent({ collapsed, onToggle, isMobile, onMobileClose }: Sideba
             type="button"
             onClick={onToggle}
             className={cn(
-              'flex w-full cursor-pointer items-center gap-2 rounded-[6px] px-2.5 py-2',
+              'flex w-full cursor-pointer items-center gap-2 rounded px-2.5 py-2',
               'text-[12px] font-medium text-[var(--sidebar-label)]',
               'transition-colors duration-100 hover:bg-[var(--sidebar-hover-bg)] hover:text-[var(--sidebar-hover-text)]',
               'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]',
@@ -347,7 +347,7 @@ function SidebarNavItem({
           aria-current={undefined}
           className={({ isActive }) =>
             cn(
-              'group relative flex items-center gap-2.5 rounded-[6px] py-2 pr-2.5 pl-2.5',
+              'group relative flex items-center gap-2.5 rounded py-2 pr-2.5 pl-2.5',
               'text-[13px] font-medium transition-colors duration-100',
               'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]',
               collapsed && 'justify-center px-0',
@@ -397,7 +397,7 @@ function SidebarNavItem({
                 to={child.to}
                 className={({ isActive }) =>
                   cn(
-                    'flex items-center gap-2 rounded-[5px] py-1.5 pr-2 pl-2.5 text-[12.5px] font-medium',
+                    'flex items-center gap-2 rounded-sm py-1.5 pr-2 pl-2.5 text-[12.5px] font-medium',
                     'transition-colors duration-100',
                     'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]',
                     isActive

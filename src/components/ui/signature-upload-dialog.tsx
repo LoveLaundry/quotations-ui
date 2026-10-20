@@ -102,7 +102,7 @@ export function SignatureUploadDialog({
             return (
               <div
                 key={slot.id}
-                className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2 rounded-[10px] border border-[var(--border)] p-3"
+                className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2 rounded border border-[var(--border)] p-3"
               >
                 <label className="flex min-w-0 flex-1 cursor-pointer items-center gap-2.5">
                   <input
@@ -119,14 +119,14 @@ export function SignatureUploadDialog({
                     <img
                       src={pending[slot.id]}
                       alt={slot.label}
-                      className="h-10 max-w-[110px] rounded-[4px] border border-[var(--border)] bg-[var(--surface)] object-contain"
+                      className="h-10 max-w-[110px] rounded-xs border border-[var(--border)] bg-[var(--surface)] object-contain"
                     />
                     <button
                       onClick={() => {
                         setPending(p => { const n = { ...p }; delete n[slot.id]; return n })
                         setPlace(p => ({ ...p, [slot.id]: false }))
                       }}
-                      className="cursor-pointer rounded-[6px] p-1.5 text-[var(--text-faint)] transition-colors hover:bg-[var(--surface-hover)] hover:text-[var(--danger-text)]"
+                      className="cursor-pointer rounded p-1.5 text-[var(--text-faint)] transition-colors hover:bg-[var(--surface-hover)] hover:text-[var(--danger-text)]"
                       aria-label={`Remove ${slot.label}`}
                     >
                       <X size={14} />
@@ -135,7 +135,7 @@ export function SignatureUploadDialog({
                 ) : (
                   <button
                     onClick={() => pickFor(slot.id)}
-                    className="inline-flex shrink-0 cursor-pointer items-center gap-1.5 rounded-[6px] border border-[var(--border-2)] px-3 py-1.5 text-[12px] font-semibold text-[var(--brand-text)] transition-colors hover:bg-[var(--brand-soft)]"
+                    className="inline-flex shrink-0 cursor-pointer items-center gap-1.5 rounded border border-[var(--border-2)] px-3 py-1.5 text-[12px] font-semibold text-[var(--brand-text)] transition-colors hover:bg-[var(--brand-soft)]"
                   >
                     <Upload size={14} /> Upload PNG
                   </button>

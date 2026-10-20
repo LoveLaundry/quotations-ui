@@ -102,7 +102,7 @@ export function SearchInput({
           type="button"
           onClick={() => onValueChange('')}
           aria-label="Clear search"
-          className="absolute top-1/2 right-1.5 flex size-6 -translate-y-1/2 items-center justify-center rounded-[4px] text-[var(--text-faint)] transition-colors hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
+          className="absolute top-1/2 right-1.5 flex size-6 -translate-y-1/2 items-center justify-center rounded-xs text-[var(--text-faint)] transition-colors hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
         >
           <X className="size-3.5" aria-hidden />
         </button>

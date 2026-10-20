@@ -29,12 +29,12 @@ import { BalancesPopup } from '../components/balances-popup'
 import { toast } from 'sonner'
 
 const TOOLTIP_STYLE = {
-  borderRadius: 6,
+  borderRadius: 10,
   border: '1px solid var(--border)',
   background: 'var(--surface)',
   color: 'var(--text-primary)',
   fontSize: 12,
-  boxShadow: '0 4px 12px rgb(16 24 40 / 0.08)',
+  boxShadow: '0 6px 16px rgb(16 24 40 / 0.10)',
 } as const
 
 const EXPORT_TARGETS = [
@@ -952,12 +952,12 @@ function YearlyTrendChart({ data }: { data: DashboardOverviewData }) {
               <XAxis dataKey="label" tick={{ fontSize: 10, fill: 'var(--text-muted)' }} />
               <YAxis tick={{ fontSize: 10, fill: 'var(--text-muted)' }} />
               <RechartsTooltip
-                contentStyle={{ borderRadius: 8, border: '1px solid var(--border)', fontSize: 12 }}
+                contentStyle={{ borderRadius: 10, border: '1px solid var(--border)', fontSize: 12 }}
                 formatter={(v: number, name: string) => [`LKR ${v.toLocaleString()}`, name]}
               />
               <Area type="monotone" dataKey="revenue" stroke="var(--brand)" fill="url(#gradYearRevenue)" strokeWidth={2} name="Revenue" />
               <Area type="monotone" dataKey="collected" stroke="var(--success-text)" fill="url(#gradYearCollected)" strokeWidth={2} name="Collected" />
-              <Bar dataKey="bills" fill="var(--border-2)" radius={[3, 3, 0, 0]} name="Bills" barSize={16} />
+              <Bar dataKey="bills" fill="var(--border-2)" radius={[6, 6, 0, 0]} name="Bills" barSize={16} />
               <Legend wrapperStyle={{ fontSize: 11.5, color: 'var(--text-muted)' }} iconType="plainline" />
             </ComposedChart>
           </ResponsiveContainer>

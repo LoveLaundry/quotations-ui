@@ -210,7 +210,7 @@ export function DataTable<T extends Record<string, any>>({
                       : undefined
                   }
                   className={cn(
-                    'rounded-[10px] border border-[var(--border)] bg-[var(--surface)] p-3',
+                    'rounded border border-[var(--border)] bg-[var(--surface)] p-3',
                     onRowClick && 'active:bg-[var(--surface-hover)]',
                     typeof rowClassName === 'function' ? rowClassName(row, idx) : rowClassName,
                   )}
@@ -281,7 +281,7 @@ export function DataTable<T extends Record<string, any>>({
 function TableEmpty() {
   return (
     <div className="flex flex-col items-center justify-center px-4 py-10 text-center">
-      <div className="mb-2.5 flex size-9 items-center justify-center rounded-[8px] border border-[var(--border)] bg-[var(--surface)] text-[var(--text-faint)]">
+      <div className="mb-2.5 flex size-9 items-center justify-center rounded-sm border border-[var(--border)] bg-[var(--surface)] text-[var(--text-faint)]">
         <Inbox className="size-[18px]" aria-hidden />
       </div>
       <p className="text-[13.5px] font-semibold text-[var(--text-primary)]">Nothing to show yet</p>
