@@ -211,7 +211,7 @@ export default function DeliveriesPage() {
             const pct = received > 0 ? Math.min(100, Math.round((delivered / received) * 100)) : 0
             return (
                 <div className="flex items-center gap-2">
-                    <div className="h-1.5 w-16 overflow-hidden rounded-full bg-[#E4E7EC]">
+                    <div className="h-1.5 w-16 overflow-hidden rounded-full bg-[var(--border)]">
                         <div className="h-full rounded-full bg-[#16A34A]" style={{ width: `${pct}%` }} />
                     </div>
                     <span className="whitespace-nowrap text-[11px] font-medium text-[#6B7280]">
@@ -228,7 +228,7 @@ export default function DeliveriesPage() {
                         <span
                             key={p.gate_pass_id}
                             title={`${p.gate_pass_number}: ${p.totals?.delivered_qty ?? 0}/${p.totals?.received_qty ?? 0} delivered, ${remaining} still owed`}
-                            className="whitespace-nowrap rounded-md border border-[#E4E7EC] bg-white px-1.5 py-0.5 font-mono text-[10px] font-semibold text-[#475467]"
+                            className="whitespace-nowrap rounded-md border border-[var(--border)] bg-white px-1.5 py-0.5 font-mono text-[10px] font-semibold text-[#475467]"
                         >
                             {p.gate_pass_number ?? `GP-${p.gate_pass_id.slice(-6).toUpperCase()}`}
                             <span className={remaining > 0 ? 'ml-1 text-[#EA580C]' : 'ml-1 text-[#16A34A]'}>
@@ -278,14 +278,14 @@ export default function DeliveriesPage() {
     const renderCard = (row: DeliveryRow) => {
         const delivery = row.delivery
         return (
-            <div className="rounded-xl border border-[#E4E7EC] bg-white p-4 shadow-[var(--shadow-xs)] transition-shadow hover:shadow-md">
+            <div className="rounded-xl border border-[var(--border)] bg-white p-4 shadow-[var(--shadow-xs)] transition-shadow hover:shadow-md">
                 <div className="flex items-start justify-between gap-2">
                     <div className="flex min-w-0 items-start gap-3">
                         <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-[#BBF7D0] bg-[#F0FDF4] text-[#16A34A]">
                             <Truck size={16} />
                         </div>
                         <div className="min-w-0">
-                            <p className="font-mono text-[12px] font-semibold text-[#101828]">
+                            <p className="font-mono text-[12px] font-semibold text-[var(--text-primary)]">
                                 DLV-{delivery.id.slice(-8).toUpperCase()}
                             </p>
                             <div className="mt-0.5 flex flex-wrap items-center gap-1.5">
@@ -302,14 +302,14 @@ export default function DeliveriesPage() {
                     <DeliveryStatusPill status={row.status} />
                 </div>
 
-                <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-[#F2F4F7] pt-3 text-[12px] text-[#6B7280]">
+                <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-[var(--border)] pt-3 text-[12px] text-[#6B7280]">
                     <span><span className="font-semibold text-[#374151]">{(delivery.items ?? []).length}</span> types</span>
                     <span>
                         by <span className="font-medium text-[#374151]">{delivery.delivered_by || '—'}</span>
                     </span>
                 </div>
 
-                <div className="mt-2 flex items-center justify-between gap-3 border-t border-[#F2F4F7] pt-2">
+                <div className="mt-2 flex items-center justify-between gap-3 border-t border-[var(--border)] pt-2">
                     <div className="flex-1">{renderProgress(delivery)}</div>
                     <EntityCardActions
                         onQuickView={() => setQuickView({ row })}
@@ -350,7 +350,7 @@ export default function DeliveriesPage() {
             <CompactMetrics items={kpis} />
 
             {/* Filters */}
-            <div className="rounded-xl border border-[#E4E7EC] bg-white p-3 shadow-[var(--shadow-xs)]">
+            <div className="rounded-xl border border-[var(--border)] bg-white p-3 shadow-[var(--shadow-xs)]">
                 <div className="flex flex-col gap-2.5 lg:flex-row lg:items-center">
                     <div className="relative flex-1">
                         <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#98A2B3]" />
@@ -359,7 +359,7 @@ export default function DeliveriesPage() {
                             value={searchInput}
                             onChange={event => setSearchInput(event.target.value)}
                             placeholder={`Search ${hotel ? hotel : 'all hotels'} by delivery no., item, person…`}
-                            className="h-10 w-full rounded-lg border border-[#E4E7EC] bg-white pl-9 pr-8 text-[13px] text-[#101828] shadow-sm outline-none focus:border-[#16A34A] focus:ring-2 focus:ring-[#16A34A]/10"
+                            className="h-10 w-full rounded-lg border border-[var(--border)] bg-white pl-9 pr-8 text-[13px] text-[var(--text-primary)] shadow-sm outline-none focus:border-[#16A34A] focus:ring-2 focus:ring-[#16A34A]/10"
                         />
                         {searchInput && (
                             <button
@@ -387,13 +387,13 @@ export default function DeliveriesPage() {
                 </div>
 
                 {showMore && (
-                    <div className="mt-3 grid gap-2.5 border-t border-[#F2F4F7] pt-3 sm:grid-cols-3">
+                    <div className="mt-3 grid gap-2.5 border-t border-[var(--border)] pt-3 sm:grid-cols-3">
                         <div className="relative">
                             <PackageCheck className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#98A2B3]" />
                             <select
                                 value={gpFilter}
                                 onChange={event => setGpFilter(event.target.value)}
-                                className="h-10 w-full cursor-pointer appearance-none rounded-lg border border-[#E4E7EC] bg-white pl-9 pr-3 text-[13px] text-[#101828] shadow-sm outline-none focus:border-[#16A34A] focus:ring-2 focus:ring-[#16A34A]/10"
+                                className="h-10 w-full cursor-pointer appearance-none rounded-lg border border-[var(--border)] bg-white pl-9 pr-3 text-[13px] text-[var(--text-primary)] shadow-sm outline-none focus:border-[#16A34A] focus:ring-2 focus:ring-[#16A34A]/10"
                             >
                                 <option value="">All Gate Passes</option>
                                 {gpOptions.map(gp => (
@@ -408,7 +408,7 @@ export default function DeliveriesPage() {
                                 value={dateFrom}
                                 onChange={event => setDateFrom(event.target.value)}
                                 aria-label="Delivered from"
-                                className="h-10 w-full rounded-lg border border-[#E4E7EC] bg-white pl-9 pr-3 text-[13px] text-[#101828] shadow-sm outline-none focus:border-[#16A34A] focus:ring-2 focus:ring-[#16A34A]/10"
+                                className="h-10 w-full rounded-lg border border-[var(--border)] bg-white pl-9 pr-3 text-[13px] text-[var(--text-primary)] shadow-sm outline-none focus:border-[#16A34A] focus:ring-2 focus:ring-[#16A34A]/10"
                             />
                         </div>
                         <div className="relative">
@@ -418,7 +418,7 @@ export default function DeliveriesPage() {
                                 value={dateTo}
                                 onChange={event => setDateTo(event.target.value)}
                                 aria-label="Delivered to"
-                                className="h-10 w-full rounded-lg border border-[#E4E7EC] bg-white pl-9 pr-3 text-[13px] text-[#101828] shadow-sm outline-none focus:border-[#16A34A] focus:ring-2 focus:ring-[#16A34A]/10"
+                                className="h-10 w-full rounded-lg border border-[var(--border)] bg-white pl-9 pr-3 text-[13px] text-[var(--text-primary)] shadow-sm outline-none focus:border-[#16A34A] focus:ring-2 focus:ring-[#16A34A]/10"
                             />
                         </div>
                     </div>

@@ -56,7 +56,7 @@ export default function ShopBillsDashboardPage() {
                   <Receipt className="h-4 w-4 text-[#6B7280]" />
                   <p className="text-[11px] font-semibold uppercase text-[#6B7280]">Total Bills</p>
                 </div>
-                {loadingSummary ? <Skeleton className="h-7 w-20" /> : <p className="text-[22px] font-bold text-[#101828]">{summary?.total_bills ?? 0}</p>}
+                {loadingSummary ? <Skeleton className="h-7 w-20" /> : <p className="text-[22px] font-bold text-[var(--text-primary)]">{summary?.total_bills ?? 0}</p>}
                 {loadingSummary ? <Skeleton className="h-4 w-16 mt-1" /> : <p className="text-[12px] text-[#98A2B3] mt-0.5">{summary?.period_bills ?? 0} in period</p>}
               </Card>
             </Link>
@@ -107,7 +107,7 @@ export default function ShopBillsDashboardPage() {
                       <div key={s.status} className="flex items-center justify-between p-2 rounded-lg bg-gray-50">
                         <span className={`inline-flex items-center rounded-md px-2 py-0.5 text-[11px] font-medium ${STATUS_COLORS[s.status] ?? 'bg-gray-100 text-gray-500'}`}>{s.status}</span>
                         <div className="text-right">
-                          <p className="text-[13px] font-semibold text-[#101828]">{s.count} bills</p>
+                          <p className="text-[13px] font-semibold text-[var(--text-primary)]">{s.count} bills</p>
                           <p className="text-[11px] text-[#6B7280]">{fmt(s.total)}</p>
                         </div>
                       </div>
@@ -127,9 +127,9 @@ export default function ShopBillsDashboardPage() {
                   <div className="space-y-2">
                     {(paymentData?.summary ?? []).map((p: any) => (
                       <div key={p.payment_status} className="flex items-center justify-between p-2 rounded-lg bg-gray-50">
-                        <span className="text-[12px] font-medium text-[#101828]">{(p.payment_status ?? 'DRAFT').replace('_', ' ')}</span>
+                        <span className="text-[12px] font-medium text-[var(--text-primary)]">{(p.payment_status ?? 'DRAFT').replace('_', ' ')}</span>
                         <div className="text-right">
-                          <p className="text-[13px] font-semibold text-[#101828]">{p.count}</p>
+                          <p className="text-[13px] font-semibold text-[var(--text-primary)]">{p.count}</p>
                           <p className="text-[11px] text-[#6B7280]">{fmt(p.total_outstanding)} due</p>
                         </div>
                       </div>
@@ -146,16 +146,16 @@ export default function ShopBillsDashboardPage() {
             <CardHeader><CardTitle className="text-[14px]">Quick Actions</CardTitle></CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                <Link to="/shop-bills" className="flex items-center gap-2 p-3 rounded-lg border border-[#E4E7EC] hover:border-[#DC2626]/40 hover:bg-red-50 transition text-[13px] font-medium text-[#101828]">
+                <Link to="/shop-bills" className="flex items-center gap-2 p-3 rounded-lg border border-[var(--border)] hover:border-[#DC2626]/40 hover:bg-red-50 transition text-[13px] font-medium text-[var(--text-primary)]">
                   <Receipt size={16} className="text-[#DC2626]" /> View All Bills
                 </Link>
-                <Link to="/shop-bills/new" className="flex items-center gap-2 p-3 rounded-lg border border-[#E4E7EC] hover:border-[#16A34A]/40 hover:bg-green-50 transition text-[13px] font-medium text-[#101828]">
+                <Link to="/shop-bills/new" className="flex items-center gap-2 p-3 rounded-lg border border-[var(--border)] hover:border-[#16A34A]/40 hover:bg-green-50 transition text-[13px] font-medium text-[var(--text-primary)]">
                   <CreditCard size={16} className="text-[#16A34A]" /> New Bill
                 </Link>
-                <Link to="/customers" className="flex items-center gap-2 p-3 rounded-lg border border-[#E4E7EC] hover:border-[#3538CD]/40 hover:bg-blue-50 transition text-[13px] font-medium text-[#101828]">
+                <Link to="/customers" className="flex items-center gap-2 p-3 rounded-lg border border-[var(--border)] hover:border-[#3538CD]/40 hover:bg-blue-50 transition text-[13px] font-medium text-[var(--text-primary)]">
                   <Users size={16} className="text-[#3538CD]" /> Client Statements
                 </Link>
-                <Link to="/reports" className="flex items-center gap-2 p-3 rounded-lg border border-[#E4E7EC] hover:border-[#D97706]/40 hover:bg-amber-50 transition text-[13px] font-medium text-[#101828]">
+                <Link to="/reports" className="flex items-center gap-2 p-3 rounded-lg border border-[var(--border)] hover:border-[#D97706]/40 hover:bg-amber-50 transition text-[13px] font-medium text-[var(--text-primary)]">
                   <TrendingUp size={16} className="text-[#D97706]" /> Reports
                 </Link>
               </div>

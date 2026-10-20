@@ -64,7 +64,7 @@ export const ORDER_STATUS_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
 }
 
 export const ORDER_STATUS_STYLE: Record<OrderStatus, string> = {
-  draft: 'bg-[#F2F4F7] text-[#475467] border-[#E4E7EC]',
+  draft: 'bg-[var(--border)] text-[#475467] border-[var(--border)]',
   received: 'bg-[#EFF4FF] text-[#3538CD] border-[#C7D7FE]',
   washing: 'bg-[#EFF4FF] text-[#3538CD] border-[#C7D7FE]',
   pressing: 'bg-[#FEF6E7] text-[#B54708] border-[#FCE7C0]',

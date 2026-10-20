@@ -104,7 +104,7 @@ export default function ProfilePage() {
       <div>
         <Breadcrumb items={[{ label: 'Dashboard', href: '/' }, { label: 'Profile' }]} />
         <div className="flex items-center gap-3 mt-1">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#F3F4F6] border border-[#E4E7EC]">
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[var(--surface-3)] border border-[var(--border)]">
             <RiUserLine className="h-4 w-4 text-[#374151]" />
           </div>
           <div>
@@ -152,8 +152,8 @@ export default function ProfilePage() {
                 />
               </div>
 
-              <h2 className="text-xl font-bold text-[#101828] mt-4">{user?.user_name}</h2>
-              <p className="text-[13px] mt-1 px-3 py-1 rounded-full bg-[#F3F4F6] text-[#374151] font-medium capitalize">
+              <h2 className="text-xl font-bold text-[var(--text-primary)] mt-4">{user?.user_name}</h2>
+              <p className="text-[13px] mt-1 px-3 py-1 rounded-full bg-[var(--surface-3)] text-[#374151] font-medium capitalize">
                 {user?.role_id?.toLowerCase()}
               </p>
 
@@ -176,7 +176,7 @@ export default function ProfilePage() {
                     type="button"
                     onClick={handleCancel}
                     disabled={isSaving}
-                    className="flex-1 px-4 py-2 rounded-lg border border-[#E4E7EC] text-[#374151] hover:bg-[#F9FAFB] transition-colors text-[13px] font-medium"
+                    className="flex-1 px-4 py-2 rounded-lg border border-[var(--border)] text-[#374151] hover:bg-[var(--surface-2)] transition-colors text-[13px] font-medium"
                   >
                     Cancel
                   </button>
@@ -214,7 +214,7 @@ export default function ProfilePage() {
 
         {/* Details Card */}
         <Card className="lg:col-span-2">
-          <CardHeader className="border-b border-[#F2F4F7]">
+          <CardHeader className="border-b border-[var(--border)]">
             <CardTitle>Personal Information</CardTitle>
           </CardHeader>
           <CardContent className="pt-6">
@@ -229,7 +229,7 @@ export default function ProfilePage() {
                   value={form.user_name}
                   onChange={(e) => setForm({ ...form, user_name: e.target.value })}
                   disabled={!isEditing}
-                  className="w-full px-4 py-2.5 rounded-lg border border-[#D0D5DD] bg-white text-[14px] focus:outline-none focus:ring-2 focus:ring-[#16A34A] focus:border-transparent disabled:bg-[#F9FAFB] disabled:text-[#667085] transition-all"
+                  className="w-full px-4 py-2.5 rounded-lg border border-[#D0D5DD] bg-white text-[14px] focus:outline-none focus:ring-2 focus:ring-[#16A34A] focus:border-transparent disabled:bg-[var(--surface-2)] disabled:text-[#667085] transition-all"
                   placeholder="Enter your full name"
                 />
               </div>
@@ -244,7 +244,7 @@ export default function ProfilePage() {
                   onChange={(e) => setForm({ ...form, bio_data: e.target.value })}
                   disabled={!isEditing}
                   rows={3}
-                  className="w-full px-4 py-2.5 rounded-lg border border-[#D0D5DD] bg-white text-[14px] focus:outline-none focus:ring-2 focus:ring-[#16A34A] focus:border-transparent disabled:bg-[#F9FAFB] disabled:text-[#667085] transition-all resize-none"
+                  className="w-full px-4 py-2.5 rounded-lg border border-[#D0D5DD] bg-white text-[14px] focus:outline-none focus:ring-2 focus:ring-[#16A34A] focus:border-transparent disabled:bg-[var(--surface-2)] disabled:text-[#667085] transition-all resize-none"
                   placeholder="Tell us about yourself"
                 />
               </div>
@@ -260,7 +260,7 @@ export default function ProfilePage() {
                   value={form.email}
                   onChange={(e) => setForm({ ...form, email: e.target.value })}
                   disabled={!isEditing}
-                  className="w-full px-4 py-2.5 rounded-lg border border-[#D0D5DD] bg-white text-[14px] focus:outline-none focus:ring-2 focus:ring-[#16A34A] focus:border-transparent disabled:bg-[#F9FAFB] disabled:text-[#667085] transition-all"
+                  className="w-full px-4 py-2.5 rounded-lg border border-[#D0D5DD] bg-white text-[14px] focus:outline-none focus:ring-2 focus:ring-[#16A34A] focus:border-transparent disabled:bg-[var(--surface-2)] disabled:text-[#667085] transition-all"
                   placeholder="your.email@example.com"
                 />
               </div>
@@ -276,7 +276,7 @@ export default function ProfilePage() {
                   value={form.mobile_number}
                   onChange={(e) => setForm({ ...form, mobile_number: e.target.value })}
                   disabled={!isEditing}
-                  className="w-full px-4 py-2.5 rounded-lg border border-[#D0D5DD] bg-white text-[14px] focus:outline-none focus:ring-2 focus:ring-[#16A34A] focus:border-transparent disabled:bg-[#F9FAFB] disabled:text-[#667085] transition-all"
+                  className="w-full px-4 py-2.5 rounded-lg border border-[#D0D5DD] bg-white text-[14px] focus:outline-none focus:ring-2 focus:ring-[#16A34A] focus:border-transparent disabled:bg-[var(--surface-2)] disabled:text-[#667085] transition-all"
                   placeholder="+94 XX XXX XXXX"
                 />
               </div>

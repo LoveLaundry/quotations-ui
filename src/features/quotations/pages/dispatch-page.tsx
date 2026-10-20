@@ -18,7 +18,7 @@ import { Portal } from '../../../components/ui/portal'
 
 const STATUS_STYLE: Record<DispatchStatus, string> = {
   SCHEDULED: 'bg-[#EFF4FF] text-[#3538CD] border-[#C7D7FE]',
-  ASSIGNED: 'bg-[#F2F4F7] text-[#475467] border-[#E4E7EC]',
+  ASSIGNED: 'bg-[var(--border)] text-[#475467] border-[var(--border)]',
   EN_ROUTE: 'bg-[#FEF6E7] text-[#B54708] border-[#FCE7C0]',
   COMPLETED: 'bg-[#ECFDF3] text-[#027A48] border-[#ABEFC6]',
   CANCELLED: 'bg-[#FEF3F2] text-[#B42318] border-[#FECDCA]',
@@ -62,7 +62,7 @@ export default function DispatchPage() {
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="flex items-center gap-2 text-[20px] font-bold text-[#101828]">
+          <h1 className="flex items-center gap-2 text-[20px] font-bold text-[var(--text-primary)]">
             <Truck className="h-5 w-5 text-[#E01E31]" />
             Dispatch &amp; Pickups
           </h1>
@@ -185,7 +185,7 @@ function JobCard({
       <CardContent className="space-y-3 pt-5">
         <div className="flex items-start justify-between gap-2">
           <div>
-            <p className="text-[14px] font-semibold text-[#101828]">{job.client_name}</p>
+            <p className="text-[14px] font-semibold text-[var(--text-primary)]">{job.client_name}</p>
             <span className="text-[11px] font-semibold uppercase tracking-wide text-[#98A2B3]">
               {job.job_type === 'pickup' ? 'Pickup' : 'Delivery'}
             </span>
@@ -304,7 +304,7 @@ function NewJobModal({
     <Portal><div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
       <div className="w-full max-w-md rounded-2xl bg-white shadow-xl">
         <div className="flex items-center justify-between border-b border-[#F2F2F2] px-5 py-4">
-          <h3 className="text-[15px] font-semibold text-[#101828]">New Dispatch Job</h3>
+          <h3 className="text-[15px] font-semibold text-[var(--text-primary)]">New Dispatch Job</h3>
           <button onClick={onClose} aria-label="Close" className="rounded-lg p-1.5 hover:bg-[#F5F5F5]">
             <X className="h-4 w-4" />
           </button>
@@ -442,7 +442,7 @@ function RoutePlannerModal({
     <Portal><div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
       <div className="w-full max-w-md rounded-2xl bg-white shadow-xl">
         <div className="flex items-center justify-between border-b border-[#F2F2F2] px-5 py-4">
-          <h3 className="text-[15px] font-semibold text-[#101828]">Plan Driver Route</h3>
+          <h3 className="text-[15px] font-semibold text-[var(--text-primary)]">Plan Driver Route</h3>
           <button onClick={onClose} aria-label="Close" className="rounded-lg p-1.5 hover:bg-[#F5F5F5]">
             <X className="h-4 w-4" />
           </button>
@@ -473,7 +473,7 @@ function RoutePlannerModal({
                     {i + 1}
                   </span>
                   <div>
-                    <p className="text-[13px] font-semibold text-[#101828]">
+                    <p className="text-[13px] font-semibold text-[var(--text-primary)]">
                       {stop.client_name}
                     </p>
                     <p className="text-[11px] text-[#667085]">

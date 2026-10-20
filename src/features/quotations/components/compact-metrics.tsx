@@ -15,7 +15,7 @@ const toneMap = {
     green: { iconBg: 'border-[#BBF7D0] bg-[#F0FDF4] text-[#16A34A]', valueText: 'text-[#15803D]' },
     amber: { iconBg: 'border-[#FDE68A] bg-[#FFFBEB] text-[#D97706]', valueText: 'text-[#B45309]' },
     red: { iconBg: 'border-[#FECACA] bg-[#FEF2F2] text-[#DC2626]', valueText: 'text-[#B91C1C]' },
-    gray: { iconBg: 'border-[#E4E7EC] bg-[#F9FAFB] text-[#475467]', valueText: 'text-[#374151]' },
+    gray: { iconBg: 'border-[var(--border)] bg-[var(--surface-2)] text-[#475467]', valueText: 'text-[#374151]' },
 }
 
 export function CompactMetrics({ items, className }: { items: MetricItem[]; className?: string }) {
@@ -26,7 +26,7 @@ export function CompactMetrics({ items, className }: { items: MetricItem[]; clas
                 return (
                     <div
                         key={metric.id}
-                        className="flex items-center gap-3 rounded-xl border border-[#E4E7EC] bg-white px-3.5 py-3 shadow-[var(--shadow-xs)]"
+                        className="flex items-center gap-3 rounded-xl border border-[var(--border)] bg-white px-3.5 py-3 shadow-[var(--shadow-xs)]"
                     >
                         {metric.icon && (
                             <div className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border', tone.iconBg)}>

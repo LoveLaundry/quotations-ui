@@ -50,7 +50,7 @@ function RecordPaymentModal({
     )
   }
 
-  const inputClass = 'h-10 w-full rounded-lg border border-[#E4E7EC] bg-white px-3 text-[13px] text-[#101828] outline-none focus:border-[#16A34A] focus:ring-2 focus:ring-[#16A34A]/10 transition'
+  const inputClass = 'h-10 w-full rounded-lg border border-[var(--border)] bg-white px-3 text-[13px] text-[var(--text-primary)] outline-none focus:border-[#16A34A] focus:ring-2 focus:ring-[#16A34A]/10 transition'
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
@@ -279,7 +279,7 @@ export default function BillDetailPage() {
         <div className="flex flex-col md:flex-row items-start gap-5">
           {/* Main Bill Container */}
           <Card className="flex-1 w-full">
-            <CardHeader className="border-b border-[#F2F4F7] pb-4">
+            <CardHeader className="border-b border-[var(--border)] pb-4">
               <div className="flex items-center gap-3">
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#EFF6FF] text-[#2563EB] border border-[#BFDBFE]">
                   <Building2 className="h-4.5 w-4.5" />
@@ -312,13 +312,13 @@ export default function BillDetailPage() {
                       <th className="px-4 py-2.5 text-right w-28">Total</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-[#F2F4F7] bg-white">
+                  <tbody className="divide-y divide-[var(--border)] bg-white">
                     {(bill.items ?? []).map((item, i) => (
                       <tr key={i}>
-                        <td className="px-4 py-3 font-medium text-[#101828]">{item.item_name}</td>
+                        <td className="px-4 py-3 font-medium text-[var(--text-primary)]">{item.item_name}</td>
                         <td className="px-4 py-3 text-right text-[#374151]">{item.quantity}</td>
                         <td className="px-4 py-3 text-right text-[#6B7280]">{item.unit_price.toFixed(2)}</td>
-                        <td className="px-4 py-3 text-right font-semibold text-[#101828]">{item.line_total.toFixed(2)}</td>
+                        <td className="px-4 py-3 text-right font-semibold text-[var(--text-primary)]">{item.line_total.toFixed(2)}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -326,12 +326,12 @@ export default function BillDetailPage() {
               </div>
 
               <div className="mt-6 flex justify-end">
-                <div className="w-full max-w-72 space-y-3 pt-4 border-t border-[#E4E7EC]">
+                <div className="w-full max-w-72 space-y-3 pt-4 border-t border-[var(--border)]">
                   <div className="flex items-center justify-between text-[13px] text-[#6B7280]">
                     <span>Total Quantity</span>
                     <span className="font-medium text-[#374151]">{bill.total_quantity} pcs</span>
                   </div>
-                  <div className="flex items-center justify-between border-t border-[#F2F4F7] pt-3 text-[14px] font-semibold text-[#101828]">
+                  <div className="flex items-center justify-between border-t border-[var(--border)] pt-3 text-[14px] font-semibold text-[var(--text-primary)]">
                     <span>Gross Amount</span>
                     <span>LKR {bill.total_amount.toFixed(2)}</span>
                   </div>
@@ -344,7 +344,7 @@ export default function BillDetailPage() {
           <div className="w-full md:w-80 space-y-5 flex-shrink-0">
             {/* Payment Summary */}
             <Card>
-              <CardHeader className="border-b border-[#F2F4F7] pb-3 bg-[#F9FAFB] rounded-t-lg">
+              <CardHeader className="border-b border-[var(--border)] pb-3 bg-[var(--surface-2)] rounded-t-lg">
                 <CardTitle className="flex items-center gap-2 text-[14px]">
                   <Wallet className="h-4 w-4 text-[#6B7280]" /> Payment Summary
                 </CardTitle>
@@ -352,7 +352,7 @@ export default function BillDetailPage() {
               <CardContent className="pt-4 space-y-4">
                 <div className="flex items-center justify-between">
                   <span className="text-[13px] text-[#6B7280]">Gross Amount</span>
-                  <span className="text-[14px] font-semibold text-[#101828]">LKR {bill.total_amount.toFixed(2)}</span>
+                  <span className="text-[14px] font-semibold text-[var(--text-primary)]">LKR {bill.total_amount.toFixed(2)}</span>
                 </div>
                 {isEditing ? (
                   <div className="space-y-3">
@@ -393,33 +393,33 @@ export default function BillDetailPage() {
                     {(bill.transport_fee ?? 0) > 0 && (
                       <div className="flex items-center justify-between">
                         <span className="text-[13px] text-[#6B7280]">Transport</span>
-                        <span className="text-[14px] font-semibold text-[#101828]">+ LKR {(bill.transport_fee ?? 0).toFixed(2)}</span>
+                        <span className="text-[14px] font-semibold text-[var(--text-primary)]">+ LKR {(bill.transport_fee ?? 0).toFixed(2)}</span>
                       </div>
                     )}
                     {(bill.taxes ?? 0) > 0 && (
                       <div className="flex items-center justify-between">
                         <span className="text-[13px] text-[#6B7280]">Taxes</span>
-                        <span className="text-[14px] font-semibold text-[#101828]">+ LKR {(bill.taxes ?? 0).toFixed(2)}</span>
+                        <span className="text-[14px] font-semibold text-[var(--text-primary)]">+ LKR {(bill.taxes ?? 0).toFixed(2)}</span>
                       </div>
                     )}
                     {(bill.additional_charges ?? 0) > 0 && (
                       <div className="flex items-center justify-between">
                         <span className="text-[13px] text-[#6B7280]">Other Charges</span>
-                        <span className="text-[14px] font-semibold text-[#101828]">+ LKR {(bill.additional_charges ?? 0).toFixed(2)}</span>
+                        <span className="text-[14px] font-semibold text-[var(--text-primary)]">+ LKR {(bill.additional_charges ?? 0).toFixed(2)}</span>
                       </div>
                     )}
                   </>
                 )}
-                <div className="flex items-center justify-between pt-2 border-t border-[#F2F4F7]">
-                  <span className="text-[13px] font-semibold text-[#101828]">Grand Total</span>
-                  <span className="text-[15px] font-bold text-[#101828]">LKR {grandTotal.toFixed(2)}</span>
+                <div className="flex items-center justify-between pt-2 border-t border-[var(--border)]">
+                  <span className="text-[13px] font-semibold text-[var(--text-primary)]">Grand Total</span>
+                  <span className="text-[15px] font-bold text-[var(--text-primary)]">LKR {grandTotal.toFixed(2)}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-[13px] text-[#6B7280]">Paid</span>
                   <span className="text-[14px] font-semibold text-[#16A34A]">LKR {(bill.paid_amount ?? 0).toFixed(2)}</span>
                 </div>
-                <div className="flex items-center justify-between pt-3 border-t border-[#F2F4F7]">
-                  <span className="text-[13px] font-semibold text-[#101828]">Available Deficit</span>
+                <div className="flex items-center justify-between pt-3 border-t border-[var(--border)]">
+                  <span className="text-[13px] font-semibold text-[var(--text-primary)]">Available Deficit</span>
                   <span className="text-[16px] font-bold text-[#DC2626]">LKR {outstanding.toFixed(2)}</span>
                 </div>
 
@@ -436,7 +436,7 @@ export default function BillDetailPage() {
 
             {/* Payment History */}
             <Card>
-              <CardHeader className="border-b border-[#F2F4F7] pb-3">
+              <CardHeader className="border-b border-[var(--border)] pb-3">
                 <CardTitle className="flex items-center gap-2 text-[14px]">
                   <FileText className="h-4 w-4 text-[#6B7280]" /> Payment History
                 </CardTitle>
@@ -447,11 +447,11 @@ export default function BillDetailPage() {
                 ) : payments.length === 0 ? (
                   <div className="py-6 text-center text-[12px] text-[#98A2B3]">No payments recorded yet.</div>
                 ) : (
-                  <div className="divide-y divide-[#F2F4F7]">
+                  <div className="divide-y divide-[var(--border)]">
                     {payments.map((p: any) => (
-                      <div key={p.id} className="p-4 flex items-center justify-between hover:bg-[#F9FAFB] transition">
+                      <div key={p.id} className="p-4 flex items-center justify-between hover:bg-[var(--surface-2)] transition">
                         <div>
-                          <p className="text-[13px] font-semibold text-[#101828]">LKR {p.amount.toFixed(2)}</p>
+                          <p className="text-[13px] font-semibold text-[var(--text-primary)]">LKR {p.amount.toFixed(2)}</p>
                           <div className="text-[11px] text-[#6B7280] flex items-center gap-1.5 mt-0.5">
                             <span className="font-medium text-[#374151]">{p.payment_method}</span>
                             <span>•</span>
@@ -459,7 +459,7 @@ export default function BillDetailPage() {
                           </div>
                         </div>
                         {p.reference && (
-                          <span className="text-[11px] bg-[#F3F4F6] text-[#4B5563] px-2 py-0.5 rounded-full border border-[#E5E7EB] font-mono">
+                          <span className="text-[11px] bg-[var(--surface-3)] text-[#4B5563] px-2 py-0.5 rounded-full border border-[var(--border)] font-mono">
                             {p.reference}
                           </span>
                         )}

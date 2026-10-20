@@ -26,7 +26,7 @@ interface LineItem {
 
 let nextKey = 1
 
-const inputClass = 'h-10 w-full rounded-lg border border-[#E4E7EC] bg-white px-3 text-[13px] text-[#101828] outline-none focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/10 transition'
+const inputClass = 'h-10 w-full rounded-lg border border-[var(--border)] bg-white px-3 text-[13px] text-[var(--text-primary)] outline-none focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/10 transition'
 
 export default function CreateShopBillPage() {
   const navigate = useNavigate()
@@ -222,7 +222,7 @@ export default function CreateShopBillPage() {
                 <label className="block text-[11px] font-semibold uppercase tracking-wide text-[#6B7280] mb-1.5">Quotation (optional)</label>
                 {selectedQuotation ? (
                   <div className="flex items-center gap-2">
-                    <span className="flex-1 text-[13px] text-[#101828] bg-[#F9FAFB] rounded-lg px-3 py-2 border border-[#E4E7EC]">
+                    <span className="flex-1 text-[13px] text-[var(--text-primary)] bg-[var(--surface-2)] rounded-lg px-3 py-2 border border-[var(--border)]">
                       {selectedQuotation.quotation_title ?? selectedQuotation.client_name}
                     </span>
                     <button type="button" onClick={() => { setSelectedQuotation(null); setQuotationSearch('') }} className="p-1 rounded hover:bg-gray-100 cursor-pointer">
@@ -236,15 +236,15 @@ export default function CreateShopBillPage() {
                       <span className="text-[#98A2B3]">Link a quotation…</span>
                     </button>
                     {showQuotationPicker && (
-                      <div className="mt-1 border border-[#E4E7EC] rounded-lg bg-white shadow-lg max-h-48 overflow-y-auto">
-                        <div className="p-2 border-b border-[#E4E7EC]">
-                          <input type="text" value={quotationSearch} onChange={e => setQuotationSearch(e.target.value)} placeholder="Search…" className="h-8 w-full rounded border border-[#E4E7EC] px-2 text-[12px] outline-none" />
+                      <div className="mt-1 border border-[var(--border)] rounded-lg bg-white shadow-lg max-h-48 overflow-y-auto">
+                        <div className="p-2 border-b border-[var(--border)]">
+                          <input type="text" value={quotationSearch} onChange={e => setQuotationSearch(e.target.value)} placeholder="Search…" className="h-8 w-full rounded border border-[var(--border)] px-2 text-[12px] outline-none" />
                         </div>
                         {filteredQuotations.length === 0 ? (
                           <div className="p-3 text-[12px] text-[#98A2B3] text-center">No quotations found</div>
                         ) : filteredQuotations.map(quo => (
                           <button key={quo.id} type="button" onClick={() => loadFromQuotation(quo)} className="w-full text-left px-3 py-2 hover:bg-[#FFF1F1] transition text-[12px] cursor-pointer">
-                            <p className="font-medium text-[#101828]">{quo.client_name}</p>
+                            <p className="font-medium text-[var(--text-primary)]">{quo.client_name}</p>
                             <p className="text-[#6B7280]">{quo.quotation_title ?? 'Untitled'}</p>
                           </button>
                         ))}
@@ -342,7 +342,7 @@ export default function CreateShopBillPage() {
               <div className="flex flex-col justify-center space-y-2 text-right">
                 <div className="flex justify-between md:justify-end md:gap-8">
                   <span className="text-[13px] text-[#6B7280]">Subtotal</span>
-                  <span className="text-[13px] font-medium text-[#101828]">{fmt(totals.totalAmount)}</span>
+                  <span className="text-[13px] font-medium text-[var(--text-primary)]">{fmt(totals.totalAmount)}</span>
                 </div>
                 {discounts > 0 && (
                   <div className="flex justify-between md:justify-end md:gap-8">
@@ -353,17 +353,17 @@ export default function CreateShopBillPage() {
                 {transportFee > 0 && (
                   <div className="flex justify-between md:justify-end md:gap-8">
                     <span className="text-[13px] text-[#6B7280]">Transport</span>
-                    <span className="text-[13px] font-medium text-[#101828]">+{fmt(transportFee)}</span>
+                    <span className="text-[13px] font-medium text-[var(--text-primary)]">+{fmt(transportFee)}</span>
                   </div>
                 )}
                 {taxes > 0 && (
                   <div className="flex justify-between md:justify-end md:gap-8">
                     <span className="text-[13px] text-[#6B7280]">Taxes</span>
-                    <span className="text-[13px] font-medium text-[#101828]">+{fmt(taxes)}</span>
+                    <span className="text-[13px] font-medium text-[var(--text-primary)]">+{fmt(taxes)}</span>
                   </div>
                 )}
-                <div className="border-t border-[#E4E7EC] pt-2 flex justify-between md:justify-end md:gap-8">
-                  <span className="text-[14px] font-semibold text-[#101828]">Grand Total</span>
+                <div className="border-t border-[var(--border)] pt-2 flex justify-between md:justify-end md:gap-8">
+                  <span className="text-[14px] font-semibold text-[var(--text-primary)]">Grand Total</span>
                   <span className="text-[18px] font-bold text-[#DC2626]">{fmt(totals.grandTotal)}</span>
                 </div>
                 <p className="text-[11px] text-[#98A2B3]">{totals.totalQuantity} item{totals.totalQuantity === 1 ? '' : 's'}</p>
@@ -378,7 +378,7 @@ export default function CreateShopBillPage() {
           <CardContent className="space-y-4">
             <div className="flex items-center gap-3">
               <input type="checkbox" id="recurring" checked={isRecurring} onChange={e => setIsRecurring(e.target.checked)} className="h-4 w-4 accent-[#DC2626] cursor-pointer" />
-              <label htmlFor="recurring" className="text-[13px] text-[#101828] cursor-pointer flex items-center gap-1.5">
+              <label htmlFor="recurring" className="text-[13px] text-[var(--text-primary)] cursor-pointer flex items-center gap-1.5">
                 <Repeat size={14} /> Make this a recurring bill
               </label>
             </div>
@@ -401,7 +401,7 @@ export default function CreateShopBillPage() {
             )}
             <div className="flex items-center gap-3">
               <input type="checkbox" id="locked" checked={locked} onChange={e => setLocked(e.target.checked)} className="h-4 w-4 accent-[#6B7280] cursor-pointer" />
-              <label htmlFor="locked" className="text-[13px] text-[#101828] cursor-pointer">Lock this bill (prevent edits after creation)</label>
+              <label htmlFor="locked" className="text-[13px] text-[var(--text-primary)] cursor-pointer">Lock this bill (prevent edits after creation)</label>
             </div>
           </CardContent>
         </Card>
@@ -427,8 +427,8 @@ export default function CreateShopBillPage() {
             ) : (
               <div className="space-y-2 max-h-60 overflow-y-auto">
                 {templates.map((t: BillTemplate) => (
-                  <button key={t.id} type="button" onClick={() => loadFromTemplate(t.id)} className="w-full text-left p-3 rounded-lg border border-[#E4E7EC] hover:bg-[#FFF1F1] transition cursor-pointer">
-                    <p className="text-[13px] font-medium text-[#101828]">{t.name}</p>
+                  <button key={t.id} type="button" onClick={() => loadFromTemplate(t.id)} className="w-full text-left p-3 rounded-lg border border-[var(--border)] hover:bg-[#FFF1F1] transition cursor-pointer">
+                    <p className="text-[13px] font-medium text-[var(--text-primary)]">{t.name}</p>
                     <p className="text-[11px] text-[#6B7280]">{t.items.length} items &middot; Used {t.use_count}x</p>
                   </button>
                 ))}

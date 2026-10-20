@@ -171,7 +171,7 @@ export default function LinenScanner() {
     )
   }
 
-  const stCfg = linen ? (LINEN_STATUS_CONFIG[linen.status as LinenStatus] ?? { label: linen.status, color: '#6B7280', bg: '#F3F4F6' }) : null
+  const stCfg = linen ? (LINEN_STATUS_CONFIG[linen.status as LinenStatus] ?? { label: linen.status, color: '#6B7280', bg: 'var(--surface-3)' }) : null
 
   return (
     <div className="space-y-5">

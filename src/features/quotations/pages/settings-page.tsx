@@ -1,4 +1,4 @@
-﻿import {
+import {
   RiSettings3Line, RiTextSpacing, RiSunLine, RiContrastLine, RiMoonLine, RiCheckLine, RiPaletteLine,
   RiDropLine, RiLeafLine, RiArtboard2Line, RiCloudLine, RiEyeLine,
 } from 'react-icons/ri'
@@ -35,13 +35,13 @@ const THEME_OPTIONS: ThemePresetOption[] = [
     value: 'light', label: 'Light', desc: 'The classic clean look',
     icon: <RiSunLine className="h-4 w-4 text-[#F59E0B]" />,
     group: 'light',
-    swatchBg: '#F9FAFB', swatchSurface: '#FFFFFF', swatchBorder: '#E5E7EB', swatchText: '#101828', swatchMuted: '#6B7280',
+    swatchBg: 'var(--surface-2)', swatchSurface: '#FFFFFF', swatchBorder: 'var(--border)', swatchText: '#101828', swatchMuted: '#6B7280',
   },
   {
     value: 'contrast', label: 'High Contrast', desc: 'Stronger borders, darker text',
     icon: <RiContrastLine className="h-4 w-4 text-[#2563EB]" />,
     group: 'light',
-    swatchBg: '#F3F4F6', swatchSurface: '#FFFFFF', swatchBorder: '#94A3B8', swatchText: '#0B1220', swatchMuted: '#334155',
+    swatchBg: 'var(--surface-3)', swatchSurface: '#FFFFFF', swatchBorder: '#94A3B8', swatchText: '#0B1220', swatchMuted: '#334155',
   },
   {
     value: 'ocean', label: 'Ocean Blue', desc: 'Cool blue-tinted professional',

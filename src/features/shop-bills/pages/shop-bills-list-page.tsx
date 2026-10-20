@@ -29,7 +29,7 @@ const PAYMENT_COLORS: Record<string, string> = {
   CANCELLED: 'bg-gray-100 text-gray-500 border border-gray-200',
 }
 
-const inputClass = 'h-10 w-full rounded-lg border border-[#E4E7EC] bg-white px-3 text-[13px] text-[#101828] outline-none focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/10 transition'
+const inputClass = 'h-10 w-full rounded-lg border border-[var(--border)] bg-white px-3 text-[13px] text-[var(--text-primary)] outline-none focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/10 transition'
 
 export default function ShopBillsListPage() {
   const navigate = useNavigate()
@@ -137,10 +137,10 @@ export default function ShopBillsListPage() {
       <div className="flex flex-wrap gap-3 items-center">
         <div className="relative flex-1 min-w-[200px]">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#98A2B3]" />
-          <input type="text" value={searchInput} onChange={e => setSearchInput(e.target.value)} placeholder="Search by bill number or client…" className="h-10 w-full rounded-lg border border-[#E4E7EC] bg-white pl-10 pr-9 text-[13px] text-[#101828] outline-none focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/10 transition" />
+          <input type="text" value={searchInput} onChange={e => setSearchInput(e.target.value)} placeholder="Search by bill number or client…" className="h-10 w-full rounded-lg border border-[var(--border)] bg-white pl-10 pr-9 text-[13px] text-[var(--text-primary)] outline-none focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/10 transition" />
           {search && <button type="button" onClick={() => setSearchInput('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#98A2B3] hover:text-[#374151] cursor-pointer" aria-label="Clear search"><X className="h-4 w-4" /></button>}
         </div>
-        <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} aria-label="Filter by status" className="h-10 rounded-lg border border-[#E4E7EC] bg-white px-3 text-[13px] text-[#101828] outline-none focus:border-[#DC2626] transition">
+        <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} aria-label="Filter by status" className="h-10 rounded-lg border border-[var(--border)] bg-white px-3 text-[13px] text-[var(--text-primary)] outline-none focus:border-[#DC2626] transition">
           <option value="">All Status</option>
           <option value="PENDING">Pending</option>
           <option value="PROCESSING">Processing</option>
@@ -148,14 +148,14 @@ export default function ShopBillsListPage() {
           <option value="COMPLETED">Completed</option>
           <option value="CANCELLED">Cancelled</option>
         </select>
-        <select value={paymentFilter} onChange={e => setPaymentFilter(e.target.value)} aria-label="Filter by payment status" className="h-10 rounded-lg border border-[#E4E7EC] bg-white px-3 text-[13px] text-[#101828] outline-none focus:border-[#DC2626] transition">
+        <select value={paymentFilter} onChange={e => setPaymentFilter(e.target.value)} aria-label="Filter by payment status" className="h-10 rounded-lg border border-[var(--border)] bg-white px-3 text-[13px] text-[var(--text-primary)] outline-none focus:border-[#DC2626] transition">
           <option value="">All Payments</option>
           <option value="DRAFT">Draft</option>
           <option value="PENDING">Pending</option>
           <option value="PARTIALLY_PAID">Partially Paid</option>
           <option value="PAID">Paid</option>
         </select>
-        <button onClick={() => toggleSort('grand_total')} className="flex items-center gap-1 h-10 px-3 rounded-lg border border-[#E4E7EC] bg-white text-[13px] text-[#101828] hover:bg-gray-50 cursor-pointer">
+        <button onClick={() => toggleSort('grand_total')} className="flex items-center gap-1 h-10 px-3 rounded-lg border border-[var(--border)] bg-white text-[13px] text-[var(--text-primary)] hover:bg-gray-50 cursor-pointer">
           <ArrowUpDown size={14} /> Amount {sortBy === 'grand_total' && (sortOrder === 'asc' ? '↑' : '↓')}
         </button>
         {hasFilters && <button onClick={clearFilters} className="text-[12px] text-[#DC2626] hover:text-[#B91C1C] underline cursor-pointer">Clear filters</button>}
@@ -184,7 +184,7 @@ export default function ShopBillsListPage() {
         <div className="space-y-2">
           {bills.map((bill: any) => (
             <div key={bill.id} className="flex items-center gap-2">
-              <input type="checkbox" checked={selectedIds.has(bill.id)} onChange={() => toggleSelect(bill.id)} aria-label={`Select bill ${bill.bill_number}`} className="h-4 w-4 rounded border-[#E4E7EC] accent-[#DC2626] cursor-pointer shrink-0" />
+              <input type="checkbox" checked={selectedIds.has(bill.id)} onChange={() => toggleSelect(bill.id)} aria-label={`Select bill ${bill.bill_number}`} className="h-4 w-4 rounded border-[var(--border)] accent-[#DC2626] cursor-pointer shrink-0" />
               <Link to={`/shop-bills/${bill.id}`} className="flex-1">
                 <Card className="flex items-center gap-4 p-4 hover:border-[#DC2626]/40 transition cursor-pointer">
                   <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#FFF1F1] text-[#DC2626] border border-[#FECACA]">
@@ -192,7 +192,7 @@ export default function ShopBillsListPage() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <p className="text-[13px] font-semibold text-[#101828]">{bill.bill_number}</p>
+                      <p className="text-[13px] font-semibold text-[var(--text-primary)]">{bill.bill_number}</p>
                       {bill.locked && <span className="text-[10px] bg-gray-200 text-gray-600 px-1.5 py-0.5 rounded">LOCKED</span>}
                       {bill.is_recurring && <span className="text-[10px] bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded">RECURRING</span>}
                       <span className={`inline-flex items-center rounded-md px-2 py-0.5 text-[11px] font-medium ${STATUS_COLORS[bill.status] ?? 'bg-gray-100 text-gray-500'}`}>{bill.status}</span>
@@ -202,7 +202,7 @@ export default function ShopBillsListPage() {
                     <p className="text-[12px] text-[#6B7280] mt-0.5 truncate">{bill.client_name} &middot; {bill.items.length} item{bill.items.length === 1 ? '' : 's'}</p>
                   </div>
                   <div className="text-right shrink-0">
-                    <p className="text-[14px] font-semibold text-[#101828]">{formatCurrency(bill.grand_total)}</p>
+                    <p className="text-[14px] font-semibold text-[var(--text-primary)]">{formatCurrency(bill.grand_total)}</p>
                     {bill.outstanding_amount > 0 && <p className="text-[11px] text-[#DC2626]">{formatCurrency(bill.outstanding_amount)} due</p>}
                   </div>
                 </Card>
@@ -227,10 +227,10 @@ export default function ShopBillsListPage() {
               ) : (
                 <div className="space-y-2 max-h-60 overflow-y-auto">
                   {templates.map((t: any) => (
-                    <div key={t.id} className="flex items-center gap-3 p-3 rounded-lg border border-[#E4E7EC] hover:bg-gray-50">
+                    <div key={t.id} className="flex items-center gap-3 p-3 rounded-lg border border-[var(--border)] hover:bg-gray-50">
                       <LayoutTemplate size={16} className="text-[#6B7280] shrink-0" />
                       <div className="flex-1 min-w-0">
-                        <p className="text-[13px] font-medium text-[#101828]">{t.name}</p>
+                        <p className="text-[13px] font-medium text-[var(--text-primary)]">{t.name}</p>
                         <p className="text-[11px] text-[#6B7280]">{t.items.length} items &middot; Used {t.use_count}x</p>
                       </div>
                       <button onClick={() => setTemplateDeleteId(t.id)} className="p-1 text-[#98A2B3] hover:text-[#DC2626] cursor-pointer" aria-label={`Delete template ${t.name}`}><Trash2 size={14} /></button>

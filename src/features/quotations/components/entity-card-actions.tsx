@@ -9,7 +9,7 @@ interface EntityCardActionsProps {
 }
 
 const iconBtn =
-    'flex h-7 w-7 items-center justify-center rounded-lg text-[#98A2B3] transition cursor-pointer hover:bg-[#F9FAFB]'
+    'flex h-7 w-7 items-center justify-center rounded-lg text-[#98A2B3] transition cursor-pointer hover:bg-[var(--surface-2)]'
 
 /**
  * Consistent row-action grammar across gate passes, deliveries and bills:

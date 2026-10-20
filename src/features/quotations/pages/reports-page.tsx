@@ -196,8 +196,8 @@ function StatusBadge({ status }: { status: string }) {
         : s === 'partial' || s === 'partially_paid'
           ? 'bg-[#EFF6FF] text-[#2563EB] border-[#BFDBFE]'
           : s === 'cancelled'
-            ? 'bg-[#F3F4F6] text-[#4B5563] border-[#E5E7EB]'
-            : 'bg-[#F9FAFB] text-[#374151] border-[#E4E7EC]'
+            ? 'bg-[var(--surface-3)] text-[#4B5563] border-[var(--border)]'
+            : 'bg-[var(--surface-2)] text-[#374151] border-[var(--border)]'
   return (
     <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-micro font-semibold capitalize ${cfg}`}>
       {status || '—'}
@@ -211,7 +211,7 @@ function ActionBadge({ action }: { action: string }) {
     a.includes('CREATE') ? 'bg-[#F0FDF4] text-[#16A34A] border-[#BBF7D0]' :
       a.includes('UPDATE') || a.includes('EDIT') ? 'bg-[#EFF6FF] text-[#2563EB] border-[#BFDBFE]' :
         a.includes('DELETE') || a.includes('REMOVE') ? 'bg-[#FFF1F1] text-[#DC2626] border-[#FECACA]' :
-          'bg-[#F9FAFB] text-[#374151] border-[#E4E7EC]'
+          'bg-[var(--surface-2)] text-[#374151] border-[var(--border)]'
   return (
     <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-micro font-semibold ${cfg}`}>
       {action || '—'}
@@ -269,7 +269,7 @@ function ClientSearch() {
             value={input}
             onChange={e => setInput(e.target.value)}
             placeholder="Enter client / hotel name…"
-            className="h-10 w-full rounded-lg border border-[#E4E7EC] bg-white pl-9 pr-3 text-[13px] outline-none focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/10 shadow-sm"
+            className="h-10 w-full rounded-lg border border-[var(--border)] bg-white pl-9 pr-3 text-[13px] outline-none focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/10 shadow-sm"
           />
           <datalist id="client-list">
             {clientNames.map(name => (
@@ -311,7 +311,7 @@ function ClientSearch() {
           {/* Pending Balances */}
           {data.pending_balances?.length > 0 && (
             <Card>
-              <CardHeader className="border-b border-[#F2F4F7] pb-3">
+              <CardHeader className="border-b border-[var(--border)] pb-3">
                 <div className="flex items-center gap-2">
                   <Clock className="h-4 w-4 text-[#D97706]" />
                   <CardTitle>Pending Item Balances</CardTitle>
@@ -319,17 +319,17 @@ function ClientSearch() {
               </CardHeader>
               <CardContent className="pt-0 overflow-x-auto">
                 <table className="w-full text-[13px]">
-                  <thead className="bg-[#F9FAFB] border-b border-[#E4E7EC]">
+                  <thead className="bg-[var(--surface-2)] border-b border-[var(--border)]">
                     <tr>
                       {['Item Name', 'Received', 'Delivered', 'Pending'].map(h => (
                         <th key={h} className="px-4 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wide" style={{ color: 'var(--text-tertiary)' }}>{h}</th>
                       ))}
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-[#F9FAFB]">
+                  <tbody className="divide-y divide-[var(--surface-2)]">
                     {data.pending_balances.map((b: any, i: number) => (
                       <tr key={i} className={b.pending > 0 ? 'bg-[#FFFBEB]' : ''}>
-                        <td className="px-4 py-3 font-medium text-[#101828]">{b.item_name}</td>
+                        <td className="px-4 py-3 font-medium text-[var(--text-primary)]">{b.item_name}</td>
                         <td className="px-4 py-3" style={{ color: 'var(--text-secondary)' }}>{b.received}</td>
                         <td className="px-4 py-3" style={{ color: 'var(--text-secondary)' }}>{b.delivered}</td>
                         <td className="px-4 py-3">
@@ -348,7 +348,7 @@ function ClientSearch() {
           {/* Recent Gate Passes */}
           {data.gatepasses?.length > 0 && (
             <Card>
-              <CardHeader className="border-b border-[#F2F4F7] pb-3">
+              <CardHeader className="border-b border-[var(--border)] pb-3">
                 <div className="flex items-center gap-2">
                   <ClipboardList className="h-4 w-4 text-[#2563EB]" />
                   <CardTitle>Recent Gate Passes</CardTitle>
@@ -356,20 +356,20 @@ function ClientSearch() {
               </CardHeader>
               <CardContent className="pt-0 overflow-x-auto">
                 <table className="w-full text-[13px]">
-                  <thead className="bg-[#F9FAFB] border-b border-[#E4E7EC]">
+                  <thead className="bg-[var(--surface-2)] border-b border-[var(--border)]">
                     <tr>
                       {['GP Number', 'Date', 'Received By', 'Items', 'Status'].map(h => (
                         <th key={h} className="px-4 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wide" style={{ color: 'var(--text-tertiary)' }}>{h}</th>
                       ))}
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-[#F9FAFB]">
+                  <tbody className="divide-y divide-[var(--surface-2)]">
                     {data.gatepasses.map((gp: any, i: number) => (
-                      <tr key={i} className="hover:bg-[#F9FAFB] transition-colors">
-                        <td className="px-4 py-3 font-mono text-[12px] font-semibold text-[#101828]">{gp.gate_pass_number}</td>
+                      <tr key={i} className="hover:bg-[var(--surface-2)] transition-colors">
+                        <td className="px-4 py-3 font-mono text-[12px] font-semibold text-[var(--text-primary)]">{gp.gate_pass_number}</td>
                         <td className="px-4 py-3" style={{ color: 'var(--text-secondary)' }}>{formatCalendarDate(gp.receiving_date)}</td>
                         <td className="px-4 py-3" style={{ color: 'var(--text-secondary)' }}>{gp.received_by || '—'}</td>
-                        <td className="px-4 py-3 font-semibold text-[#101828]">{gp.total_received ?? gp.items?.length ?? '—'}</td>
+                        <td className="px-4 py-3 font-semibold text-[var(--text-primary)]">{gp.total_received ?? gp.items?.length ?? '—'}</td>
                         <td className="px-4 py-3"><StatusBadge status={gp.status} /></td>
                       </tr>
                     ))}
@@ -382,7 +382,7 @@ function ClientSearch() {
           {/* Recent Bills */}
           {data.bills?.length > 0 && (
             <Card>
-              <CardHeader className="border-b border-[#F2F4F7] pb-3">
+              <CardHeader className="border-b border-[var(--border)] pb-3">
                 <div className="flex items-center gap-2">
                   <Banknote className="h-4 w-4 text-[#16A34A]" />
                   <CardTitle>Recent Bills</CardTitle>
@@ -390,19 +390,19 @@ function ClientSearch() {
               </CardHeader>
               <CardContent className="pt-0 overflow-x-auto">
                 <table className="w-full text-[13px]">
-                  <thead className="bg-[#F9FAFB] border-b border-[#E4E7EC]">
+                  <thead className="bg-[var(--surface-2)] border-b border-[var(--border)]">
                     <tr>
                       {['Bill No.', 'Date', 'Amount', 'Paid', 'Status'].map(h => (
                         <th key={h} className="px-4 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wide" style={{ color: 'var(--text-tertiary)' }}>{h}</th>
                       ))}
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-[#F9FAFB]">
+                  <tbody className="divide-y divide-[var(--surface-2)]">
                     {data.bills.map((b: any, i: number) => (
-                      <tr key={i} className="hover:bg-[#F9FAFB] transition-colors">
-                        <td className="px-4 py-3 font-mono text-[12px] font-semibold text-[#101828]">{b.bill_number || b.id}</td>
+                      <tr key={i} className="hover:bg-[var(--surface-2)] transition-colors">
+                        <td className="px-4 py-3 font-mono text-[12px] font-semibold text-[var(--text-primary)]">{b.bill_number || b.id}</td>
                         <td className="px-4 py-3" style={{ color: 'var(--text-secondary)' }}>{formatCalendarDate(b.created_at)}</td>
-                        <td className="px-4 py-3 font-semibold text-[#101828]">LKR {(b.total_amount || 0).toLocaleString()}</td>
+                        <td className="px-4 py-3 font-semibold text-[var(--text-primary)]">LKR {(b.total_amount || 0).toLocaleString()}</td>
                         <td className="px-4 py-3 font-semibold text-[#16A34A]">LKR {(b.paid_amount || 0).toLocaleString()}</td>
                         <td className="px-4 py-3"><StatusBadge status={b.payment_status} /></td>
                       </tr>
@@ -438,26 +438,26 @@ function ItemWiseReport() {
   if (!data.length) return <div className="py-12 text-center text-[13px]" style={{ color: 'var(--text-tertiary)' }}>No data available</div>
 
   return (
-    <div className="overflow-x-auto rounded-xl border border-[#E4E7EC]">
+    <div className="overflow-x-auto rounded-xl border border-[var(--border)]">
       <table className="w-full text-[13px]">
-        <thead className="bg-[#F9FAFB] border-b border-[#E4E7EC]">
+        <thead className="bg-[var(--surface-2)] border-b border-[var(--border)]">
           <tr>
             {['Item Name', 'Total Received', 'Total Delivered', 'Pending', 'Mismatches', 'Clients'].map(h => (
               <th key={h} className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wide" style={{ color: 'var(--text-tertiary)' }}>{h}</th>
             ))}
           </tr>
         </thead>
-        <tbody className="divide-y divide-[#F9FAFB] bg-white">
+        <tbody className="divide-y divide-[var(--surface-2)] bg-white">
           {data.map((row: any, i: number) => (
             <motion.tr
               key={i}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: i * 0.02 }}
-              className={`hover:bg-[#F9FAFB] transition-colors ${(row.pending > 0) ? 'bg-[#FFFBEB]' : ''}`}
+              className={`hover:bg-[var(--surface-2)] transition-colors ${(row.pending > 0) ? 'bg-[#FFFBEB]' : ''}`}
             >
-              <td className="px-4 py-3 font-medium text-[#101828]">{row.item_name || '—'}</td>
-              <td className="px-4 py-3 font-semibold text-[#101828]">{row.total_received ?? '—'}</td>
+              <td className="px-4 py-3 font-medium text-[var(--text-primary)]">{row.item_name || '—'}</td>
+              <td className="px-4 py-3 font-semibold text-[var(--text-primary)]">{row.total_received ?? '—'}</td>
               <td className="px-4 py-3 text-[#16A34A] font-semibold">{row.total_delivered ?? '—'}</td>
               <td className="px-4 py-3">
                 {row.pending > 0
@@ -495,29 +495,29 @@ function GatePassReport() {
   if (!data.length) return <div className="py-12 text-center text-[13px]" style={{ color: 'var(--text-tertiary)' }}>No data available</div>
 
   return (
-    <div className="overflow-x-auto rounded-xl border border-[#E4E7EC]">
+    <div className="overflow-x-auto rounded-xl border border-[var(--border)]">
       <table className="w-full text-[13px]">
-        <thead className="bg-[#F9FAFB] border-b border-[#E4E7EC]">
+        <thead className="bg-[var(--surface-2)] border-b border-[var(--border)]">
           <tr>
             {['GP No.', 'Client', 'Date', 'Received By', 'Received', 'Delivered', 'Mismatches', 'Status'].map(h => (
               <th key={h} className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wide whitespace-nowrap" style={{ color: 'var(--text-tertiary)' }}>{h}</th>
             ))}
           </tr>
         </thead>
-        <tbody className="divide-y divide-[#F9FAFB] bg-white">
+        <tbody className="divide-y divide-[var(--surface-2)] bg-white">
           {data.map((row: any, i: number) => (
             <motion.tr
               key={i}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: i * 0.02 }}
-              className="hover:bg-[#F9FAFB] transition-colors"
+              className="hover:bg-[var(--surface-2)] transition-colors"
             >
-              <td className="px-4 py-3 font-mono text-[12px] font-semibold text-[#101828] whitespace-nowrap">{row.gate_pass_number}</td>
-              <td className="px-4 py-3 font-medium text-[#101828]">{row.client_name}</td>
+              <td className="px-4 py-3 font-mono text-[12px] font-semibold text-[var(--text-primary)] whitespace-nowrap">{row.gate_pass_number}</td>
+              <td className="px-4 py-3 font-medium text-[var(--text-primary)]">{row.client_name}</td>
               <td className="px-4 py-3 whitespace-nowrap" style={{ color: 'var(--text-secondary)' }}>{formatCalendarDate(row.receiving_date)}</td>
               <td className="px-4 py-3" style={{ color: 'var(--text-secondary)' }}>{row.received_by || '—'}</td>
-              <td className="px-4 py-3 font-semibold text-[#101828]">{row.total_received ?? '—'}</td>
+              <td className="px-4 py-3 font-semibold text-[var(--text-primary)]">{row.total_received ?? '—'}</td>
               <td className="px-4 py-3 font-semibold text-[#16A34A]">{row.total_delivered ?? '—'}</td>
               <td className="px-4 py-3">
                 {row.mismatch_count > 0
@@ -567,7 +567,7 @@ function BillingReport() {
       {clientLoading && <Skeleton className="h-48" />}
       {clientData.length > 0 && (
         <Card>
-          <CardHeader className="border-b border-[#F2F4F7] pb-3">
+          <CardHeader className="border-b border-[var(--border)] pb-3">
             <div className="flex items-center gap-2">
               <Users className="h-4 w-4 text-[#2563EB]" />
               <CardTitle>Per-Client Billing Breakdown</CardTitle>
@@ -575,14 +575,14 @@ function BillingReport() {
           </CardHeader>
           <CardContent className="pt-0 overflow-x-auto">
             <table className="w-full text-[13px]">
-              <thead className="bg-[#F9FAFB] border-b border-[#E4E7EC]">
+              <thead className="bg-[var(--surface-2)] border-b border-[var(--border)]">
                 <tr>
                   {['Client', 'Gate Passes', 'Total Billed', 'Paid', 'Outstanding', 'Status'].map(h => (
                     <th key={h} className="px-4 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wide whitespace-nowrap" style={{ color: 'var(--text-tertiary)' }}>{h}</th>
                   ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#F9FAFB]">
+              <tbody className="divide-y divide-[var(--surface-2)]">
                 {clientData.map((row: any, i: number) => {
                   const outstanding = (row.total_billed || 0) - (row.paid_amount || 0)
                   return (
@@ -591,11 +591,11 @@ function BillingReport() {
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       transition={{ delay: i * 0.02 }}
-                      className={`hover:bg-[#F9FAFB] transition-colors ${outstanding > 0 ? 'bg-[#FFFBEB]' : ''}`}
+                      className={`hover:bg-[var(--surface-2)] transition-colors ${outstanding > 0 ? 'bg-[#FFFBEB]' : ''}`}
                     >
-                      <td className="px-4 py-3 font-semibold text-[#101828]">{row.client_name}</td>
+                      <td className="px-4 py-3 font-semibold text-[var(--text-primary)]">{row.client_name}</td>
                       <td className="px-4 py-3" style={{ color: 'var(--text-secondary)' }}>{row.gate_pass_count ?? '—'}</td>
-                      <td className="px-4 py-3 font-semibold text-[#101828]">LKR {(row.total_billed || 0).toLocaleString()}</td>
+                      <td className="px-4 py-3 font-semibold text-[var(--text-primary)]">LKR {(row.total_billed || 0).toLocaleString()}</td>
                       <td className="px-4 py-3 font-semibold text-[#16A34A]">LKR {(row.paid_amount || 0).toLocaleString()}</td>
                       <td className="px-4 py-3">
                         {outstanding > 0
@@ -631,28 +631,28 @@ function AuditLog() {
   if (!data.length) return <div className="py-12 text-center text-[13px]" style={{ color: 'var(--text-tertiary)' }}>No audit entries found</div>
 
   return (
-    <div className="overflow-x-auto rounded-xl border border-[#E4E7EC]">
+    <div className="overflow-x-auto rounded-xl border border-[var(--border)]">
       <table className="w-full text-[13px]">
-        <thead className="bg-[#F9FAFB] border-b border-[#E4E7EC]">
+        <thead className="bg-[var(--surface-2)] border-b border-[var(--border)]">
           <tr>
             {['Time', 'User', 'Action', 'Entity', 'Entity ID', 'Details'].map(h => (
               <th key={h} className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wide whitespace-nowrap" style={{ color: 'var(--text-tertiary)' }}>{h}</th>
             ))}
           </tr>
         </thead>
-        <tbody className="divide-y divide-[#F9FAFB] bg-white">
+        <tbody className="divide-y divide-[var(--surface-2)] bg-white">
           {(data as any[]).map((row, i) => (
             <motion.tr
               key={i}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: i * 0.01 }}
-              className="hover:bg-[#F9FAFB] transition-colors"
+              className="hover:bg-[var(--surface-2)] transition-colors"
             >
               <td className="px-4 py-3 text-[12px] whitespace-nowrap" style={{ color: 'var(--text-secondary)' }}>
                 {formatTimestamp(row.timestamp)}
               </td>
-              <td className="px-4 py-3 font-medium text-[#101828]">{row.user_id || '—'}</td>
+              <td className="px-4 py-3 font-medium text-[var(--text-primary)]">{row.user_id || '—'}</td>
               <td className="px-4 py-3"><ActionBadge action={row.action} /></td>
               <td className="px-4 py-3 font-medium" style={{ color: 'var(--text-secondary)' }}>{row.entity || '—'}</td>
               <td className="px-4 py-3 font-mono text-[11px]" style={{ color: 'var(--text-tertiary)' }}>{row.entity_id ? String(row.entity_id).slice(-8) : '—'}</td>
@@ -846,7 +846,7 @@ export default function ReportsPage() {
                 'flex items-center gap-2 rounded-xl px-4 py-2.5 text-[13px] font-medium whitespace-nowrap transition cursor-pointer',
                 activeTab === id
                   ? 'bg-[#DC2626] text-white shadow-sm'
-                  : 'hover:bg-[#F3F4F6]',
+                  : 'hover:bg-[var(--surface-3)]',
               ].join(' ')}
               style={activeTab !== id ? { color: 'var(--text-secondary)' } : {}}
             >

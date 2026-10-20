@@ -230,7 +230,7 @@ export default function CreateReturnPage() {
 
       {/* Gate Pass Selection */}
       <Card className="p-5">
-        <h3 className="text-[14px] font-semibold text-[#101828] mb-3">Gate Pass</h3>
+        <h3 className="text-[14px] font-semibold text-[var(--text-primary)] mb-3">Gate Pass</h3>
         {gpLoading ? (
           <div className="h-10 rounded-lg bg-gray-100 animate-pulse" />
         ) : gpError ? (
@@ -242,9 +242,9 @@ export default function CreateReturnPage() {
               value={gpSearch}
               onChange={(e) => setGpSearch(e.target.value)}
               placeholder="Search gate pass number or client…"
-              className="h-9 w-full rounded-lg border border-[#E4E7EC] bg-white px-3 text-[13px] outline-none focus:border-[#D97706] mb-2"
+              className="h-9 w-full rounded-lg border border-[var(--border)] bg-white px-3 text-[13px] outline-none focus:border-[#D97706] mb-2"
             />
-            <div className="max-h-48 overflow-y-auto border border-[#E4E7EC] rounded-lg">
+            <div className="max-h-48 overflow-y-auto border border-[var(--border)] rounded-lg">
               {gatePasses
                 .filter((gp) => {
                   if (!gpSearch.trim()) return true
@@ -278,7 +278,7 @@ export default function CreateReturnPage() {
                   >
                     <div className="flex justify-between items-center">
                       <span className="font-mono text-[#6B7280]">{gp.gate_pass_number}</span>
-                      <span className="text-[#101828]">{gp.client_name}</span>
+                      <span className="text-[var(--text-primary)]">{gp.client_name}</span>
                     </div>
                     <div className="text-[11px] text-[#98A2B3] mt-0.5">
                       {(gp.items ?? []).length} item types · {(gp.items ?? []).reduce((s, i) => s + i.received_qty, 0)} pcs
@@ -301,7 +301,7 @@ export default function CreateReturnPage() {
             <div className="flex items-center justify-between">
               <div>
                 <span className="text-[12px] text-[#98A2B3]">Selected: </span>
-                <span className="text-[13px] font-semibold text-[#101828]">{selectedGP.gate_pass_number}</span>
+                <span className="text-[13px] font-semibold text-[var(--text-primary)]">{selectedGP.gate_pass_number}</span>
                 <span className="text-[12px] text-[#98A2B3]"> — {selectedGP.client_name}</span>
               </div>
               <button onClick={() => { setSelectedGP(null); setClientName(''); setGpSelections({}); setDeliveries([]); setSelectedDeliveryId('') }} className="text-[12px] text-[#DC2626] hover:underline cursor-pointer">Clear</button>
@@ -315,7 +315,7 @@ export default function CreateReturnPage() {
         <Card className="p-5">
           <div className="flex items-center gap-2 mb-3">
             <Truck className="h-4 w-4 text-[#6B7280]" />
-            <h3 className="text-[14px] font-semibold text-[#101828]">Link Delivery (Optional)</h3>
+            <h3 className="text-[14px] font-semibold text-[var(--text-primary)]">Link Delivery (Optional)</h3>
           </div>
           <p className="text-[12px] text-[#98A2B3] mb-2">Link this return to a specific delivery if applicable.</p>
           <div className="space-y-1.5 max-h-40 overflow-y-auto">
@@ -323,7 +323,7 @@ export default function CreateReturnPage() {
               type="button"
               onClick={() => setSelectedDeliveryId('')}
               className={`w-full text-left px-3 py-2 rounded-lg text-[13px] border transition cursor-pointer ${
-                !selectedDeliveryId ? 'border-amber-300 bg-amber-50 font-semibold' : 'border-[#E4E7EC] hover:bg-gray-50'
+                !selectedDeliveryId ? 'border-amber-300 bg-amber-50 font-semibold' : 'border-[var(--border)] hover:bg-gray-50'
               }`}
             >
               No delivery linked
@@ -334,12 +334,12 @@ export default function CreateReturnPage() {
                 type="button"
                 onClick={() => setSelectedDeliveryId(dl.id)}
                 className={`w-full text-left px-3 py-2 rounded-lg text-[13px] border transition cursor-pointer ${
-                  selectedDeliveryId === dl.id ? 'border-amber-300 bg-amber-50 font-semibold' : 'border-[#E4E7EC] hover:bg-gray-50'
+                  selectedDeliveryId === dl.id ? 'border-amber-300 bg-amber-50 font-semibold' : 'border-[var(--border)] hover:bg-gray-50'
                 }`}
               >
                 <div className="flex justify-between items-center">
                   <span className="text-[#6B7280] font-mono text-[11px]">{dl.id.slice(-8).toUpperCase()}</span>
-                  <span className="text-[#101828]">{dl.delivered_by} · {(dl.items ?? []).length} items</span>
+                  <span className="text-[var(--text-primary)]">{dl.delivered_by} · {(dl.items ?? []).length} items</span>
                 </div>
               </button>
             ))}
@@ -350,7 +350,7 @@ export default function CreateReturnPage() {
       {/* Return Items */}
       <Card className="p-5">
         <div className="flex items-center justify-between mb-3">
-          <h3 className="text-[14px] font-semibold text-[#101828]">Returned Items</h3>
+          <h3 className="text-[14px] font-semibold text-[var(--text-primary)]">Returned Items</h3>
           <Button variant="outline" size="sm" onClick={addCustomItem}>
             <Plus className="h-3.5 w-3.5" /> Custom Item
           </Button>
@@ -369,7 +369,7 @@ export default function CreateReturnPage() {
                   <div
                     key={gi}
                     className={`rounded-lg border p-3 transition ${
-                      isSelected ? 'border-amber-300 bg-amber-50' : 'border-[#E4E7EC] bg-white hover:bg-gray-50'
+                      isSelected ? 'border-amber-300 bg-amber-50' : 'border-[var(--border)] bg-white hover:bg-gray-50'
                     }`}
                   >
                     <label className="flex items-center gap-3 cursor-pointer">
@@ -381,7 +381,7 @@ export default function CreateReturnPage() {
                       />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
-                          <span className="text-[13px] font-medium text-[#101828]">{gpItem.item_name}</span>
+                          <span className="text-[13px] font-medium text-[var(--text-primary)]">{gpItem.item_name}</span>
                           {gpItem.specification && (
                             <span className="rounded px-1.5 py-0.5 text-[9px] font-bold text-white bg-gray-500">
                               {gpItem.specification}
@@ -405,7 +405,7 @@ export default function CreateReturnPage() {
                             max={gpItem.received_qty}
                             value={sel.returned_qty}
                             onChange={(e) => updateGPItem(gi, 'returned_qty', parseInt(e.target.value) || 1)}
-                            className="h-8 w-full rounded border border-[#E4E7EC] bg-white px-2 text-[12px] outline-none focus:border-[#D97706]"
+                            className="h-8 w-full rounded border border-[var(--border)] bg-white px-2 text-[12px] outline-none focus:border-[#D97706]"
                           />
                         </div>
                         <div>
@@ -414,7 +414,7 @@ export default function CreateReturnPage() {
                             ref={gpGrid.registerCell(rIdx, 1)}
                             value={sel.reason}
                             onChange={(e) => updateGPItem(gi, 'reason', e.target.value)}
-                            className="h-8 w-full rounded border border-[#E4E7EC] bg-white px-2 text-[12px] outline-none focus:border-[#D97706]"
+                            className="h-8 w-full rounded border border-[var(--border)] bg-white px-2 text-[12px] outline-none focus:border-[#D97706]"
                           >
                             {REASONS.map((r) => (
                               <option key={r.value} value={r.value}>{r.label}</option>
@@ -427,7 +427,7 @@ export default function CreateReturnPage() {
                             ref={gpGrid.registerCell(rIdx, 2)}
                             value={sel.condition}
                             onChange={(e) => updateGPItem(gi, 'condition', e.target.value)}
-                            className="h-8 w-full rounded border border-[#E4E7EC] bg-white px-2 text-[12px] outline-none focus:border-[#D97706]"
+                            className="h-8 w-full rounded border border-[var(--border)] bg-white px-2 text-[12px] outline-none focus:border-[#D97706]"
                           >
                             {CONDITIONS.map((c) => (
                               <option key={c.value} value={c.value}>{c.label}</option>
@@ -440,7 +440,7 @@ export default function CreateReturnPage() {
                             ref={gpGrid.registerCell(rIdx, 3)}
                             value={sel.action}
                             onChange={(e) => updateGPItem(gi, 'action', e.target.value)}
-                            className="h-8 w-full rounded border border-[#E4E7EC] bg-white px-2 text-[12px] outline-none focus:border-[#D97706]"
+                            className="h-8 w-full rounded border border-[var(--border)] bg-white px-2 text-[12px] outline-none focus:border-[#D97706]"
                           >
                             {ACTIONS.map((a) => (
                               <option key={a.value} value={a.value}>{a.label}</option>
@@ -462,7 +462,7 @@ export default function CreateReturnPage() {
             <p className="text-[12px] font-semibold text-[#6B7280] mb-2">Custom items:</p>
             <div className="space-y-3" onKeyDown={customGrid.handleKeyDown}>
               {customItems.map((item, idx) => (
-                <div key={idx} className="rounded-lg border border-[#E4E7EC] p-4 space-y-3">
+                <div key={idx} className="rounded-lg border border-[var(--border)] p-4 space-y-3">
                   <div className="flex items-center justify-between">
                     <span className="text-[12px] font-semibold text-[#6B7280]">Custom Item</span>
                     <button onClick={() => removeCustomItem(idx)} className="text-[#98A2B3] hover:text-[#DC2626] cursor-pointer">
@@ -478,7 +478,7 @@ export default function CreateReturnPage() {
                         value={item.item_name}
                         onChange={(e) => updateCustomItem(idx, 'item_name', e.target.value)}
                         placeholder="e.g. Towel, Bed Sheet"
-                        className="h-9 w-full rounded-lg border border-[#E4E7EC] bg-white px-3 text-[13px] outline-none focus:border-[#D97706]"
+                        className="h-9 w-full rounded-lg border border-[var(--border)] bg-white px-3 text-[13px] outline-none focus:border-[#D97706]"
                       />
                     </div>
                     <div>
@@ -489,7 +489,7 @@ export default function CreateReturnPage() {
                         value={item.specification || ''}
                         onChange={(e) => updateCustomItem(idx, 'specification', e.target.value || undefined)}
                         placeholder="e.g. White, King"
-                        className="h-9 w-full rounded-lg border border-[#E4E7EC] bg-white px-3 text-[13px] outline-none focus:border-[#D97706]"
+                        className="h-9 w-full rounded-lg border border-[var(--border)] bg-white px-3 text-[13px] outline-none focus:border-[#D97706]"
                       />
                     </div>
                     <div>
@@ -500,7 +500,7 @@ export default function CreateReturnPage() {
                         min={1}
                         value={item.returned_qty}
                         onChange={(e) => updateCustomItem(idx, 'returned_qty', parseInt(e.target.value) || 1)}
-                        className="h-9 w-full rounded-lg border border-[#E4E7EC] bg-white px-3 text-[13px] outline-none focus:border-[#D97706]"
+                        className="h-9 w-full rounded-lg border border-[var(--border)] bg-white px-3 text-[13px] outline-none focus:border-[#D97706]"
                       />
                     </div>
                     <div>
@@ -509,7 +509,7 @@ export default function CreateReturnPage() {
                         ref={customGrid.registerCell(idx, 3)}
                         value={item.reason}
                         onChange={(e) => updateCustomItem(idx, 'reason', e.target.value)}
-                        className="h-9 w-full rounded-lg border border-[#E4E7EC] bg-white px-3 text-[13px] outline-none focus:border-[#D97706]"
+                        className="h-9 w-full rounded-lg border border-[var(--border)] bg-white px-3 text-[13px] outline-none focus:border-[#D97706]"
                       >
                         {REASONS.map((r) => (
                           <option key={r.value} value={r.value}>{r.label}</option>
@@ -522,7 +522,7 @@ export default function CreateReturnPage() {
                         ref={customGrid.registerCell(idx, 4)}
                         value={item.condition}
                         onChange={(e) => updateCustomItem(idx, 'condition', e.target.value)}
-                        className="h-9 w-full rounded-lg border border-[#E4E7EC] bg-white px-3 text-[13px] outline-none focus:border-[#D97706]"
+                        className="h-9 w-full rounded-lg border border-[var(--border)] bg-white px-3 text-[13px] outline-none focus:border-[#D97706]"
                       >
                         {CONDITIONS.map((c) => (
                           <option key={c.value} value={c.value}>{c.label}</option>
@@ -535,7 +535,7 @@ export default function CreateReturnPage() {
                         ref={customGrid.registerCell(idx, 5)}
                         value={item.action}
                         onChange={(e) => updateCustomItem(idx, 'action', e.target.value)}
-                        className="h-9 w-full rounded-lg border border-[#E4E7EC] bg-white px-3 text-[13px] outline-none focus:border-[#D97706]"
+                        className="h-9 w-full rounded-lg border border-[var(--border)] bg-white px-3 text-[13px] outline-none focus:border-[#D97706]"
                       >
                         {ACTIONS.map((a) => (
                           <option key={a.value} value={a.value}>{a.label}</option>
@@ -551,7 +551,7 @@ export default function CreateReturnPage() {
                       value={item.notes || ''}
                       onChange={(e) => updateCustomItem(idx, 'notes', e.target.value || undefined)}
                       placeholder="Optional notes"
-                      className="h-9 w-full rounded-lg border border-[#E4E7EC] bg-white px-3 text-[13px] outline-none focus:border-[#D97706]"
+                      className="h-9 w-full rounded-lg border border-[var(--border)] bg-white px-3 text-[13px] outline-none focus:border-[#D97706]"
                     />
                   </div>
                 </div>
@@ -574,14 +574,14 @@ export default function CreateReturnPage() {
 
       {/* Bill Adjustment */}
       <Card className="p-5">
-        <h3 className="text-[14px] font-semibold text-[#101828] mb-3">Bill Adjustment (Optional)</h3>
+        <h3 className="text-[14px] font-semibold text-[var(--text-primary)] mb-3">Bill Adjustment (Optional)</h3>
         <div className="grid grid-cols-2 gap-3">
           <div>
             <label className="text-[11px] text-[#98A2B3] mb-1 block">Adjustment Type</label>
             <select
               value={adjustment.adjustment_type}
               onChange={(e) => setAdjustment({ ...adjustment, adjustment_type: e.target.value as any })}
-              className="h-10 w-full rounded-lg border border-[#E4E7EC] bg-white px-3 text-[13px] outline-none focus:border-[#D97706]"
+              className="h-10 w-full rounded-lg border border-[var(--border)] bg-white px-3 text-[13px] outline-none focus:border-[#D97706]"
             >
               {ADJ_TYPES.map((a) => (
                 <option key={a.value} value={a.value}>{a.label}</option>
@@ -596,7 +596,7 @@ export default function CreateReturnPage() {
                 min={0}
                 value={adjustment.amount}
                 onChange={(e) => setAdjustment({ ...adjustment, amount: parseFloat(e.target.value) || 0 })}
-                className="h-10 w-full rounded-lg border border-[#E4E7EC] bg-white px-3 text-[13px] outline-none focus:border-[#D97706]"
+                className="h-10 w-full rounded-lg border border-[var(--border)] bg-white px-3 text-[13px] outline-none focus:border-[#D97706]"
               />
             </div>
           )}
@@ -609,7 +609,7 @@ export default function CreateReturnPage() {
               value={adjustment.notes || ''}
               onChange={(e) => setAdjustment({ ...adjustment, notes: e.target.value })}
               placeholder="Reason for adjustment"
-              className="h-9 w-full rounded-lg border border-[#E4E7EC] bg-white px-3 text-[13px] outline-none focus:border-[#D97706]"
+              className="h-9 w-full rounded-lg border border-[var(--border)] bg-white px-3 text-[13px] outline-none focus:border-[#D97706]"
             />
           </div>
         )}
@@ -617,13 +617,13 @@ export default function CreateReturnPage() {
 
       {/* Notes */}
       <Card className="p-5">
-        <h3 className="text-[14px] font-semibold text-[#101828] mb-3">Notes</h3>
+        <h3 className="text-[14px] font-semibold text-[var(--text-primary)] mb-3">Notes</h3>
         <textarea
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
           placeholder="Optional notes about this return…"
           rows={3}
-          className="w-full rounded-lg border border-[#E4E7EC] bg-white px-3 py-2 text-[13px] outline-none focus:border-[#D97706] resize-none"
+          className="w-full rounded-lg border border-[var(--border)] bg-white px-3 py-2 text-[13px] outline-none focus:border-[#D97706] resize-none"
         />
       </Card>
 

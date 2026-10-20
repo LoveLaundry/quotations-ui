@@ -55,7 +55,7 @@ export default function CustomersPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="flex items-center gap-2 text-[20px] font-bold text-[#101828]">
+        <h1 className="flex items-center gap-2 text-[20px] font-bold text-[var(--text-primary)]">
           <Users className="h-5 w-5 text-[#E01E31]" />
           Customer 360
         </h1>
@@ -100,7 +100,7 @@ export default function CustomersPage() {
       {active && (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-[16px] font-semibold text-[#101828]">{active}</h2>
+            <h2 className="text-[16px] font-semibold text-[var(--text-primary)]">{active}</h2>
             <button
               onClick={() => setActive('')}
               className="text-[12px] font-semibold text-[#667085] hover:text-[#E01E31]"
@@ -151,7 +151,7 @@ export default function CustomersPage() {
                     <p className="text-[11px] uppercase tracking-wide text-[#98A2B3]">
                       Loyalty · {loyalty.tier}
                     </p>
-                    <p className="text-[20px] font-bold text-[#101828]">
+                    <p className="text-[20px] font-bold text-[var(--text-primary)]">
                       {loyalty.points} pts
                     </p>
                     <p className="text-[11px] text-[#667085]">
@@ -259,7 +259,7 @@ export default function CustomersPage() {
                   />
                 ))}
                 {clientSummary?.stats && (
-                  <div className="mt-2 rounded-lg bg-[#F9FAFB] px-3 py-2 text-[12px] text-[#667085]">
+                  <div className="mt-2 rounded-lg bg-[var(--surface-2)] px-3 py-2 text-[12px] text-[#667085]">
                     Total: LKR {(clientSummary.stats.total_shop_billed ?? 0).toLocaleString()} ·
                     Paid: LKR {(clientSummary.stats.total_shop_paid ?? 0).toLocaleString()} ·
                     Outstanding: LKR {(clientSummary.stats.shop_outstanding ?? 0).toLocaleString()}
@@ -291,7 +291,7 @@ function Stat({
         </div>
         <div>
           <p className="text-[11px] text-[#98A2B3]">{label}</p>
-          <p className="text-[16px] font-bold text-[#101828]">{value}</p>
+          <p className="text-[16px] font-bold text-[var(--text-primary)]">{value}</p>
         </div>
       </CardContent>
     </Card>
@@ -310,11 +310,11 @@ function Row({
   return (
     <div className="flex items-center justify-between rounded-lg border border-[#F2F2F2] px-3 py-2">
       <div>
-        <p className="text-[13px] font-medium text-[#101828]">{title}</p>
+        <p className="text-[13px] font-medium text-[var(--text-primary)]">{title}</p>
         <p className="text-[11px] text-[#98A2B3]">{sub}</p>
       </div>
       {tag && (
-        <span className="rounded-full bg-[#F2F4F7] px-2 py-0.5 text-[10px] font-semibold uppercase text-[#475467]">
+        <span className="rounded-full bg-[var(--border)] px-2 py-0.5 text-[10px] font-semibold uppercase text-[#475467]">
           {tag}
         </span>
       )}

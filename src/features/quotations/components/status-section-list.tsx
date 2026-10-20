@@ -17,7 +17,7 @@ const toneMap: Record<string, { bg: string; text: string; border: string }> = {
     green: { bg: 'bg-[#F0FDF4] text-[#15803D] border-[#BBF7D0]', text: 'text-[#15803D]', border: 'border-[#BBF7D0]' },
     amber: { bg: 'bg-[#FFFBEB] text-[#B45309] border-[#FDE68A]', text: 'text-[#B45309]', border: 'border-[#FDE68A]' },
     red: { bg: 'bg-[#FEF2F2] text-[#B91C1C] border-[#FECACA]', text: 'text-[#B91C1C]', border: 'border-[#FECACA]' },
-    gray: { bg: 'bg-[#F9FAFB] text-[#475467] border-[#E4E7EC]', text: 'text-[#475467]', border: 'border-[#E4E7EC]' },
+    gray: { bg: 'bg-[var(--surface-2)] text-[#475467] border-[var(--border)]', text: 'text-[#475467]', border: 'border-[var(--border)]' },
 }
 
 /**
@@ -36,11 +36,11 @@ export function StatusSectionList<T>({ sections }: { sections: StatusSection<T>[
                 const tone = toneMap[section.tone ?? 'gray']
                 const isCollapsed = collapsed[section.key] ?? false
                 return (
-                    <section key={section.key} className="rounded-xl border border-[#E4E7EC] bg-white shadow-[var(--shadow-xs)] overflow-hidden">
+                    <section key={section.key} className="rounded-xl border border-[var(--border)] bg-white shadow-[var(--shadow-xs)] overflow-hidden">
                         <button
                             type="button"
                             onClick={() => setCollapsed(prev => ({ ...prev, [section.key]: !isCollapsed }))}
-                            className="flex w-full cursor-pointer items-center gap-2.5 px-4 py-3 text-left transition-colors hover:bg-[#F9FAFB]"
+                            className="flex w-full cursor-pointer items-center gap-2.5 px-4 py-3 text-left transition-colors hover:bg-[var(--surface-2)]"
                         >
                             {section.icon && (
                                 <span className={cn('flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border', tone.bg)}>
@@ -59,7 +59,7 @@ export function StatusSectionList<T>({ sections }: { sections: StatusSection<T>[
                             <ChevronDown size={15} className={cn('shrink-0 text-[var(--text-faint)] transition-transform', isCollapsed && '-rotate-90')} />
                         </button>
                         {!isCollapsed && (
-                            <div className="grid gap-3 border-t border-[#E4E7EC] p-3 sm:grid-cols-2 xl:grid-cols-3">
+                            <div className="grid gap-3 border-t border-[var(--border)] p-3 sm:grid-cols-2 xl:grid-cols-3">
                                 {section.items.map((item, i) => (
                                     <div key={String((item as { id?: string })?.id ?? i)}>
                                         {section.renderItem(item, i)}

@@ -85,14 +85,14 @@ function KpiCard({ label, value, icon, accent, delta, to }: KpiProps) {
           navigate(to!)
         }
       } : undefined}
-      className={`rounded-2xl border border-[#E4E7EC] bg-white p-5 shadow-sm transition-all hover:shadow-md ${
+      className={`rounded-2xl border border-[var(--border)] bg-white p-5 shadow-sm transition-all hover:shadow-md ${
         clickable ? 'cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/40 hover:border-[#D1D5DB]' : ''
       }`}
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="text-[12px] font-semibold uppercase tracking-wide text-[#6B7280]">{label}</p>
-          <p className="mt-2 text-[27px] font-bold text-[#101828] leading-none truncate">{value}</p>
+          <p className="mt-2 text-[27px] font-bold text-[var(--text-primary)] leading-none truncate">{value}</p>
         </div>
         <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${accent}`}>
           {icon}
@@ -117,10 +117,10 @@ function KpiCard({ label, value, icon, accent, delta, to }: KpiProps) {
 function ChartTooltip({ active, payload, label, money = true }: any) {
   if (!active || !payload?.length) return null
   return (
-    <div className="rounded-lg border border-[#E5E7EB] bg-white px-3 py-2 shadow-md">
+    <div className="rounded-lg border border-[var(--border)] bg-white px-3 py-2 shadow-md">
       <p className="text-[12px] font-medium text-[#6B7280]">{label}</p>
       {payload.map((p: any, i: number) => (
-        <p key={i} className="text-[13px] font-semibold text-[#101828]">
+        <p key={i} className="text-[13px] font-semibold text-[var(--text-primary)]">
           {p.name}: {money ? fmtMoney(p.value) : fmtNum(p.value)}
         </p>
       ))}
@@ -298,7 +298,7 @@ export default function BusinessDashboardPage() {
           </p>
           <SyncStatusBar queryKey={['dashboard']} label="Dashboard" className="mt-2" />
         </div>
-        <div className="inline-flex rounded-xl bg-[#F3F4F6] p-1 self-start">
+        <div className="inline-flex rounded-xl bg-[var(--surface-3)] p-1 self-start">
           {PERIODS.map((p) => (
             <button
               key={p.key}
@@ -306,7 +306,7 @@ export default function BusinessDashboardPage() {
               onClick={() => setPeriod(p.key)}
               className={`px-3 py-1.5 text-[13px] font-medium rounded-lg transition-all cursor-pointer ${
                 period === p.key
-                  ? 'bg-white text-[#101828] shadow-sm'
+                  ? 'bg-white text-[var(--text-primary)] shadow-sm'
                   : 'text-[#6B7280] hover:text-[#111827]'
               }`}
             >
@@ -376,7 +376,7 @@ export default function BusinessDashboardPage() {
       {/* Charts row 1 */}
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
         <Card className="lg:col-span-2">
-          <CardHeader className="border-b border-[#F2F4F7] pb-3">
+          <CardHeader className="border-b border-[var(--border)] pb-3">
             <CardTitle>Revenue vs Collection</CardTitle>
           </CardHeader>
           <CardContent className="pt-4">
@@ -430,7 +430,7 @@ export default function BusinessDashboardPage() {
         </Card>
 
         <Card>
-          <CardHeader className="border-b border-[#F2F4F7] pb-3">
+          <CardHeader className="border-b border-[var(--border)] pb-3">
             <CardTitle>Payment Status</CardTitle>
           </CardHeader>
           <CardContent className="pt-4">
@@ -472,7 +472,7 @@ export default function BusinessDashboardPage() {
       {/* Charts row 2 */}
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <Card>
-          <CardHeader className="border-b border-[#F2F4F7] pb-3">
+          <CardHeader className="border-b border-[var(--border)] pb-3">
             <CardTitle>Top Clients by Revenue</CardTitle>
           </CardHeader>
           <CardContent className="pt-4">
@@ -510,14 +510,14 @@ export default function BusinessDashboardPage() {
         </Card>
 
         <Card>
-          <CardHeader className="border-b border-[#F2F4F7] pb-3">
+          <CardHeader className="border-b border-[var(--border)] pb-3">
             <CardTitle>Sales Pipeline</CardTitle>
           </CardHeader>
           <CardContent className="pt-4 space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               {pipeline.map((p) => (
-                <div key={p.name} className="rounded-xl border border-[#E4E7EC] p-3 text-center">
-                  <p className="text-[22px] font-bold text-[#101828]">{p.value}</p>
+                <div key={p.name} className="rounded-xl border border-[var(--border)] p-3 text-center">
+                  <p className="text-[22px] font-bold text-[var(--text-primary)]">{p.value}</p>
                   <p className="text-[12px] text-[#6B7280]">{p.name}</p>
                 </div>
               ))}
@@ -533,12 +533,12 @@ export default function BusinessDashboardPage() {
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
-            <div className="flex items-center justify-between rounded-xl bg-[#F9FAFB] px-4 py-3">
+            <div className="flex items-center justify-between rounded-xl bg-[var(--surface-2)] px-4 py-3">
               <div className="flex items-center gap-2 text-[13px] text-[#6B7280]">
                 <FileText size={16} className="text-[#2563EB]" />
                 Accepted value
               </div>
-              <span className="text-[15px] font-bold text-[#101828]">
+              <span className="text-[15px] font-bold text-[var(--text-primary)]">
                 {fmtMoney(current.quotationAcceptedValue)}
               </span>
             </div>
@@ -549,7 +549,7 @@ export default function BusinessDashboardPage() {
       {/* Tables row */}
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <Card>
-          <CardHeader className="border-b border-[#F2F4F7] pb-3 flex items-center justify-between">
+          <CardHeader className="border-b border-[var(--border)] pb-3 flex items-center justify-between">
             <CardTitle>Top Clients</CardTitle>
             <button
               onClick={() => navigate('/bills')}
@@ -560,13 +560,13 @@ export default function BusinessDashboardPage() {
           </CardHeader>
           <CardContent className="pt-0">
             {current.topClients.length > 0 ? (
-              <div className="divide-y divide-[#F2F4F7]">
+              <div className="divide-y divide-[var(--border)]">
                 {current.topClients.map((c) => {
                   const pct = current.revenue > 0 ? (c.revenue / current.revenue) * 100 : 0
                   return (
                     <div key={c.client_name} className="flex items-center justify-between gap-3 py-3">
                       <div className="min-w-0">
-                        <p className="truncate text-[13px] font-semibold text-[#101828]">
+                        <p className="truncate text-[13px] font-semibold text-[var(--text-primary)]">
                           {c.client_name}
                         </p>
                         <p className="text-[11px] text-[#98A2B3]">
@@ -579,7 +579,7 @@ export default function BusinessDashboardPage() {
                           />
                         </div>
                       </div>
-                      <span className="shrink-0 text-[14px] font-bold text-[#101828]">
+                      <span className="shrink-0 text-[14px] font-bold text-[var(--text-primary)]">
                         {fmtMoney(c.revenue)}
                       </span>
                     </div>
@@ -593,7 +593,7 @@ export default function BusinessDashboardPage() {
         </Card>
 
         <Card>
-          <CardHeader className="border-b border-[#F2F4F7] pb-3 flex items-center justify-between">
+          <CardHeader className="border-b border-[var(--border)] pb-3 flex items-center justify-between">
             <CardTitle>Items Pending Delivery</CardTitle>
             <button
               onClick={() => navigate('/gate-passes')}
@@ -604,11 +604,11 @@ export default function BusinessDashboardPage() {
           </CardHeader>
           <CardContent className="pt-0">
             {current.pendingGatePasses.length > 0 ? (
-              <div className="divide-y divide-[#F2F4F7]">
+              <div className="divide-y divide-[var(--border)]">
                 {current.pendingGatePasses.map((g) => (
                   <div key={g.gate_pass_number} className="flex items-center justify-between gap-3 py-3">
                     <div className="min-w-0">
-                      <p className="truncate text-[13px] font-semibold text-[#101828]">
+                      <p className="truncate text-[13px] font-semibold text-[var(--text-primary)]">
                         {g.client_name}
                       </p>
                       <p className="text-[11px] text-[#98A2B3] font-mono">#{g.gate_pass_number}</p>
@@ -630,26 +630,26 @@ export default function BusinessDashboardPage() {
 
       {/* Clients summary footer */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <div className="rounded-2xl border border-[#E4E7EC] bg-white p-5 shadow-sm">
+        <div className="rounded-2xl border border-[var(--border)] bg-white p-5 shadow-sm">
           <div className="flex items-center gap-2 text-[#6B7280]">
             <Users size={16} />
             <p className="text-[12px] font-semibold uppercase tracking-wide">Active Clients</p>
           </div>
-          <p className="mt-2 text-[24px] font-bold text-[#101828]">{fmtNum(current.activeClients)}</p>
+          <p className="mt-2 text-[24px] font-bold text-[var(--text-primary)]">{fmtNum(current.activeClients)}</p>
         </div>
-        <div className="rounded-2xl border border-[#E4E7EC] bg-white p-5 shadow-sm">
+        <div className="rounded-2xl border border-[var(--border)] bg-white p-5 shadow-sm">
           <div className="flex items-center gap-2 text-[#6B7280]">
             <UserPlus size={16} />
             <p className="text-[12px] font-semibold uppercase tracking-wide">New Clients</p>
           </div>
-          <p className="mt-2 text-[24px] font-bold text-[#101828]">{fmtNum(current.newClients)}</p>
+          <p className="mt-2 text-[24px] font-bold text-[var(--text-primary)]">{fmtNum(current.newClients)}</p>
         </div>
-        <div className="rounded-2xl border border-[#E4E7EC] bg-white p-5 shadow-sm">
+        <div className="rounded-2xl border border-[var(--border)] bg-white p-5 shadow-sm">
           <div className="flex items-center gap-2 text-[#6B7280]">
             <TrendingUp size={16} />
             <p className="text-[12px] font-semibold uppercase tracking-wide">Avg Bill Value</p>
           </div>
-          <p className="mt-2 text-[24px] font-bold text-[#101828]">{fmtMoney(current.avgBill)}</p>
+          <p className="mt-2 text-[24px] font-bold text-[var(--text-primary)]">{fmtMoney(current.avgBill)}</p>
         </div>
       </div>
     </div>

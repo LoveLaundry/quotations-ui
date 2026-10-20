@@ -56,7 +56,7 @@ export function NotificationDetailDialog({ open, onOpenChange, data, type }: Not
                 {isGatePass ? <RiTruckLine size={20} /> : <RiFileTextLine size={20} />}
               </div>
               <div>
-                <DialogTitle className="text-[16px] font-semibold text-[#101828]">
+                <DialogTitle className="text-[16px] font-semibold text-[var(--text-primary)]">
                   {isGatePass ? 'Pending to Send' : 'Ready for Billing'}
                 </DialogTitle>
                 <DialogDescription className="text-[13px] text-[#6B7280]">
@@ -68,7 +68,7 @@ export function NotificationDetailDialog({ open, onOpenChange, data, type }: Not
             </div>
             <button
               onClick={handleClose}
-              className="flex h-7 w-7 items-center justify-center rounded-lg text-[#98A2B3] hover:bg-[#F3F4F6] hover:text-[#111827] transition-colors"
+              className="flex h-7 w-7 items-center justify-center rounded-lg text-[#98A2B3] hover:bg-[var(--surface-3)] hover:text-[#111827] transition-colors"
               aria-label="Close"
             >
               <RiCloseLine size={18} />
@@ -78,19 +78,19 @@ export function NotificationDetailDialog({ open, onOpenChange, data, type }: Not
 
         <DialogBody className="space-y-4">
           {isGatePass ? (
-            <div className="rounded-lg border border-[#E4E7EC] bg-white p-4 space-y-3">
+            <div className="rounded-lg border border-[var(--border)] bg-white p-4 space-y-3">
               <div className="grid grid-cols-1 min-[380px]:grid-cols-2 gap-x-4 gap-y-3">
                 <div>
                   <p className="text-[11px] font-semibold uppercase tracking-wide text-[#98A2B3]">Client</p>
-                  <p className="text-[14px] font-medium text-[#101828]">{(data as GatePassPendingEntry).client_name}</p>
+                  <p className="text-[14px] font-medium text-[var(--text-primary)]">{(data as GatePassPendingEntry).client_name}</p>
                 </div>
                 <div>
                   <p className="text-[11px] font-semibold uppercase tracking-wide text-[#98A2B3]">Gate Pass</p>
-                  <p className="text-[14px] font-medium text-[#101828] font-mono">#{(data as GatePassPendingEntry).gate_pass_number}</p>
+                  <p className="text-[14px] font-medium text-[var(--text-primary)] font-mono">#{(data as GatePassPendingEntry).gate_pass_number}</p>
                 </div>
                 <div>
                   <p className="text-[11px] font-semibold uppercase tracking-wide text-[#98A2B3]">Item</p>
-                  <p className="text-[14px] font-medium text-[#101828]">{(data as GatePassPendingEntry).item_name}</p>
+                  <p className="text-[14px] font-medium text-[var(--text-primary)]">{(data as GatePassPendingEntry).item_name}</p>
                 </div>
                 <div>
                   <p className="text-[11px] font-semibold uppercase tracking-wide text-[#98A2B3]">Pending to Send</p>
@@ -98,48 +98,48 @@ export function NotificationDetailDialog({ open, onOpenChange, data, type }: Not
                 </div>
               </div>
 
-              <div className="border-t border-[#F2F4F7] pt-3 grid grid-cols-1 min-[380px]:grid-cols-2 gap-x-4 gap-y-3">
+              <div className="border-t border-[var(--border)] pt-3 grid grid-cols-1 min-[380px]:grid-cols-2 gap-x-4 gap-y-3">
                 <div>
                   <p className="text-[11px] font-semibold uppercase tracking-wide text-[#98A2B3]">Received</p>
-                  <p className="text-[14px] font-medium text-[#101828]">{(data as GatePassPendingEntry).received}</p>
+                  <p className="text-[14px] font-medium text-[var(--text-primary)]">{(data as GatePassPendingEntry).received}</p>
                 </div>
                 <div>
                   <p className="text-[11px] font-semibold uppercase tracking-wide text-[#98A2B3]">Delivered so far</p>
-                  <p className="text-[14px] font-medium text-[#101828]">{(data as GatePassPendingEntry).delivered}</p>
+                  <p className="text-[14px] font-medium text-[var(--text-primary)]">{(data as GatePassPendingEntry).delivered}</p>
                 </div>
               </div>
             </div>
           ) : (
-            <div className="rounded-lg border border-[#E4E7EC] bg-white p-4 space-y-3">
+            <div className="rounded-lg border border-[var(--border)] bg-white p-4 space-y-3">
               <div className="grid grid-cols-1 min-[380px]:grid-cols-2 gap-x-4 gap-y-3">
                 <div>
                   <p className="text-[11px] font-semibold uppercase tracking-wide text-[#98A2B3]">Client</p>
-                  <p className="text-[14px] font-medium text-[#101828]">{(data as Quotation).client_name}</p>
+                  <p className="text-[14px] font-medium text-[var(--text-primary)]">{(data as Quotation).client_name}</p>
                 </div>
                 <div>
                   <p className="text-[11px] font-semibold uppercase tracking-wide text-[#98A2B3]">Title</p>
-                  <p className="text-[14px] font-medium text-[#101828]">{(data as Quotation).quotation_title || 'General Price List'}</p>
+                  <p className="text-[14px] font-medium text-[var(--text-primary)]">{(data as Quotation).quotation_title || 'General Price List'}</p>
                 </div>
                 <div>
                   <p className="text-[11px] font-semibold uppercase tracking-wide text-[#98A2B3]">Date</p>
-                  <p className="text-[14px] font-medium text-[#101828]">{(data as Quotation).created_at ? formatDate((data as Quotation).created_at) : '—'}</p>
+                  <p className="text-[14px] font-medium text-[var(--text-primary)]">{(data as Quotation).created_at ? formatDate((data as Quotation).created_at) : '—'}</p>
                 </div>
                 <div>
                   <p className="text-[11px] font-semibold uppercase tracking-wide text-[#98A2B3]">Quotation #</p>
-                  <p className="text-[14px] font-medium text-[#101828] font-mono">{(data as Quotation).id}</p>
+                  <p className="text-[14px] font-medium text-[var(--text-primary)] font-mono">{(data as Quotation).id}</p>
                 </div>
               </div>
 
-              <div className="border-t border-[#F2F4F7] pt-3">
+              <div className="border-t border-[var(--border)] pt-3">
                 <p className="text-[11px] font-semibold uppercase tracking-wide text-[#98A2B3] mb-2">
                   Items {((data as Quotation).line_items?.length ?? 0)}
                 </p>
                 <div className="space-y-1.5 max-h-48 overflow-y-auto">
                   {((data as Quotation).line_items?.slice(0, 10) ?? []).map((item, idx) => (
                     <div key={item.id ?? idx} className="flex items-center justify-between text-[13px]">
-                      <span className="text-[#101828] truncate pr-2">{item.item_name}</span>
+                      <span className="text-[var(--text-primary)] truncate pr-2">{item.item_name}</span>
                       <span className="text-[#6B7280] shrink-0">{item.category || 'General'}</span>
-                      <span className="font-semibold text-[#101828] shrink-0 ml-3">LKR {item.unit_price.toFixed(2)}</span>
+                      <span className="font-semibold text-[var(--text-primary)] shrink-0 ml-3">LKR {item.unit_price.toFixed(2)}</span>
                     </div>
                   ))}
                   {((data as Quotation).line_items?.length ?? 0) > 10 && (
@@ -155,7 +155,7 @@ export function NotificationDetailDialog({ open, onOpenChange, data, type }: Not
                   (data as Quotation).status === 'draft' ? 'bg-[#FEF2F2] text-[#DC2626] border-[#FECACA]' :
                   (data as Quotation).status === 'received' ? 'bg-[#EFF6FF] text-[#2563EB] border-[#BFDBFE]' :
                   (data as Quotation).status === 'delivered' ? 'bg-[#F0FDF4] text-[#16A34A] border-[#BBF7D0]' :
-                  'bg-[#F3F4F6] text-[#4B5563] border-[#E5E7EB]'
+                  'bg-[var(--surface-3)] text-[#4B5563] border-[var(--border)]'
                 }`}>
                   {(data as Quotation).status?.toUpperCase()}
                 </span>

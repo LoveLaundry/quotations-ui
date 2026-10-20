@@ -52,7 +52,7 @@ export default function ClientsPage() {
               transition={{ delay: Math.min(idx * 0.04, 0.3) }}
             >
               <Card className="h-full hover:border-[#FECACA] transition-colors">
-                <CardHeader className="border-b border-[#F2F4F7] pb-3">
+                <CardHeader className="border-b border-[var(--border)] pb-3">
                   <div className="flex items-center gap-3 flex-1 min-w-0">
                     <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#FFF1F1] text-[#DC2626] border border-[#FECACA] text-[15px] font-bold">
                       {clientName.charAt(0).toUpperCase()}
@@ -76,7 +76,7 @@ export default function ClientsPage() {
                     <Link
                       key={q.id}
                       to={`/quotations/${q.id}`}
-                      className="flex items-center gap-3 rounded-lg border border-[#E4E7EC] bg-white px-3 py-2.5 hover:border-[#FECACA] hover:bg-[#FFF8F8] transition-all group"
+                      className="flex items-center gap-3 rounded-lg border border-[var(--border)] bg-white px-3 py-2.5 hover:border-[#FECACA] hover:bg-[#FFF8F8] transition-all group"
                     >
                       <FileText className="h-3.5 w-3.5 shrink-0 text-[#D1D5DB] group-hover:text-[#DC2626] transition-colors" />
                       <div className="min-w-0 flex-1">

@@ -37,7 +37,7 @@ const STATUS_CONFIG: Record<string, { label: string; bg: string; text: string; b
     READY_FOR_DELIVERY: { label: 'Ready', bg: '#F0FDF4', text: '#15803D', border: '#BBF7D0', dot: '#22C55E' },
     PARTIALLY_DELIVERED: { label: 'Partial Delivery', bg: '#FFFBEB', text: '#D97706', border: '#FDE68A', dot: '#F59E0B' },
     DELIVERED: { label: 'Delivered', bg: '#F0FDF4', text: '#16A34A', border: '#BBF7D0', dot: '#16A34A' },
-    CANCELLED: { label: 'Cancelled', bg: '#F9FAFB', text: '#6B7280', border: '#E4E7EC', dot: '#9CA3AF' },
+    CANCELLED: { label: 'Cancelled', bg: 'var(--surface-2)', text: '#6B7280', border: 'var(--border)', dot: '#9CA3AF' },
 }
 
 const TRANSITION_STATUSES = ['RECEIVED', 'PROCESSING', 'READY_FOR_DELIVERY', 'CANCELLED']
@@ -58,11 +58,11 @@ function StatusBadge({ status }: { status: string }) {
 // ── Activity timeline ─────────────────────────────────────────────────────────
 const EVENT_THEME: Record<string, { icon: typeof History; label: string; bg: string; text: string; border: string }> = {
     GATE_PASS_CREATED: { icon: ClipboardList, label: 'Gate pass received', bg: '#EFF6FF', text: '#2563EB', border: '#BFDBFE' },
-    RECEIVING_EDITED: { icon: Pencil, label: 'Items edited', bg: '#F9FAFB', text: '#374151', border: '#E4E7EC' },
-    RECEIVING_DATE_CHANGED: { icon: Calendar, label: 'Receiving date changed', bg: '#F9FAFB', text: '#374151', border: '#E4E7EC' },
-    STATUS_CHANGED: { icon: RefreshCw, label: 'Status changed', bg: '#F9FAFB', text: '#374151', border: '#E4E7EC' },
+    RECEIVING_EDITED: { icon: Pencil, label: 'Items edited', bg: 'var(--surface-2)', text: '#374151', border: 'var(--border)' },
+    RECEIVING_DATE_CHANGED: { icon: Calendar, label: 'Receiving date changed', bg: 'var(--surface-2)', text: '#374151', border: 'var(--border)' },
+    STATUS_CHANGED: { icon: RefreshCw, label: 'Status changed', bg: 'var(--surface-2)', text: '#374151', border: 'var(--border)' },
     DELIVERY_CREATED: { icon: Truck, label: 'Delivery recorded', bg: '#F0FDF4', text: '#16A34A', border: '#BBF7D0' },
-    DELIVERY_DATE_CHANGED: { icon: Calendar, label: 'Delivery date changed', bg: '#F9FAFB', text: '#374151', border: '#E4E7EC' },
+    DELIVERY_DATE_CHANGED: { icon: Calendar, label: 'Delivery date changed', bg: 'var(--surface-2)', text: '#374151', border: 'var(--border)' },
     CATCH_UP_DELIVERY: { icon: CheckCircle2, label: 'Completed as delivered by note', bg: '#F0FDF4', text: '#16A34A', border: '#BBF7D0' },
     ADJUSTMENT_REQUESTED: { icon: Settings2, label: 'Quantity adjustment requested', bg: '#FFFBEB', text: '#D97706', border: '#FDE68A' },
     ADJUSTMENT_APPROVED: { icon: Check, label: 'Adjustment approved', bg: '#F0FDF4', text: '#16A34A', border: '#BBF7D0' },
@@ -71,8 +71,8 @@ const EVENT_THEME: Record<string, { icon: typeof History; label: string; bg: str
     RETURN_UPDATED: { icon: Undo2, label: 'Return updated', bg: '#EFF6FF', text: '#2563EB', border: '#BFDBFE' },
     RETURN_RESENT: { icon: Undo2, label: 'Return re-sent', bg: '#EFF6FF', text: '#2563EB', border: '#BFDBFE' },
     BILL_CREATED: { icon: Receipt, label: 'Bill created', bg: '#F0FDF4', text: '#16A34A', border: '#BBF7D0' },
-    LEGACY_FLAG: { icon: Flag, label: 'Legacy flag applied', bg: '#F9FAFB', text: '#6B7280', border: '#E4E7EC' },
-    LEGACY_NOTE_CLOSURE: { icon: Flag, label: 'Legacy note closure', bg: '#F9FAFB', text: '#6B7280', border: '#E4E7EC' },
+    LEGACY_FLAG: { icon: Flag, label: 'Legacy flag applied', bg: 'var(--surface-2)', text: '#6B7280', border: 'var(--border)' },
+    LEGACY_NOTE_CLOSURE: { icon: Flag, label: 'Legacy note closure', bg: 'var(--surface-2)', text: '#6B7280', border: 'var(--border)' },
 }
 
 function deltaText(delta: number | undefined): string | null {
@@ -108,7 +108,7 @@ function eventDetail(e: TransactionEvent): React.ReactNode {
                 {e.item_deltas.map((it, i) => {
                     const d = deltaText(it.qty_delta ?? it.delta)
                     return (
-                        <span key={i} className="inline-flex items-center gap-1 rounded-md bg-white border border-[#E4E7EC] px-2 py-0.5 text-[11px] text-[#374151]">
+                        <span key={i} className="inline-flex items-center gap-1 rounded-md bg-white border border-[var(--border)] px-2 py-0.5 text-[11px] text-[#374151]">
                             {it.item_name}
                             {it.specification && <span className="text-[#98A2B3]">{it.specification}</span>}
                             {d && <span className="font-semibold text-[#2563EB]">×{d}</span>}
@@ -465,7 +465,7 @@ export default function GatePassDetailPage() {
                                         initial={{ opacity: 0, y: -4 }}
                                         animate={{ opacity: 1, y: 0 }}
                                         exit={{ opacity: 0, y: -4 }}
-                                        className="absolute right-0 top-full mt-1 z-20 w-52 rounded-xl border border-[#E4E7EC] bg-white shadow-lg shadow-black/5 py-1"
+                                        className="absolute right-0 top-full mt-1 z-20 w-52 rounded-xl border border-[var(--border)] bg-white shadow-lg shadow-black/5 py-1"
                                     >
                                         {TRANSITION_STATUSES.filter(s => s !== gp.status).map(s => {
                                             const cfg = STATUS_CONFIG[s]
@@ -476,7 +476,7 @@ export default function GatePassDetailPage() {
                                                         updateStatus.mutate({ id: id!, status: s })
                                                         setStatusOpen(false)
                                                     }}
-                                                    className="flex w-full items-center gap-2.5 px-3.5 py-2.5 text-[13px] text-[#374151] hover:bg-[#F9FAFB] cursor-pointer transition"
+                                                    className="flex w-full items-center gap-2.5 px-3.5 py-2.5 text-[13px] text-[#374151] hover:bg-[var(--surface-2)] cursor-pointer transition"
                                                 >
                                                     <span className="h-2 w-2 rounded-full" style={{ background: cfg.dot }} />
                                                     {cfg.label}
@@ -596,7 +596,7 @@ export default function GatePassDetailPage() {
                             </div>
                         </div>
                     ) : (
-                        <p className="text-[13px] font-semibold text-[#101828]">{formatDate(gp.receiving_date)}</p>
+                        <p className="text-[13px] font-semibold text-[var(--text-primary)]">{formatDate(gp.receiving_date)}</p>
                     )}
                 </Card>
 
@@ -612,7 +612,7 @@ export default function GatePassDetailPage() {
                             <Icon className="h-3.5 w-3.5 text-[#98A2B3]" />
                             <p className="text-[11px] text-[#98A2B3] font-medium uppercase tracking-wide">{label}</p>
                         </div>
-                        <p className="text-[13px] font-semibold text-[#101828]">{value}</p>
+                        <p className="text-[13px] font-semibold text-[var(--text-primary)]">{value}</p>
                     </Card>
                 ))}
             </div>
@@ -669,7 +669,7 @@ export default function GatePassDetailPage() {
             {billingOpen && (
                 <Card className="p-4">
                     <div className="flex items-center justify-between mb-3">
-                        <p className="text-[13px] font-semibold text-[#101828]">Create Bill from this Gate Pass</p>
+                        <p className="text-[13px] font-semibold text-[var(--text-primary)]">Create Bill from this Gate Pass</p>
                         <button
                             onClick={() => setBillingOpen(false)}
                             className="text-[#6B7280] hover:text-[#374151] transition"
@@ -732,7 +732,7 @@ export default function GatePassDetailPage() {
             {/* Edit Mode */}
             {editing && (
                 <Card>
-                    <CardHeader className="border-b border-[#F2F4F7] pb-3 flex flex-row items-center justify-between">
+                    <CardHeader className="border-b border-[var(--border)] pb-3 flex flex-row items-center justify-between">
                         <CardTitle>Edit Gate Pass</CardTitle>
                         <p className="text-[11px] text-[#16A34A] font-medium">Editable because not fully delivered</p>
                     </CardHeader>
@@ -780,7 +780,7 @@ export default function GatePassDetailPage() {
 
                         <div className="space-y-2">
                             {editItems.map((item: any, idx: number) => (
-                                <div key={idx} className="grid grid-cols-1 gap-2 rounded-lg border border-[#E4E7EC] bg-white p-3 sm:grid-cols-[1fr_1fr_1fr_74px_74px_84px_36px] items-center">
+                                <div key={idx} className="grid grid-cols-1 gap-2 rounded-lg border border-[var(--border)] bg-white p-3 sm:grid-cols-[1fr_1fr_1fr_74px_74px_84px_36px] items-center">
                                     <div>
                                         <label className="block text-[10px] text-[#98A2B3] mb-0.5">Item Name</label>
                                         <SearchableSelect
@@ -842,7 +842,7 @@ export default function GatePassDetailPage() {
                                     <label className={`flex items-center justify-center gap-1 rounded-md border px-1.5 py-1.5 text-[10px] font-semibold cursor-pointer select-none transition ${
                                         item.rewashed
                                             ? 'bg-[#FFF0F5] text-[#DB2777] border-[#FBCFE8]'
-                                            : 'border-[#E4E7EC] bg-white text-[#98A2B3]'
+                                            : 'border-[var(--border)] bg-white text-[#98A2B3]'
                                     }`} title="Free re-wash — not billed">
                                         <input
                                             type="checkbox"
@@ -875,7 +875,7 @@ export default function GatePassDetailPage() {
             {/* Items Table */}
             {!editing && (
             <Card>
-                <CardHeader className="border-b border-[#F2F4F7] pb-3">
+                <CardHeader className="border-b border-[var(--border)] pb-3">
                     <CardTitle>Item Breakdown</CardTitle>
                     {hasMovement && (
                         <p className="mt-1.5 flex items-start gap-1.5 text-[12px] text-[#B45309]">
@@ -888,7 +888,7 @@ export default function GatePassDetailPage() {
                     <div className="overflow-x-auto">
                         <table className="w-full text-[13px]">
                             <thead>
-                                <tr className="border-b border-[#F2F4F7]">
+                                <tr className="border-b border-[var(--border)]">
                                     {['Item', 'Spec', 'Category', 'Client Qty', 'Received', 'Delivered', 'Returned', 'Pending', 'Diff', 'Reason', ''].map(h => (
                                         <th key={h} className="py-3 pr-3 text-left text-[11px] font-semibold uppercase tracking-wide text-[#98A2B3] first:pl-0">
                                             {h}
@@ -896,11 +896,11 @@ export default function GatePassDetailPage() {
                                     ))}
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-[#F9FAFB]">
+                            <tbody className="divide-y divide-[var(--surface-2)]">
                                 {(gp.items ?? []).map((item: any) => (
                                     <Fragment key={`${item.item_name}||${item.specification || ''}`}>
                                         <tr key={`${item.item_name}||${item.specification || ''}`} className="group">
-                                            <td className="py-3 pr-3 font-medium text-[#101828]">
+                                            <td className="py-3 pr-3 font-medium text-[var(--text-primary)]">
                                                 {item.item_name}
                                                 {item.rewashed && (
                                                     <span className="ml-1.5 inline-flex items-center gap-1 rounded-full bg-[#FFF0F5] border border-[#FBCFE8] px-1.5 py-0.5 text-[10px] font-semibold text-[#DB2777]" title="Free re-wash — never billed">
@@ -919,7 +919,7 @@ export default function GatePassDetailPage() {
                                             </td>
                                             <td className="py-3 pr-3 text-[#6B7280]">{item.category || '—'}</td>
                                             <td className="py-3 pr-3 text-[#6B7280]">{item.client_qty}</td>
-                                            <td className="py-3 pr-3 font-semibold text-[#101828]">{item.received_qty}</td>
+                                            <td className="py-3 pr-3 font-semibold text-[var(--text-primary)]">{item.received_qty}</td>
                                             <td className="py-3 pr-3 text-[#6B7280]">{balanceByKey[itemKey(item.item_name, item.specification)]?.delivered_qty ?? 0}</td>
                                             <td className="py-3 pr-3 text-[#6B7280]">{balanceByKey[itemKey(item.item_name, item.specification)]?.returned_back_qty ?? 0}</td>
                                             <td className="py-3 pr-3">
@@ -1026,19 +1026,19 @@ export default function GatePassDetailPage() {
             {/* Deliveries for this Gate Pass */}
             {deliveries.length > 0 && (
                 <Card>
-                    <CardHeader className="border-b border-[#F2F4F7] pb-3">
+                    <CardHeader className="border-b border-[var(--border)] pb-3">
                         <div className="flex items-center gap-2">
                             <Truck className="h-4 w-4 text-[#2563EB]" />
                             <CardTitle>Deliveries ({deliveries.length})</CardTitle>
                         </div>
                     </CardHeader>
-                    <CardContent className="pt-3 divide-y divide-[#F9FAFB]">
+                    <CardContent className="pt-3 divide-y divide-[var(--surface-2)]">
                         {deliveries.map((d: any) => (
                             <div key={d.id}>
                                 <div className="flex items-center justify-between gap-3 py-3">
                                     <Link to={`/deliveries/${d.id}`} className="flex flex-1 items-center justify-between gap-3 hover:opacity-70 transition">
                                         <div>
-                                            <p className="text-[13px] font-medium text-[#101828]">
+                                            <p className="text-[13px] font-medium text-[var(--text-primary)]">
                                                 {d.items?.reduce ? d.items.reduce((s: number, i: any) => s + i.quantity, 0) : 0} pieces delivered
                                             </p>
                                             <p className="text-[12px] text-[#98A2B3]">{formatDate(d.delivery_date)} · by {d.delivered_by}</p>
@@ -1104,7 +1104,7 @@ export default function GatePassDetailPage() {
 
             {/* Activity Timeline (from the immutable event journal) */}
             <Card>
-                <CardHeader className="border-b border-[#F2F4F7] pb-3">
+                <CardHeader className="border-b border-[var(--border)] pb-3">
                     <div className="flex items-center gap-2">
                         <History className="h-4 w-4 text-[#6B7280]" />
                         <CardTitle>Activity</CardTitle>
@@ -1120,9 +1120,9 @@ export default function GatePassDetailPage() {
                             <p className="text-[12px] text-[#98A2B3] mt-2">No activity recorded for this gate pass yet.</p>
                         </div>
                     ) : (
-                        <ol className="relative space-y-4 before:absolute before:left-[11px] before:top-1 before:bottom-1 before:w-px before:bg-[#E4E7EC]">
+                        <ol className="relative space-y-4 before:absolute before:left-[11px] before:top-1 before:bottom-1 before:w-px before:bg-[var(--border)]">
                             {timeline.map(ev => {
-                                const theme = EVENT_THEME[ev.event_type] ?? { icon: History, label: ev.event_type.replace(/_/g, ' ').toLowerCase(), bg: '#F9FAFB', text: '#374151', border: '#E4E7EC' }
+                                const theme = EVENT_THEME[ev.event_type] ?? { icon: History, label: ev.event_type.replace(/_/g, ' ').toLowerCase(), bg: 'var(--surface-2)', text: '#374151', border: 'var(--border)' }
                                 const Icon = theme.icon
                                 return (
                                     <li key={ev.id} className="relative flex items-start gap-3">
@@ -1134,7 +1134,7 @@ export default function GatePassDetailPage() {
                                         </span>
                                         <div className="min-w-0 flex-1 pt-0.5">
                                             <div className="flex items-baseline justify-between gap-3">
-                                                <p className="text-[13px] font-medium text-[#101828]" style={{ color: theme.text }}>
+                                                <p className="text-[13px] font-medium text-[var(--text-primary)]" style={{ color: theme.text }}>
                                                     {theme.label}
                                                 </p>
                                                 <span className="shrink-0 text-[11px] text-[#98A2B3]">{fmtWhen(ev.occurred_at)}</span>
@@ -1157,9 +1157,9 @@ export default function GatePassDetailPage() {
             {/* Mark Delivered (catch-up) modal */}
             {markOpen && (
                 <Portal><div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-                    <div className="w-full max-w-md rounded-xl border border-[#E4E7EC] bg-white p-5 shadow-xl">
+                    <div className="w-full max-w-md rounded-xl border border-[var(--border)] bg-white p-5 shadow-xl">
                         <div className="flex items-center justify-between mb-3">
-                            <p className="text-[14px] font-semibold text-[#101828]">Mark Delivered & Complete</p>
+                            <p className="text-[14px] font-semibold text-[var(--text-primary)]">Mark Delivered & Complete</p>
                             <button onClick={() => setMarkOpen(false)} className="text-[#98A2B3] hover:text-[#374151] transition cursor-pointer">
                                 <X className="h-4 w-4" />
                             </button>
@@ -1174,7 +1174,7 @@ export default function GatePassDetailPage() {
                                     type="date"
                                     value={markDate}
                                     onChange={e => setMarkDate(e.target.value)}
-                                    className="h-9 w-full rounded-lg border border-[#E4E7EC] bg-white px-3 text-[13px] outline-none focus:border-[#16A34A]"
+                                    className="h-9 w-full rounded-lg border border-[var(--border)] bg-white px-3 text-[13px] outline-none focus:border-[#16A34A]"
                                 />
                             </div>
                             <div>
@@ -1186,7 +1186,7 @@ export default function GatePassDetailPage() {
                                     onChange={e => setMarkNote(e.target.value)}
                                     rows={3}
                                     placeholder="e.g. Delivered to hotel front office on that day, sign sheet not updated"
-                                    className="w-full rounded-lg border border-[#E4E7EC] bg-white px-3 py-2 text-[13px] text-[#101828] outline-none focus:border-[#16A34A] resize-none"
+                                    className="w-full rounded-lg border border-[var(--border)] bg-white px-3 py-2 text-[13px] text-[var(--text-primary)] outline-none focus:border-[#16A34A] resize-none"
                                 />
                             </div>
                         </div>

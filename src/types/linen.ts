@@ -127,7 +127,7 @@ export const LINEN_STATUS_CONFIG: Record<LinenStatus, { label: string; color: st
   DELIVERED:   { label: 'Delivered',   color: '#059669', bg: '#D1FAE5' },
   MISSING:     { label: 'Missing',     color: '#DC2626', bg: '#FEE2E2' },
   DAMAGED:     { label: 'Damaged',     color: '#DC2626', bg: '#FEE2E2' },
-  RETIRED:     { label: 'Retired',     color: '#6B7280', bg: '#F3F4F6' },
+  RETIRED:     { label: 'Retired',     color: '#6B7280', bg: 'var(--surface-3)' },
 }
 
 export const LINEN_CATEGORIES: { value: string; label: string }[] = [

@@ -218,19 +218,19 @@ export default function UsersPage() {
     const roleOptions = isPlatformAdmin ? [...ROLES, 'PLATFORM_ADMIN'] : ROLES
 
     const inputClass =
-        'h-10 w-full rounded-xl border border-[#E4E7EC] bg-white px-3.5 text-[13px] text-[#101828] placeholder:text-[#98A2B3] outline-none focus:border-[#101828] focus:ring-1 focus:ring-[#101828] transition-all duration-150'
+        'h-10 w-full rounded-xl border border-[var(--border)] bg-white px-3.5 text-[13px] text-[var(--text-primary)] placeholder:text-[#98A2B3] outline-none focus:border-[var(--text-primary)] focus:ring-1 focus:ring-[var(--text-primary)] transition-all duration-150'
 
     const roleColor: Record<string, string> = {
         ADMIN: 'bg-[#FEF3C7] text-[#92400E] border-[#FDE68A]',
         MANAGER: 'bg-[#EDE9FE] text-[#5B21B6] border-[#DDD6FE]',
         STAFF: 'bg-[#F0FDF4] text-[#166534] border-[#BBF7D0]',
-        PLATFORM_ADMIN: 'bg-[#101828] text-white border-[#101828]',
+        PLATFORM_ADMIN: 'bg-[var(--text-primary)] text-white border-[var(--text-primary)]',
     }
 
     const statusColor: Record<string, string> = {
         active: 'bg-[#F0FDF4] text-[#166534] border-[#BBF7D0]',
         inactive: 'bg-[#FEF2F2] text-[#DC2626] border-[#FECACA]',
-        unset: 'bg-[#F3F4F6] text-[#6B7280] border-[#E5E7EB]',
+        unset: 'bg-[var(--surface-3)] text-[#6B7280] border-[var(--border)]',
     }
 
     return (
@@ -264,7 +264,7 @@ export default function UsersPage() {
             {/* Stats row */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 {[
-                    { label: 'Total Users', value: users.length, color: 'text-[#101828]' },
+                    { label: 'Total Users', value: users.length, color: 'text-[var(--text-primary)]' },
                     { label: 'Active', value: users.filter(u => u.status === 'active').length, color: 'text-[#16A34A]' },
                     { label: 'Admins', value: users.filter(u => ['ADMIN', 'PLATFORM_ADMIN'].includes(u.role_id?.toUpperCase() ?? '')).length, color: 'text-[#92400E]' },
                 ].map(stat => (
@@ -281,7 +281,7 @@ export default function UsersPage() {
             {loadingUsers ? (
                 <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                     {[1, 2, 3].map(i => (
-                        <div key={i} className="h-28 rounded-xl bg-[#F3F4F6] animate-pulse" />
+                        <div key={i} className="h-28 rounded-xl bg-[var(--surface-3)] animate-pulse" />
                     ))}
                 </div>
             ) : users.length === 0 ? (
@@ -309,11 +309,11 @@ export default function UsersPage() {
                                 <Card className="hover:border-[#D1D5DB] transition-colors">
                                     <CardContent className="pt-4 pb-4">
                                         <div className="flex items-start gap-3">
-                                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#101828] to-[#374151] text-white font-bold text-[15px]">
+                                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[var(--text-primary)] to-[#374151] text-white font-bold text-[15px]">
                                                 {u.user_name.charAt(0).toUpperCase()}
                                             </div>
                                             <div className="min-w-0 flex-1">
-                                                <p className="text-[14px] font-semibold text-[#101828] truncate">{u.user_name}</p>
+                                                <p className="text-[14px] font-semibold text-[var(--text-primary)] truncate">{u.user_name}</p>
                                                 <p className="text-[12px] text-[#6B7280] truncate">{u.email || u.auth_id}</p>
                                                 <div className="flex items-center gap-1.5 mt-2 flex-wrap">
                                                     <span className={`inline-flex items-center rounded-md border px-2 py-0.5 text-[10px] font-semibold ${roleColor[u.role_id?.toUpperCase()] || roleColor.STAFF}`}>
@@ -323,14 +323,14 @@ export default function UsersPage() {
                                                         {u.status}
                                                     </span>
                                                     {u.employee_id && (
-                                                        <span className="inline-flex items-center rounded-md border border-[#E4E7EC] bg-[#F9FAFB] px-2 py-0.5 text-[10px] text-[#6B7280]">
+                                                        <span className="inline-flex items-center rounded-md border border-[var(--border)] bg-[var(--surface-2)] px-2 py-0.5 text-[10px] text-[#6B7280]">
                                                             #{u.employee_id}
                                                         </span>
                                                     )}
                                                     {isPlatformAdmin && (
                                                         <span
                                                             title={memberships.map(m => `${m.name} (${m.role})`).join(', ') || 'Not enrolled in any laundry'}
-                                                            className="inline-flex items-center gap-1 rounded-md border border-[#E4E7EC] bg-[#F9FAFB] px-2 py-0.5 text-[10px] text-[#6B7280]"
+                                                            className="inline-flex items-center gap-1 rounded-md border border-[var(--border)] bg-[var(--surface-2)] px-2 py-0.5 text-[10px] text-[#6B7280]"
                                                         >
                                                             <RiBuilding2Line size={11} />
                                                             {memberships.length === 0
@@ -347,7 +347,7 @@ export default function UsersPage() {
                                                         onClick={() => setManageUser(u)}
                                                         title="Manage laundries"
                                                         aria-label="Manage laundries"
-                                                        className="flex h-7 w-7 items-center justify-center rounded-lg text-[#6B7280] hover:bg-[#F3F4F6] hover:text-[#101828] transition-colors"
+                                                        className="flex h-7 w-7 items-center justify-center rounded-lg text-[#6B7280] hover:bg-[var(--surface-3)] hover:text-[var(--text-primary)] transition-colors"
                                                     >
                                                         <RiBuilding2Line size={15} />
                                                     </button>
@@ -356,7 +356,7 @@ export default function UsersPage() {
                                                     type="button"
                                                     onClick={() => openEdit(u)}
                                                     title="Edit user"
-                                                    className="flex h-7 w-7 items-center justify-center rounded-lg text-[#6B7280] hover:bg-[#F3F4F6] hover:text-[#101828] transition-colors"
+                                                    className="flex h-7 w-7 items-center justify-center rounded-lg text-[#6B7280] hover:bg-[var(--surface-3)] hover:text-[var(--text-primary)] transition-colors"
                                                 >
                                                     <RiEditLine size={15} />
                                                 </button>
@@ -390,22 +390,22 @@ export default function UsersPage() {
                             transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
                             className="fixed inset-0 z-50 flex items-center justify-center p-4"
                         >
-                            <div className="w-full max-w-md rounded-2xl border border-[#E4E7EC] bg-white shadow-2xl overflow-hidden">
+                            <div className="w-full max-w-md rounded-2xl border border-[var(--border)] bg-white shadow-2xl overflow-hidden">
                                 {/* Modal header */}
-                                <div className="flex items-center justify-between px-6 py-4 border-b border-[#F2F4F7]">
+                                <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--border)]">
                                     <div className="flex items-center gap-3">
-                                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#101828] text-white">
+                                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--text-primary)] text-white">
                                             <RiEditLine size={16} />
                                         </div>
                                         <div>
-                                            <p className="text-[14px] font-bold text-[#101828]">{editId ? 'Edit User' : 'Create User'}</p>
+                                            <p className="text-[14px] font-bold text-[var(--text-primary)]">{editId ? 'Edit User' : 'Create User'}</p>
                                             <p className="text-[11px] text-[#6B7280]">{editId ? 'Update this system user' : 'Add a new system user'}</p>
                                         </div>
                                     </div>
                                     <button
                                         type="button"
                                         onClick={() => setShowModal(false)}
-                                        className="flex h-7 w-7 items-center justify-center rounded-lg text-[#6B7280] hover:bg-[#F3F4F6] hover:text-[#101828] transition-colors"
+                                        className="flex h-7 w-7 items-center justify-center rounded-lg text-[#6B7280] hover:bg-[var(--surface-3)] hover:text-[var(--text-primary)] transition-colors"
                                     >
                                         <RiCloseLine size={16} />
                                     </button>
@@ -559,14 +559,14 @@ export default function UsersPage() {
                                         <button
                                             type="button"
                                             onClick={() => setShowModal(false)}
-                                            className="flex-1 h-10 rounded-xl border border-[#E4E7EC] bg-white text-[13px] font-medium text-[#374151] hover:bg-[#F9FAFB] transition-colors"
+                                            className="flex-1 h-10 rounded-xl border border-[var(--border)] bg-white text-[13px] font-medium text-[#374151] hover:bg-[var(--surface-2)] transition-colors"
                                         >
                                             Cancel
                                         </button>
                                         <button
                                             type="submit"
                                             disabled={submitting}
-                                            className="flex-1 h-10 rounded-xl bg-[#101828] text-[13px] font-medium text-white hover:bg-[#1D2939] transition-colors disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                            className="flex-1 h-10 rounded-xl bg-[var(--text-primary)] text-[13px] font-medium text-white hover:bg-[#1D2939] transition-colors disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                                         >
                                             {submitting ? (
                                                 <>
@@ -671,21 +671,21 @@ function ManageLaundriesModal({
                         transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
                         className="fixed inset-0 z-50 flex items-center justify-center p-4"
                     >
-                        <div className="w-full max-w-lg rounded-2xl border border-[#E4E7EC] bg-white shadow-2xl overflow-hidden">
-                            <div className="flex items-center justify-between px-6 py-4 border-b border-[#F2F4F7]">
+                        <div className="w-full max-w-lg rounded-2xl border border-[var(--border)] bg-white shadow-2xl overflow-hidden">
+                            <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--border)]">
                                 <div className="flex items-center gap-3 min-w-0">
-                                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#101828] text-white">
+                                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--text-primary)] text-white">
                                         <RiBuilding2Line size={16} />
                                     </div>
                                     <div className="min-w-0">
-                                        <p className="text-[14px] font-bold text-[#101828] truncate">Manage laundries</p>
+                                        <p className="text-[14px] font-bold text-[var(--text-primary)] truncate">Manage laundries</p>
                                         <p className="text-[11px] text-[#6B7280] truncate">{user.user_name} · {user.auth_id}</p>
                                     </div>
                                 </div>
                                 <button
                                     type="button"
                                     onClick={onClose}
-                                    className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-[#6B7280] hover:bg-[#F3F4F6] hover:text-[#101828] transition-colors"
+                                    className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-[#6B7280] hover:bg-[var(--surface-3)] hover:text-[var(--text-primary)] transition-colors"
                                 >
                                     <RiCloseLine size={16} />
                                 </button>
@@ -710,11 +710,11 @@ function ManageLaundriesModal({
                                 )}
                             </div>
 
-                            <div className="flex justify-end px-4 py-3 border-t border-[#F2F4F7]">
+                            <div className="flex justify-end px-4 py-3 border-t border-[var(--border)]">
                                 <button
                                     type="button"
                                     onClick={onClose}
-                                    className="h-9 rounded-xl border border-[#E4E7EC] bg-white px-4 text-[13px] font-medium text-[#374151] hover:bg-[#F9FAFB] transition-colors"
+                                    className="h-9 rounded-xl border border-[var(--border)] bg-white px-4 text-[13px] font-medium text-[#374151] hover:bg-[var(--surface-2)] transition-colors"
                                 >
                                     Done
                                 </button>
@@ -745,15 +745,15 @@ function ManageLaundryRow({
     const [role, setRole] = useState(currentRole ?? 'STAFF')
 
     return (
-        <div className="flex items-center gap-2 rounded-xl border border-[#E4E7EC] bg-white px-3 py-2.5">
+        <div className="flex items-center gap-2 rounded-xl border border-[var(--border)] bg-white px-3 py-2.5">
             <span
-                className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-md border ${isMember ? 'border-[#BBF7D0] bg-[#F0FDF4] text-[#16A34A]' : 'border-[#E4E7EC] bg-[#F9FAFB] text-[#98A2B3]'}`}
+                className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-md border ${isMember ? 'border-[#BBF7D0] bg-[#F0FDF4] text-[#16A34A]' : 'border-[var(--border)] bg-[var(--surface-2)] text-[#98A2B3]'}`}
                 title={isMember ? 'Member' : 'Not a member'}
             >
                 {isMember ? <RiCheckLine size={13} /> : <RiBuilding2Line size={13} />}
             </span>
             <div className="min-w-0 flex-1">
-                <p className="text-[13px] font-medium text-[#101828] truncate">{laundry.name}</p>
+                <p className="text-[13px] font-medium text-[var(--text-primary)] truncate">{laundry.name}</p>
                 <p className="text-[11px] text-[#98A2B3] truncate">{laundry.laundry_id}</p>
             </div>
             <select
@@ -761,7 +761,7 @@ function ManageLaundryRow({
                 onChange={e => setRole(e.target.value)}
                 disabled={isMember || busy}
                 title={isMember ? 'Role in this laundry' : 'Role to assign'}
-                className="h-8 rounded-lg border border-[#E4E7EC] bg-white px-2 text-[12px] text-[#101828] outline-none focus:border-[#101828] disabled:opacity-60"
+                className="h-8 rounded-lg border border-[var(--border)] bg-white px-2 text-[12px] text-[var(--text-primary)] outline-none focus:border-[var(--text-primary)] disabled:opacity-60"
             >
                 {TENANT_ROLES.map(r => (
                     <option key={r} value={r}>{r}</option>

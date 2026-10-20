@@ -134,7 +134,7 @@ export default function LinenInventory() {
               </thead>
               <tbody>
                 {data.items.map(linen => {
-                  const stCfg = LINEN_STATUS_CONFIG[linen.status as LinenStatus] ?? { label: linen.status, color: '#6B7280', bg: '#F3F4F6' }
+                  const stCfg = LINEN_STATUS_CONFIG[linen.status as LinenStatus] ?? { label: linen.status, color: '#6B7280', bg: 'var(--surface-3)' }
                   return (
                     <tr
                       key={linen.id}

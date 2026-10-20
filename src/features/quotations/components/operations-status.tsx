@@ -14,7 +14,7 @@ export const GATE_PASS_STATUSES: Record<string, StatusStyle> = {
     READY_FOR_DELIVERY: { label: 'Ready', bg: '#F0FDF4', text: '#15803D', border: '#BBF7D0', dot: '#22C55E' },
     PARTIALLY_DELIVERED: { label: 'Partial', bg: '#FFFBEB', text: '#D97706', border: '#FDE68A', dot: '#F59E0B' },
     DELIVERED: { label: 'Delivered', bg: '#F0FDF4', text: '#16A34A', border: '#BBF7D0', dot: '#16A34A' },
-    CANCELLED: { label: 'Cancelled', bg: '#F9FAFB', text: '#6B7280', border: '#E4E7EC', dot: '#9CA3AF' },
+    CANCELLED: { label: 'Cancelled', bg: 'var(--surface-2)', text: '#6B7280', border: 'var(--border)', dot: '#9CA3AF' },
 }
 
 export type DeliveryStatus = 'DELIVERED' | 'PARTIALLY_DELIVERED' | 'READY' | 'IN_PROGRESS' | 'PENDING' | 'CANCELLED'
@@ -24,8 +24,8 @@ export const DELIVERY_STATUSES: Record<DeliveryStatus, StatusStyle> = {
     PARTIALLY_DELIVERED: { label: 'Partial', bg: '#FFFBEB', text: '#D97706', border: '#FDE68A', dot: '#F59E0B' },
     READY: { label: 'Ready', bg: '#F0FDF4', text: '#15803D', border: '#BBF7D0', dot: '#22C55E' },
     IN_PROGRESS: { label: 'In Progress', bg: '#FFF7ED', text: '#C2410C', border: '#FED7AA', dot: '#F97316' },
-    PENDING: { label: 'Pending', bg: '#F9FAFB', text: '#667085', border: '#E4E7EC', dot: '#98A2B3' },
-    CANCELLED: { label: 'Cancelled', bg: '#F9FAFB', text: '#6B7280', border: '#E4E7EC', dot: '#9CA3AF' },
+    PENDING: { label: 'Pending', bg: 'var(--surface-2)', text: '#667085', border: 'var(--border)', dot: '#98A2B3' },
+    CANCELLED: { label: 'Cancelled', bg: 'var(--surface-2)', text: '#6B7280', border: 'var(--border)', dot: '#9CA3AF' },
 }
 
 export const DELIVERY_STATUS_ORDER: DeliveryStatus[] = [

@@ -109,7 +109,7 @@ export function BillBuilder({ quotation }: BillBuilderProps) {
   return (
     <div className="grid gap-5 lg:grid-cols-12 select-none">
       <Card className="lg:col-span-7">
-        <CardHeader className="border-b border-[#F2F4F7] pb-4">
+        <CardHeader className="border-b border-[var(--border)] pb-4">
           <div className="w-full">
             <div className="flex items-center justify-between gap-3">
               <div>
@@ -134,7 +134,7 @@ export function BillBuilder({ quotation }: BillBuilderProps) {
                 onChange={e => setSearch(e.target.value)}
                 onKeyDown={handleSearchKeyDown}
                 placeholder="Type to search items…"
-                className="h-9 w-full rounded-lg border border-[#E4E7EC] bg-white pl-9 pr-8 text-[13px] text-[#101828] outline-none focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/10 shadow-[var(--shadow-xs)]"
+                className="h-9 w-full rounded-lg border border-[var(--border)] bg-white pl-9 pr-8 text-[13px] text-[var(--text-primary)] outline-none focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/10 shadow-[var(--shadow-xs)]"
               />
               {search && (
                 <button
@@ -160,7 +160,7 @@ export function BillBuilder({ quotation }: BillBuilderProps) {
             </p>
           ) : !search.trim() ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
-              <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-xl bg-[#F3F4F6] border border-[#E4E7EC]">
+              <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-xl bg-[var(--surface-3)] border border-[var(--border)]">
                 <PackageSearch className="h-5 w-5 text-[#9CA3AF]" />
               </div>
               <p className="text-[13px] font-medium text-[#374151]">Search to add an item</p>
@@ -173,7 +173,7 @@ export function BillBuilder({ quotation }: BillBuilderProps) {
               No items match &quot;{search}&quot;.
             </p>
           ) : (
-            <div className="divide-y divide-[#F2F4F7]">
+            <div className="divide-y divide-[var(--border)]">
               {searchResults.map((li, index) => {
                 const qty = counts[li._key] ?? 0
                 return (
@@ -189,7 +189,7 @@ export function BillBuilder({ quotation }: BillBuilderProps) {
                     }`}
                   >
                     <div className="min-w-0">
-                      <p className="text-[13px] font-medium text-[#101828] truncate">
+                      <p className="text-[13px] font-medium text-[var(--text-primary)] truncate">
                         {li.item_name}
                       </p>
                       <div className="flex items-center gap-1.5 mt-1 flex-wrap">
@@ -212,7 +212,7 @@ export function BillBuilder({ quotation }: BillBuilderProps) {
                         <button
                           type="button"
                           onClick={() => setCount(li._key, qty - 1)}
-                          className="flex h-7 w-7 items-center justify-center rounded-md border border-[#E4E7EC] text-[#6B7280] hover:bg-[#F3F4F6] transition cursor-pointer"
+                          className="flex h-7 w-7 items-center justify-center rounded-md border border-[var(--border)] text-[#6B7280] hover:bg-[var(--surface-3)] transition cursor-pointer"
                           aria-label={`Decrease ${li.item_name} quantity`}
                         >
                           <Minus className="h-3.5 w-3.5" />
@@ -222,13 +222,13 @@ export function BillBuilder({ quotation }: BillBuilderProps) {
                           min={0}
                           value={qty}
                           onChange={e => setCount(li._key, Number(e.target.value))}
-                          className="h-7 w-12 rounded-md border border-[#E4E7EC] text-center text-[13px] font-semibold text-[#101828] outline-none focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/10"
+                          className="h-7 w-12 rounded-md border border-[var(--border)] text-center text-[13px] font-semibold text-[var(--text-primary)] outline-none focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/10"
                           aria-label={`${li.item_name} quantity`}
                         />
                         <button
                           type="button"
                           onClick={() => setCount(li._key, qty + 1)}
-                          className="flex h-7 w-7 items-center justify-center rounded-md border border-[#E4E7EC] text-[#6B7280] hover:bg-[#F3F4F6] transition cursor-pointer"
+                          className="flex h-7 w-7 items-center justify-center rounded-md border border-[var(--border)] text-[#6B7280] hover:bg-[var(--surface-3)] transition cursor-pointer"
                           aria-label={`Increase ${li.item_name} quantity`}
                         >
                           <Plus className="h-3.5 w-3.5" />
@@ -245,7 +245,7 @@ export function BillBuilder({ quotation }: BillBuilderProps) {
 
       <div className="lg:col-span-5">
         <Card className="lg:sticky lg:top-4">
-          <CardHeader className="border-b border-[#F2F4F7] pb-4">
+          <CardHeader className="border-b border-[var(--border)] pb-4">
             <div className="flex items-center gap-2.5">
               <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#FFF1F1] text-[#DC2626] border border-[#FECACA]">
                 <Receipt className="h-4 w-4" />
@@ -269,15 +269,15 @@ export function BillBuilder({ quotation }: BillBuilderProps) {
                 {selectedRows.map(({ item, qty }) => (
                   <div
                     key={item._key}
-                    className="flex items-center justify-between gap-2 rounded-lg border border-[#F2F4F7] px-2.5 py-2"
+                    className="flex items-center justify-between gap-2 rounded-lg border border-[var(--border)] px-2.5 py-2"
                   >
                     <div className="min-w-0">
-                      <p className="text-[13px] font-medium text-[#101828] truncate">
+                      <p className="text-[13px] font-medium text-[var(--text-primary)] truncate">
                         {item.item_name}
                       </p>
                       <p className="text-[12px] text-[#98A2B3]">
                         LKR {item.unit_price.toFixed(2)} × {qty} ={' '}
-                        <span className="font-semibold text-[#101828]">
+                        <span className="font-semibold text-[var(--text-primary)]">
                           LKR {(item.unit_price * qty).toFixed(2)}
                         </span>
                       </p>
@@ -287,18 +287,18 @@ export function BillBuilder({ quotation }: BillBuilderProps) {
                       <button
                         type="button"
                         onClick={() => setCount(item._key, qty - 1)}
-                        className="flex h-6 w-6 items-center justify-center rounded-md border border-[#E4E7EC] text-[#6B7280] hover:bg-[#F3F4F6] transition cursor-pointer"
+                        className="flex h-6 w-6 items-center justify-center rounded-md border border-[var(--border)] text-[#6B7280] hover:bg-[var(--surface-3)] transition cursor-pointer"
                         aria-label={`Decrease ${item.item_name} quantity`}
                       >
                         <Minus className="h-3 w-3" />
                       </button>
-                      <span className="w-5 text-center text-[12px] font-semibold text-[#101828]">
+                      <span className="w-5 text-center text-[12px] font-semibold text-[var(--text-primary)]">
                         {qty}
                       </span>
                       <button
                         type="button"
                         onClick={() => setCount(item._key, qty + 1)}
-                        className="flex h-6 w-6 items-center justify-center rounded-md border border-[#E4E7EC] text-[#6B7280] hover:bg-[#F3F4F6] transition cursor-pointer"
+                        className="flex h-6 w-6 items-center justify-center rounded-md border border-[var(--border)] text-[#6B7280] hover:bg-[var(--surface-3)] transition cursor-pointer"
                         aria-label={`Increase ${item.item_name} quantity`}
                       >
                         <Plus className="h-3 w-3" />
@@ -317,7 +317,7 @@ export function BillBuilder({ quotation }: BillBuilderProps) {
               </div>
             )}
 
-            <div className="mt-4 border-t border-[#E4E7EC] pt-3 space-y-1.5">
+            <div className="mt-4 border-t border-[var(--border)] pt-3 space-y-1.5">
               <div className="flex items-center justify-between text-[12px] text-[#6B7280]">
                 <span>Items selected</span>
                 <span className="font-medium">{selectedRows.length}</span>
@@ -326,7 +326,7 @@ export function BillBuilder({ quotation }: BillBuilderProps) {
                 <span>Total quantity</span>
                 <span className="font-medium">{totalQuantity}</span>
               </div>
-              <div className="flex items-center justify-between border-t border-[#E4E7EC] pt-2 text-[15px] font-bold text-[#101828]">
+              <div className="flex items-center justify-between border-t border-[var(--border)] pt-2 text-[15px] font-bold text-[var(--text-primary)]">
                 <span>Total Amount</span>
                 <span className="text-[#DC2626]">LKR {grandTotal.toFixed(2)}</span>
               </div>

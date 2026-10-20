@@ -186,7 +186,7 @@ export default function BillsListPage() {
         const paid = bill.paid_amount ?? 0
         const owed = bill.payment_status === 'CANCELLED' ? 0 : Math.max(0, bill.outstanding_amount ?? (grandTotal - paid))
         return (
-            <div className="rounded-xl border border-[#E4E7EC] bg-white p-4 shadow-[var(--shadow-xs)] transition-shadow hover:shadow-md">
+            <div className="rounded-xl border border-[var(--border)] bg-white p-4 shadow-[var(--shadow-xs)] transition-shadow hover:shadow-md">
                 <div className="flex items-start justify-between gap-2">
                     <div className="flex min-w-0 items-start gap-3">
                         <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border ${
@@ -202,7 +202,7 @@ export default function BillsListPage() {
                             <div className="flex flex-wrap items-center gap-1.5">
                                 {!hotel && <HotelBadge name={bill.client_name} />}
                                 {hotel && (
-                                    <p className="truncate text-[13px] font-semibold text-[#101828]">{bill.client_name}</p>
+                                    <p className="truncate text-[13px] font-semibold text-[var(--text-primary)]">{bill.client_name}</p>
                                 )}
                             </div>
                             <p className="mt-0.5 truncate text-[12px] text-[var(--text-faint)]">
@@ -232,7 +232,7 @@ export default function BillsListPage() {
                     <span className="text-[14px] font-bold text-[var(--text-primary)]">LKR {grandTotal.toFixed(2)}</span>
                 </div>
 
-                <div className="mt-2 flex items-center justify-between border-t border-[#F2F4F7] pt-2">
+                <div className="mt-2 flex items-center justify-between border-t border-[var(--border)] pt-2">
                     <div className="flex items-center gap-1.5">
                         {bill.gate_pass_id ? (
                             <Link to={`/gate-passes/${bill.gate_pass_id}`} className="font-mono text-[11px] font-semibold text-[#10B981] hover:text-[#047857]">
@@ -255,14 +255,14 @@ export default function BillsListPage() {
 
     const renderUnbilledCard = (gp: UnbilledGatePass) => {
         return (
-            <div className="rounded-xl border border-[#E4E7EC] bg-white p-4 shadow-[var(--shadow-xs)] transition-shadow hover:shadow-md">
+            <div className="rounded-xl border border-[var(--border)] bg-white p-4 shadow-[var(--shadow-xs)] transition-shadow hover:shadow-md">
                 <div className="flex items-start justify-between gap-2">
                     <div className="flex min-w-0 items-start gap-3">
                         <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-[#FFEAD5] bg-[#FFF7ED] text-[#C2410C]">
                             <Boxes className="h-4 w-4" />
                         </div>
                         <div className="min-w-0">
-                            <p className="font-mono text-[12px] font-semibold text-[#101828]">{gp.gate_pass_number}</p>
+                            <p className="font-mono text-[12px] font-semibold text-[var(--text-primary)]">{gp.gate_pass_number}</p>
                             <div className="mt-0.5 flex flex-wrap items-center gap-1.5">
                                 {!hotel && <HotelBadge name={gp.client_name} />}
                                 {hotel && (
@@ -277,7 +277,7 @@ export default function BillsListPage() {
                     </span>
                 </div>
 
-                <div className="mt-3 space-y-1 border-t border-[#F2F4F7] pt-2.5">
+                <div className="mt-3 space-y-1 border-t border-[var(--border)] pt-2.5">
                     {(gp.unbilled_items ?? []).slice(0, 3).map(item => (
                         <div key={item.item_name} className="flex items-center justify-between gap-2 text-[12px]">
                             <span className="truncate font-medium text-[#374151]">{item.item_name}</span>
@@ -304,7 +304,7 @@ export default function BillsListPage() {
                     )}
                 </div>
 
-                <div className="mt-2 flex items-center justify-between border-t border-[#F2F4F7] pt-2">
+                <div className="mt-2 flex items-center justify-between border-t border-[var(--border)] pt-2">
                     <span className="inline-flex items-center gap-1 text-[11px] font-medium text-[#B45309]">
                         <AlertTriangle size={11} /> Ready to bill
                     </span>

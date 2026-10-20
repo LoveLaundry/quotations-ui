@@ -29,12 +29,12 @@ import { BalancesPopup } from '../components/balances-popup'
 import { toast } from 'sonner'
 
 const TOOLTIP_STYLE = {
-  borderRadius: 10,
+  borderRadius: 'var(--radius-md)',
   border: '1px solid var(--border)',
   background: 'var(--surface)',
   color: 'var(--text-primary)',
   fontSize: 12,
-  boxShadow: '0 6px 16px rgb(16 24 40 / 0.10)',
+  boxShadow: 'var(--shadow-md)',
 } as const
 
 const EXPORT_TARGETS = [
@@ -952,7 +952,7 @@ function YearlyTrendChart({ data }: { data: DashboardOverviewData }) {
               <XAxis dataKey="label" tick={{ fontSize: 10, fill: 'var(--text-muted)' }} />
               <YAxis tick={{ fontSize: 10, fill: 'var(--text-muted)' }} />
               <RechartsTooltip
-                contentStyle={{ borderRadius: 10, border: '1px solid var(--border)', fontSize: 12 }}
+                contentStyle={TOOLTIP_STYLE}
                 formatter={(v: number, name: string) => [`LKR ${v.toLocaleString()}`, name]}
               />
               <Area type="monotone" dataKey="revenue" stroke="var(--brand)" fill="url(#gradYearRevenue)" strokeWidth={2} name="Revenue" />

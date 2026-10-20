@@ -125,7 +125,7 @@ function SpecFields({
   const specErrors = errors?.line_items?.[index]?.specifications
 
   return (
-    <div className="mt-2 border-t border-[#F2F4F7] pt-2">
+    <div className="mt-2 border-t border-[var(--border)] pt-2">
       <div className="flex items-center justify-between mb-1.5">
         <p className="text-[11px] font-semibold text-[#6B7280] uppercase tracking-wider">
           Specifications / Variants
@@ -332,13 +332,13 @@ export default function QuotationFormPage() {
       </div>
 
       {isLoading && isEdit ? (
-        <div className="rounded-xl border border-[#E4E7EC] bg-[#FAFAFA] p-10 text-[13px] text-[#98A2B3] text-center">
+        <div className="rounded-xl border border-[var(--border)] bg-[#FAFAFA] p-10 text-[13px] text-[#98A2B3] text-center">
           Loading quotation…
         </div>
       ) : (
         <form onSubmit={handleSubmit(onSubmit)} onKeyDown={handleFormKeyDown} className="space-y-4">
           <Card>
-            <CardHeader className="border-b border-[#F2F4F7] pb-4">
+            <CardHeader className="border-b border-[var(--border)] pb-4">
               <div>
                 <CardTitle>Client / Hotel Details</CardTitle>
                 <p className="text-[12px] text-[#98A2B3] mt-0.5">
@@ -381,7 +381,7 @@ export default function QuotationFormPage() {
           </Card>
 
           <Card>
-            <CardHeader className="border-b border-[#F2F4F7] pb-4">
+            <CardHeader className="border-b border-[var(--border)] pb-4">
               <div>
                 <CardTitle>
                   Line Items
@@ -412,7 +412,7 @@ export default function QuotationFormPage() {
                 )}
               </div>
 
-              <div className="mb-4 p-3 rounded-lg border border-[#E4E7EC] bg-[#FAFAFA]">
+              <div className="mb-4 p-3 rounded-lg border border-[var(--border)] bg-[#FAFAFA]">
                 <p className="text-[11px] font-semibold text-[#6B7280] uppercase tracking-wider mb-2">
                   Quick-add common items
                 </p>
@@ -422,7 +422,7 @@ export default function QuotationFormPage() {
                       key={item}
                       type="button"
                       onClick={() => append({ ...newItem(), item_name: item })}
-                      className="rounded-md border border-[#E4E7EC] bg-white px-2 py-0.5 text-[11px] font-medium text-[#374151] hover:border-[#FECACA] hover:bg-[#FFF1F1] hover:text-[#DC2626] transition-all cursor-pointer"
+                      className="rounded-md border border-[var(--border)] bg-white px-2 py-0.5 text-[11px] font-medium text-[#374151] hover:border-[#FECACA] hover:bg-[#FFF1F1] hover:text-[#DC2626] transition-all cursor-pointer"
                     >
                       + {item}
                     </button>
@@ -450,7 +450,7 @@ export default function QuotationFormPage() {
                   return (
                   <div
                     key={field.id}
-                    className="rounded-lg border border-[#E4E7EC] bg-white p-3 hover:border-[#D1D5DB] transition-colors"
+                    className="rounded-lg border border-[var(--border)] bg-white p-3 hover:border-[#D1D5DB] transition-colors"
                   >
                     <div className="grid gap-2 grid-cols-1 sm:grid-cols-[28px_1fr_180px_120px_120px_36px] items-center">
                     <div className="hidden sm:flex items-center justify-center text-[#D1D5DB]">
@@ -535,7 +535,7 @@ export default function QuotationFormPage() {
               <button
                 type="button"
                 onClick={() => append(newItem())}
-                className="mt-3 w-full rounded-lg border border-dashed border-[#E4E7EC] py-2.5 text-[12px] font-medium text-[#6B7280] hover:border-[#FECACA] hover:text-[#DC2626] hover:bg-[#FFF8F8] transition-all cursor-pointer"
+                className="mt-3 w-full rounded-lg border border-dashed border-[var(--border)] py-2.5 text-[12px] font-medium text-[#6B7280] hover:border-[#FECACA] hover:text-[#DC2626] hover:bg-[#FFF8F8] transition-all cursor-pointer"
               >
                 + Add another item
               </button>
@@ -549,7 +549,7 @@ export default function QuotationFormPage() {
               />
 
               {fields.length > 0 && (
-                <div className="mt-4 rounded-lg border border-[#E4E7EC] bg-[#FAFAFA] px-4 py-3 flex items-center justify-between">
+                <div className="mt-4 rounded-lg border border-[var(--border)] bg-[#FAFAFA] px-4 py-3 flex items-center justify-between">
                   <span className="text-[12px] font-medium text-[#6B7280]">
                     {fields.length} items in this quotation
                   </span>

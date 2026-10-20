@@ -69,7 +69,7 @@ export default function CreateBillPage() {
               value={search}
               onChange={e => setSearch(e.target.value)}
               placeholder="Search quotations by client or title…"
-              className="h-11 w-full rounded-xl border border-[#E4E7EC] bg-white pl-10 pr-9 text-[14px] text-[#101828] outline-none focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/10 shadow-sm"
+              className="h-11 w-full rounded-xl border border-[var(--border)] bg-white pl-10 pr-9 text-[14px] text-[var(--text-primary)] outline-none focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/10 shadow-sm"
             />
             {search && (
               <button
@@ -106,7 +106,7 @@ export default function CreateBillPage() {
                       <Building2 className="h-4 w-4" />
                     </div>
                     <div className="min-w-0">
-                      <p className="text-[13px] font-semibold text-[#101828] truncate">
+                      <p className="text-[13px] font-semibold text-[var(--text-primary)] truncate">
                         {q.client_name}
                       </p>
                       <p className="text-[12px] text-[#98A2B3] truncate">
@@ -122,7 +122,7 @@ export default function CreateBillPage() {
       ) : (
         <>
           <Card>
-            <CardHeader className="border-b border-[#F2F4F7] pb-4">
+            <CardHeader className="border-b border-[var(--border)] pb-4">
               <div className="flex items-center gap-3">
                 <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#FFF1F1] text-[#DC2626] border border-[#FECACA]">
                   <Receipt className="h-4 w-4" />

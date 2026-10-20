@@ -138,7 +138,7 @@ const TONE_BG: Record<HoverState['tone'], string> = {
   blue: 'border-[#BFDBFE]',
   green: 'border-[#BBF7D0]',
   amber: 'border-[#FDE68A]',
-  gray: 'border-[#E4E7EC]',
+  gray: 'border-[var(--border)]',
 }
 
 // ── Main page ─────────────────────────────────────────────────────────────────
@@ -272,7 +272,7 @@ export default function HotelLinenFlowPage() {
           </p>
           <SyncStatusBar queryKey={['gatepasses']} label="Gate passes" className="mt-2" />
         </div>
-        <div className="hidden md:flex flex-col gap-1 rounded-xl border border-[#E4E7EC] bg-white px-4 py-3 shadow-sm">
+        <div className="hidden md:flex flex-col gap-1 rounded-xl border border-[var(--border)] bg-white px-4 py-3 shadow-sm">
           <p className="text-[10px] font-semibold uppercase tracking-wide text-[#98A2B3]">How to read</p>
           <ul className="text-[11.5px] text-[#475569] space-y-1">
             <li><span className="text-[#2563EB] font-semibold">● Blue clusters</span> are gate passes (items received)</li>
@@ -311,7 +311,7 @@ export default function HotelLinenFlowPage() {
               if (e.key === 'Enter') setHotelSearch(searchInput.trim())
             }}
             placeholder="Search hotel…"
-            className="h-10 w-full rounded-lg border border-[#E4E7EC] bg-white pl-9 pr-8 text-[13px] text-[#101828] outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/10 shadow-sm"
+            className="h-10 w-full rounded-lg border border-[var(--border)] bg-white pl-9 pr-8 text-[13px] text-[var(--text-primary)] outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/10 shadow-sm"
           />
           {searchInput && (
             <button
@@ -326,7 +326,7 @@ export default function HotelLinenFlowPage() {
         <select
           value={period}
           onChange={e => setPeriod(e.target.value as Period)}
-          className="h-10 appearance-none rounded-lg border border-[#E4E7EC] bg-white px-3 text-[13px] text-[#101828] outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/10 shadow-sm cursor-pointer"
+          className="h-10 appearance-none rounded-lg border border-[var(--border)] bg-white px-3 text-[13px] text-[var(--text-primary)] outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/10 shadow-sm cursor-pointer"
         >
           <option value="all">All time</option>
           <option value="month">This month</option>
@@ -513,7 +513,7 @@ function HotelTreeCard({ hotel }: { hotel: HotelNode }) {
             <Building2 className="h-4 w-4" />
           </div>
           <div className="min-w-0">
-            <p className="text-[13px] font-semibold text-[#101828] truncate">{hotel.name}</p>
+            <p className="text-[13px] font-semibold text-[var(--text-primary)] truncate">{hotel.name}</p>
             <p className="text-[11px] text-[#98A2B3]">No gate passes in this period.</p>
           </div>
         </div>
@@ -541,12 +541,12 @@ function HotelTreeCard({ hotel }: { hotel: HotelNode }) {
   return (
     <Card className="overflow-hidden p-0">
       {/* Header */}
-      <div className="flex items-center gap-3 px-4 py-3 border-b border-[#F2F4F7]">
+      <div className="flex items-center gap-3 px-4 py-3 border-b border-[var(--border)]">
         <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#EFF6FF] text-[#2563EB] border border-[#BFDBFE]">
           <Building2 className="h-4 w-4" />
         </div>
         <div className="min-w-0 flex-1">
-          <p className="text-[13px] font-semibold text-[#101828] truncate">{hotel.name}</p>
+          <p className="text-[13px] font-semibold text-[var(--text-primary)] truncate">{hotel.name}</p>
           <p className="text-[11px] text-[#98A2B3]">
             {hotel.gatePasses.length} gate pass{hotel.gatePasses.length !== 1 ? 'es' : ''}
             {' · '}{hotel.received} in · {hotel.delivered} out
@@ -740,12 +740,12 @@ function HotelTreeCard({ hotel }: { hotel: HotelNode }) {
             {hover.chips.length > 0 && (
               <div className="mt-2 flex flex-wrap gap-1">
                 {hover.chips.slice(0, 8).map((chip, ci) => (
-                  <span key={ci} className="rounded-md border border-[#E4E7EC] bg-[#F9FAFB] px-1.5 py-0.5 text-[10px] text-[#475569]">
+                  <span key={ci} className="rounded-md border border-[var(--border)] bg-[var(--surface-2)] px-1.5 py-0.5 text-[10px] text-[#475569]">
                     {chip}
                   </span>
                 ))}
                 {hover.chips.length > 8 && (
-                  <span className="rounded-md border border-[#E4E7EC] bg-[#F9FAFB] px-1.5 py-0.5 text-[10px] text-[#98A2B3]">
+                  <span className="rounded-md border border-[var(--border)] bg-[var(--surface-2)] px-1.5 py-0.5 text-[10px] text-[#98A2B3]">
                     +{hover.chips.length - 8} more
                   </span>
                 )}

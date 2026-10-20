@@ -44,7 +44,7 @@ export default function LinenProfile() {
   )
   if (isError || !linen) return <ErrorState />
 
-  const stCfg = LINEN_STATUS_CONFIG[linen.status as LinenStatus] ?? { label: linen.status, color: '#6B7280', bg: '#F3F4F6' }
+  const stCfg = LINEN_STATUS_CONFIG[linen.status as LinenStatus] ?? { label: linen.status, color: '#6B7280', bg: 'var(--surface-3)' }
 
   const handleQuickAction = (action: string) => {
     if (!id) return

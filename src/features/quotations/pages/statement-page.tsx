@@ -158,7 +158,7 @@ export default function StatementPage() {
                 onChange={(e) => setSearchInput(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && searchInput.trim() && setClientName(searchInput.trim())}
                 placeholder="Enter client name…"
-                className="h-10 w-full rounded-lg border border-[#E4E7EC] bg-white pl-9 pr-8 text-[13px] text-[#101828] outline-none focus:border-[#D97706] focus:ring-2 focus:ring-[#D97706]/10 shadow-sm"
+                className="h-10 w-full rounded-lg border border-[var(--border)] bg-white pl-9 pr-8 text-[13px] text-[var(--text-primary)] outline-none focus:border-[#D97706] focus:ring-2 focus:ring-[#D97706]/10 shadow-sm"
               />
               {searchInput && (
                 <button
@@ -256,7 +256,7 @@ export default function StatementPage() {
                         </span>
                         <Link
                           to={`/bills/${b.id}`}
-                          className="inline-flex shrink-0 items-center gap-1 rounded-lg border border-[#E4E7EC] bg-white px-2.5 py-1.5 text-[12px] font-semibold text-[#374151] hover:border-[#D97706] hover:text-[#B45309] transition-colors"
+                          className="inline-flex shrink-0 items-center gap-1 rounded-lg border border-[var(--border)] bg-white px-2.5 py-1.5 text-[12px] font-semibold text-[#374151] hover:border-[#D97706] hover:text-[#B45309] transition-colors"
                         >
                           Record payment <ArrowRight className="h-3 w-3" />
                         </Link>

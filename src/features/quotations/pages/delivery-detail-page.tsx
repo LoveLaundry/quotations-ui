@@ -130,7 +130,7 @@ export default function DeliveryDetailPage() {
                             </div>
                         </div>
                     ) : (
-                        <p className="text-[13px] font-semibold text-[#101828]">{formatDate(delivery.delivery_date)}</p>
+                        <p className="text-[13px] font-semibold text-[var(--text-primary)]">{formatDate(delivery.delivery_date)}</p>
                     )}
                 </Card>
 
@@ -144,7 +144,7 @@ export default function DeliveryDetailPage() {
                             <Icon className="h-3.5 w-3.5 text-[#98A2B3]" />
                             <p className="text-[11px] text-[#98A2B3] font-medium uppercase tracking-wide">{label}</p>
                         </div>
-                        <p className="text-[13px] font-semibold text-[#101828]">{value}</p>
+                        <p className="text-[13px] font-semibold text-[var(--text-primary)]">{value}</p>
                     </Card>
                 ))}
             </div>
@@ -158,7 +158,7 @@ export default function DeliveryDetailPage() {
 
             {/* Items */}
             <Card>
-                <CardHeader className="border-b border-[#F2F4F7] pb-3">
+                <CardHeader className="border-b border-[var(--border)] pb-3">
                     <div className="flex items-center gap-2">
                         <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#F0FDF4] border border-[#BBF7D0]">
                             <Truck className="h-4 w-4 text-[#16A34A]" />
@@ -167,14 +167,14 @@ export default function DeliveryDetailPage() {
                     </div>
                 </CardHeader>
                 <CardContent className="pt-0">
-                    <div className="divide-y divide-[#F9FAFB]">
+                    <div className="divide-y divide-[var(--surface-2)]">
                         {items.map((item: any, i: number) => (
                             <div key={i} className="flex items-center justify-between gap-3 py-3.5">
                                 <div className="flex items-center gap-3">
                                     <div className="h-8 w-8 flex items-center justify-center rounded-lg bg-[#F0FDF4] border border-[#BBF7D0] text-[#16A34A] font-bold text-[12px]">
                                         {item.item_name.charAt(0).toUpperCase()}
                                     </div>
-                                    <p className="text-[13px] font-medium text-[#101828]">
+                                    <p className="text-[13px] font-medium text-[var(--text-primary)]">
                                         {item.item_name}
                                         {item.specification && (
                                             <span className="ml-2 inline-flex items-center rounded bg-[#FFF7ED] border border-[#FED7AA] px-1.5 py-0.5 text-[10px] font-semibold text-[#EA580C]">
@@ -183,13 +183,13 @@ export default function DeliveryDetailPage() {
                                         )}
                                     </p>
                                 </div>
-                                <span className="text-[14px] font-semibold text-[#101828]">{item.quantity} pcs</span>
+                                <span className="text-[14px] font-semibold text-[var(--text-primary)]">{item.quantity} pcs</span>
                             </div>
                         ))}
                     </div>
-                    <div className="border-t border-[#E4E7EC] pt-3 mt-2 flex items-center justify-between">
+                    <div className="border-t border-[var(--border)] pt-3 mt-2 flex items-center justify-between">
                         <span className="text-[13px] text-[#6B7280]">Total</span>
-                        <span className="text-[15px] font-bold text-[#101828]">{totalPieces} pieces</span>
+                        <span className="text-[15px] font-bold text-[var(--text-primary)]">{totalPieces} pieces</span>
                     </div>
                 </CardContent>
             </Card>

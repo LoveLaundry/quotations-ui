@@ -352,7 +352,7 @@ export default function ReportsBackupPage() {
 
             {folder ? (
               <div className="space-y-2">
-                <div className="flex items-center gap-2 rounded-lg border border-[#E5E7EB] bg-[#F9FAFB] px-3 py-2">
+                <div className="flex items-center gap-2 rounded-lg border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2">
                   <CheckCircle className="h-4 w-4 text-[#16A34A] shrink-0" />
                   <div className="min-w-0">
                     <p className="text-[13px] font-semibold text-[#111827] truncate">{folder.name}</p>
@@ -373,7 +373,7 @@ export default function ReportsBackupPage() {
               </div>
             ) : (
               <div className="space-y-3">
-                <div className="flex items-start gap-2 rounded-lg border border-[#E5E7EB] bg-[#F9FAFB] p-3">
+                <div className="flex items-start gap-2 rounded-lg border border-[var(--border)] bg-[var(--surface-2)] p-3">
                   <MagnifyingGlass className="h-4 w-4 text-[#6B7280] mt-0.5 shrink-0" />
                   <p className="text-[12px] text-[#374151]">
                     Pick the folder that should hold your reports, e.g.{' '}
@@ -398,7 +398,7 @@ export default function ReportsBackupPage() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 gap-1 rounded-lg border border-[#E5E7EB] bg-[#F9FAFB] p-1">
+            <div className="grid grid-cols-2 gap-1 rounded-lg border border-[var(--border)] bg-[var(--surface-2)] p-1">
               <button
                 type="button"
                 onClick={() => {
@@ -437,7 +437,7 @@ export default function ReportsBackupPage() {
                     setDate(e.target.value || todayStr())
                     setExisting([])
                   }}
-                  className="h-9 w-full rounded-lg border border-[#E5E7EB] bg-white px-3 text-[13px] text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/30"
+                  className="h-9 w-full rounded-lg border border-[var(--border)] bg-white px-3 text-[13px] text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/30"
                 />
               ) : (
                 <input
@@ -448,7 +448,7 @@ export default function ReportsBackupPage() {
                     setMonth(e.target.value || currentMonth())
                     setExisting([])
                   }}
-                  className="h-9 w-full rounded-lg border border-[#E5E7EB] bg-white px-3 text-[13px] text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/30"
+                  className="h-9 w-full rounded-lg border border-[var(--border)] bg-white px-3 text-[13px] text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/30"
                 />
               )}
             </div>
@@ -487,7 +487,7 @@ export default function ReportsBackupPage() {
             </p>
 
             {log.length > 0 && (
-              <div className="rounded-lg border border-[#E5E7EB] bg-[#111827] p-3">
+              <div className="rounded-lg border border-[var(--border)] bg-[#111827] p-3">
                 <p className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-[#9CA3AF]">Run log</p>
                 <div className={`${logLinesKey(false)} overflow-x-auto`}>
                   {log.map((line, i) => (
@@ -538,7 +538,7 @@ export default function ReportsBackupPage() {
                 </p>
                 <ul className="space-y-1">
                   {lastBackup.files.map(f => (
-                    <li key={f.name} className="flex items-center justify-between rounded-md border border-[#E5E7EB] px-2 py-1 text-[12px]">
+                    <li key={f.name} className="flex items-center justify-between rounded-md border border-[var(--border)] px-2 py-1 text-[12px]">
                       <span className="font-mono text-[#6B7280]">{f.name}</span>
                       <span className="text-[#475467]">{fmtBytes(f.size)}</span>
                     </li>
@@ -611,7 +611,7 @@ export default function ReportsBackupPage() {
 function StatBox({ label, value, tone }: { label: string; value: string; tone: 'green' | 'red' }) {
   const color = tone === 'green' ? 'text-[#15803D]' : 'text-[#DC2626]'
   return (
-    <div className="rounded-lg border border-[#E5E7EB] bg-[#F9FAFB] px-3 py-2 text-center">
+    <div className="rounded-lg border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2 text-center">
       <p className="text-[11px] font-medium uppercase tracking-wide text-[#98A2B3]">{label}</p>
       <p className={`mt-0.5 text-[15px] font-bold ${color}`}>{value}</p>
     </div>

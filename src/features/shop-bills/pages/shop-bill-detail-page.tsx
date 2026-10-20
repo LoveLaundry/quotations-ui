@@ -50,7 +50,7 @@ function RecordPaymentModal({ isOpen, onClose, billId, outstanding }: { isOpen: 
     )
   }
 
-  const inputClass = 'h-10 w-full rounded-lg border border-[#E4E7EC] bg-white px-3 text-[13px] text-[#101828] outline-none focus:border-[#16A34A] focus:ring-2 focus:ring-[#16A34A]/10 transition'
+  const inputClass = 'h-10 w-full rounded-lg border border-[var(--border)] bg-white px-3 text-[13px] text-[var(--text-primary)] outline-none focus:border-[#16A34A] focus:ring-2 focus:ring-[#16A34A]/10 transition'
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
@@ -133,7 +133,7 @@ function SplitBillModal({ isOpen, onClose, bill, onSplit }: { isOpen: boolean; o
             {bill.items.map((item: any, idx: number) => (
               <label key={idx} className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 cursor-pointer">
                 <input type="checkbox" checked={selected.has(idx)} onChange={() => toggle(idx)} className="h-4 w-4 accent-[#D97706]" aria-label={`Select ${item.item_name}`} />
-                <span className="flex-1 text-[13px] text-[#101828]">{item.item_name} {item.specification ? `(${item.specification})` : ''}</span>
+                <span className="flex-1 text-[13px] text-[var(--text-primary)]">{item.item_name} {item.specification ? `(${item.specification})` : ''}</span>
                 <span className="text-[12px] text-[#6B7280]">x{item.quantity}</span>
               </label>
             ))}
@@ -163,13 +163,13 @@ function NotesHistoryModal({ isOpen, onClose, notesHistory }: { isOpen: boolean;
           ) : (
             <div className="space-y-3 max-h-60 overflow-y-auto">
               {notesHistory.slice().reverse().map((entry, idx) => (
-                <div key={idx} className="p-3 rounded-lg border border-[#E4E7EC]">
+                <div key={idx} className="p-3 rounded-lg border border-[var(--border)]">
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="text-[11px] font-medium text-[#101828]">{entry.changed_by}</span>
+                    <span className="text-[11px] font-medium text-[var(--text-primary)]">{entry.changed_by}</span>
                     <span className="text-[10px] text-[#98A2B3]">{formatDate(entry.changed_at)}</span>
                   </div>
                   {entry.old_notes && <p className="text-[12px] text-[#DC2626] line-through">{entry.old_notes}</p>}
-                  <p className="text-[12px] text-[#101828]">{entry.new_notes || '(empty)'}</p>
+                  <p className="text-[12px] text-[var(--text-primary)]">{entry.new_notes || '(empty)'}</p>
                 </div>
               ))}
             </div>
@@ -198,7 +198,7 @@ function MakeRecurringModal({ isOpen, onClose, billId: _billId, onMake }: { isOp
           <div className="space-y-4">
             <div>
               <label className="block text-[11px] font-semibold uppercase text-[#6B7280] mb-1.5">Interval</label>
-              <select value={interval} onChange={e => setInterval(e.target.value)} className="h-10 w-full rounded-lg border border-[#E4E7EC] bg-white px-3 text-[13px] outline-none" aria-label="Recurring interval">
+              <select value={interval} onChange={e => setInterval(e.target.value)} className="h-10 w-full rounded-lg border border-[var(--border)] bg-white px-3 text-[13px] outline-none" aria-label="Recurring interval">
                 <option value="DAILY">Daily</option>
                 <option value="WEEKLY">Weekly</option>
                 <option value="BIWEEKLY">Bi-weekly</option>
@@ -207,7 +207,7 @@ function MakeRecurringModal({ isOpen, onClose, billId: _billId, onMake }: { isOp
             </div>
             <div>
               <label className="block text-[11px] font-semibold uppercase text-[#6B7280] mb-1.5">End Date (optional)</label>
-              <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} className="h-10 w-full rounded-lg border border-[#E4E7EC] bg-white px-3 text-[13px] outline-none" aria-label="Recurring end date" />
+              <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} className="h-10 w-full rounded-lg border border-[var(--border)] bg-white px-3 text-[13px] outline-none" aria-label="Recurring end date" />
             </div>
           </div>
         </DialogBody>
@@ -357,7 +357,7 @@ export default function ShopBillDetailPage() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             <Card className="p-4">
               <p className="text-[11px] font-semibold uppercase text-[#6B7280]">Grand Total</p>
-              <p className="text-[18px] font-bold text-[#101828] mt-1">{fmt(bill.grand_total)}</p>
+              <p className="text-[18px] font-bold text-[var(--text-primary)] mt-1">{fmt(bill.grand_total)}</p>
             </Card>
             <Card className="p-4">
               <p className="text-[11px] font-semibold uppercase text-[#6B7280]">Paid</p>
@@ -383,16 +383,16 @@ export default function ShopBillDetailPage() {
             <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4 text-[13px]">
               <div>
                 <p className="text-[11px] font-semibold uppercase text-[#6B7280]">Bill Number</p>
-                <p className="font-medium text-[#101828] mt-0.5">{bill.bill_number}</p>
+                <p className="font-medium text-[var(--text-primary)] mt-0.5">{bill.bill_number}</p>
               </div>
               <div>
                 <p className="text-[11px] font-semibold uppercase text-[#6B7280]">Client Name</p>
-                <p className="font-medium text-[#101828] mt-0.5">{bill.client_name || '—'}</p>
+                <p className="font-medium text-[var(--text-primary)] mt-0.5">{bill.client_name || '—'}</p>
               </div>
               {bill.delivery_date && (
                 <div>
                   <p className="text-[11px] font-semibold uppercase text-[#6B7280]">Delivery Date</p>
-                  <p className="font-medium text-[#101828] mt-0.5 flex items-center gap-1.5">
+                  <p className="font-medium text-[var(--text-primary)] mt-0.5 flex items-center gap-1.5">
                     <Calendar className="h-3.5 w-3.5 text-[#6B7280]" />{formatDate(bill.delivery_date)}
                   </p>
                 </div>
@@ -405,7 +405,7 @@ export default function ShopBillDetailPage() {
               )}
               <div>
                 <p className="text-[11px] font-semibold uppercase text-[#6B7280]">Created</p>
-                <p className="font-medium text-[#101828] mt-0.5">{formatDate(bill.created_at)}</p>
+                <p className="font-medium text-[var(--text-primary)] mt-0.5">{formatDate(bill.created_at)}</p>
               </div>
               {bill.parent_bill_id && (
                 <div>
@@ -440,7 +440,7 @@ export default function ShopBillDetailPage() {
               <div className="overflow-x-auto">
                 <table className="w-full text-[13px]">
                   <thead>
-                    <tr className="border-b border-[#E4E7EC]">
+                    <tr className="border-b border-[var(--border)]">
                       <th className="text-left py-2 font-semibold text-[#6B7280]" scope="col">#</th>
                       <th className="text-left py-2 font-semibold text-[#6B7280]" scope="col">Item</th>
                       <th className="text-left py-2 font-semibold text-[#6B7280]" scope="col">Spec</th>
@@ -453,9 +453,9 @@ export default function ShopBillDetailPage() {
                   </thead>
                   <tbody>
                     {bill.items.map((item: any, idx: number) => (
-                      <tr key={idx} className="border-b border-[#F3F4F6] last:border-0">
+                      <tr key={idx} className="border-b border-[var(--surface-3)] last:border-0">
                         <td className="py-2 text-[#98A2B3]">{idx + 1}</td>
-                        <td className="py-2 font-medium text-[#101828]">{item.item_name}</td>
+                        <td className="py-2 font-medium text-[var(--text-primary)]">{item.item_name}</td>
                         <td className="py-2 text-[#6B7280]">{item.specification || '-'}</td>
                         <td className="py-2 text-[#6B7280]">{item.category || '-'}</td>
                         <td className="py-2 text-right">{fmt(item.unit_price)}</td>
@@ -466,10 +466,10 @@ export default function ShopBillDetailPage() {
                     ))}
                   </tbody>
                   <tfoot>
-                    <tr className="border-t-2 border-[#E4E7EC]">
+                    <tr className="border-t-2 border-[var(--border)]">
                       <td colSpan={5} />
-                      <td className="py-2 text-right font-semibold text-[#101828]" colSpan={2}>Subtotal</td>
-                      <td className="py-2 text-right font-semibold text-[#101828]">{fmt(bill.total_amount)}</td>
+                      <td className="py-2 text-right font-semibold text-[var(--text-primary)]" colSpan={2}>Subtotal</td>
+                      <td className="py-2 text-right font-semibold text-[var(--text-primary)]">{fmt(bill.total_amount)}</td>
                     </tr>
                     {bill.discounts > 0 && (
                       <tr><td colSpan={5} /><td className="py-1 text-right text-[#DC2626]" colSpan={2}>Discounts</td><td className="py-1 text-right text-[#DC2626]">-{fmt(bill.discounts)}</td></tr>
@@ -482,7 +482,7 @@ export default function ShopBillDetailPage() {
                     )}
                     <tr className="border-t-2 border-[#DC2626]">
                       <td colSpan={5} />
-                      <td className="py-2 text-right font-bold text-[#101828]" colSpan={2}>Grand Total</td>
+                      <td className="py-2 text-right font-bold text-[var(--text-primary)]" colSpan={2}>Grand Total</td>
                       <td className="py-2 text-right font-bold text-[#DC2626] text-[15px]">{fmt(bill.grand_total)}</td>
                     </tr>
                   </tfoot>

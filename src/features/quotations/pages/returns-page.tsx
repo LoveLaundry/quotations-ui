@@ -37,7 +37,7 @@ function ReturnCard({ r, onResent }: { r: Return; onResent: (returnId: string, i
             <RotateCcw className="h-4 w-4" />
           </div>
           <div className="min-w-0 flex-1">
-            <p className="text-[13px] font-semibold text-[#101828] truncate">{r.client_name}</p>
+            <p className="text-[13px] font-semibold text-[var(--text-primary)] truncate">{r.client_name}</p>
             <p className="text-[11px] text-[#98A2B3] mt-0.5">{r.return_id}</p>
           </div>
           <span
@@ -63,7 +63,7 @@ function ReturnCard({ r, onResent }: { r: Return; onResent: (returnId: string, i
           ))}
         </div>
 
-        <div className="flex items-center justify-between border-t border-[#F2F4F7] pt-3 text-[12px] text-[#6B7280]">
+        <div className="flex items-center justify-between border-t border-[var(--border)] pt-3 text-[12px] text-[#6B7280]">
           <span>{totalReturned} items returned</span>
           <span>{reasons.join(', ')}</span>
         </div>
@@ -170,7 +170,7 @@ export default function ReturnsPage() {
           value={searchInput}
           onChange={(e) => setSearchInput(e.target.value)}
           placeholder="Search by client name…"
-          className="h-10 w-full rounded-lg border border-[#E4E7EC] bg-white pl-9 pr-8 text-[13px] text-[#101828] outline-none focus:border-[#D97706] focus:ring-2 focus:ring-[#D97706]/10 shadow-sm"
+          className="h-10 w-full rounded-lg border border-[var(--border)] bg-white pl-9 pr-8 text-[13px] text-[var(--text-primary)] outline-none focus:border-[#D97706] focus:ring-2 focus:ring-[#D97706]/10 shadow-sm"
         />
         {searchInput && (
           <button

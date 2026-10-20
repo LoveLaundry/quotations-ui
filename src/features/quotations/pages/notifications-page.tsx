@@ -103,14 +103,14 @@ export default function NotificationsPage() {
 
       {/* Tabs + Search */}
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <div className="flex gap-1 bg-[#F3F4F6] rounded-xl p-1 w-fit">
+        <div className="flex gap-1 bg-[var(--surface-3)] rounded-xl p-1 w-fit">
           {tabs.map((tab) => (
             <button
               key={tab.key}
               onClick={() => setFilter(tab.key)}
               className={`flex items-center gap-2 px-4 py-2 text-[13px] font-medium rounded-lg transition-all cursor-pointer ${
                 filter === tab.key
-                  ? 'bg-white text-[#101828] shadow-sm'
+                  ? 'bg-white text-[var(--text-primary)] shadow-sm'
                   : 'text-[#6B7280] hover:text-[#111827]'
               }`}
             >
@@ -119,8 +119,8 @@ export default function NotificationsPage() {
                 tab.count > 0 && tab.key !== 'all'
                   ? 'bg-[#DC2626] text-white'
                   : filter === tab.key
-                    ? 'bg-[#F3F4F6] text-[#6B7280]'
-                    : 'bg-[#E5E7EB] text-[#6B7280]'
+                    ? 'bg-[var(--surface-3)] text-[#6B7280]'
+                    : 'bg-[var(--border)] text-[#6B7280]'
               }`}>
                 {tab.count}
               </span>
@@ -134,7 +134,7 @@ export default function NotificationsPage() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search client, item or gate pass..."
-            className="h-10 w-full rounded-lg border border-[#E4E7EC] bg-white pl-9 pr-9 text-[13px] text-[#101828] outline-none focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/10 transition"
+            className="h-10 w-full rounded-lg border border-[var(--border)] bg-white pl-9 pr-9 text-[13px] text-[var(--text-primary)] outline-none focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/10 transition"
           />
           {search && (
             <button
@@ -157,7 +157,7 @@ export default function NotificationsPage() {
             : "You're all caught up. No gate pass items pending to be sent or quotations waiting to be billed."}
         />
       ) : (
-        <div className="rounded-2xl border border-[#E4E7EC] bg-white overflow-hidden shadow-sm divide-y divide-[#F2F4F7]">
+        <div className="rounded-2xl border border-[var(--border)] bg-white overflow-hidden shadow-sm divide-y divide-[var(--border)]">
           {filtered.map((row, idx) => {
             if (row.kind === 'gatepass_pending') {
               const e = row.entry
@@ -175,7 +175,7 @@ export default function NotificationsPage() {
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-2">
-                        <p className="text-[14px] font-semibold text-[#101828] truncate">
+                        <p className="text-[14px] font-semibold text-[var(--text-primary)] truncate">
                           {e.item_name}
                         </p>
                         <span className="inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide whitespace-nowrap bg-[#FEF2F2] text-[#DC2626] border-[#FECACA]">
@@ -210,7 +210,7 @@ export default function NotificationsPage() {
                     </Button>
                     <button
                       onClick={() => setSelected(row)}
-                      className="flex h-8 w-8 items-center justify-center rounded-lg text-[#98A2B3] hover:bg-[#F3F4F6] hover:text-[#111827] transition-colors cursor-pointer"
+                      className="flex h-8 w-8 items-center justify-center rounded-lg text-[#98A2B3] hover:bg-[var(--surface-3)] hover:text-[#111827] transition-colors cursor-pointer"
                       aria-label="Open details"
                     >
                       <RiArrowRightSLine size={18} />
@@ -235,14 +235,14 @@ export default function NotificationsPage() {
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
-                      <p className="text-[14px] font-semibold text-[#101828] truncate">
+                      <p className="text-[14px] font-semibold text-[var(--text-primary)] truncate">
                         {q.client_name}
                       </p>
                       <span className="inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide whitespace-nowrap bg-[#FFF7ED] text-[#EA580C] border-[#FED7AA]">
                         Ready for Billing
                       </span>
                       {q.tag && (
-                        <span className="inline-flex items-center rounded-full bg-[#F3F4F6] border border-[#E5E7EB] px-2 py-0.5 text-[10px] font-semibold uppercase text-[#6B7280]">
+                        <span className="inline-flex items-center rounded-full bg-[var(--surface-3)] border border-[var(--border)] px-2 py-0.5 text-[10px] font-semibold uppercase text-[#6B7280]">
                           {q.tag}
                         </span>
                       )}
@@ -270,13 +270,13 @@ export default function NotificationsPage() {
                   <Button
                     size="sm"
                     onClick={() => handleAction(row)}
-                    className="bg-[#101828] hover:bg-[#374151]"
+                    className="bg-[var(--text-primary)] hover:bg-[#374151]"
                   >
                     <RiAddLine size={14} /> Create Bill
                   </Button>
                   <button
                     onClick={() => setSelected(row)}
-                    className="flex h-8 w-8 items-center justify-center rounded-lg text-[#98A2B3] hover:bg-[#F3F4F6] hover:text-[#111827] transition-colors cursor-pointer"
+                    className="flex h-8 w-8 items-center justify-center rounded-lg text-[#98A2B3] hover:bg-[var(--surface-3)] hover:text-[#111827] transition-colors cursor-pointer"
                     aria-label="Open details"
                   >
                     <RiArrowRightSLine size={18} />

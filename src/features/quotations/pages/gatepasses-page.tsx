@@ -161,14 +161,14 @@ export default function GatePassesPage() {
         const rewashed = (gp.items ?? []).filter(item => item.rewashed)
         const rewashedQty = rewashed.reduce((sum, item) => sum + (item.received_qty || 0), 0)
         return (
-            <div className="rounded-xl border border-[#E4E7EC] bg-white p-4 shadow-[var(--shadow-xs)] transition-shadow hover:shadow-md">
+            <div className="rounded-xl border border-[var(--border)] bg-white p-4 shadow-[var(--shadow-xs)] transition-shadow hover:shadow-md">
                 <div className="flex items-start justify-between gap-2">
                     <div className="flex min-w-0 items-start gap-3">
                         <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-[#BFDBFE] bg-[#EFF6FF] text-[#2563EB]">
                             <ClipboardList size={16} />
                         </div>
                         <div className="min-w-0">
-                            <p className="font-mono text-[12px] font-semibold text-[#101828]">{gp.gate_pass_number}</p>
+                            <p className="font-mono text-[12px] font-semibold text-[var(--text-primary)]">{gp.gate_pass_number}</p>
                             <div className="mt-0.5 flex flex-wrap items-center gap-1.5">
                                 {!hotel && <HotelBadge name={gp.client_name} />}
                                 {hotel && (
@@ -181,7 +181,7 @@ export default function GatePassesPage() {
                     <GatePassStatusPill status={gp.status} />
                 </div>
 
-                <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-[#F2F4F7] pt-3 text-[12px] text-[#6B7280]">
+                <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-[var(--border)] pt-3 text-[12px] text-[#6B7280]">
                     <span><span className="font-semibold text-[#374151]">{(gp.items ?? []).length}</span> types</span>
                     <span><span className="font-semibold text-[#374151]">{total}</span> pcs</span>
                     <span>by <span className="font-medium text-[#374151]">{gp.received_by || '—'}</span></span>
@@ -197,7 +197,7 @@ export default function GatePassesPage() {
                     )}
                 </div>
 
-                <div className="mt-2 flex justify-end border-t border-[#F2F4F7] pt-2">
+                <div className="mt-2 flex justify-end border-t border-[var(--border)] pt-2">
                     <EntityCardActions
                         onQuickView={() => setQuickView(gp)}
                         onOpen={() => navigate(`/gate-passes/${gp.id}`)}
@@ -238,7 +238,7 @@ export default function GatePassesPage() {
             <CompactMetrics items={kpis} />
 
             {/* Filters */}
-            <div className="rounded-xl border border-[#E4E7EC] bg-white p-3 shadow-[var(--shadow-xs)]">
+            <div className="rounded-xl border border-[var(--border)] bg-white p-3 shadow-[var(--shadow-xs)]">
                 <div className="flex flex-col gap-2.5 lg:flex-row lg:items-center">
                     <div className="relative flex-1">
                         <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#98A2B3]" />
@@ -247,7 +247,7 @@ export default function GatePassesPage() {
                             value={searchInput}
                             onChange={event => setSearchInput(event.target.value)}
                             placeholder={`Search ${hotel ? hotel : 'all hotels'} by gate pass no., item, person…`}
-                            className="h-10 w-full rounded-lg border border-[#E4E7EC] bg-white pl-9 pr-8 text-[13px] text-[#101828] shadow-sm outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/10"
+                            className="h-10 w-full rounded-lg border border-[var(--border)] bg-white pl-9 pr-8 text-[13px] text-[var(--text-primary)] shadow-sm outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/10"
                         />
                         {searchInput && (
                             <button
@@ -275,7 +275,7 @@ export default function GatePassesPage() {
                 </div>
 
                 {showMore && (
-                    <div className="mt-3 grid gap-2.5 border-t border-[#F2F4F7] pt-3 sm:grid-cols-2">
+                    <div className="mt-3 grid gap-2.5 border-t border-[var(--border)] pt-3 sm:grid-cols-2">
                         <div className="relative">
                             <CalendarDays className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#98A2B3]" />
                             <input
@@ -283,7 +283,7 @@ export default function GatePassesPage() {
                                 value={dateFrom}
                                 onChange={event => setDateFrom(event.target.value)}
                                 aria-label="Received from"
-                                className="h-10 w-full rounded-lg border border-[#E4E7EC] bg-white pl-9 pr-3 text-[13px] text-[#101828] shadow-sm outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/10"
+                                className="h-10 w-full rounded-lg border border-[var(--border)] bg-white pl-9 pr-3 text-[13px] text-[var(--text-primary)] shadow-sm outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/10"
                             />
                         </div>
                         <div className="relative">
@@ -293,7 +293,7 @@ export default function GatePassesPage() {
                                 value={dateTo}
                                 onChange={event => setDateTo(event.target.value)}
                                 aria-label="Received to"
-                                className="h-10 w-full rounded-lg border border-[#E4E7EC] bg-white pl-9 pr-3 text-[13px] text-[#101828] shadow-sm outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/10"
+                                className="h-10 w-full rounded-lg border border-[var(--border)] bg-white pl-9 pr-3 text-[13px] text-[var(--text-primary)] shadow-sm outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/10"
                             />
                         </div>
                     </div>

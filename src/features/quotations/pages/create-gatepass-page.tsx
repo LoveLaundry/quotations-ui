@@ -377,7 +377,7 @@ export default function CreateGatePassPage() {
     }
 
     const inputClass =
-        'h-10 w-full rounded-lg border border-[#E4E7EC] bg-white px-3 text-[13px] text-[#101828] outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/10 shadow-sm transition'
+        'h-10 w-full rounded-lg border border-[var(--border)] bg-white px-3 text-[13px] text-[var(--text-primary)] outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/10 shadow-sm transition'
 
     const labelClass = 'block text-[11px] font-semibold uppercase tracking-wide text-[#6B7280] mb-1.5'
 
@@ -403,7 +403,7 @@ export default function CreateGatePassPage() {
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
                     {dirty && (
-                        <span className="inline-flex items-center gap-1.5 rounded-full border border-[#E4E7EC] bg-white px-2.5 py-1 text-[11px] font-medium text-[#6B7280]">
+                        <span className="inline-flex items-center gap-1.5 rounded-full border border-[var(--border)] bg-white px-2.5 py-1 text-[11px] font-medium text-[#6B7280]">
                             <FileClock className="h-3 w-3" /> Autosaved draft
                         </span>
                     )}
@@ -435,7 +435,7 @@ export default function CreateGatePassPage() {
             <form onSubmit={handleSubmit} className="space-y-4">
                 {/* Quotation Linking Card */}
                 <Card>
-                    <CardHeader className="border-b border-[#F2F4F7] pb-3">
+                    <CardHeader className="border-b border-[var(--border)] pb-3">
                         <div className="flex items-center gap-2">
                             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#FFF7ED] border border-[#FED7AA]">
                                 <Link2 className="h-4 w-4 text-[#EA580C]" />
@@ -450,7 +450,7 @@ export default function CreateGatePassPage() {
                         {selectedQuotation ? (
                             <div className="flex items-center justify-between gap-3 rounded-xl border border-[#FED7AA] bg-[#FFF7ED] px-4 py-3">
                                 <div>
-                                    <p className="text-[13px] font-semibold text-[#101828]">{selectedQuotation.client_name}</p>
+                                    <p className="text-[13px] font-semibold text-[var(--text-primary)]">{selectedQuotation.client_name}</p>
                                     <p className="text-[11px] text-[#EA580C]">{selectedQuotation.quotation_title || 'Price List'} · {selectedQuotation.line_items?.length ?? 0} items</p>
                                 </div>
                                 <button
@@ -470,7 +470,7 @@ export default function CreateGatePassPage() {
                                         value={quotationSearch}
                                         onChange={e => setQuotationSearch(e.target.value)}
                                         placeholder="Search by client or title…"
-                                        className="h-10 w-full rounded-lg border border-[#E4E7EC] bg-white px-3 text-[13px] text-[#101828] outline-none focus:border-[#EA580C] focus:ring-2 focus:ring-[#EA580C]/10 shadow-sm transition"
+                                        className="h-10 w-full rounded-lg border border-[var(--border)] bg-white px-3 text-[13px] text-[var(--text-primary)] outline-none focus:border-[#EA580C] focus:ring-2 focus:ring-[#EA580C]/10 shadow-sm transition"
                                         autoFocus
                                     />
                                 </div>
@@ -485,10 +485,10 @@ export default function CreateGatePassPage() {
                                                 key={q.id}
                                                 type="button"
                                                 onClick={() => handleSelectQuotation(q)}
-                                                className="group flex w-full items-center gap-3 rounded-lg border border-[#E4E7EC] bg-white px-3 py-2.5 text-left hover:border-[#FED7AA] hover:bg-[#FFF7ED] transition cursor-pointer"
+                                                className="group flex w-full items-center gap-3 rounded-lg border border-[var(--border)] bg-white px-3 py-2.5 text-left hover:border-[#FED7AA] hover:bg-[#FFF7ED] transition cursor-pointer"
                                             >
                                                 <div className="min-w-0 flex-1">
-                                                    <p className="text-[13px] font-semibold text-[#101828] truncate">{q.client_name}</p>
+                                                    <p className="text-[13px] font-semibold text-[var(--text-primary)] truncate">{q.client_name}</p>
                                                     <p className="text-[11px] text-[#98A2B3] truncate">{q.quotation_title || 'Price List'} · {q.line_items?.length ?? 0} items</p>
                                                 </div>
                                             </button>
@@ -517,7 +517,7 @@ export default function CreateGatePassPage() {
 
                 {/* Basic Info Card */}
                 <Card>
-                    <CardHeader className="border-b border-[#F2F4F7] pb-3">
+                    <CardHeader className="border-b border-[var(--border)] pb-3">
                         <div className="flex items-center gap-2">
                             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#EFF6FF] border border-[#BFDBFE]">
                                 <ClipboardList className="h-4 w-4 text-[#2563EB]" />
@@ -585,7 +585,7 @@ export default function CreateGatePassPage() {
 
                 {/* Items Card */}
                 <Card>
-                    <CardHeader className="border-b border-[#F2F4F7] pb-3">
+                    <CardHeader className="border-b border-[var(--border)] pb-3">
                         <div className="flex flex-wrap items-center justify-between">
                             <div className="min-w-0 flex-1">
                                 <CardTitle>Linen Items</CardTitle>
@@ -636,7 +636,7 @@ export default function CreateGatePassPage() {
                                     className={`rounded-xl border p-3.5 space-y-3 ${
                                         isCustomItem(item.item_name)
                                             ? 'border-[#BFDBFE] bg-[#EFF6FF]/40'
-                                            : 'border-[#E4E7EC] bg-[#FAFAFA]'
+                                            : 'border-[var(--border)] bg-[#FAFAFA]'
                                     }`}
                                 >
                                     {/* Row 1: Name, Category, Spec, ClientQty, ReceivedQty */}
@@ -727,7 +727,7 @@ export default function CreateGatePassPage() {
                                         <label className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-semibold cursor-pointer select-none transition ${
                                             item.rewashed
                                                 ? 'bg-[#FFF0F5] text-[#C2410C] border-[#FBCFE8]'
-                                                : 'border-[#E4E7EC] bg-white text-[#98A2B3] hover:border-[#FBCFE8]'
+                                                : 'border-[var(--border)] bg-white text-[#98A2B3] hover:border-[#FBCFE8]'
                                         }`}>
                                             <input
                                                 type="checkbox"
@@ -785,7 +785,7 @@ export default function CreateGatePassPage() {
                         <button
                             type="button"
                             onClick={addItem}
-                            className="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed border-[#E4E7EC] py-3 text-[13px] font-medium text-[#6B7280] hover:border-[#2563EB] hover:text-[#2563EB] hover:bg-[#EFF6FF]/30 transition cursor-pointer"
+                            className="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed border-[var(--border)] py-3 text-[13px] font-medium text-[#6B7280] hover:border-[#2563EB] hover:text-[#2563EB] hover:bg-[#EFF6FF]/30 transition cursor-pointer"
                         >
                             <Plus className="h-4 w-4" /> Add another item
                         </button>
@@ -797,9 +797,9 @@ export default function CreateGatePassPage() {
                     <CardContent className="pt-4">
                         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                             <div className="text-[13px] text-[#6B7280] flex flex-wrap items-center gap-x-2 gap-y-1">
-                                <span><span className="font-semibold text-[#101828]">{form.items.length}</span> item type{form.items.length !== 1 ? 's' : ''}</span>
-                                <span className="text-[#E4E7EC]">·</span>
-                                <span><span className="font-semibold text-[#101828]">{form.items.reduce((s, i) => s + i.received_qty, 0)}</span> pieces total</span>
+                                <span><span className="font-semibold text-[var(--text-primary)]">{form.items.length}</span> item type{form.items.length !== 1 ? 's' : ''}</span>
+                                <span className="text-[var(--border)]">·</span>
+                                <span><span className="font-semibold text-[var(--text-primary)]">{form.items.reduce((s, i) => s + i.received_qty, 0)}</span> pieces total</span>
                                 {form.items.some(i => i.difference !== 0) && (
                                     <span className="inline-flex items-center gap-1 text-[#D97706]">
                                         <AlertCircle className="h-3.5 w-3.5" />

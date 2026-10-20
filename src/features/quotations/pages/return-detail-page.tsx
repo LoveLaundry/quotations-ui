@@ -170,7 +170,7 @@ export default function ReturnDetailPage() {
               <Icon className="h-3.5 w-3.5 text-[#98A2B3]" />
               <p className="text-[11px] text-[#98A2B3] font-medium uppercase tracking-wide">{label}</p>
             </div>
-            <p className="text-[13px] font-semibold text-[#101828]">{value}</p>
+            <p className="text-[13px] font-semibold text-[var(--text-primary)]">{value}</p>
           </Card>
         ))}
       </div>
@@ -279,15 +279,15 @@ export default function ReturnDetailPage() {
       {/* Bill Adjustment */}
       {returnData.bill_adjustment && returnData.bill_adjustment.adjustment_type !== 'NONE' && (
         <Card className="p-5">
-          <h3 className="text-[14px] font-semibold text-[#101828] mb-3">Bill Adjustment</h3>
+          <h3 className="text-[14px] font-semibold text-[var(--text-primary)] mb-3">Bill Adjustment</h3>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
               <p className="text-[11px] text-[#98A2B3] mb-0.5">Type</p>
-              <p className="text-[13px] font-semibold text-[#101828]">{returnData.bill_adjustment.adjustment_type}</p>
+              <p className="text-[13px] font-semibold text-[var(--text-primary)]">{returnData.bill_adjustment.adjustment_type}</p>
             </div>
             <div>
               <p className="text-[11px] text-[#98A2B3] mb-0.5">Amount</p>
-              <p className="text-[13px] font-semibold text-[#101828]">LKR {returnData.bill_adjustment.amount.toLocaleString()}</p>
+              <p className="text-[13px] font-semibold text-[var(--text-primary)]">LKR {returnData.bill_adjustment.amount.toLocaleString()}</p>
             </div>
             {returnData.bill_adjustment.notes && (
               <div>
@@ -302,7 +302,7 @@ export default function ReturnDetailPage() {
       {/* Notes */}
       {returnData.notes && (
         <Card className="p-5">
-          <h3 className="text-[14px] font-semibold text-[#101828] mb-3">Notes</h3>
+          <h3 className="text-[14px] font-semibold text-[var(--text-primary)] mb-3">Notes</h3>
           <p className="text-[13px] text-[#374151]">{returnData.notes}</p>
         </Card>
       )}

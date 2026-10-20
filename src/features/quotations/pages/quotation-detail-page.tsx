@@ -113,31 +113,31 @@ export default function QuotationDetailPage() {
                     <p className="text-[11px] text-[#98A2B3] uppercase font-semibold tracking-wide">
                       Client
                     </p>
-                    <p className="text-[13px] font-semibold text-[#101828]">{q.client_name}</p>
+                    <p className="text-[13px] font-semibold text-[var(--text-primary)]">{q.client_name}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#F3F4F6] text-[#6B7280] border border-[#E4E7EC]">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[var(--surface-3)] text-[#6B7280] border border-[var(--border)]">
                     <Hash className="h-4 w-4" />
                   </div>
                   <div>
                     <p className="text-[11px] text-[#98A2B3] uppercase font-semibold tracking-wide">
                       Line Items
                     </p>
-                    <p className="text-[13px] font-semibold text-[#101828]">
+                    <p className="text-[13px] font-semibold text-[var(--text-primary)]">
                       {q.line_items?.length ?? 0} items
                     </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#F3F4F6] text-[#6B7280] border border-[#E4E7EC]">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[var(--surface-3)] text-[#6B7280] border border-[var(--border)]">
                     <Calendar className="h-4 w-4" />
                   </div>
                   <div>
                     <p className="text-[11px] text-[#98A2B3] uppercase font-semibold tracking-wide">
                       Updated
                     </p>
-                    <p className="text-[13px] font-semibold text-[#101828]">
+                    <p className="text-[13px] font-semibold text-[var(--text-primary)]">
                       {formatDate(q.updated_at ?? q.created_at)}
                     </p>
                   </div>
@@ -200,14 +200,14 @@ export default function QuotationDetailPage() {
                     <p className="text-[11px] text-[#98A2B3] uppercase font-semibold tracking-wide mb-2">
                       History
                     </p>
-                    <ol className="relative border-l border-[#E4E7EC] ml-1 space-y-2.5 pl-4">
+                    <ol className="relative border-l border-[var(--border)] ml-1 space-y-2.5 pl-4">
                       {history
                         .slice()
                         .reverse()
                         .map((h, i) => (
                           <li key={i} className="relative">
                             <span className="absolute -left-[21px] top-1 h-2.5 w-2.5 rounded-full bg-[#E01E31] border-2 border-white" />
-                            <p className="text-[12px] font-medium text-[#101828]">
+                            <p className="text-[12px] font-medium text-[var(--text-primary)]">
                               {ORDER_STATUS_LABELS[h.status as OrderStatus] ?? h.status}
                             </p>
                             <p className="text-[11px] text-[#98A2B3]">
@@ -274,7 +274,7 @@ export default function QuotationDetailPage() {
                       className="flex flex-col items-center gap-2 rounded-xl border border-[#EEF0F3] p-3"
                     >
                       <QRCodeSVG value={t.tracking_url} size={96} />
-                      <p className="text-[11px] font-semibold text-[#101828] text-center">
+                      <p className="text-[11px] font-semibold text-[var(--text-primary)] text-center">
                         {t.label || 'Garment'}
                       </p>
                       <p className="text-[10px] text-[#98A2B3] break-all text-center">
@@ -283,7 +283,7 @@ export default function QuotationDetailPage() {
                       <button
                         type="button"
                         onClick={() => navigator.clipboard?.writeText(t.tracking_url)}
-                        className="flex items-center gap-1 rounded-md border border-[#E5E5E5] px-2 py-1 text-[10px] text-[#475467] hover:bg-[#F9FAFB]"
+                        className="flex items-center gap-1 rounded-md border border-[#E5E5E5] px-2 py-1 text-[10px] text-[#475467] hover:bg-[var(--surface-2)]"
                       >
                         <Copy className="h-3 w-3" />
                         Copy URL
@@ -301,7 +301,7 @@ export default function QuotationDetailPage() {
           </Card>
 
           <Card id="printable-receipt">
-            <CardHeader className="border-b border-[#F2F4F7] pb-4">
+            <CardHeader className="border-b border-[var(--border)] pb-4">
               <div>
                 <CardTitle>{q.client_name} — Price List</CardTitle>
                 {q.quotation_title && (
@@ -309,7 +309,7 @@ export default function QuotationDetailPage() {
                 )}
               </div>
               <div className="hidden print:block text-right">
-                <p className="text-[12px] font-bold text-[#101828]">Love Laundry</p>
+                <p className="text-[12px] font-bold text-[var(--text-primary)]">Love Laundry</p>
                 <p className="text-[11px] text-[#98A2B3]">
                   Medagama, Panirendawa · Reg. No: 40-3064
                 </p>
@@ -320,7 +320,7 @@ export default function QuotationDetailPage() {
               {grouped.map(([cat, items]) => (
                 <div key={cat}>
                   {grouped.length > 1 && (
-                    <div className="px-4 py-2 bg-[#F9FAFB] border-b border-[#F2F4F7]">
+                    <div className="px-4 py-2 bg-[var(--surface-2)] border-b border-[var(--border)]">
                       <p className="text-[11px] font-semibold uppercase tracking-wider text-[#6B7280]">
                         {cat}
                       </p>
@@ -330,8 +330,8 @@ export default function QuotationDetailPage() {
                   <div className="overflow-x-auto">
                   <table className="w-full min-w-[420px]">
                     {grouped.indexOf(grouped.find(g => g[0] === cat)!) === 0 && (
-                      <thead className="border-b border-[#F2F4F7]">
-                        <tr className="bg-[#F9FAFB]">
+                      <thead className="border-b border-[var(--border)]">
+                        <tr className="bg-[var(--surface-2)]">
                           <th className="px-4 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wider text-[#98A2B3] w-12">
                             #
                           </th>
@@ -358,7 +358,7 @@ export default function QuotationDetailPage() {
                               {globalIdx + 1}
                             </td>
                             <td className="px-4 py-2.5">
-                              <span className="text-[13px] font-medium text-[#101828]">
+                              <span className="text-[13px] font-medium text-[var(--text-primary)]">
                                 {li.item_name}
                               </span>
                               {li.notes && (
@@ -375,7 +375,7 @@ export default function QuotationDetailPage() {
                                         {s.specification}
                                       </span>
                                       <span className="text-[#6B7280]">—</span>
-                                      <span className="font-medium text-[#101828]">
+                                      <span className="font-medium text-[var(--text-primary)]">
                                         LKR {s.unit_price.toFixed(2)}
                                       </span>
                                     </div>
@@ -384,7 +384,7 @@ export default function QuotationDetailPage() {
                               )}
                             </td>
                             <td className="px-4 py-2.5 text-right">
-                              <span className="text-[13px] font-semibold text-[#101828]">
+                              <span className="text-[13px] font-semibold text-[var(--text-primary)]">
                                 {li.unit_price.toFixed(2)}
                               </span>
                             </td>
@@ -397,13 +397,13 @@ export default function QuotationDetailPage() {
                 </div>
               ))}
 
-              <div className="border-t border-[#E4E7EC] px-4 py-3 flex items-center justify-between bg-[#F9FAFB]">
+              <div className="border-t border-[var(--border)] px-4 py-3 flex items-center justify-between bg-[var(--surface-2)]">
                 <span className="text-[12px] font-medium text-[#6B7280]">
                   {q.line_items?.length ?? 0} items total
                 </span>
                 <div className="text-right">
                   <p className="text-[11px] text-[#98A2B3] uppercase font-semibold tracking-wide">Currency</p>
-                  <p className="text-[13px] font-semibold text-[#101828]">LKR (Sri Lankan Rupees)</p>
+                  <p className="text-[13px] font-semibold text-[var(--text-primary)]">LKR (Sri Lankan Rupees)</p>
                 </div>
               </div>
             </CardContent>

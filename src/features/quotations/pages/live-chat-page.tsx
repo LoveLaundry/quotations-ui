@@ -46,7 +46,7 @@ function MessageBubble({ msg }: { msg: ConversationDetail['messages'][number] })
       <div className="mt-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#FEF2F2] text-[#DC2626]">
         {isBot ? <Robot size={15} /> : <UserCircle size={15} />}
       </div>
-      <div className="max-w-[80%] rounded-2xl rounded-bl-md bg-[#F3F4F6] px-4 py-2.5 text-[13px] leading-relaxed text-[#111827]">
+      <div className="max-w-[80%] rounded-2xl rounded-bl-md bg-[var(--surface-3)] px-4 py-2.5 text-[13px] leading-relaxed text-[#111827]">
         <p className="mb-0.5 text-[10px] font-semibold text-[#6B7280]">
           {isBot ? 'Bot' : msg.sender_name ?? 'Guest'}
         </p>
@@ -110,7 +110,7 @@ export default function LiveChatPage() {
       {/* Height = viewport minus the fixed topbar (52px) and this page's own
           gutters (py-4 / sm:py-5 / lg:py-6). dvh keeps the composer visible
           above mobile browser chrome. */}
-      <div className="border-b border-[#E5E7EB] px-4 py-4 sm:px-6">
+      <div className="border-b border-[var(--border)] px-4 py-4 sm:px-6">
         <h1 className="flex items-center gap-2 text-lg font-semibold text-[#111827]">
           <ChatCircleDots size={20} weight="fill" className="text-[#DC2626]" />
           Live Chat
@@ -124,7 +124,7 @@ export default function LiveChatPage() {
       <div className="flex min-h-0 flex-1 flex-col md:flex-row">
         {/* Conversation list — full-screen picker on phones, fixed rail from md */}
         <div
-          className={`w-full overflow-y-auto border-b border-[#E5E7EB] md:w-[320px] md:shrink-0 md:border-b-0 md:border-r ${
+          className={`w-full overflow-y-auto border-b border-[var(--border)] md:w-[320px] md:shrink-0 md:border-b-0 md:border-r ${
             selectedId ? 'hidden md:block' : 'min-h-0 flex-1 md:flex-none'
           }`}
         >
@@ -142,8 +142,8 @@ export default function LiveChatPage() {
                   key={c.conversation_id}
                   type="button"
                   onClick={() => setSelectedId(c.conversation_id)}
-                  className={`flex w-full flex-col gap-1 border-b border-[#F3F4F6] px-4 py-3 text-left transition-colors ${
-                    active ? 'bg-[#FEF2F2]' : 'hover:bg-[#F9FAFB]'
+                  className={`flex w-full flex-col gap-1 border-b border-[var(--surface-3)] px-4 py-3 text-left transition-colors ${
+                    active ? 'bg-[#FEF2F2]' : 'hover:bg-[var(--surface-2)]'
                   }`}
                 >
                   <div className="flex items-center justify-between gap-2">
@@ -153,7 +153,7 @@ export default function LiveChatPage() {
                     <span
                       className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold ${
                         c.status === 'closed'
-                          ? 'bg-[#F3F4F6] text-[#6B7280]'
+                          ? 'bg-[var(--surface-3)] text-[#6B7280]'
                           : 'bg-[#DCFCE7] text-[#15803D]'
                       }`}
                     >
@@ -187,12 +187,12 @@ export default function LiveChatPage() {
             </div>
           ) : (
             <>
-              <div className="flex items-center justify-between gap-2 border-b border-[#E5E7EB] bg-white px-3 py-3 sm:px-5">
+              <div className="flex items-center justify-between gap-2 border-b border-[var(--border)] bg-white px-3 py-3 sm:px-5">
                 <div className="flex min-w-0 items-center gap-1.5">
                   <button
                     type="button"
                     onClick={() => setSelectedId(null)}
-                    className="-ml-1 shrink-0 rounded-lg p-1.5 text-[#6B7280] transition hover:bg-[#F3F4F6] md:hidden"
+                    className="-ml-1 shrink-0 rounded-lg p-1.5 text-[#6B7280] transition hover:bg-[var(--surface-3)] md:hidden"
                     aria-label="Back to conversations"
                   >
                     <ArrowLeft size={18} />
@@ -213,7 +213,7 @@ export default function LiveChatPage() {
                     <button
                       type="button"
                       onClick={() => setStatus('closed')}
-                      className="flex items-center gap-1 rounded-lg border border-[#E5E7EB] px-3 py-1.5 text-[12px] font-medium text-[#6B7280] transition hover:bg-[#F3F4F6]"
+                      className="flex items-center gap-1 rounded-lg border border-[var(--border)] px-3 py-1.5 text-[12px] font-medium text-[#6B7280] transition hover:bg-[var(--surface-3)]"
                     >
                       <XCircle size={14} /> Close
                     </button>
@@ -221,7 +221,7 @@ export default function LiveChatPage() {
                     <button
                       type="button"
                       onClick={() => setStatus('open')}
-                      className="flex items-center gap-1 rounded-lg border border-[#E5E7EB] px-3 py-1.5 text-[12px] font-medium text-[#15803D] transition hover:bg-[#F0FDF4]"
+                      className="flex items-center gap-1 rounded-lg border border-[var(--border)] px-3 py-1.5 text-[12px] font-medium text-[#15803D] transition hover:bg-[#F0FDF4]"
                     >
                       <CheckCircle size={14} /> Reopen
                     </button>
@@ -236,7 +236,7 @@ export default function LiveChatPage() {
                 <div ref={messagesEndRef} />
               </div>
 
-              <div className="border-t border-[#E5E7EB] bg-white px-4 py-3">
+              <div className="border-t border-[var(--border)] bg-white px-4 py-3">
                 <div className="flex items-end gap-2">
                   <textarea
                     value={draft}
@@ -249,7 +249,7 @@ export default function LiveChatPage() {
                     }}
                     rows={1}
                     placeholder="Reply as yourself… (Enter to send)"
-                    className="max-h-32 min-h-[40px] flex-1 resize-none rounded-xl border border-[#E5E7EB] px-3 py-2 text-[13px] text-[#111827] outline-none focus:border-[#DC2626]/40"
+                    className="max-h-32 min-h-[40px] flex-1 resize-none rounded-xl border border-[var(--border)] px-3 py-2 text-[13px] text-[#111827] outline-none focus:border-[#DC2626]/40"
                   />
                   <button
                     type="button"

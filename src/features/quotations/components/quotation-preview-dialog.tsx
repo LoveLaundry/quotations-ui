@@ -51,7 +51,7 @@ export function QuotationPreviewDialog({ quotation, open, onOpenChange }: Props)
         <DialogContent className="max-w-lg">
           <DialogHeader>
             <div className="flex justify-between mb-3 relative">
-              <div className="flex flex-col items-center gap-0 text-[#101828] text-xs font-pacifico text-center">
+              <div className="flex flex-col items-center gap-0 text-[var(--text-primary)] text-xs font-pacifico text-center">
                 <img src="/icon.png" alt="Logo" className="h-8 w-h-8 md:h-12 md:w-12" />
                 <div>Love Laundry</div>
               </div>
@@ -86,7 +86,7 @@ export function QuotationPreviewDialog({ quotation, open, onOpenChange }: Props)
                       return (
                         <div
                           key={li.id ?? idx}
-                          className="flex items-center justify-between rounded-lg border border-[#E4E7EC] bg-red-100 px-3 py-2 hover:bg-red-600 text-black hover:text-white hover:border-[#D1D5DB] transition-colors"
+                          className="flex items-center justify-between rounded-lg border border-[var(--border)] bg-red-100 px-3 py-2 hover:bg-red-600 text-black hover:text-white hover:border-[#D1D5DB] transition-colors"
                         >
                           <div className="flex items-center gap-2 min-w-0">
                             <span className="text-[10px] font-bold w-5 shrink-0 text-right">

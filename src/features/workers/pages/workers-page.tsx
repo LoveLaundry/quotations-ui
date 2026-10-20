@@ -115,8 +115,8 @@ export function WorkersPage() {
           { label: 'Total Staff', value: workers.length, icon: UsersThree, color: 'text-[#6366F1]' },
           { label: 'Active Now', value: activeCount, icon: UserCircle, color: 'text-[#10B981]' },
         ].map(s => (
-          <div key={s.label} className="flex items-center gap-3 rounded-xl border border-[#E5E7EB] bg-white px-4 py-3.5 shadow-sm">
-            <div className={`flex h-9 w-9 items-center justify-center rounded-lg bg-[#F9FAFB] ${s.color}`}>
+          <div key={s.label} className="flex items-center gap-3 rounded-xl border border-[var(--border)] bg-white px-4 py-3.5 shadow-sm">
+            <div className={`flex h-9 w-9 items-center justify-center rounded-lg bg-[var(--surface-2)] ${s.color}`}>
               <s.icon size={18} />
             </div>
             <div>
@@ -135,7 +135,7 @@ export function WorkersPage() {
             placeholder="Search staff by name, department, or phone..."
             value={search}
             onChange={e => setSearch(e.target.value)}
-            className="w-full rounded-lg border border-[#E5E7EB] bg-white pl-9 pr-3 py-2.5 text-[13px] text-[#111827] placeholder-[#9CA3AF] focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/10 transition-all"
+            className="w-full rounded-lg border border-[var(--border)] bg-white pl-9 pr-3 py-2.5 text-[13px] text-[#111827] placeholder-[#9CA3AF] focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/10 transition-all"
           />
         </div>
         <div className="relative">
@@ -143,7 +143,7 @@ export function WorkersPage() {
           <select
             value={deptFilter}
             onChange={e => setDeptFilter(e.target.value)}
-            className="rounded-lg border border-[#E5E7EB] bg-white pl-9 pr-8 py-2.5 text-[13px] text-[#111827] focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/10 transition-all appearance-none cursor-pointer"
+            className="rounded-lg border border-[var(--border)] bg-white pl-9 pr-8 py-2.5 text-[13px] text-[#111827] focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/10 transition-all appearance-none cursor-pointer"
           >
             <option value="all">All Departments</option>
             {DEPARTMENTS.map(d => (
@@ -154,16 +154,16 @@ export function WorkersPage() {
       </div>
 
       {isError ? (
-        <div className="rounded-xl border border-[#E5E7EB] bg-white shadow-sm overflow-hidden px-6 py-16">
+        <div className="rounded-xl border border-[var(--border)] bg-white shadow-sm overflow-hidden px-6 py-16">
           <ErrorState
             title="Couldn't load staff"
             description="We couldn't reach the server. Please check your connection and try again."
           />
         </div>
       ) : (
-      <div className="rounded-xl border border-[#E5E7EB] bg-white shadow-sm overflow-hidden">
+      <div className="rounded-xl border border-[var(--border)] bg-white shadow-sm overflow-hidden">
         {isLoading ? (
-          <div className="divide-y divide-[#F2F4F7]">
+          <div className="divide-y divide-[var(--border)]">
             {[1, 2, 3, 4, 5].map(i => (
               <div key={i} className="flex items-center gap-4 px-6 py-4">
                 <Skeleton className="h-10 w-10 rounded-full shrink-0" />
@@ -189,7 +189,7 @@ export function WorkersPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-left">
               <thead>
-                <tr className="border-b border-[#F3F4F6] bg-[#F9FAFB]">
+                <tr className="border-b border-[var(--surface-3)] bg-[var(--surface-2)]">
                   <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-[#6B7280]">Name</th>
                   <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-[#6B7280]">Department</th>
                   <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-[#6B7280]">Phone</th>
@@ -198,12 +198,12 @@ export function WorkersPage() {
                   <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-[#6B7280] text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#F3F4F6]">
+              <tbody className="divide-y divide-[var(--surface-3)]">
                 {filtered.map(w => (
-                  <tr key={w.id} className="hover:bg-[#F9FAFB] transition-colors">
+                  <tr key={w.id} className="hover:bg-[var(--surface-2)] transition-colors">
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2.5">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#F3F4F6] text-[11px] font-bold text-[#6B7280] uppercase shrink-0">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--surface-3)] text-[11px] font-bold text-[#6B7280] uppercase shrink-0">
                           {w.worker_name.slice(0, 2)}
                         </div>
                         <span className="text-[13px] font-medium text-[#111827]">{w.worker_name}</span>
@@ -227,7 +227,7 @@ export function WorkersPage() {
                       <div className="flex items-center justify-end gap-1">
                         <button
                           onClick={() => openEdit(w)}
-                          className="p-1.5 rounded-lg text-[#6B7280] hover:text-[#111827] hover:bg-[#F3F4F6] transition-colors cursor-pointer"
+                          className="p-1.5 rounded-lg text-[#6B7280] hover:text-[#111827] hover:bg-[var(--surface-3)] transition-colors cursor-pointer"
                           title="Edit"
                         >
                           <PencilSimple size={14} />
@@ -264,16 +264,16 @@ export function WorkersPage() {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 8 }}
               transition={{ duration: 0.15 }}
-              className="w-full max-w-md rounded-xl bg-white shadow-xl border border-[#E5E7EB]"
+              className="w-full max-w-md rounded-xl bg-white shadow-xl border border-[var(--border)]"
               onClick={e => e.stopPropagation()}
             >
-              <div className="flex items-center justify-between px-5 py-4 border-b border-[#F3F4F6]">
+              <div className="flex items-center justify-between px-5 py-4 border-b border-[var(--surface-3)]">
                 <h3 className="text-[15px] font-semibold text-[#111827]">
                   {editWorker ? 'Edit Staff' : 'Add Staff'}
                 </h3>
                 <button
                   onClick={() => setDialogOpen(false)}
-                  className="p-1 rounded-lg hover:bg-[#F3F4F6] transition-colors cursor-pointer"
+                  className="p-1 rounded-lg hover:bg-[var(--surface-3)] transition-colors cursor-pointer"
                 >
                   <X size={16} className="text-[#6B7280]" />
                 </button>
@@ -288,7 +288,7 @@ export function WorkersPage() {
                     onChange={e => setForm(f => ({ ...f, worker_name: e.target.value }))}
                     placeholder="e.g. Ravi Kumar"
                     autoFocus
-                    className="w-full rounded-lg border border-[#E5E7EB] px-3 py-2.5 text-[13px] text-[#111827] placeholder-[#9CA3AF] focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/10 transition-all"
+                    className="w-full rounded-lg border border-[var(--border)] px-3 py-2.5 text-[13px] text-[#111827] placeholder-[#9CA3AF] focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/10 transition-all"
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-3">
@@ -297,7 +297,7 @@ export function WorkersPage() {
                     <select
                       value={form.department}
                       onChange={e => setForm(f => ({ ...f, department: e.target.value }))}
-                      className="w-full rounded-lg border border-[#E5E7EB] px-3 py-2.5 text-[13px] text-[#111827] focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/10 transition-all appearance-none cursor-pointer"
+                      className="w-full rounded-lg border border-[var(--border)] px-3 py-2.5 text-[13px] text-[#111827] focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/10 transition-all appearance-none cursor-pointer"
                     >
                       {DEPARTMENTS.map(d => (
                         <option key={d} value={d}>{d.charAt(0) + d.slice(1).toLowerCase().replace('_', ' ')}</option>
@@ -311,7 +311,7 @@ export function WorkersPage() {
                       value={form.phone}
                       onChange={e => setForm(f => ({ ...f, phone: e.target.value }))}
                       placeholder="Phone number"
-                      className="w-full rounded-lg border border-[#E5E7EB] px-3 py-2.5 text-[13px] text-[#111827] placeholder-[#9CA3AF] focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/10 transition-all"
+                      className="w-full rounded-lg border border-[var(--border)] px-3 py-2.5 text-[13px] text-[#111827] placeholder-[#9CA3AF] focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/10 transition-all"
                     />
                   </div>
                 </div>
@@ -322,7 +322,7 @@ export function WorkersPage() {
                     value={form.notes}
                     onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
                     placeholder="Optional notes"
-                    className="w-full rounded-lg border border-[#E5E7EB] px-3 py-2.5 text-[13px] text-[#111827] placeholder-[#9CA3AF] focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/10 transition-all"
+                    className="w-full rounded-lg border border-[var(--border)] px-3 py-2.5 text-[13px] text-[#111827] placeholder-[#9CA3AF] focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/10 transition-all"
                   />
                 </div>
                 {editWorker && (
@@ -339,10 +339,10 @@ export function WorkersPage() {
                 )}
               </div>
 
-              <div className="flex items-center justify-end gap-2 px-5 py-3.5 border-t border-[#F3F4F6]">
+              <div className="flex items-center justify-end gap-2 px-5 py-3.5 border-t border-[var(--surface-3)]">
                 <button
                   onClick={() => setDialogOpen(false)}
-                  className="px-4 py-2 rounded-lg text-[13px] font-medium text-[#374151] hover:bg-[#F3F4F6] transition-colors cursor-pointer"
+                  className="px-4 py-2 rounded-lg text-[13px] font-medium text-[#374151] hover:bg-[var(--surface-3)] transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
@@ -378,7 +378,7 @@ export function WorkersPage() {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 8 }}
               transition={{ duration: 0.15 }}
-              className="w-full max-w-sm rounded-xl bg-white shadow-xl border border-[#E5E7EB]"
+              className="w-full max-w-sm rounded-xl bg-white shadow-xl border border-[var(--border)]"
               onClick={e => e.stopPropagation()}
             >
               <div className="px-5 py-5 text-center">
@@ -390,10 +390,10 @@ export function WorkersPage() {
                   This will permanently remove <strong>{deleteConfirm.worker_name}</strong>.
                 </p>
               </div>
-              <div className="flex items-center gap-2 px-5 py-3.5 border-t border-[#F3F4F6]">
+              <div className="flex items-center gap-2 px-5 py-3.5 border-t border-[var(--surface-3)]">
                 <button
                   onClick={() => setDeleteConfirm(null)}
-                  className="flex-1 px-4 py-2 rounded-lg text-[13px] font-medium text-[#374151] bg-[#F3F4F6] hover:bg-[#E5E7EB] transition-colors cursor-pointer"
+                  className="flex-1 px-4 py-2 rounded-lg text-[13px] font-medium text-[#374151] bg-[var(--surface-3)] hover:bg-[var(--border)] transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>

@@ -59,7 +59,7 @@ function todayLocal(): string {
 }
 
 const inputClass =
-    'h-10 w-full rounded-lg border border-[#E4E7EC] bg-white px-3 text-[13px] text-[#101828] outline-none focus:border-[#16A34A] focus:ring-2 focus:ring-[#16A34A]/10 shadow-sm transition'
+    'h-10 w-full rounded-lg border border-[var(--border)] bg-white px-3 text-[13px] text-[var(--text-primary)] outline-none focus:border-[#16A34A] focus:ring-2 focus:ring-[#16A34A]/10 shadow-sm transition'
 const labelClass = 'block text-[11px] font-semibold uppercase tracking-wide text-[#6B7280] mb-1.5'
 
 function itemKey(name: string, spec: string) {
@@ -416,7 +416,7 @@ export default function CreateDeliveryPage() {
 
             <div className="flex items-center gap-2">
                 {dirty && (
-                    <span className="inline-flex items-center gap-1.5 rounded-full border border-[#E4E7EC] bg-white px-2.5 py-1 text-[11px] font-medium text-[#6B7280]">
+                    <span className="inline-flex items-center gap-1.5 rounded-full border border-[var(--border)] bg-white px-2.5 py-1 text-[11px] font-medium text-[#6B7280]">
                         <FileClock className="h-3 w-3" /> Autosaved draft
                     </span>
                 )}
@@ -431,7 +431,7 @@ export default function CreateDeliveryPage() {
             {form.step === 'select' && (
                 <div className="space-y-4">
                     <Card>
-                        <CardHeader className="border-b border-[#F2F4F7] pb-3">
+                        <CardHeader className="border-b border-[var(--border)] pb-3">
                             <div className="flex items-center justify-between">
                                 <CardTitle>Select Gate Passes</CardTitle>
                                 {pendingGPs.length > 0 && (
@@ -452,7 +452,7 @@ export default function CreateDeliveryPage() {
                                     value={search}
                                     onChange={e => setSearch(e.target.value)}
                                     placeholder="Search by client name…"
-                                    className="h-10 w-full rounded-lg border border-[#E4E7EC] bg-white pl-9 pr-8 text-[13px] outline-none focus:border-[#16A34A] focus:ring-2 focus:ring-[#16A34A]/10 shadow-sm"
+                                    className="h-10 w-full rounded-lg border border-[var(--border)] bg-white pl-9 pr-8 text-[13px] outline-none focus:border-[#16A34A] focus:ring-2 focus:ring-[#16A34A]/10 shadow-sm"
                                 />
                                 {search && (
                                     <button onClick={() => setSearch('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#98A2B3] cursor-pointer">
@@ -490,7 +490,7 @@ export default function CreateDeliveryPage() {
                                                 className={`group flex w-full items-center gap-3 rounded-xl border px-4 py-3 text-left transition cursor-pointer ${
                                                     isSelected
                                                         ? 'border-[#BBF7D0] bg-[#F0FDF4]'
-                                                        : 'border-[#E4E7EC] bg-white hover:border-[#BBF7D0] hover:bg-[#F0FDF4]'
+                                                        : 'border-[var(--border)] bg-white hover:border-[#BBF7D0] hover:bg-[#F0FDF4]'
                                                 }`}
                                             >
                                                 <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border transition-colors ${
@@ -501,7 +501,7 @@ export default function CreateDeliveryPage() {
                                                     {isSelected ? <Check size={16} /> : <span className="text-[11px] font-bold">GP</span>}
                                                 </div>
                                                 <div className="min-w-0 flex-1">
-                                                    <p className="text-[13px] font-semibold text-[#101828] truncate">{gp.client_name}</p>
+                                                    <p className="text-[13px] font-semibold text-[var(--text-primary)] truncate">{gp.client_name}</p>
                                                     <p className="text-[11px] text-[#98A2B3] font-mono">{gp.gate_pass_number} · {gp.receiving_date}</p>
                                                 </div>
                                                 <div className="text-right shrink-0">
@@ -527,7 +527,7 @@ export default function CreateDeliveryPage() {
                             <div className="flex flex-wrap gap-2">
                                 {selectedGPs.map(gp => (
                                     <div key={gp.gate_pass_id} className="flex items-center gap-2 rounded-lg bg-white border border-[#BBF7D0] px-3 py-1.5 text-[12px]">
-                                        <span className="font-semibold text-[#101828]">{gp.client_name}</span>
+                                        <span className="font-semibold text-[var(--text-primary)]">{gp.client_name}</span>
                                         <span className="font-mono text-[#6B7280]">{gp.gate_pass_number}</span>
                                         <span className="font-bold text-[#EA580C]">{gp.total_pending} pcs</span>
                                     </div>
@@ -538,7 +538,7 @@ export default function CreateDeliveryPage() {
 
                     {/* Delivery Details */}
                     <Card>
-                        <CardHeader className="border-b border-[#F2F4F7] pb-3">
+                        <CardHeader className="border-b border-[var(--border)] pb-3">
                             <div className="flex items-center gap-2">
                                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#F0FDF4] border border-[#BBF7D0]">
                                     <Truck className="h-4 w-4 text-[#16A34A]" />
@@ -573,14 +573,14 @@ export default function CreateDeliveryPage() {
                         <CardContent className="pt-4">
                             <div className="flex items-center gap-3">
                                 <span className="text-[12px] font-semibold text-[#6B7280] uppercase tracking-wide">Fill Mode</span>
-                                <div className="flex rounded-lg border border-[#E4E7EC] overflow-hidden">
+                                <div className="flex rounded-lg border border-[var(--border)] overflow-hidden">
                                     <button
                                         type="button"
                                         onClick={() => setForm(p => ({ ...p, fillMode: 'manual' }))}
                                         className={`flex items-center gap-1.5 px-4 py-2 text-[13px] font-medium transition cursor-pointer ${
                                             form.fillMode === 'manual'
                                                 ? 'bg-[#16A34A] text-white'
-                                                : 'bg-white text-[#6B7280] hover:bg-[#F9FAFB]'
+                                                : 'bg-white text-[#6B7280] hover:bg-[var(--surface-2)]'
                                         }`}
                                     >
                                         <Hand size={14} /> Manual
@@ -591,7 +591,7 @@ export default function CreateDeliveryPage() {
                                         className={`flex items-center gap-1.5 px-4 py-2 text-[13px] font-medium transition cursor-pointer ${
                                             form.fillMode === 'auto'
                                                 ? 'bg-[#16A34A] text-white'
-                                                : 'bg-white text-[#6B7280] hover:bg-[#F9FAFB]'
+                                                : 'bg-white text-[#6B7280] hover:bg-[var(--surface-2)]'
                                         }`}
                                     >
                                         <Wand2 size={14} /> Auto-fill (FIFO)
@@ -610,7 +610,7 @@ export default function CreateDeliveryPage() {
                     {/* ── AUTO MODE: Item totals ──────────────────────────────── */}
                     {form.fillMode === 'auto' && (
                         <Card>
-                            <CardHeader className="border-b border-[#F2F4F7] pb-3">
+                            <CardHeader className="border-b border-[var(--border)] pb-3">
                                 <div className="flex items-center justify-between">
                                     <div>
                                         <CardTitle>Item Totals</CardTitle>
@@ -632,9 +632,9 @@ export default function CreateDeliveryPage() {
                                     const entered = form.autoTotals[total.item_key] ?? 0
                                     const over = entered > total.total_pending
                                     return (
-                                        <div key={total.item_key} className="flex items-center gap-3 rounded-lg border border-[#E4E7EC] px-4 py-3">
+                                        <div key={total.item_key} className="flex items-center gap-3 rounded-lg border border-[var(--border)] px-4 py-3">
                                             <div className="flex-1 min-w-0">
-                                                <p className="text-[13px] font-medium text-[#101828] truncate">
+                                                <p className="text-[13px] font-medium text-[var(--text-primary)] truncate">
                                                     {total.item_name}
                                                     {total.specification && (
                                                         <span className="ml-2 inline-flex items-center rounded bg-[#FFF7ED] border border-[#FED7AA] px-1.5 py-0.5 text-[10px] font-semibold text-[#EA580C]">
@@ -655,7 +655,7 @@ export default function CreateDeliveryPage() {
                                                     value={entered || ''}
                                                     onChange={e => updateAutoTotal(total.item_key, Number(e.target.value))}
                                                     placeholder="0"
-                                                    className="h-9 w-24 rounded-lg border border-[#E4E7EC] bg-white px-3 text-[13px] text-center text-[#101828] outline-none focus:border-[#16A34A] focus:ring-2 focus:ring-[#16A34A]/10"
+                                                    className="h-9 w-24 rounded-lg border border-[var(--border)] bg-white px-3 text-[13px] text-center text-[var(--text-primary)] outline-none focus:border-[#16A34A] focus:ring-2 focus:ring-[#16A34A]/10"
                                                 />
                                                 <button
                                                     type="button"
@@ -685,18 +685,18 @@ export default function CreateDeliveryPage() {
                                     <div key={gpId} className="rounded-lg border border-[#BFDBFE] bg-white overflow-hidden">
                                         <div className="flex items-center justify-between bg-[#EFF6FF] px-4 py-2 border-b border-[#BFDBFE]">
                                             <div className="flex items-center gap-2">
-                                                <span className="text-[13px] font-semibold text-[#101828]">{group.client_name}</span>
+                                                <span className="text-[13px] font-semibold text-[var(--text-primary)]">{group.client_name}</span>
                                                 <span className="font-mono text-[11px] text-[#6B7280]">{group.gate_pass_number}</span>
                                             </div>
                                             <span className="text-[11px] font-medium text-[#2563EB]">
                                                 {group.items.reduce((s, i) => s + i.quantity, 0)} pcs
                                             </span>
                                         </div>
-                                        <div className="divide-y divide-[#F2F4F7]">
+                                        <div className="divide-y divide-[var(--border)]">
                                             {group.items.map(item => (
                                                 <div key={`${item.gate_pass_id}||${item.item_name}||${item.specification}`} className="flex items-center gap-3 px-4 py-2.5">
                                                     <div className="flex-1 min-w-0">
-                                                        <p className="text-[13px] font-medium text-[#101828] truncate">
+                                                        <p className="text-[13px] font-medium text-[var(--text-primary)] truncate">
                                                             {item.item_name}
                                                             {item.specification && (
                                                                 <span className="ml-2 inline-flex items-center rounded bg-[#FFF7ED] border border-[#FED7AA] px-1.5 py-0.5 text-[10px] font-semibold text-[#EA580C]">
@@ -721,7 +721,7 @@ export default function CreateDeliveryPage() {
                     {/* ── MANUAL MODE: Items per GP ──────────────────────────── */}
                     {form.fillMode === 'manual' && (
                         <Card>
-                            <CardHeader className="border-b border-[#F2F4F7] pb-3">
+                            <CardHeader className="border-b border-[var(--border)] pb-3">
                                 <div className="flex items-center justify-between">
                                     <div>
                                         <CardTitle>Items to Deliver</CardTitle>
@@ -735,10 +735,10 @@ export default function CreateDeliveryPage() {
                             <CardContent className="pt-4 space-y-4" onKeyDown={manualGrid.handleKeyDown}>
                                 {itemsByGP.map(([gpId, group]) => {
                                     return (
-                                        <div key={gpId} className="rounded-xl border border-[#E4E7EC] overflow-hidden">
-                                            <div className="flex items-center justify-between bg-[#F9FAFB] px-4 py-2.5 border-b border-[#E4E7EC]">
+                                        <div key={gpId} className="rounded-xl border border-[var(--border)] overflow-hidden">
+                                            <div className="flex items-center justify-between bg-[var(--surface-2)] px-4 py-2.5 border-b border-[var(--border)]">
                                                 <div className="flex items-center gap-2">
-                                                    <span className="text-[13px] font-semibold text-[#101828]">{group.client_name}</span>
+                                                    <span className="text-[13px] font-semibold text-[var(--text-primary)]">{group.client_name}</span>
                                                     <span className="font-mono text-[11px] text-[#98A2B3]">{group.gate_pass_number}</span>
                                                 </div>
                                                 <button
@@ -749,7 +749,7 @@ export default function CreateDeliveryPage() {
                                                     Fill All Max
                                                 </button>
                                             </div>
-                                            <div className="divide-y divide-[#F2F4F7]">
+                                            <div className="divide-y divide-[var(--border)]">
                                                 {group.items.map(item => {
                                                     const globalIdx = items.findIndex(i => i.gate_pass_id === item.gate_pass_id && i.item_name === item.item_name && i.specification === item.specification)
                                                     const rowKeyStr = `${item.gate_pass_id}||${item.item_name}||${item.specification}`
@@ -757,7 +757,7 @@ export default function CreateDeliveryPage() {
                                                     return (
                                                         <div key={rowKeyStr} className="flex items-center gap-3 px-4 py-3">
                                                             <div className="flex-1 min-w-0">
-                                                                <p className="text-[13px] font-medium text-[#101828] truncate">
+                                                                <p className="text-[13px] font-medium text-[var(--text-primary)] truncate">
                                                                     {item.item_name}
                                                                     {item.specification && (
                                                                         <span className="ml-2 inline-flex items-center rounded bg-[#FFF7ED] border border-[#FED7AA] px-1.5 py-0.5 text-[10px] font-semibold text-[#EA580C]">
@@ -775,7 +775,7 @@ export default function CreateDeliveryPage() {
                                                                     max={item.pending_qty}
                                                                     value={item.quantity}
                                                                     onChange={e => globalIdx >= 0 && updateItem(globalIdx, Number(e.target.value))}
-                                                                    className="h-9 w-20 rounded-lg border border-[#E4E7EC] bg-white px-3 text-[13px] text-center text-[#101828] outline-none focus:border-[#16A34A] focus:ring-2 focus:ring-[#16A34A]/10"
+                                                                    className="h-9 w-20 rounded-lg border border-[var(--border)] bg-white px-3 text-[13px] text-center text-[var(--text-primary)] outline-none focus:border-[#16A34A] focus:ring-2 focus:ring-[#16A34A]/10"
                                                                 />
                                                                 <button
                                                                     type="button"
@@ -816,14 +816,14 @@ export default function CreateDeliveryPage() {
                             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                                 <div className="text-[13px] text-[#6B7280]">
                                     Delivering{' '}
-                                    <span className="font-semibold text-[#101828]">{totalPieces}</span>{' '}
+                                    <span className="font-semibold text-[var(--text-primary)]">{totalPieces}</span>{' '}
                                     pieces across{' '}
-                                    <span className="font-semibold text-[#101828]">{itemCount}</span>{' '}
+                                    <span className="font-semibold text-[var(--text-primary)]">{itemCount}</span>{' '}
                                     item{itemCount !== 1 ? 's' : ''} from{' '}
-                                    <span className="font-semibold text-[#101828]">{form.selectedIds.length}</span>{' '}
+                                    <span className="font-semibold text-[var(--text-primary)]">{form.selectedIds.length}</span>{' '}
                                     gate pass{form.selectedIds.length !== 1 ? 'es' : ''}
                                     {hotelsSelected.length === 1 && (
-                                        <> for <span className="font-semibold text-[#101828]">{hotelsSelected[0]}</span></>
+                                        <> for <span className="font-semibold text-[var(--text-primary)]">{hotelsSelected[0]}</span></>
                                     )}
                                 </div>
                                 <div className="flex gap-2 w-full sm:w-auto">
