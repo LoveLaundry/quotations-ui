@@ -1,41 +1,21 @@
 const baseUrl = import.meta.env.VITE_AI_API_URL
-const apiKey = import.meta.env.VITE_AI_API_KEY
 
-/**
- * AI requests use a signed API key. Never ship a fallback key in the bundle:
- * public Vite variables are readable by every browser user and are not secrets.
- */
 export const AI_SERVICE = {
   baseUrl: baseUrl ?? '',
-  apiKey: apiKey ?? '',
   timeoutMs: 20000,
 } as const
 
 export function assertAiConfiguration(): void {
-  if (!AI_SERVICE.baseUrl || !AI_SERVICE.apiKey) {
-    throw new Error('AI service is not configured. Set VITE_AI_API_URL and VITE_AI_API_KEY.')
+  if (!AI_SERVICE.baseUrl) {
+    throw new Error('AI service is not configured. Set VITE_AI_API_URL.')
   }
 }
 
-/** SHA-256 hex digest of a UTF-8 string — used for response integrity checks. */
+/** SHA-256 hex digest of a UTF-8 string, used for response integrity checks. */
 export async function sha256Hex(input: string): Promise<string> {
   const data = new TextEncoder().encode(input)
   const digest = await crypto.subtle.digest('SHA-256', data)
   return [...new Uint8Array(digest)].map(b => b.toString(16).padStart(2, '0')).join('')
-}
-
-/** HMAC-SHA256 hex signature (WebCrypto). */
-export async function hmacSha256Hex(key: string, message: string): Promise<string> {
-  const enc = new TextEncoder()
-  const cryptoKey = await crypto.subtle.importKey(
-    'raw',
-    enc.encode(key),
-    { name: 'HMAC', hash: 'SHA-256' },
-    false,
-    ['sign'],
-  )
-  const signature = await crypto.subtle.sign('HMAC', cryptoKey, enc.encode(message))
-  return [...new Uint8Array(signature)].map(b => b.toString(16).padStart(2, '0')).join('')
 }
 
 /**
