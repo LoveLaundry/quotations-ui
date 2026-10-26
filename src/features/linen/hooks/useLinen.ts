@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { linenService } from '../services/linen.service'
+import { publishLinenChange } from '../live-channel'
 import type { LinenListParams, LinenBulkCreate, LinenScanAction, LinenTagGenerate } from '../../../types/linen'
 
 export const linenKeys = {
@@ -56,6 +57,7 @@ export function useCreateLinenBulk() {
     mutationFn: (payload: LinenBulkCreate) => linenService.createLinenBulk(payload),
     onSuccess: (data) => {
       qc.invalidateQueries({ queryKey: linenKeys.all })
+      publishLinenChange()
       toast.success(`Created ${data.count} linen items`)
     },
     onError: () => toast.error('Failed to create linen items'),

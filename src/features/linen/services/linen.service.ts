@@ -55,6 +55,11 @@ async function getLinenStats(): Promise<LinenStats> {
   return response.data
 }
 
+async function getLiveClock(): Promise<number> {
+  const response = await billsApi.get<{ clock: number }>('/linens/live-clock')
+  return Number(response.data?.clock ?? 0)
+}
+
 async function deleteLinen(docId: string): Promise<void> {
   await billsApi.delete(`/linens/${docId}`)
 }
@@ -69,5 +74,6 @@ export const linenService = {
   bulkScan,
   getLinenEvents,
   getLinenStats,
+  getLiveClock,
   deleteLinen,
 }
