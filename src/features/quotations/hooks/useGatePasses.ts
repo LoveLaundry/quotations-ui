@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { gatepasses } from '../services/gatepass.service'
+import { useAuth } from '../../../context/AuthContext'
 import type { GatePass, GatePassCreate, GatePassMarkDelivered } from '../../../types/operations'
 
 export const gatepassKeys = {
@@ -46,9 +47,14 @@ export function invalidateDeliveryData(qc: QueryClient) {
 }
 
 export function useGatePasses(params?: { client_name?: string; status?: string }) {
+    const { isAuthenticated } = useAuth()
     return useQuery({
         queryKey: gatepassKeys.list(params),
         queryFn: () => gatepasses.list(params),
+        // The app shell (HotelContext) reads this on every route, including the
+        // login page. Fetching tenant data there answered 401, and those
+        // responses could land after a sign-in and end the new session.
+        enabled: isAuthenticated,
     })
 }
 

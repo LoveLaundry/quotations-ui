@@ -1,5 +1,6 @@
 import type { AxiosError, AxiosInstance } from 'axios'
 import { withNestedItems } from '../lib/api-normalise'
+import { getActiveToken } from '../lib/auth-token'
 
 type UnauthorizedHandler = () => void
 
@@ -48,11 +49,36 @@ function extractMessage(err: AxiosError): string {
   return extractResponseMessage(err)
 }
 
+/** The bearer token this request was actually sent with, if any. */
+function tokenOfRequest(config?: AxiosError['config']): string | null {
+  const headers = config?.headers as
+    | { Authorization?: string; authorization?: string }
+    | undefined
+  const raw = headers?.Authorization ?? headers?.authorization
+  if (typeof raw !== 'string') return null
+  return raw.startsWith('Bearer ') ? raw.slice('Bearer '.length) : raw
+}
+
+/**
+ * Whether a 401 belongs to the session that is currently active.
+ *
+ * A response is only allowed to end the session if it was rejected by the very
+ * token the app is using right now. Anything else — a pre-login fetch that was
+ * still in flight when the user signed in, a request fired with no token at
+ * all, a queued write replayed after the token changed — is an artefact of an
+ * older session, and tearing down the new one over it produced the "signed in,
+ * then bounced back to the login page a second later" bug.
+ */
+function isCurrentSessionFailure(err: AxiosError): boolean {
+  return tokenOfRequest(err.config) === getActiveToken()
+}
+
 /**
  * Attaches a response interceptor that:
  *  - Repairs omitted collections before any consumer sees the payload.
  *  - Never force-reloads the page or hijacks login errors.
- *  - On 401 (outside auth endpoints) triggers a single clean SPA logout redirect.
+ *  - On 401 (outside auth endpoints) triggers a single clean SPA logout redirect,
+ *    but only when the rejected token is still the session's current one.
  *  - Normalizes error messages so they are never "[object Object]".
  */
 export function attachResponseInterceptor(instance: AxiosInstance) {
@@ -79,7 +105,7 @@ export function attachResponseInterceptor(instance: AxiosInstance) {
           url.includes('/auth/login') ||
           url.includes('/token') ||
           url.includes('/auth/')
-        if (!isAuthCall) {
+        if (!isAuthCall && isCurrentSessionFailure(err)) {
           localStorage.removeItem('ll_token')
           localStorage.removeItem('ll_user')
           if (!redirecting && unauthorizedHandler) {
