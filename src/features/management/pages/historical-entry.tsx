@@ -25,6 +25,11 @@ interface Row {
   notes: string
 }
 
+function parseQuantity(value: string, fallback = 0): number {
+  const parsed = Number.parseFloat(value)
+  return Number.isFinite(parsed) ? parsed : fallback
+}
+
 function newRow(): Row {
   return {
     id: crypto.randomUUID().slice(0, 8),
@@ -122,13 +127,15 @@ export default function HistoricalEntry() {
       r.date = cols[0] || r.date
       r.invoice_number = cols[1] || ''
       r.item_id = cols[2] || ''
-      r.qty_received = parseFloat(cols[3]) || 0
-      r.qty_washed = parseFloat(cols[4]) || r.qty_received
-      r.qty_delivered = parseFloat(cols[5]) || 0
-      r.qty_rejected = parseFloat(cols[6]) || 0
-      r.qty_damaged = parseFloat(cols[7]) || 0
-      r.rate = parseFloat(cols[8]) || 0
-      r.cost = parseFloat(cols[9]) || 0
+      r.qty_received = parseQuantity(cols[3])
+      // Blank/invalid washed quantity may inherit received; explicit zero is
+      // meaningful historical data and must remain zero.
+      r.qty_washed = parseQuantity(cols[4], r.qty_received)
+      r.qty_delivered = parseQuantity(cols[5])
+      r.qty_rejected = parseQuantity(cols[6])
+      r.qty_damaged = parseQuantity(cols[7])
+      r.rate = parseQuantity(cols[8])
+      r.cost = parseQuantity(cols[9])
       r.notes = cols[10] || ''
       newRows.push(r)
     }
@@ -155,7 +162,7 @@ export default function HistoricalEntry() {
       items: [{
         item_id: r.item_id,
         quantity_received: r.qty_received,
-        quantity_washed: r.qty_washed || r.qty_received,
+        quantity_washed: r.qty_washed,
         quantity_delivered: r.qty_delivered,
         quantity_rejected: r.qty_rejected,
         quantity_damaged: r.qty_damaged,
