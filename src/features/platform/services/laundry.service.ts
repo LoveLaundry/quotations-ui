@@ -28,6 +28,30 @@ export interface LaundryPayload {
   plan_limits?: string
 }
 
+export interface ClientAccount {
+  id: string
+  laundry_id: string
+  client_type: 'HOTEL' | 'SHOP'
+  client_name: string
+  auth_id: string
+  user_name?: string
+  email?: string
+  role_id: string
+  status: string
+  created_at?: string
+}
+
+export interface ClientCreatePayload {
+  laundry_id: string
+  client_type: 'HOTEL' | 'SHOP'
+  client_name: string
+  auth_id: string
+  user_name: string
+  password: string
+  email?: string
+  role: 'HOTEL_ADMIN' | 'SHOP_ADMIN' | 'HOTEL_MANAGER' | 'SHOP_STAFF'
+}
+
 export const laundryService = {
   list: (params: LaundryListParams = {}) =>
     authApi.get<LaundryListResponse>('/laundries', { params }).then((r) => r.data),
@@ -51,6 +75,15 @@ export const laundryService = {
 
   removeMember: (id: string, authId: string) =>
     authApi.delete(`/laundries/${id}/members/${encodeURIComponent(authId)}`).then((r) => r.data),
+
+  clients: (laundryId: string) =>
+    authApi.get<{ items: ClientAccount[] }>('/clients', { params: { laundry_id: laundryId } }).then((r) => r.data.items),
+
+  createClient: (payload: ClientCreatePayload) =>
+    authApi.post<ClientAccount>('/clients', payload).then((r) => r.data),
+
+  setClientStatus: (clientId: string, status: string) =>
+    authApi.patch<ClientAccount>(`/clients/${clientId}/status`, { status }).then((r) => r.data),
 
   enter: (id: string) =>
     authApi

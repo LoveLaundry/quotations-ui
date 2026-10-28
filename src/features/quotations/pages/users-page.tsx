@@ -215,7 +215,7 @@ export default function UsersPage() {
         setShowModal(true)
     }
 
-    const roleOptions = isPlatformAdmin ? [...ROLES, 'PLATFORM_ADMIN'] : ROLES
+    const roleOptions = isPlatformAdmin ? [...ROLES, 'PLATFORM_ADMIN'] : ['MANAGER', 'STAFF']
 
     const inputClass =
         'h-10 w-full rounded-xl border border-[var(--border)] bg-white px-3.5 text-[13px] text-[var(--text-primary)] placeholder:text-[#98A2B3] outline-none focus:border-[var(--text-primary)] focus:ring-1 focus:ring-[var(--text-primary)] transition-all duration-150'
@@ -352,14 +352,23 @@ export default function UsersPage() {
                                                         <RiBuilding2Line size={15} />
                                                     </button>
                                                 )}
-                                                <button
-                                                    type="button"
-                                                    onClick={() => openEdit(u)}
-                                                    title="Edit user"
-                                                    className="flex h-7 w-7 items-center justify-center rounded-lg text-[#6B7280] hover:bg-[var(--surface-3)] hover:text-[var(--text-primary)] transition-colors"
-                                                >
-                                                    <RiEditLine size={15} />
-                                                </button>
+                                                {(!isPlatformAdmin && ['ADMIN', 'PLATFORM_ADMIN'].includes(u.role_id?.toUpperCase() ?? '')) ? (
+                                                    <span
+                                                        title="Only platform administrators can modify administrator accounts"
+                                                        className="flex h-7 w-7 items-center justify-center rounded-lg text-[#D1D5DB] cursor-not-allowed"
+                                                    >
+                                                        <RiEditLine size={15} />
+                                                    </span>
+                                                ) : (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => openEdit(u)}
+                                                        title="Edit user"
+                                                        className="flex h-7 w-7 items-center justify-center rounded-lg text-[#6B7280] hover:bg-[var(--surface-3)] hover:text-[var(--text-primary)] transition-colors"
+                                                    >
+                                                        <RiEditLine size={15} />
+                                                    </button>
+                                                )}
                                             </div>
                                         </div>
                                     </CardContent>
