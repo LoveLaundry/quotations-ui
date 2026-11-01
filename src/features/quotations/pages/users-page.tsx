@@ -154,7 +154,7 @@ export default function UsersPage() {
         })),
     })
     const membershipMap = buildMembershipMap(platformLaundries, memberQueries)
-    const membersLoading = memberQueries.some(q => q.isLoading)
+    //const membersLoading = memberQueries.some(q => q.isLoading)
 
     const fetchUsers = async () => {
         setLoadingUsers(true)
