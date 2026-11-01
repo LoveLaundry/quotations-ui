@@ -14,14 +14,15 @@ export const quotationKeys = {
 }
 
 export function useQuotations() {
-  const { user, support } = useAuth()
+  const { user, support, isAuthenticated } = useAuth()
   return useQuery({
     queryKey: quotationKeys.list(),
     queryFn: quotationService.getAllQuotations,
     // The app shell reads quotations for the top bar and hotel context, so this
-    // runs on every page. A platform-only session has no business fetching
-    // tenant data — doing so produced a 403 on each screen load.
-    enabled: !isPlatformOnly(user, Boolean(support)),
+    // runs on every page. A signed-out visitor and a platform-only session have
+    // no business fetching tenant data — doing so produced a 401/403 on each
+    // screen load, and a 401 landing after a sign-in ended the new session.
+    enabled: isAuthenticated && !isPlatformOnly(user, Boolean(support)),
   })
 }
 

@@ -246,19 +246,6 @@
     background: transparent;
   }
 
-  ::-webkit-scrollbar-thumb {
-    background: color-mix(in srgb, var(--brand) 52%, var(--text-faint) 48%);
-    border: 2px solid transparent;
-    background-clip: content-box;
-    border-radius: 999px;
-    min-height: 40px;
-  }
-
-  ::-webkit-scrollbar-thumb:hover {
-    background: color-mix(in srgb, var(--brand) 68%, var(--text-faint) 32%);
-    background-clip: content-box;
-  }
-
   ::-webkit-scrollbar-corner {
     background: transparent;
   }

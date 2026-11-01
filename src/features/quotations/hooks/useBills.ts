@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { billService } from '../services/bill.service'
+import { useAuth } from '../../../context/AuthContext'
 import type { BillPayload, BillListParams } from '../../../types/bill'
 
 export const billKeys = {
@@ -10,9 +11,11 @@ export const billKeys = {
 }
 
 export function useBills(params: BillListParams = {}) {
+  const { isAuthenticated } = useAuth()
   return useQuery({
     queryKey: billKeys.list(params),
     queryFn: () => billService.getBills(params),
+    enabled: isAuthenticated,
   })
 }
 
