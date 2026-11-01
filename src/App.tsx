@@ -27,6 +27,7 @@ import {
   configureQueryDefaults,
   shouldPersistQuery,
 } from './cache/cache-config'
+import { useLiveLinenSync } from './features/linen/hooks/useLiveLinenSync'
 
 const queryClientConfig: QueryClientConfig = {
   defaultOptions: {
