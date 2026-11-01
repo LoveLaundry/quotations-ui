@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { deliveries } from '../services/delivery.service'
 import { invalidateDeliveryData } from './useGatePasses'
+import { useAuth } from '../../../context/AuthContext'
 import type {
     DeliveryCancel,
     DeliveryCorrection,
@@ -17,9 +18,11 @@ export const deliveryKeys = {
 }
 
 export function useDeliveries(params?: { client_name?: string; gate_pass_id?: string }) {
+    const { isAuthenticated } = useAuth()
     return useQuery({
         queryKey: deliveryKeys.list(params),
         queryFn: () => deliveries.list(params),
+        enabled: isAuthenticated,
     })
 }
 

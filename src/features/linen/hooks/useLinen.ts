@@ -70,6 +70,7 @@ export function useGenerateTags() {
     mutationFn: (payload: LinenTagGenerate) => linenService.generateTags(payload),
     onSuccess: (data) => {
       qc.invalidateQueries({ queryKey: linenKeys.all })
+      publishLinenChange()
       toast.success(`Generated ${data.count} linen tags`)
     },
     onError: () => toast.error('Failed to generate tags'),
@@ -83,6 +84,9 @@ export function useScanLinen() {
       linenService.scanLinen(docId, payload),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: linenKeys.all })
+      // A scan is the event every other open session must see at once: the
+      // server-side live clock covers other devices, this covers other tabs.
+      publishLinenChange()
     },
     onError: () => toast.error('Failed to scan linen'),
   })
@@ -95,6 +99,7 @@ export function useBulkScan() {
       linenService.bulkScan(codes, action, location),
     onSuccess: (data) => {
       qc.invalidateQueries({ queryKey: linenKeys.all })
+      publishLinenChange()
       toast.success(`Processed ${data.total_processed} items`)
     },
     onError: () => toast.error('Failed to bulk scan'),
@@ -107,6 +112,7 @@ export function useDeleteLinen() {
     mutationFn: (docId: string) => linenService.deleteLinen(docId),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: linenKeys.all })
+      publishLinenChange()
       toast.success('Linen deleted')
     },
     onError: () => toast.error('Failed to delete linen'),
