@@ -4,18 +4,18 @@ import { useQuery, useQueries, useMutation, useQueryClient } from '@tanstack/rea
 import {
     RiUserAddLine, RiCloseLine, RiEyeLine, RiEyeOffLine,
     RiRefreshLine, RiShieldCheckLine, RiEditLine, RiBuilding2Line,
-    RiUserFollowLine, RiUserUnfollowLine, RiCheckLine
+    RiUserFollowLine, RiUserUnfollowLine, RiHotelLine, RiStore2Line
 } from 'react-icons/ri'
 import { toast } from 'sonner'
 import authApi from '../../../api/auth-api'
 import { laundryService } from '../../platform/services/laundry.service'
+import { entityService, type PlatformEntity } from '../../platform/services/entity.service'
 import { useAuth } from '../../../context/AuthContext'
 import type { Laundry, LaundryMembership } from '../../../types/auth'
 import { EmptyState } from '../../../components/ui/empty-state'
 import { Breadcrumb } from '../../../components/ui/breadcrumb'
 import { Card, CardContent } from '../../../components/ui/card'
 import { Button } from '../../../components/ui/button'
-import { useEnterFlow } from '../../../hooks/use-enter-flow'
 import { Portal } from '../../../components/ui/portal'
 import { useEscape } from '../../../hooks/use-escape'
 
@@ -29,10 +29,21 @@ interface UserForm {
     role_id: string
     status: string
     laundry_id: string
+    hotel_id: string
+    shop_id: string
+    entity_type: 'laundry' | 'hotel' | 'shop' | 'none'
 }
 
-const ROLES = ['ADMIN', 'MANAGER', 'STAFF']
-const TENANT_ROLES = ['ADMIN', 'MANAGER', 'STAFF']
+const PLATFORM_ROLES = [
+    'ADMIN',
+    'HOTEL_ADMIN',
+    'SHOP_ADMIN',
+    'HOTEL_MANAGER',
+    'SHOP_STAFF',
+    'MANAGER',
+    'STAFF',
+    'PLATFORM_ADMIN',
+]
 const STATUSES = ['active', 'inactive', 'unset']
 
 const emptyForm: UserForm = {
@@ -45,6 +56,9 @@ const emptyForm: UserForm = {
     role_id: 'STAFF',
     status: 'active',
     laundry_id: '',
+    hotel_id: '',
+    shop_id: '',
+    entity_type: 'laundry',
 }
 
 interface UserRecord {
@@ -58,6 +72,9 @@ interface UserRecord {
     status: string
     laundry_id?: string | null
     platform_admin?: boolean | null
+    laundries?: Array<{ id: string; name?: string; role?: string; status?: string }>
+    hotels?: Array<{ id: string; name?: string; role?: string; status?: string }>
+    shops?: Array<{ id: string; name?: string; role?: string; status?: string }>
     created_at?: string
 }
 
@@ -96,11 +113,10 @@ export default function UsersPage() {
     const [submitting, setSubmitting] = useState(false)
     const [showPw, setShowPw] = useState(false)
     const [manageUser, setManageUser] = useState<UserRecord | null>(null)
-    const flow = useEnterFlow()
 
     useEscape(showModal, () => setShowModal(false))
 
-    // Platform registries — only fetched for super admins.
+    // Platform registries — laundries, hotels, and shops
     const { data: platformLaundriesData } = useQuery({
         queryKey: ['platform-laundries'],
         queryFn: () => laundryService.list({ limit: 200 }),
@@ -115,8 +131,21 @@ export default function UsersPage() {
     })
     const activeLaundries = activeLaundriesData?.items ?? []
 
-    // Every laundry's membership list, fetched in parallel, folded into a
-    // map keyed by auth_id so each user row can show its memberships.
+    const { data: activeHotelsData } = useQuery({
+        queryKey: ['platform-entities', 'hotel', 'ACTIVE'],
+        queryFn: () => entityService.list('hotel', { status: 'ACTIVE', limit: 200 }),
+        enabled: isPlatformAdmin,
+    })
+    const activeHotels = activeHotelsData?.items ?? []
+
+    const { data: activeShopsData } = useQuery({
+        queryKey: ['platform-entities', 'shop', 'ACTIVE'],
+        queryFn: () => entityService.list('shop', { status: 'ACTIVE', limit: 200 }),
+        enabled: isPlatformAdmin,
+    })
+    const activeShops = activeShopsData?.items ?? []
+
+    // Laundry membership map
     const memberQueries = useQueries({
         queries: platformLaundries.map(l => ({
             queryKey: ['platform-laundry-members', l.laundry_id],
@@ -143,6 +172,20 @@ export default function UsersPage() {
         fetchUsers()
     }, [])
 
+    const handleRoleChange = (role: string) => {
+        let nextType: 'laundry' | 'hotel' | 'shop' | 'none' = form.entity_type
+        if (role === 'PLATFORM_ADMIN') nextType = 'none'
+        else if (role.startsWith('HOTEL_')) nextType = 'hotel'
+        else if (role.startsWith('SHOP_')) nextType = 'shop'
+        else nextType = 'laundry'
+
+        setForm(f => ({
+            ...f,
+            role_id: role,
+            entity_type: nextType,
+        }))
+    }
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         if (!form.user_name || !form.auth_id) {
@@ -164,10 +207,15 @@ export default function UsersPage() {
             if (form.email) payload.email = form.email
             if (form.mobile_number) payload.mobile_number = form.mobile_number
             if (form.employee_id) payload.employee_id = form.employee_id
-            // Only platform admins may enroll into a tenant, and a platform
-            // admin account is never a tenant member.
-            if (!editId && isPlatformAdmin && form.laundry_id && form.role_id !== 'PLATFORM_ADMIN') {
-                payload.laundry_id = form.laundry_id
+
+            if (!editId && isPlatformAdmin && form.role_id !== 'PLATFORM_ADMIN') {
+                if (form.entity_type === 'hotel' && form.hotel_id) {
+                    payload.hotel_id = form.hotel_id
+                } else if (form.entity_type === 'shop' && form.shop_id) {
+                    payload.shop_id = form.shop_id
+                } else if (form.entity_type === 'laundry' && form.laundry_id) {
+                    payload.laundry_id = form.laundry_id
+                }
             }
 
             if (editId) {
@@ -185,7 +233,7 @@ export default function UsersPage() {
             setEditId(null)
             fetchUsers()
         } catch (err: any) {
-            toast.error(err.message || `Failed to ${editId ? 'update' : 'create'} user`)
+            toast.error(err.response?.data?.detail || err.message || `Failed to ${editId ? 'update' : 'create'} user`)
         } finally {
             setSubmitting(false)
         }
@@ -199,6 +247,12 @@ export default function UsersPage() {
     }
 
     const openEdit = (u: UserRecord) => {
+        const role = (u.role_id || 'STAFF').toUpperCase()
+        let type: 'laundry' | 'hotel' | 'shop' | 'none' = 'laundry'
+        if (role === 'PLATFORM_ADMIN') type = 'none'
+        else if (role.startsWith('HOTEL_')) type = 'hotel'
+        else if (role.startsWith('SHOP_')) type = 'shop'
+
         setForm({
             user_name: u.user_name,
             auth_id: u.auth_id,
@@ -206,16 +260,19 @@ export default function UsersPage() {
             email: u.email || '',
             mobile_number: u.mobile_number || '',
             employee_id: u.employee_id || '',
-            role_id: (u.role_id || 'STAFF').toUpperCase(),
+            role_id: role,
             status: (u.status || 'active').toLowerCase(),
             laundry_id: u.laundry_id || '',
+            hotel_id: u.hotels?.[0]?.id || '',
+            shop_id: u.shops?.[0]?.id || '',
+            entity_type: type,
         })
         setEditId(u.id)
         setShowPw(false)
         setShowModal(true)
     }
 
-    const roleOptions = isPlatformAdmin ? [...ROLES, 'PLATFORM_ADMIN'] : ['MANAGER', 'STAFF']
+    const roleOptions = isPlatformAdmin ? PLATFORM_ROLES : ['MANAGER', 'STAFF']
 
     const inputClass =
         'h-10 w-full rounded-xl border border-[var(--border)] bg-white px-3.5 text-[13px] text-[var(--text-primary)] placeholder:text-[#98A2B3] outline-none focus:border-[var(--text-primary)] focus:ring-1 focus:ring-[var(--text-primary)] transition-all duration-150'
@@ -224,6 +281,10 @@ export default function UsersPage() {
         ADMIN: 'bg-[#FEF3C7] text-[#92400E] border-[#FDE68A]',
         MANAGER: 'bg-[#EDE9FE] text-[#5B21B6] border-[#DDD6FE]',
         STAFF: 'bg-[#F0FDF4] text-[#166534] border-[#BBF7D0]',
+        HOTEL_ADMIN: 'bg-[#F3E8FF] text-[#6B21A8] border-[#E9D5FF]',
+        HOTEL_MANAGER: 'bg-[#EDE9FE] text-[#5B21B6] border-[#DDD6FE]',
+        SHOP_ADMIN: 'bg-[#CCFBF1] text-[#115E59] border-[#99F6E4]',
+        SHOP_STAFF: 'bg-[#E0F2FE] text-[#0369A1] border-[#BAE6FD]',
         PLATFORM_ADMIN: 'bg-[var(--text-primary)] text-white border-[var(--text-primary)]',
     }
 
@@ -239,9 +300,11 @@ export default function UsersPage() {
             <div className="flex items-start justify-between gap-4 flex-wrap">
                 <div>
                     <Breadcrumb items={[{ label: 'Dashboard', href: '/' }, { label: 'Users' }]} />
-                    <h1 className="text-dashboard-title mt-1">User Management</h1>
+                    <h1 className="text-dashboard-title mt-1">User & Administrator Management</h1>
                     <p className="text-[13px] text-[#98A2B3] mt-0.5">
-                        {isPlatformAdmin ? 'Manage users and laundry admins across every laundry' : 'Create and manage system users'}
+                        {isPlatformAdmin
+                            ? 'Manage users, laundry admins, hotel admins, and shop admins across all platform entities'
+                            : 'Create and manage system users'}
                     </p>
                 </div>
                 <div className="flex items-center gap-2">
@@ -256,17 +319,18 @@ export default function UsersPage() {
                     </Button>
                     <Button onClick={openModal} className="flex items-center gap-1.5">
                         <RiUserAddLine size={15} />
-                        Create User
+                        Create User / Admin
                     </Button>
                 </div>
             </div>
 
             {/* Stats row */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
                 {[
                     { label: 'Total Users', value: users.length, color: 'text-[var(--text-primary)]' },
                     { label: 'Active', value: users.filter(u => u.status === 'active').length, color: 'text-[#16A34A]' },
-                    { label: 'Admins', value: users.filter(u => ['ADMIN', 'PLATFORM_ADMIN'].includes(u.role_id?.toUpperCase() ?? '')).length, color: 'text-[#92400E]' },
+                    { label: 'Laundry Admins', value: users.filter(u => ['ADMIN', 'PLATFORM_ADMIN'].includes(u.role_id?.toUpperCase() ?? '')).length, color: 'text-[#92400E]' },
+                    { label: 'Hotel & Shop Admins', value: users.filter(u => ['HOTEL_ADMIN', 'SHOP_ADMIN'].includes(u.role_id?.toUpperCase() ?? '')).length, color: 'text-[#6B21A8]' },
                 ].map(stat => (
                     <Card key={stat.label}>
                         <CardContent className="pt-4 pb-4 text-center">
@@ -297,131 +361,150 @@ export default function UsersPage() {
                 />
             ) : (
                 <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                    {users.map((u, idx) => {
+                    {users.map(u => {
                         const memberships = membershipMap.get(u.auth_id) ?? []
+                        const hotelMemberships = u.hotels ?? []
+                        const shopMemberships = u.shops ?? []
+                        const hasAnyMembership =
+                            memberships.length > 0 || hotelMemberships.length > 0 || shopMemberships.length > 0
+
                         return (
                             <motion.div
                                 key={u.id}
+                                layout
                                 initial={{ opacity: 0, y: 8 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: Math.min(idx * 0.04, 0.3) }}
+                                className="group relative rounded-2xl border border-[var(--border)] bg-white p-4 shadow-sm hover:shadow-md hover:border-[#D0D5DD] transition-all duration-150 flex flex-col justify-between"
                             >
-                                <Card className="hover:border-[#D1D5DB] transition-colors">
-                                    <CardContent className="pt-4 pb-4">
-                                        <div className="flex items-start gap-3">
-                                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[var(--text-primary)] to-[#374151] text-white font-bold text-[15px]">
-                                                {u.user_name.charAt(0).toUpperCase()}
-                                            </div>
-                                            <div className="min-w-0 flex-1">
-                                                <p className="text-[14px] font-semibold text-[var(--text-primary)] truncate">{u.user_name}</p>
-                                                <p className="text-[12px] text-[#6B7280] truncate">{u.email || u.auth_id}</p>
-                                                <div className="flex items-center gap-1.5 mt-2 flex-wrap">
-                                                    <span className={`inline-flex items-center rounded-md border px-2 py-0.5 text-[10px] font-semibold ${roleColor[u.role_id?.toUpperCase()] || roleColor.STAFF}`}>
-                                                        {u.role_id?.toUpperCase()}
-                                                    </span>
-                                                    <span className={`inline-flex items-center rounded-md border px-2 py-0.5 text-[10px] font-semibold ${statusColor[u.status?.toLowerCase()] || statusColor.unset}`}>
-                                                        {u.status}
-                                                    </span>
-                                                    {u.employee_id && (
-                                                        <span className="inline-flex items-center rounded-md border border-[var(--border)] bg-[var(--surface-2)] px-2 py-0.5 text-[10px] text-[#6B7280]">
-                                                            #{u.employee_id}
-                                                        </span>
-                                                    )}
-                                                    {isPlatformAdmin && (
-                                                        <span
-                                                            title={memberships.map(m => `${m.name} (${m.role})`).join(', ') || 'Not enrolled in any laundry'}
-                                                            className="inline-flex items-center gap-1 rounded-md border border-[var(--border)] bg-[var(--surface-2)] px-2 py-0.5 text-[10px] text-[#6B7280]"
-                                                        >
-                                                            <RiBuilding2Line size={11} />
-                                                            {memberships.length === 0
-                                                                ? 'No laundry'
-                                                                : `${memberships.length} laundr${memberships.length === 1 ? 'y' : 'ies'}`}
-                                                        </span>
-                                                    )}
-                                                </div>
-                                            </div>
-                                            <div className="flex shrink-0 flex-col items-center gap-1">
-                                                {isPlatformAdmin && (
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => setManageUser(u)}
-                                                        title="Manage laundries"
-                                                        aria-label="Manage laundries"
-                                                        className="flex h-7 w-7 items-center justify-center rounded-lg text-[#6B7280] hover:bg-[var(--surface-3)] hover:text-[var(--text-primary)] transition-colors"
-                                                    >
-                                                        <RiBuilding2Line size={15} />
-                                                    </button>
-                                                )}
-                                                {(!isPlatformAdmin && ['ADMIN', 'PLATFORM_ADMIN'].includes(u.role_id?.toUpperCase() ?? '')) ? (
-                                                    <span
-                                                        title="Only platform administrators can modify administrator accounts"
-                                                        className="flex h-7 w-7 items-center justify-center rounded-lg text-[#D1D5DB] cursor-not-allowed"
-                                                    >
-                                                        <RiEditLine size={15} />
-                                                    </span>
-                                                ) : (
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => openEdit(u)}
-                                                        title="Edit user"
-                                                        className="flex h-7 w-7 items-center justify-center rounded-lg text-[#6B7280] hover:bg-[var(--surface-3)] hover:text-[var(--text-primary)] transition-colors"
-                                                    >
-                                                        <RiEditLine size={15} />
-                                                    </button>
-                                                )}
-                                            </div>
+                                <div>
+                                    <div className="flex items-start justify-between gap-2">
+                                        <div className="min-w-0 flex-1">
+                                            <p className="text-[14px] font-semibold text-[var(--text-primary)] truncate">
+                                                {u.user_name}
+                                            </p>
+                                            <p className="text-[12px] font-mono text-[#6B7280] truncate">
+                                                @{u.auth_id}
+                                            </p>
                                         </div>
-                                    </CardContent>
-                                </Card>
+                                        <span className={`inline-flex items-center rounded-md border px-2 py-0.5 text-[10px] font-semibold ${roleColor[u.role_id?.toUpperCase()] || roleColor.STAFF}`}>
+                                            {u.role_id?.toUpperCase()}
+                                        </span>
+                                    </div>
+
+                                    {/* Memberships badge (Laundries, Hotels, Shops) */}
+                                    {isPlatformAdmin && (
+                                        <div className="mt-2.5 flex flex-wrap gap-1">
+                                            {memberships.map(m => (
+                                                <span
+                                                    key={`l-${m.laundry_id}`}
+                                                    className="inline-flex items-center gap-1 rounded-md bg-[var(--surface-2)] border border-[var(--border-2)] px-2 py-0.5 text-[11px] text-[var(--text-secondary)]"
+                                                >
+                                                    🏭 {m.name} ({m.role})
+                                                </span>
+                                            ))}
+                                            {hotelMemberships.map(h => (
+                                                <span
+                                                    key={`h-${h.id}`}
+                                                    className="inline-flex items-center gap-1 rounded-md bg-[#F3E8FF] border border-[#E9D5FF] px-2 py-0.5 text-[11px] text-[#6B21A8]"
+                                                >
+                                                    🏨 {h.name || h.id} ({h.role || 'HOTEL_ADMIN'})
+                                                </span>
+                                            ))}
+                                            {shopMemberships.map(s => (
+                                                <span
+                                                    key={`s-${s.id}`}
+                                                    className="inline-flex items-center gap-1 rounded-md bg-[#CCFBF1] border border-[#99F6E4] px-2 py-0.5 text-[11px] text-[#115E59]"
+                                                >
+                                                    🏪 {s.name || s.id} ({s.role || 'SHOP_ADMIN'})
+                                                </span>
+                                            ))}
+                                            {!hasAnyMembership && (
+                                                <span className="inline-flex items-center gap-1 rounded-md bg-[var(--surface-3)] px-2 py-0.5 text-[11px] text-[#98A2B3]">
+                                                    No entity membership
+                                                </span>
+                                            )}
+                                        </div>
+                                    )}
+
+                                    <div className="mt-2 space-y-1 text-[12px] text-[#6B7280]">
+                                        {u.email && <p className="truncate">✉ {u.email}</p>}
+                                        {u.mobile_number && <p className="truncate">📞 {u.mobile_number}</p>}
+                                        {u.employee_id && <p className="truncate">ID: {u.employee_id}</p>}
+                                    </div>
+                                </div>
+
+                                <div className="mt-4 pt-3 border-t border-[var(--border)] flex items-center justify-between gap-2">
+                                    <span className={`inline-flex items-center rounded-md border px-2 py-0.5 text-[10px] font-medium capitalize ${statusColor[u.status?.toLowerCase()] || statusColor.unset}`}>
+                                        {u.status}
+                                    </span>
+                                    <div className="flex items-center gap-1">
+                                        {isPlatformAdmin && (
+                                            <button
+                                                onClick={() => setManageUser(u)}
+                                                className="px-2.5 py-1 rounded-lg border border-[var(--border)] text-[11px] font-medium text-[var(--text-primary)] hover:bg-[var(--surface-2)] transition-colors flex items-center gap-1"
+                                                title="Manage memberships across laundries, hotels, and shops"
+                                            >
+                                                <RiBuilding2Line size={12} />
+                                                Manage
+                                            </button>
+                                        )}
+                                        <button
+                                            onClick={() => openEdit(u)}
+                                            className="px-2.5 py-1 rounded-lg border border-[var(--border)] text-[11px] font-medium text-[var(--text-primary)] hover:bg-[var(--surface-2)] transition-colors flex items-center gap-1"
+                                        >
+                                            <RiEditLine size={12} />
+                                            Edit
+                                        </button>
+                                    </div>
+                                </div>
                             </motion.div>
                         )
                     })}
                 </div>
             )}
 
-            {/* Create User Modal */}
+            {/* Create/Edit Modal */}
             <AnimatePresence>
                 {showModal && (
                     <>
-                        <motion.div
-                            key="backdrop"
+                        <Portal><motion.div
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
                             className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm"
                             onClick={() => setShowModal(false)}
                         />
-                        <Portal><motion.div
-                            key="modal"
+                        <motion.div
                             initial={{ opacity: 0, scale: 0.96, y: 12 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.96, y: 12 }}
                             transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-                            className="fixed inset-0 z-50 flex items-center justify-center p-4"
+                            className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto"
                         >
-                            <div className="w-full max-w-md rounded-2xl border border-[var(--border)] bg-white shadow-2xl overflow-hidden">
-                                {/* Modal header */}
+                            <div className="w-full max-w-lg rounded-2xl border border-[var(--border)] bg-white shadow-2xl overflow-hidden my-8">
                                 <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--border)]">
-                                    <div className="flex items-center gap-3">
+                                    <div className="flex items-center gap-2.5">
                                         <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--text-primary)] text-white">
-                                            <RiEditLine size={16} />
+                                            <RiUserAddLine size={16} />
                                         </div>
                                         <div>
-                                            <p className="text-[14px] font-bold text-[var(--text-primary)]">{editId ? 'Edit User' : 'Create User'}</p>
-                                            <p className="text-[11px] text-[#6B7280]">{editId ? 'Update this system user' : 'Add a new system user'}</p>
+                                            <h2 className="text-[15px] font-semibold text-[var(--text-primary)]">
+                                                {editId ? 'Edit User' : 'Create User / Administrator'}
+                                            </h2>
+                                            <p className="text-[12px] text-[#98A2B3]">
+                                                {editId ? 'Update user credentials and details' : 'Provision a new administrator or staff account'}
+                                            </p>
                                         </div>
                                     </div>
                                     <button
-                                        type="button"
                                         onClick={() => setShowModal(false)}
-                                        className="flex h-7 w-7 items-center justify-center rounded-lg text-[#6B7280] hover:bg-[var(--surface-3)] hover:text-[var(--text-primary)] transition-colors"
+                                        className="flex h-7 w-7 items-center justify-center rounded-lg text-[#98A2B3] hover:text-[#374151] hover:bg-[var(--surface-2)] transition-colors"
                                     >
-                                        <RiCloseLine size={16} />
+                                        <RiCloseLine size={18} />
                                     </button>
                                 </div>
 
-                                {/* Form */}
-                                <form onSubmit={handleSubmit} ref={flow.ref} onKeyDown={flow.handleKeyDown} className="p-6 space-y-4 max-h-[75vh] overflow-y-auto">
+                                <form onSubmit={handleSubmit} className="p-6 space-y-4 max-h-[80vh] overflow-y-auto">
                                     <div className="grid grid-cols-2 gap-3">
                                         <div>
                                             <label className="block text-[12px] font-medium text-[#374151] mb-1.5">
@@ -432,21 +515,21 @@ export default function UsersPage() {
                                                 value={form.user_name}
                                                 onChange={e => setForm(f => ({ ...f, user_name: e.target.value }))}
                                                 className={inputClass}
-                                                placeholder="John Silva"
+                                                placeholder="e.g. John Doe"
                                                 required
-                                                autoFocus
                                             />
                                         </div>
                                         <div>
                                             <label className="block text-[12px] font-medium text-[#374151] mb-1.5">
-                                                Username <span className="text-[#DC2626]">*</span>
+                                                Username / Auth ID <span className="text-[#DC2626]">*</span>
                                             </label>
                                             <input
                                                 type="text"
                                                 value={form.auth_id}
                                                 onChange={e => setForm(f => ({ ...f, auth_id: e.target.value }))}
                                                 className={inputClass}
-                                                placeholder="john.silva"
+                                                placeholder="e.g. john.doe"
+                                                disabled={!!editId}
                                                 required
                                             />
                                         </div>
@@ -481,7 +564,7 @@ export default function UsersPage() {
                                             <label className="block text-[12px] font-medium text-[#374151] mb-1.5">Role</label>
                                             <select
                                                 value={form.role_id}
-                                                onChange={e => setForm(f => ({ ...f, role_id: e.target.value }))}
+                                                onChange={e => handleRoleChange(e.target.value)}
                                                 className={inputClass}
                                             >
                                                 {roleOptions.map(r => (
@@ -503,20 +586,78 @@ export default function UsersPage() {
                                         </div>
                                     </div>
 
-                                    {isPlatformAdmin && form.role_id !== 'PLATFORM_ADMIN' && (
-                                        <div>
-                                            <label className="block text-[12px] font-medium text-[#374151] mb-1.5">Enroll in laundry</label>
-                                            <select
-                                                value={form.laundry_id}
-                                                onChange={e => setForm(f => ({ ...f, laundry_id: e.target.value }))}
-                                                className={inputClass}
-                                            >
-                                                <option value="">— No enrollment —</option>
-                                                {activeLaundries.map(l => (
-                                                    <option key={l.laundry_id} value={l.laundry_id}>{l.name}</option>
-                                                ))}
-                                            </select>
-                                            <p className="text-[11px] text-[#98A2B3] mt-1">Optional. Enrolls this account as a member of the selected active laundry.</p>
+                                    {/* Entity Enrollment for Platform Admin */}
+                                    {isPlatformAdmin && form.role_id !== 'PLATFORM_ADMIN' && !editId && (
+                                        <div className="rounded-xl border border-[var(--border-2)] bg-[var(--surface-2)] p-3.5 space-y-3">
+                                            <div className="flex items-center justify-between">
+                                                <label className="text-[12px] font-semibold text-[#374151]">
+                                                    Enroll in Platform Entity
+                                                </label>
+                                                <div className="flex gap-1 bg-white rounded-lg p-0.5 border border-[var(--border)] text-xs">
+                                                    {(['laundry', 'hotel', 'shop'] as const).map(type => (
+                                                        <button
+                                                            key={type}
+                                                            type="button"
+                                                            onClick={() => setForm(f => ({ ...f, entity_type: type }))}
+                                                            className={`px-2 py-0.5 rounded-md capitalize transition-colors ${
+                                                                form.entity_type === type
+                                                                    ? 'bg-[var(--brand)] text-white font-medium'
+                                                                    : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'
+                                                            }`}
+                                                        >
+                                                            {type}
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            </div>
+
+                                            {form.entity_type === 'laundry' && (
+                                                <div>
+                                                    <select
+                                                        value={form.laundry_id}
+                                                        onChange={e => setForm(f => ({ ...f, laundry_id: e.target.value }))}
+                                                        className={inputClass}
+                                                    >
+                                                        <option value="">— Select active laundry —</option>
+                                                        {activeLaundries.map(l => (
+                                                            <option key={l.laundry_id} value={l.laundry_id}>{l.name} ({l.laundry_id})</option>
+                                                        ))}
+                                                    </select>
+                                                    <p className="text-[11px] text-[#98A2B3] mt-1">Assigns this user to the selected laundry.</p>
+                                                </div>
+                                            )}
+
+                                            {form.entity_type === 'hotel' && (
+                                                <div>
+                                                    <select
+                                                        value={form.hotel_id}
+                                                        onChange={e => setForm(f => ({ ...f, hotel_id: e.target.value }))}
+                                                        className={inputClass}
+                                                    >
+                                                        <option value="">— Select active hotel —</option>
+                                                        {activeHotels.map(h => (
+                                                            <option key={h.hotel_id} value={h.hotel_id}>{h.name} ({h.hotel_id})</option>
+                                                        ))}
+                                                    </select>
+                                                    <p className="text-[11px] text-[#98A2B3] mt-1">Assigns this user as administrator/manager of the selected hotel.</p>
+                                                </div>
+                                            )}
+
+                                            {form.entity_type === 'shop' && (
+                                                <div>
+                                                    <select
+                                                        value={form.shop_id}
+                                                        onChange={e => setForm(f => ({ ...f, shop_id: e.target.value }))}
+                                                        className={inputClass}
+                                                    >
+                                                        <option value="">— Select active shop —</option>
+                                                        {activeShops.map(s => (
+                                                            <option key={s.shop_id} value={s.shop_id}>{s.name} ({s.shop_id})</option>
+                                                        ))}
+                                                    </select>
+                                                    <p className="text-[11px] text-[#98A2B3] mt-1">Assigns this user as administrator/staff of the selected shop outlet.</p>
+                                                </div>
+                                            )}
                                         </div>
                                     )}
 
@@ -527,7 +668,7 @@ export default function UsersPage() {
                                             value={form.email}
                                             onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
                                             className={inputClass}
-                                            placeholder="john@lovelaundry.lk"
+                                            placeholder="admin@domain.lk"
                                         />
                                     </div>
 
@@ -585,7 +726,7 @@ export default function UsersPage() {
                                             ) : (
                                                 <>
                                                     <RiEditLine size={14} />
-                                                    {editId ? 'Save Changes' : 'Create User'}
+                                                    {editId ? 'Save Changes' : 'Create User / Admin'}
                                                 </>
                                             )}
                                         </button>
@@ -597,12 +738,13 @@ export default function UsersPage() {
                 )}
             </AnimatePresence>
 
-            {/* Manage laundries modal (platform admins) */}
-            <ManageLaundriesModal
+            {/* Manage memberships modal (platform admins) */}
+            <ManageMembershipsModal
                 user={manageUser}
                 laundries={platformLaundries}
+                hotels={activeHotels}
+                shops={activeShops}
                 memberships={manageUser ? membershipMap.get(manageUser.auth_id) ?? [] : []}
-                loading={membersLoading}
                 onClose={() => setManageUser(null)}
                 onChanged={fetchUsers}
             />
@@ -610,193 +752,322 @@ export default function UsersPage() {
     )
 }
 
-function ManageLaundriesModal({
+function ManageMembershipsModal({
     user,
     laundries,
+    hotels,
+    shops,
     memberships,
-    loading,
     onClose,
     onChanged,
 }: {
     user: UserRecord | null
     laundries: Laundry[]
+    hotels: PlatformEntity[]
+    shops: PlatformEntity[]
     memberships: Membership[]
-    loading: boolean
     onClose: () => void
     onChanged: () => void
 }) {
     const qc = useQueryClient()
     useEscape(!!user, onClose)
 
-    const refresh = (laundryId: string) => {
-        void qc.invalidateQueries({ queryKey: ['platform-laundry-members', laundryId] })
+    const [tab, setTab] = useState<'laundries' | 'hotels' | 'shops'>('laundries')
+
+    const refresh = () => {
         void qc.invalidateQueries({ queryKey: ['platform-laundries'] })
+        void qc.invalidateQueries({ queryKey: ['platform-entities'] })
         void qc.invalidateQueries({ queryKey: ['users'] })
         onChanged()
     }
 
-    const addMut = useMutation({
+    const addLaundryMut = useMutation({
         mutationFn: ({ laundryId, role }: { laundryId: string; role: string }) =>
             laundryService.addMember(laundryId, { auth_id: user?.auth_id ?? '', role }),
-        onSuccess: (_r, v) => {
-            toast.success('Laundry membership added')
-            refresh(v.laundryId)
+        onSuccess: () => {
+            toast.success('Laundry membership updated')
+            refresh()
         },
         onError: (e: any) => toast.error(e.response?.data?.detail || e.message || 'Add failed'),
     })
 
-    const removeMut = useMutation({
+    const removeLaundryMut = useMutation({
         mutationFn: (laundryId: string) => laundryService.removeMember(laundryId, user?.auth_id ?? ''),
-        onSuccess: (_r, laundryId) => {
+        onSuccess: () => {
             toast.success('Laundry membership removed')
-            refresh(laundryId)
+            refresh()
         },
         onError: (e: any) => toast.error(e.response?.data?.detail || e.message || 'Remove failed'),
     })
 
-    const roleOf = new Map(memberships.map(m => [m.laundry_id, m.role]))
-    const busy = addMut.isPending || removeMut.isPending
+    const addHotelMut = useMutation({
+        mutationFn: ({ hotelId, role }: { hotelId: string; role: string }) =>
+            entityService.addMember('hotel', hotelId, { auth_id: user?.auth_id ?? '', role }),
+        onSuccess: () => {
+            toast.success('Hotel membership updated')
+            refresh()
+        },
+        onError: (e: any) => toast.error(e.response?.data?.detail || e.message || 'Add failed'),
+    })
 
-    // Portalled: the page tree sits under animated (transformed) wrappers, which
-    // would otherwise capture the fixed overlay and centre it on the panel.
+    const removeHotelMut = useMutation({
+        mutationFn: (hotelId: string) => entityService.removeMember('hotel', hotelId, user?.auth_id ?? ''),
+        onSuccess: () => {
+            toast.success('Hotel membership removed')
+            refresh()
+        },
+        onError: (e: any) => toast.error(e.response?.data?.detail || e.message || 'Remove failed'),
+    })
+
+    const addShopMut = useMutation({
+        mutationFn: ({ shopId, role }: { shopId: string; role: string }) =>
+            entityService.addMember('shop', shopId, { auth_id: user?.auth_id ?? '', role }),
+        onSuccess: () => {
+            toast.success('Shop membership updated')
+            refresh()
+        },
+        onError: (e: any) => toast.error(e.response?.data?.detail || e.message || 'Add failed'),
+    })
+
+    const removeShopMut = useMutation({
+        mutationFn: (shopId: string) => entityService.removeMember('shop', shopId, user?.auth_id ?? ''),
+        onSuccess: () => {
+            toast.success('Shop membership removed')
+            refresh()
+        },
+        onError: (e: any) => toast.error(e.response?.data?.detail || e.message || 'Remove failed'),
+    })
+
+    const laundryRoleOf = new Map(memberships.map(m => [m.laundry_id, m.role]))
+    const hotelRoleOf = new Map((user?.hotels ?? []).map(h => [h.id, h.role || 'HOTEL_ADMIN']))
+    const shopRoleOf = new Map((user?.shops ?? []).map(s => [s.id, s.role || 'SHOP_ADMIN']))
+
     return (
         <Portal>
             <AnimatePresence>
-            {user && (
-                <>
-                    <motion.div
-                        key="manage-backdrop"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm"
-                        onClick={onClose}
-                    />
-                    <motion.div
-                        key="manage-modal"
-                        initial={{ opacity: 0, scale: 0.96, y: 12 }}
-                        animate={{ opacity: 1, scale: 1, y: 0 }}
-                        exit={{ opacity: 0, scale: 0.96, y: 12 }}
-                        transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-                        className="fixed inset-0 z-50 flex items-center justify-center p-4"
-                    >
-                        <div className="w-full max-w-lg rounded-2xl border border-[var(--border)] bg-white shadow-2xl overflow-hidden">
-                            <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--border)]">
-                                <div className="flex items-center gap-3 min-w-0">
-                                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--text-primary)] text-white">
-                                        <RiBuilding2Line size={16} />
+                {user && (
+                    <>
+                        <motion.div
+                            key="manage-backdrop"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm"
+                            onClick={onClose}
+                        />
+                        <motion.div
+                            key="manage-modal"
+                            initial={{ opacity: 0, scale: 0.96, y: 12 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.96, y: 12 }}
+                            transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                            className="fixed inset-0 z-50 flex items-center justify-center p-4"
+                        >
+                            <div className="w-full max-w-xl rounded-2xl border border-[var(--border)] bg-white shadow-2xl overflow-hidden">
+                                <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--border)]">
+                                    <div className="flex items-center gap-3 min-w-0">
+                                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--text-primary)] text-white">
+                                            <RiBuilding2Line size={16} />
+                                        </div>
+                                        <div className="min-w-0">
+                                            <h2 className="text-[15px] font-semibold text-[var(--text-primary)] truncate">
+                                                Manage Memberships — {user.user_name}
+                                            </h2>
+                                            <p className="text-[12px] font-mono text-[#98A2B3] truncate">
+                                                @{user.auth_id}
+                                            </p>
+                                        </div>
                                     </div>
-                                    <div className="min-w-0">
-                                        <p className="text-[14px] font-bold text-[var(--text-primary)] truncate">Manage laundries</p>
-                                        <p className="text-[11px] text-[#6B7280] truncate">{user.user_name} · {user.auth_id}</p>
-                                    </div>
+                                    <button
+                                        onClick={onClose}
+                                        className="flex h-7 w-7 items-center justify-center rounded-lg text-[#98A2B3] hover:text-[#374151] hover:bg-[var(--surface-2)] transition-colors"
+                                    >
+                                        <RiCloseLine size={18} />
+                                    </button>
                                 </div>
-                                <button
-                                    type="button"
-                                    onClick={onClose}
-                                    className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-[#6B7280] hover:bg-[var(--surface-3)] hover:text-[var(--text-primary)] transition-colors"
-                                >
-                                    <RiCloseLine size={16} />
-                                </button>
-                            </div>
 
-                            <div className="p-4 space-y-2 max-h-[60vh] overflow-y-auto">
-                                {loading ? (
-                                    <p className="py-6 text-center text-[12px] text-[#98A2B3]">Loading laundries…</p>
-                                ) : laundries.length === 0 ? (
-                                    <p className="py-6 text-center text-[12px] text-[#98A2B3]">No laundries found.</p>
-                                ) : (
-                                    laundries.map(l => (
-                                        <ManageLaundryRow
-                                            key={l.laundry_id}
-                                            laundry={l}
-                                            currentRole={roleOf.get(l.laundry_id)}
-                                            busy={busy}
-                                            onAdd={(laundryId, role) => addMut.mutate({ laundryId, role })}
-                                            onRemove={(laundryId) => removeMut.mutate(laundryId)}
-                                        />
-                                    ))
-                                )}
-                            </div>
+                                {/* Category Tabs */}
+                                <div className="flex border-b border-[var(--border)] px-6 pt-2 bg-[var(--surface-2)]">
+                                    <button
+                                        type="button"
+                                        onClick={() => setTab('laundries')}
+                                        className={`flex items-center gap-1.5 px-4 py-2 text-xs font-semibold border-b-2 transition-colors ${
+                                            tab === 'laundries'
+                                                ? 'border-[var(--brand)] text-[var(--brand)]'
+                                                : 'border-transparent text-[var(--text-muted)] hover:text-[var(--text-primary)]'
+                                        }`}
+                                    >
+                                        <RiBuilding2Line size={14} /> Laundries ({laundries.length})
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setTab('hotels')}
+                                        className={`flex items-center gap-1.5 px-4 py-2 text-xs font-semibold border-b-2 transition-colors ${
+                                            tab === 'hotels'
+                                                ? 'border-[var(--brand)] text-[var(--brand)]'
+                                                : 'border-transparent text-[var(--text-muted)] hover:text-[var(--text-primary)]'
+                                        }`}
+                                    >
+                                        <RiHotelLine size={14} /> Hotels ({hotels.length})
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setTab('shops')}
+                                        className={`flex items-center gap-1.5 px-4 py-2 text-xs font-semibold border-b-2 transition-colors ${
+                                            tab === 'shops'
+                                                ? 'border-[var(--brand)] text-[var(--brand)]'
+                                                : 'border-transparent text-[var(--text-muted)] hover:text-[var(--text-primary)]'
+                                        }`}
+                                    >
+                                        <RiStore2Line size={14} /> Shops ({shops.length})
+                                    </button>
+                                </div>
 
-                            <div className="flex justify-end px-4 py-3 border-t border-[var(--border)]">
-                                <button
-                                    type="button"
-                                    onClick={onClose}
-                                    className="h-9 rounded-xl border border-[var(--border)] bg-white px-4 text-[13px] font-medium text-[#374151] hover:bg-[var(--surface-2)] transition-colors"
-                                >
-                                    Done
-                                </button>
+                                <div className="p-6 max-h-[60vh] overflow-y-auto space-y-2">
+                                    {tab === 'laundries' && (
+                                        <>
+                                            {laundries.map(l => (
+                                                <MembershipRow
+                                                    key={l.laundry_id}
+                                                    id={l.laundry_id}
+                                                    name={l.name}
+                                                    icon="🏭"
+                                                    currentRole={laundryRoleOf.get(l.laundry_id)}
+                                                    roles={['ADMIN', 'MANAGER', 'STAFF']}
+                                                    onAdd={(role) => addLaundryMut.mutate({ laundryId: l.laundry_id, role })}
+                                                    onRemove={() => removeLaundryMut.mutate(l.laundry_id)}
+                                                />
+                                            ))}
+                                            {laundries.length === 0 && (
+                                                <p className="text-center py-6 text-xs text-[#98A2B3]">No registered laundries.</p>
+                                            )}
+                                        </>
+                                    )}
+
+                                    {tab === 'hotels' && (
+                                        <>
+                                            {hotels.map(h => (
+                                                <MembershipRow
+                                                    key={h.hotel_id}
+                                                    id={h.hotel_id!}
+                                                    name={h.name}
+                                                    icon="🏨"
+                                                    currentRole={hotelRoleOf.get(h.hotel_id!)}
+                                                    roles={['HOTEL_ADMIN', 'HOTEL_MANAGER']}
+                                                    onAdd={(role) => addHotelMut.mutate({ hotelId: h.hotel_id!, role })}
+                                                    onRemove={() => removeHotelMut.mutate(h.hotel_id!)}
+                                                />
+                                            ))}
+                                            {hotels.length === 0 && (
+                                                <p className="text-center py-6 text-xs text-[#98A2B3]">No registered hotels.</p>
+                                            )}
+                                        </>
+                                    )}
+
+                                    {tab === 'shops' && (
+                                        <>
+                                            {shops.map(s => (
+                                                <MembershipRow
+                                                    key={s.shop_id}
+                                                    id={s.shop_id!}
+                                                    name={s.name}
+                                                    icon="🏪"
+                                                    currentRole={shopRoleOf.get(s.shop_id!)}
+                                                    roles={['SHOP_ADMIN', 'SHOP_STAFF']}
+                                                    onAdd={(role) => addShopMut.mutate({ shopId: s.shop_id!, role })}
+                                                    onRemove={() => removeShopMut.mutate(s.shop_id!)}
+                                                />
+                                            ))}
+                                            {shops.length === 0 && (
+                                                <p className="text-center py-6 text-xs text-[#98A2B3]">No registered shops.</p>
+                                            )}
+                                        </>
+                                    )}
+                                </div>
+
+                                <div className="px-6 py-3 border-t border-[var(--border)] bg-[var(--surface-2)] flex justify-end">
+                                    <button
+                                        type="button"
+                                        onClick={onClose}
+                                        className="rounded-lg bg-white border border-[var(--border)] px-4 py-1.5 text-xs font-medium text-[var(--text-primary)] hover:bg-[var(--surface)]"
+                                    >
+                                        Done
+                                    </button>
+                                </div>
                             </div>
-                        </div>
-                    </motion.div>
-                </>
-            )}
+                        </motion.div>
+                    </>
+                )}
             </AnimatePresence>
         </Portal>
     )
 }
 
-function ManageLaundryRow({
-    laundry,
+function MembershipRow({
+    id,
+    name,
+    icon,
     currentRole,
-    busy,
+    roles,
     onAdd,
     onRemove,
 }: {
-    laundry: Laundry
+    id: string
+    name: string
+    icon: string
     currentRole?: string
-    busy: boolean
-    onAdd: (laundryId: string, role: string) => void
-    onRemove: (laundryId: string) => void
+    roles: string[]
+    onAdd: (role: string) => void
+    onRemove: () => void
 }) {
-    const isMember = currentRole != null
-    const [role, setRole] = useState(currentRole ?? 'STAFF')
+    const isMember = Boolean(currentRole)
+    const [role, setRole] = useState(currentRole ?? roles[0])
 
     return (
-        <div className="flex items-center gap-2 rounded-xl border border-[var(--border)] bg-white px-3 py-2.5">
-            <span
-                className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-md border ${isMember ? 'border-[#BBF7D0] bg-[#F0FDF4] text-[#16A34A]' : 'border-[var(--border)] bg-[var(--surface-2)] text-[#98A2B3]'}`}
-                title={isMember ? 'Member' : 'Not a member'}
-            >
-                {isMember ? <RiCheckLine size={13} /> : <RiBuilding2Line size={13} />}
-            </span>
-            <div className="min-w-0 flex-1">
-                <p className="text-[13px] font-medium text-[var(--text-primary)] truncate">{laundry.name}</p>
-                <p className="text-[11px] text-[#98A2B3] truncate">{laundry.laundry_id}</p>
+        <div className="flex items-center justify-between gap-3 p-3 rounded-xl border border-[var(--border)] bg-white hover:border-[#D0D5DD] transition-all">
+            <div className="min-w-0 flex-1 flex items-center gap-2.5">
+                <span className="text-lg">{icon}</span>
+                <div className="min-w-0">
+                    <p className="text-[13px] font-medium text-[var(--text-primary)] truncate">{name}</p>
+                    <p className="text-[11px] text-[#98A2B3] truncate">{id}</p>
+                </div>
             </div>
-            <select
-                value={isMember ? currentRole ?? 'STAFF' : role}
-                onChange={e => setRole(e.target.value)}
-                disabled={isMember || busy}
-                title={isMember ? 'Role in this laundry' : 'Role to assign'}
-                className="h-8 rounded-lg border border-[var(--border)] bg-white px-2 text-[12px] text-[var(--text-primary)] outline-none focus:border-[var(--text-primary)] disabled:opacity-60"
-            >
-                {TENANT_ROLES.map(r => (
-                    <option key={r} value={r}>{r}</option>
-                ))}
-            </select>
-            {isMember ? (
-                <button
-                    type="button"
-                    onClick={() => onRemove(laundry.laundry_id)}
-                    disabled={busy}
-                    title="Remove from laundry"
-                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-[#DC2626] hover:bg-[#FEF2F2] transition-colors disabled:opacity-50"
+
+            <div className="flex items-center gap-2">
+                <select
+                    value={isMember ? currentRole : role}
+                    onChange={(e) => {
+                        const next = e.target.value
+                        setRole(next)
+                        if (isMember) onAdd(next)
+                    }}
+                    className="h-8 rounded-lg border border-[var(--border)] bg-white px-2 text-[12px] text-[var(--text-primary)] outline-none"
                 >
-                    <RiUserUnfollowLine size={15} />
-                </button>
-            ) : (
-                <button
-                    type="button"
-                    onClick={() => onAdd(laundry.laundry_id, role)}
-                    disabled={busy}
-                    title="Add to laundry"
-                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-[#16A34A] hover:bg-[#F0FDF4] transition-colors disabled:opacity-50"
-                >
-                    <RiUserFollowLine size={15} />
-                </button>
-            )}
+                    {roles.map(r => (
+                        <option key={r} value={r}>{r}</option>
+                    ))}
+                </select>
+
+                {isMember ? (
+                    <button
+                        type="button"
+                        onClick={onRemove}
+                        className="flex h-8 items-center gap-1 rounded-lg border border-[#FECACA] bg-[#FEF2F2] px-2.5 text-[11px] font-medium text-[#DC2626] hover:bg-[#FEE2E2]"
+                    >
+                        <RiUserUnfollowLine size={13} />
+                        Remove
+                    </button>
+                ) : (
+                    <button
+                        type="button"
+                        onClick={() => onAdd(role)}
+                        className="flex h-8 items-center gap-1 rounded-lg bg-[var(--text-primary)] px-2.5 text-[11px] font-medium text-white hover:bg-[#1D2939]"
+                    >
+                        <RiUserFollowLine size={13} />
+                        Grant
+                    </button>
+                )}
+            </div>
         </div>
     )
 }

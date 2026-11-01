@@ -37,6 +37,8 @@ const pageTitles: Record<string, string> = {
   '/reports': 'Reports',
   '/users': 'Users',
   '/laundries': 'Laundries',
+  '/shops': 'Shops',
+  '/hotels': 'Hotels',
   '/database-sync': 'Database Sync',
   '/live-chat': 'Live Chat',
   '/notifications': 'Notifications',

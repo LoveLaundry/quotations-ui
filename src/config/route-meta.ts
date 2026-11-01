@@ -114,12 +114,14 @@ export const ROUTES: RouteMeta[] = [
   // ── System ──────────────────────────────────────────────────────────────────
   { path: '/profile', title: 'My Profile', keywords: 'profile account' },
   { path: '/settings', title: 'Settings', navLabel: 'Settings', group: 'System', icon: 'GearSix', keywords: 'settings preferences' },
-  { path: '/users', title: 'Users', navLabel: 'Users', group: 'System', icon: 'Users', keywords: 'users staff accounts', roles: ['ADMIN', 'PLATFORM_ADMIN'], guarded: true },
   { path: '/database-sync', title: 'Database Sync', navLabel: 'Database Sync', group: 'System', icon: 'Database', keywords: 'database synchronization offline', roles: ['ADMIN'], guarded: true },
   { path: '/reports-backup', title: 'Reports & Backup', navLabel: 'Reports & Backup', group: 'System', icon: 'CloudArrowDown', keywords: 'backup restore export', roles: ['ADMIN'], guarded: true },
 
   // ── Platform (registry) ─────────────────────────────────────────────────────
   { path: '/laundries', title: 'Laundries', navLabel: 'Laundries', group: 'Platform', icon: 'Buildings', keywords: 'laundries platform tenants registry businesses', platformOnly: true, guarded: true },
+  { path: '/users', title: 'Users', navLabel: 'Users', group: 'Platform', icon: 'Users', keywords: 'users staff accounts platform identities', platformOnly: true, guarded: true },
+  { path: '/shops', title: 'Shops', navLabel: 'Shops', group: 'Platform', icon: 'Store', keywords: 'shops retail client entities platform', platformOnly: true, guarded: true },
+  { path: '/hotels', title: 'Hotels', navLabel: 'Hotels', group: 'Platform', icon: 'Hotel', keywords: 'hotels resorts client entities platform', platformOnly: true, guarded: true },
 ]
 
 /** The navigation groups, in sidebar order, each with the routes it lists. */

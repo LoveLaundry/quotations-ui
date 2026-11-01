@@ -34,6 +34,8 @@ import {
   Workflow as FlowArrow,
   ChevronDown as CaretDown,
   ChartNoAxesCombined as ChartLineUp,
+  Store,
+  Hotel,
 } from 'lucide-react'
 import { LogoOnDark } from '../brand/logo'
 import { cn } from '../../lib/utils'
@@ -52,7 +54,7 @@ const ICONS: Record<string, Icon> = {
   House, ChartBar, ClipboardText, Truck, UsersThree, CurrencyCircleDollar, FileText, Buildings,
   FolderOpen, GearSix, Users, Database, ChatCircleDots, Scan, Upload, ListChecks, Receipt,
   UserCircle, Package, Wallet, Money, CalendarBlank, CalendarPlus, Lightning, Brain,
-  CloudArrowDown, FlowArrow, ChartLineUp,
+  CloudArrowDown, FlowArrow, ChartLineUp, Store, Hotel,
 }
 
 function iconFor(key?: string): Icon {

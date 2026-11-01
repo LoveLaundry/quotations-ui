@@ -49,6 +49,8 @@ const ReportsPage = lazy(() => import('../features/quotations/pages/reports-page
 const BusinessDashboardPage = lazy(() => import('../features/quotations/pages/business-dashboard-page'))
 const LiveChatPage = lazy(() => import('../features/quotations/pages/live-chat-page'))
 const UsersPage = lazy(() => import('../features/quotations/pages/users-page'))
+const ShopsPage = lazy(() => import('../features/platform/pages/shops-page'))
+const HotelsPage = lazy(() => import('../features/platform/pages/hotels-page'))
 const NotificationsPage = lazy(() => import('../features/quotations/pages/notifications-page'))
 const DatabaseSyncPage = lazy(() => import('../features/quotations/pages/database-sync-page'))
 const CustomersPage = lazy(() => import('../features/quotations/pages/customers-page'))
@@ -242,17 +244,19 @@ export const router = createBrowserRouter([
           {
             element: <AdminRoute />,
             children: [
-              { path: 'users', element: <UsersPage /> },
               { path: 'database-sync', element: <DatabaseSyncPage /> },
               { path: 'reports-backup', element: <ReportsBackupPage /> },
             ],
           },
 
-          // Platform-only routes (laundry registry — never tenant admins)
+          // Platform-only routes (registries and identities — never tenant admins)
           {
             element: <PlatformAdminRoute />,
             children: [
               { path: 'laundries', element: <LaundriesPage /> },
+              { path: 'users', element: <UsersPage /> },
+              { path: 'shops', element: <ShopsPage /> },
+              { path: 'hotels', element: <HotelsPage /> },
             ],
           },
 

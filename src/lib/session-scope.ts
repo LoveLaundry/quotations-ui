@@ -10,7 +10,7 @@ export function isPlatformOnly(user: User | null, supportActive: boolean): boole
 }
 
 /** Routes a platform-only session is allowed to mount. */
-export const PLATFORM_PATHS = ['/laundries', '/users', '/profile']
+export const PLATFORM_PATHS = ['/laundries', '/users', '/shops', '/hotels', '/profile']
 
 /** Where a platform-only session is sent when it strays off the platform surface. */
 export const PLATFORM_LANDING = '/laundries'
