@@ -8,6 +8,7 @@ import type {
   LinenBulkCreate,
   LinenScanAction,
   LinenTagGenerate,
+  LinenTransitionList,
 } from '../../../types/linen'
 
 async function listLinens(params: LinenListParams = {}): Promise<LinenListResponse> {
@@ -60,6 +61,11 @@ async function getLiveClock(): Promise<number> {
   return Number(response.data?.clock ?? 0)
 }
 
+async function getTransitions(): Promise<LinenTransitionList> {
+  const response = await billsApi.get<LinenTransitionList>('/linens/transitions')
+  return response.data
+}
+
 async function deleteLinen(docId: string): Promise<void> {
   await billsApi.delete(`/linens/${docId}`)
 }
@@ -75,5 +81,6 @@ export const linenService = {
   getLinenEvents,
   getLinenStats,
   getLiveClock,
+  getTransitions,
   deleteLinen,
 }

@@ -75,6 +75,7 @@ export const ROUTES: RouteMeta[] = [
   { path: '/linen', title: 'Linen Dashboard', navLabel: 'Dashboard', group: 'Linen', icon: 'House', keywords: 'linen tracking dashboard' },
   { path: '/linen/inventory', title: 'Linen Inventory', navLabel: 'Inventory', group: 'Linen', icon: 'ClipboardText', keywords: 'linen stock inventory' },
   { path: '/linen/scanner', title: 'Scan Linen', navLabel: 'Scan Linen', group: 'Linen', icon: 'Scan', keywords: 'linen scan barcode' },
+  { path: '/linen/session', title: 'Scan Session', navLabel: 'Scan Session', group: 'Linen', icon: 'Scan', keywords: 'linen continuous batch scan session state transition' },
   { path: '/linen/bulk-scan', title: 'Bulk Scan', navLabel: 'Bulk Scan', group: 'Linen', icon: 'Scan', keywords: 'linen bulk scan barcode' },
   { path: '/linen/tags', title: 'Tag Generator', navLabel: 'Tag Generator', group: 'Linen', icon: 'FileText', keywords: 'linen tags qr barcode' },
   { path: '/linen/gate-pass', title: 'Gate Pass (Camelot)', navLabel: 'Gate Pass (Camelot)', group: 'Linen', icon: 'FileText', keywords: 'linen receipt uniform camelot' },

@@ -1,169 +1,83 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import jsQR from 'jsqr'
-import { useLinenByCode, useScanLinen } from '../hooks/useLinen'
-import { LINEN_STATUS_CONFIG, SCAN_ACTIONS, type LinenStatus } from '../../../types/linen'
+import { useLinenByCode, useLinenTransitions, useScanLinen } from '../hooks/useLinen'
+import { useLinenCamera } from '../hooks/useLinenCamera'
+import { parseLinenCode } from '../lib/linen-code'
+import { CUSTODY_TINT } from '../lib/linen-custody'
+import { LINEN_STATUS_CONFIG, type LinenStatus } from '../../../types/linen'
 import { Card, CardContent } from '../../../components/ui/card'
 import { Button } from '../../../components/ui/button'
 import { Breadcrumb } from '../../../components/ui/breadcrumb'
-import { Camera, CameraOff, Keyboard, Search, CheckCircle, Loader2, RefreshCw } from 'lucide-react'
+import { Camera, CameraOff, Search, CheckCircle, Loader2, RefreshCw, AlertTriangle } from 'lucide-react'
 import { toast } from 'sonner'
 
+/** HTTP status of a lookup failure, when the backend answered at all. */
+function statusOf(error: unknown): number | undefined {
+  return (error as { response?: { status?: number } } | undefined)?.response?.status
+}
+
 export default function LinenScanner() {
-  const [mode, setMode] = useState<'camera' | 'manual'>('manual')
-  const [cameraActive, setCameraActive] = useState(false)
-  const [cameraStarting, setCameraStarting] = useState(false)
   const [code, setCode] = useState('')
-  const [lastScanned, setLastScanned] = useState<string | null>(null)
-  const [cameraError, setCameraError] = useState<string | null>(null)
+  const [scanned, setScanned] = useState<string | null>(null)
+  const [unreadableTag, setUnreadableTag] = useState<string | null>(null)
   const [lastAction, setLastAction] = useState<{ label: string; color: string } | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
-  const videoRef = useRef<HTMLVideoElement | null>(null)
-  const streamRef = useRef<MediaStream | null>(null)
-  const scanLoopRef = useRef<number>(0)
-  const containerRef = useRef<HTMLDivElement>(null)
-  const { data: linen, refetch, isFetching } = useLinenByCode(lastScanned ?? undefined)
+  const { data: linen, refetch, error, isError, isFetching } = useLinenByCode(scanned ?? undefined)
+  const { data: catalogue } = useLinenTransitions()
   const scanMutation = useScanLinen()
 
-  const handleCodeScanned = useCallback((decodedText: string) => {
-    const trimmed = decodedText.trim().toUpperCase()
-    if (!trimmed || trimmed === lastScanned) return
-    setLastAction(null)
-    setLastScanned(trimmed)
-    setCode(trimmed)
-    refetch()
-    toast.info(`Scanned: ${trimmed}`)
-  }, [lastScanned, refetch])
-
-  const stopCamera = useCallback(() => {
-    if (scanLoopRef.current) {
-      cancelAnimationFrame(scanLoopRef.current)
-      scanLoopRef.current = 0
-    }
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach(t => t.stop())
-      streamRef.current = null
-    }
-    if (videoRef.current) {
-      videoRef.current.srcObject = null
-      videoRef.current = null
-    }
-    setCameraActive(false)
-  }, [])
-
-  const startCamera = useCallback(async (e: React.MouseEvent) => {
-    // Prevent default to ensure this is treated as user gesture
-    e.preventDefault()
-    setCameraError(null)
-    setCameraStarting(true)
-
-    try {
-      stopCamera()
-
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: 'environment' },
-        audio: false,
-      })
-
-      streamRef.current = stream
-
-      // Create video element directly in the container
-      const container = containerRef.current
-      if (!container) throw new Error('Container not found')
-
-      // Remove old video if any
-      const oldVideo = container.querySelector('video')
-      if (oldVideo) oldVideo.remove()
-
-      const video = document.createElement('video')
-      video.setAttribute('autoplay', '')
-      video.setAttribute('playsinline', '')
-      video.setAttribute('muted', '')
-      video.style.width = '100%'
-      video.style.minHeight = '300px'
-      video.style.objectFit = 'cover'
-      video.srcObject = stream
-      container.prepend(video)
-      videoRef.current = video
-
-      await video.play()
-      setCameraActive(true)
-      setCameraStarting(false)
-
-      // Start scanning loop
-      const scanCanvas = document.createElement('canvas')
-      const scanCtx = scanCanvas.getContext('2d', { willReadFrequently: true })
-
-      const scanLoop = () => {
-        if (!videoRef.current || videoRef.current.readyState < 2) {
-          scanLoopRef.current = requestAnimationFrame(scanLoop)
-          return
-        }
-
-        const v = videoRef.current
-        scanCanvas.width = v.videoWidth
-        scanCanvas.height = v.videoHeight
-        scanCtx!.drawImage(v, 0, 0)
-
-        const imageData = scanCtx!.getImageData(0, 0, scanCanvas.width, scanCanvas.height)
-        const qr = jsQR(imageData.data, imageData.width, imageData.height, {
-          inversionAttempts: 'dontInvert',
-        })
-
-        if (qr?.data) {
-          handleCodeScanned(qr.data)
-          return
-        }
-
-        scanLoopRef.current = requestAnimationFrame(scanLoop)
+  const lookup = useCallback((raw: string, source: 'camera' | 'typed') => {
+    const parsed = parseLinenCode(raw)
+    if (!parsed) {
+      // A camera read of someone else's QR (a Wi-Fi poster, a shipping label)
+      // must not be reported as a missing linen — say what it actually is, and
+      // leave the linen already on screen alone so a stray code does not wipe
+      // the record the operator is about to action.
+      setUnreadableTag(source === 'camera' ? raw.trim().slice(0, 60) : raw.trim())
+      if (source === 'typed') {
+        setScanned(null)
+        inputRef.current?.focus()
       }
-
-      scanLoopRef.current = requestAnimationFrame(scanLoop)
-    } catch (err: any) {
-      setCameraStarting(false)
-      setCameraActive(false)
-      const name = err?.name || ''
-      if (name === 'NotAllowedError') {
-        setCameraError('Camera blocked. Go to browser Settings → Site Settings → Camera → Allow this site, then reload.')
-      } else if (name === 'NotFoundError') {
-        setCameraError('No camera found.')
-      } else if (name === 'NotReadableError') {
-        setCameraError('Camera in use by another app.')
-      } else {
-        setCameraError(`${name}: ${err?.message}`)
-      }
+      return
     }
-  }, [stopCamera, handleCodeScanned, lastScanned])
-
-  useEffect(() => {
-    return () => stopCamera()
-  }, [stopCamera])
-
-  const switchToManual = useCallback(() => {
-    stopCamera()
-    setMode('manual')
-    setCameraError(null)
-    setTimeout(() => inputRef.current?.focus(), 100)
-  }, [stopCamera])
-
-  const handleLookup = useCallback(() => {
-    const trimmed = code.trim().toUpperCase()
-    if (!trimmed) return
+    setUnreadableTag(null)
     setLastAction(null)
-    setLastScanned(trimmed)
-    refetch()
-    setCode('')
-  }, [code, refetch])
+    // Re-scanning the tag already on screen must be a real second lookup:
+    // `linens` stays fresh for ten minutes, so the cached answer would be
+    // handed back and a failed lookup would never recover.
+    if (parsed === scanned) refetch()
+    else setScanned(parsed)
+    if (source === 'typed') setCode('')
+    if (source === 'camera') toast.info(`Scanned: ${parsed}`)
+  }, [scanned, refetch])
+
+  // The frame loop is created once when the camera starts but has to call the
+  // current handler, so it goes through a ref — a captured closure would keep
+  // looking up against state from the moment the camera was opened.
+  const lookupRef = useRef(lookup)
+  useEffect(() => { lookupRef.current = lookup })
+
+  const camera = useLinenCamera({
+    onCode: raw => lookupRef.current(raw, 'camera'),
+  })
+  const { active: cameraActive, starting: cameraStarting, error: cameraError } = camera
+
+  /** Flat view of the server's catalogue, in group order. Quick actions and the
+   * label above them are both built from this, so a state added on the backend
+   * appears here without a frontend release. */
+  const actions = (catalogue?.groups ?? []).flatMap(group =>
+    group.transitions.map(transition => ({ ...transition, groupLabel: group.label }))
+  )
 
   const handleQuickAction = (action: string) => {
     if (!linen?.id) return
-    const sa = SCAN_ACTIONS.find(a => a.value === action)
-    const label = sa?.label ?? action
+    const transition = actions.find(a => a.action === action)
+    const label = transition?.label ?? action
     scanMutation.mutate(
       { docId: linen.id, payload: { action } },
       {
         onSuccess: () => {
-          setLastAction({ label, color: sa?.color ?? '#DC2626' })
+          setLastAction({ label, color: CUSTODY_TINT[transition?.custody ?? 'exception'] })
           toast.success(`${label} — ${linen.linen_id}`)
           setTimeout(() => refetch(), 300)
         },
@@ -171,6 +85,8 @@ export default function LinenScanner() {
     )
   }
 
+  const notFound = isError && statusOf(error) === 404
+  const lookupError = isError && !notFound
   const stCfg = linen ? (LINEN_STATUS_CONFIG[linen.status as LinenStatus] ?? { label: linen.status, color: '#6B7280', bg: 'var(--surface-3)' }) : null
 
   return (
@@ -184,31 +100,23 @@ export default function LinenScanner() {
         <p className="text-sm text-[var(--text-muted)]">Scan a QR code or enter a linen ID manually</p>
       </div>
 
-      {/* Mode toggle */}
+      {/* Camera toggle */}
       <div className="flex gap-2">
         {!cameraActive ? (
-          <Button variant="outline" size="sm" onClick={startCamera} disabled={cameraStarting} className="gap-2">
+          <Button variant="outline" size="sm" onClick={() => camera.start()} disabled={cameraStarting} className="gap-2">
             {cameraStarting ? <Loader2 size={14} className="animate-spin" /> : <Camera size={14} />}
             {cameraStarting ? 'Starting...' : 'Start Camera'}
           </Button>
         ) : (
-          <Button variant="default" size="sm" onClick={switchToManual} className="gap-2">
+          <Button variant="default" size="sm" onClick={camera.stop} className="gap-2">
             <CameraOff size={14} /> Stop Camera
           </Button>
         )}
-        <Button
-          variant={mode === 'manual' && !cameraActive ? 'default' : 'outline'}
-          size="sm"
-          onClick={switchToManual}
-          className="gap-2"
-        >
-          <Keyboard size={14} /> Manual Entry
-        </Button>
       </div>
 
       {/* Camera container — video element is created here via DOM */}
       <div
-        ref={containerRef}
+        ref={camera.containerRef}
         className="relative bg-black rounded-xl overflow-hidden border border-[var(--border)]"
         style={{ display: cameraActive || cameraStarting ? 'block' : 'none', minHeight: 300 }}
       >
@@ -228,7 +136,7 @@ export default function LinenScanner() {
         )}
         {cameraActive && (
           <div className="absolute bottom-0 inset-x-0 p-2 text-center text-xs text-white/80 bg-black/40 z-10">
-            Point camera at a QR code — scanning is automatic
+            Point camera at a QR code — scanning is automatic, keep scanning the next tag
           </div>
         )}
       </div>
@@ -241,7 +149,7 @@ export default function LinenScanner() {
               <CameraOff size={18} className="text-red-600 flex-shrink-0 mt-0.5" />
               <div className="flex-1">
                 <p className="text-sm font-medium text-red-800">{cameraError}</p>
-                <Button size="sm" variant="outline" className="mt-2 text-red-700 border-red-300" onClick={startCamera}>
+                <Button size="sm" variant="outline" className="mt-2 text-red-700 border-red-300" onClick={() => camera.start()}>
                   <RefreshCw size={12} className="mr-1" /> Try Again
                 </Button>
               </div>
@@ -250,39 +158,91 @@ export default function LinenScanner() {
         </Card>
       )}
 
-      {/* Manual input */}
-      {mode === 'manual' && !cameraActive && (
-        <Card className="border border-[var(--border)] shadow-sm">
-          <CardContent className="p-5">
-            <div className="flex gap-3">
-              <div className="relative flex-1">
-                <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)]" />
-                <input
-                  ref={inputRef}
-                  value={code}
-                  onChange={e => setCode(e.target.value)}
-                  onKeyDown={e => e.key === 'Enter' && handleLookup()}
-                  placeholder="Enter linen ID (e.g. LL-7K4P92)"
-                  autoFocus
-                  className="w-full pl-10 pr-4 py-3 text-lg font-mono border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[#DC2626]/20 focus:border-[#DC2626] transition-colors"
-                />
+      {/* Manual input — always available, so a damaged tag or a blocked camera
+          never stops the operator */}
+      <Card className="border border-[var(--border)] shadow-sm">
+        <CardContent className="p-5">
+          <div className="flex gap-3">
+            <div className="relative flex-1">
+              <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)]" />
+              <input
+                ref={inputRef}
+                value={code}
+                onChange={e => setCode(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && lookup(e.currentTarget.value, 'typed')}
+                placeholder="Enter linen ID (e.g. LL-7K4P92)"
+                autoFocus
+                className="w-full pl-10 pr-4 py-3 text-lg font-mono border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[#DC2626]/20 focus:border-[#DC2626] transition-colors"
+              />
+            </div>
+            <Button onClick={() => lookup(code, 'typed')} disabled={!code.trim() || isFetching} className="px-6">
+              {isFetching ? <Loader2 size={16} className="animate-spin" /> : 'Lookup'}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Decoded, but not a linen tag */}
+      {unreadableTag && (
+        <Card className="border border-amber-200 bg-amber-50 shadow-sm">
+          <CardContent className="p-4">
+            <div className="flex items-start gap-3">
+              <AlertTriangle size={18} className="text-amber-600 flex-shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <p className="text-sm font-medium text-amber-800">
+                  That tag carries <span className="font-mono font-semibold">{unreadableTag || 'nothing readable'}</span>, which is not a linen ID.
+                </p>
+                <p className="text-xs text-amber-700 mt-1">
+                  A LoveLaundry linen tag reads <span className="font-mono">LL-XXXXXX</span>. Type the ID printed under the QR code to look it up.
+                </p>
               </div>
-              <Button onClick={handleLookup} disabled={!code.trim() || isFetching} className="px-6">
-                {isFetching ? <Loader2 size={16} className="animate-spin" /> : 'Lookup'}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Looking up */}
+      {isFetching && !linen && (
+        <Card className="border border-[var(--border)] shadow-sm">
+          <CardContent className="p-8 text-center">
+            <div className="flex items-center justify-center gap-2 text-sm text-[var(--text-muted)]">
+              <Loader2 size={16} className="animate-spin" /> Looking up {scanned}…
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Tag is valid but the service could not be asked */}
+      {lookupError && (
+        <Card className="border border-red-200 bg-red-50 shadow-sm">
+          <CardContent className="p-6 text-center">
+            <p className="text-sm font-medium text-red-800">
+              Could not check {scanned} — {statusOf(error) ? `the linen service answered ${statusOf(error)}` : (error as Error)?.message || 'it could not be reached'}
+            </p>
+            <p className="text-xs text-red-700 mt-1">The tag is not the problem. Try again, or check your connection.</p>
+            <div className="mt-3 flex gap-2 justify-center">
+              <Button variant="outline" size="sm" onClick={() => refetch()}>
+                <RefreshCw size={12} className="mr-1" /> Try Again
               </Button>
             </div>
           </CardContent>
         </Card>
       )}
 
-      {/* Not found */}
-      {!linen && lastScanned && !isFetching && (
+      {/* Not registered */}
+      {notFound && (
         <Card className="border border-[var(--border)] shadow-sm">
           <CardContent className="p-8 text-center">
-            <p className="text-sm text-[var(--text-muted)]">No linen found with ID: <span className="font-mono font-semibold">{lastScanned}</span></p>
+            <p className="text-sm text-[var(--text-muted)]">No linen is registered under <span className="font-mono font-semibold">{scanned}</span> in this laundry.</p>
+            <p className="text-xs text-[var(--text-muted)] mt-2">
+              Either the tag has not been generated here yet, or it belongs to a different laundry — a tag printed by another system will not resolve.
+            </p>
             <div className="mt-3 flex gap-2 justify-center">
-              <Button variant="outline" size="sm" onClick={() => { setLastScanned(null); inputRef.current?.focus() }}>
-                Clear & Try Again
+              <Button variant="outline" size="sm" onClick={() => refetch()}>
+                <RefreshCw size={12} className="mr-1" /> Scan Again
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => { setScanned(null); setUnreadableTag(null); inputRef.current?.focus() }}>
+                Clear &amp; Try Again
               </Button>
               <Link to="/linen/tags"><Button variant="outline" size="sm">Generate Tags</Button></Link>
             </div>
@@ -346,22 +306,41 @@ export default function LinenScanner() {
             <Card className="lg:w-72 border border-[var(--border)] shadow-sm">
               <CardContent className="p-5">
                 <h2 className="text-[11px] font-semibold text-[var(--text-muted)] uppercase tracking-wide mb-3">Quick Actions</h2>
-                <div className="space-y-1.5">
-                  {SCAN_ACTIONS.map(sa => (
-                    <Button
-                      key={sa.value}
-                      variant="outline"
-                      size="sm"
-                      className="w-full justify-start text-xs h-8 focus:ring-2 focus:ring-[#DC2626]/20"
-                      style={{ borderColor: sa.color + '30', color: sa.color }}
-                      onClick={() => handleQuickAction(sa.value)}
-                      disabled={scanMutation.isPending}
-                    >
-                      {scanMutation.isPending ? <Loader2 size={12} className="animate-spin mr-2" /> : null}
-                      {sa.label}
+
+                {actions.length === 0 && (
+                  <div className="text-xs text-[var(--text-muted)]">
+                    <AlertTriangle size={14} className="inline mr-1 text-amber-600" />
+                    The linen service has not returned the available states.
+                    <Button variant="outline" size="sm" className="mt-2 w-full text-xs" onClick={() => window.location.reload()}>
+                      <RefreshCw size={12} className="mr-1" /> Reload
                     </Button>
-                  ))}
-                </div>
+                  </div>
+                )}
+
+                {(catalogue?.groups ?? []).map(group => (
+                  <div key={group.custody} className="mb-3 last:mb-0">
+                    <p className="text-[10px] font-semibold text-[var(--text-muted)] uppercase tracking-wide mb-1.5">{group.label}</p>
+                    <div className="space-y-1.5">
+                      {group.transitions.map(transition => (
+                        <Button
+                          key={transition.action}
+                          variant="outline"
+                          size="sm"
+                          className="w-full justify-start text-xs h-8 focus:ring-2 focus:ring-[#DC2626]/20"
+                          style={{
+                            borderColor: CUSTODY_TINT[transition.custody] + '30',
+                            color: CUSTODY_TINT[transition.custody],
+                          }}
+                          onClick={() => handleQuickAction(transition.action)}
+                          disabled={scanMutation.isPending}
+                        >
+                          {scanMutation.isPending ? <Loader2 size={12} className="animate-spin mr-2" /> : null}
+                          {transition.label}
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+                ))}
               </CardContent>
             </Card>
           </div>

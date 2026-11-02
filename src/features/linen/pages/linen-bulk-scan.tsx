@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react'
-import { useBulkScan } from '../hooks/useLinen'
-import { SCAN_ACTIONS } from '../../../types/linen'
+import { useBulkScan, useLinenTransitions } from '../hooks/useLinen'
+import { parseLinenCode } from '../lib/linen-code'
+import { CUSTODY_TINT, flattenTransitions } from '../lib/linen-custody'
 import { Card, CardContent } from '../../../components/ui/card'
 import { Button } from '../../../components/ui/button'
 import { Breadcrumb } from '../../../components/ui/breadcrumb'
@@ -12,31 +13,41 @@ export default function LinenBulkScan() {
   const [action, setAction] = useState('receive')
   const [location, setLocation] = useState('')
   const [skipped, setSkipped] = useState(0)
+  const [unreadable, setUnreadable] = useState(0)
   const [sessionTotal, setSessionTotal] = useState(0)
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const bulkMutation = useBulkScan()
-  const selectedAction = SCAN_ACTIONS.find(a => a.value === action)
+  // The action list is the server's, so a state added on the backend appears
+  // here without a frontend release.
+  const { data: catalogue } = useLinenTransitions()
+  const actions = flattenTransitions(catalogue?.groups)
+  const selectedAction = actions.find(a => a.action === action)
 
   const addCode = () => {
-    const raw = input.trim().toUpperCase()
+    const raw = input.trim()
     if (!raw) return
-    const parts = raw.split(/[\n\s]+/).filter(Boolean)
-    const fresh = parts.filter(c => !codes.includes(c))
+    // A scanner or a pasted list can deliver deep links and labels rather than
+    // bare IDs; each entry is reduced to its linen code, and anything that is
+    // not one is counted instead of being queued as garbage the backend rejects.
+    const parts = raw.split(/[\n\s]+/).filter(Boolean).map(parseLinenCode)
+    const readable = parts.filter((c): c is string => c !== null)
+    setUnreadable(parts.length - readable.length)
+    const fresh = [...new Set(readable)].filter(c => !codes.includes(c))
     setCodes(prev => [...prev, ...fresh])
-    setSkipped(parts.length - fresh.length)
+    setSkipped(readable.length - fresh.length)
     setInput('')
     inputRef.current?.focus()
   }
 
   const removeCode = (code: string) => setCodes(prev => prev.filter(c => c !== code))
-  const clearAll = () => { setCodes([]); setInput(''); setSkipped(0) }
+  const clearAll = () => { setCodes([]); setInput(''); setSkipped(0); setUnreadable(0) }
 
   const handleBulkScan = () => {
     if (!codes.length) return
     setSessionTotal(codes.length)
     bulkMutation.mutate(
       { codes, action, location: location || undefined },
-      { onSuccess: () => { setCodes([]); setSkipped(0) } }
+      { onSuccess: () => { setCodes([]); setSkipped(0); setUnreadable(0) } }
     )
   }
 
@@ -64,12 +75,18 @@ export default function LinenBulkScan() {
                     onChange={e => setAction(e.target.value)}
                     className="flex-1 px-3 py-2 text-sm border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[#DC2626]/20 focus:border-[#DC2626] transition-colors"
                   >
-                    {SCAN_ACTIONS.map(sa => <option key={sa.value} value={sa.value}>{sa.label}</option>)}
+                    {(catalogue?.groups ?? []).map(group => (
+                      <optgroup key={group.custody} label={group.label}>
+                        {group.transitions.map(transition => (
+                          <option key={transition.action} value={transition.action}>{transition.label}</option>
+                        ))}
+                      </optgroup>
+                    ))}
                   </select>
                   {selectedAction && (
                     <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold whitespace-nowrap"
-                      style={{ color: selectedAction.color, backgroundColor: selectedAction.color + '14' }}>
-                      <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: selectedAction.color }} />
+                      style={{ color: CUSTODY_TINT[selectedAction.custody], backgroundColor: CUSTODY_TINT[selectedAction.custody] + '14' }}>
+                      <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: CUSTODY_TINT[selectedAction.custody] }} />
                       {selectedAction.label}
                     </span>
                   )}
@@ -109,6 +126,11 @@ export default function LinenBulkScan() {
                       <AlertTriangle size={12} /> {skipped} duplicate(s) skipped
                     </span>
                   )}
+                  {unreadable > 0 && (
+                    <span className="inline-flex items-center gap-1 text-[11px] text-amber-600">
+                      <AlertTriangle size={12} /> {unreadable} not a linen ID
+                    </span>
+                  )}
                 </div>
               </div>
             </CardContent>
@@ -133,7 +155,7 @@ export default function LinenBulkScan() {
               <div className="flex items-center justify-between mb-2">
                 <p className="text-[11px] font-semibold text-[var(--text-muted)] uppercase tracking-wide">Queued ({codes.length})</p>
                 {selectedAction && (
-                  <span className="text-[10px] font-semibold uppercase tracking-wide" style={{ color: selectedAction.color }}>{selectedAction.label}</span>
+                  <span className="text-[10px] font-semibold uppercase tracking-wide" style={{ color: CUSTODY_TINT[selectedAction.custody] }}>{selectedAction.label}</span>
                 )}
               </div>
               {codes.length === 0 ? (

@@ -115,6 +115,35 @@ export interface LinenTagGenerate {
   department?: string
 }
 
+/**
+ * One scan action exactly as `GET /linens/transitions` describes it. The
+ * server owns the status vocabulary, so the state picker is built from these
+ * rows rather than from a list kept in this app (which would drift the moment
+ * the backend gained or renamed a state).
+ */
+export interface LinenTransition {
+  action: string
+  label: string
+  to_status: string
+  to_status_label: string
+  custody: LinenCustody
+  terminal: boolean
+}
+
+export type LinenCustody = 'hotel' | 'laundry' | 'exception'
+
+export interface LinenTransitionGroup {
+  custody: LinenCustody
+  label: string
+  description: string
+  transitions: LinenTransition[]
+}
+
+export interface LinenTransitionList {
+  groups: LinenTransitionGroup[]
+  statuses: LinenStatus[]
+}
+
 export const LINEN_STATUS_CONFIG: Record<LinenStatus, { label: string; color: string; bg: string }> = {
   IN_STOCK:    { label: 'In Stock',    color: '#16A34A', bg: '#DCFCE7' },
   AT_CLIENT:   { label: 'At Client',   color: '#2563EB', bg: '#DBEAFE' },
@@ -152,15 +181,6 @@ export const LINEN_CONDITIONS: { value: string; label: string }[] = [
   { value: 'DAMAGED', label: 'Damaged' },
 ]
 
-export const SCAN_ACTIONS: { value: string; label: string; color: string }[] = [
-  { value: 'collect', label: 'Collect', color: '#9333EA' },
-  { value: 'receive', label: 'Receive', color: '#EA580C' },
-  { value: 'start_wash', label: 'Start Wash', color: '#0891B2' },
-  { value: 'complete_wash', label: 'Complete Wash', color: '#D97706' },
-  { value: 'press', label: 'Press', color: '#7C3AED' },
-  { value: 'ready', label: 'Ready', color: '#16A34A' },
-  { value: 'deliver', label: 'Deliver', color: '#059669' },
-  { value: 'mark_missing', label: 'Mark Missing', color: '#DC2626' },
-  { value: 'mark_damaged', label: 'Mark Damaged', color: '#DC2626' },
-  { value: 'retire', label: 'Retire', color: '#6B7280' },
-]
+// There is deliberately no list of scan actions here. `GET /linens/transitions`
+// is the only source: a copy in this file would let the picker offer states the
+// linen service has already changed the meaning of.

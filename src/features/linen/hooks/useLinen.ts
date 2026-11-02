@@ -11,6 +11,10 @@ export const linenKeys = {
   byCode: (code: string) => [...linenKeys.all, 'code', code] as const,
   events: (id: string) => [...linenKeys.all, id, 'events'] as const,
   stats: () => [...linenKeys.all, 'stats'] as const,
+  // Deliberately outside `linenKeys.all`: the invalidation that a scan triggers
+  // for linen data must not refetch the state-machine description, which cannot
+  // change because a linen was scanned.
+  transitions: () => ['linen-transitions'] as const,
 }
 
 export function useLinens(params: LinenListParams = {}) {
@@ -28,6 +32,12 @@ export function useLinen(docId?: string) {
   })
 }
 
+/**
+ * Resolves a scanned or typed tag. `linens` is cached for ten minutes, so a
+ * re-scan of the tag already on screen has to be answered by `refetch()` —
+ * otherwise the operator gets a stale status instead of the lookup they asked
+ * for, and a lookup that failed the first time never recovers.
+ */
 export function useLinenByCode(code?: string) {
   return useQuery({
     queryKey: linenKeys.byCode(code ?? ''),
@@ -48,6 +58,20 @@ export function useLinenStats() {
   return useQuery({
     queryKey: linenKeys.stats(),
     queryFn: () => linenService.getLinenStats(),
+  })
+}
+
+/**
+ * The scan actions the server accepts, grouped by the side that performs them.
+ * Cached hard because it describes the state machine, not the tenant's data: an
+ * operator opens the picker once per shift, and a scan never changes it.
+ */
+export function useLinenTransitions() {
+  return useQuery({
+    queryKey: linenKeys.transitions(),
+    queryFn: () => linenService.getTransitions(),
+    staleTime: 3_600_000,
+    gcTime: 24 * 3_600_000,
   })
 }
 

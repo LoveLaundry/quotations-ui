@@ -3,8 +3,9 @@ import { QRCodeSVG } from 'qrcode.react'
 import JsBarcode from 'jsbarcode'
 import { useRef, useEffect, useState } from 'react'
 import { Loader2 } from 'lucide-react'
-import { useLinen, useLinenEvents, useScanLinen } from '../hooks/useLinen'
-import { LINEN_STATUS_CONFIG, SCAN_ACTIONS, type LinenStatus } from '../../../types/linen'
+import { useLinen, useLinenEvents, useLinenTransitions, useScanLinen } from '../hooks/useLinen'
+import { CUSTODY_TINT, flattenTransitions } from '../lib/linen-custody'
+import { LINEN_STATUS_CONFIG, type LinenStatus } from '../../../types/linen'
 import { Card, CardContent } from '../../../components/ui/card'
 import { Button } from '../../../components/ui/button'
 import { Skeleton } from '../../../components/ui/skeleton'
@@ -17,6 +18,10 @@ export default function LinenProfile() {
   const { id } = useParams<{ id: string }>()
   const { data: linen, isLoading, isError } = useLinen(id)
   const { data: events } = useLinenEvents(id)
+  // Actions come from the linen service, so this list cannot drift from the
+  // state machine that performs the transition.
+  const { data: catalogue } = useLinenTransitions()
+  const actions = flattenTransitions(catalogue?.groups)
   const scanMutation = useScanLinen()
   const [pendingAction, setPendingAction] = useState<string | null>(null)
   const barcodeRef = useRef<SVGSVGElement>(null)
@@ -53,7 +58,7 @@ export default function LinenProfile() {
       { docId: id, payload: { action } },
       {
         onSuccess: () => {
-          const label = SCAN_ACTIONS.find(a => a.value === action)?.label ?? action
+          const label = actions.find(a => a.action === action)?.label ?? action
           toast.success(`${label} — ${linen.linen_id}`)
         },
         onSettled: () => setPendingAction(null),
@@ -100,18 +105,18 @@ export default function LinenProfile() {
             <CardContent className="p-4">
               <p className="text-[11px] font-semibold text-[var(--text-muted)] uppercase tracking-wide mb-3">Quick Actions</p>
               <div className="grid grid-cols-2 gap-2">
-                {SCAN_ACTIONS.map(sa => (
+                {actions.map(transition => (
                   <Button
-                    key={sa.value}
+                    key={transition.action}
                     variant="outline"
                     size="sm"
                     className="text-xs justify-start h-8 focus:ring-2 focus:ring-[#DC2626]/20"
-                    style={{ borderColor: sa.color + '30', color: sa.color }}
-                    onClick={() => handleQuickAction(sa.value)}
+                    style={{ borderColor: CUSTODY_TINT[transition.custody] + '30', color: CUSTODY_TINT[transition.custody] }}
+                    onClick={() => handleQuickAction(transition.action)}
                     disabled={scanMutation.isPending}
                   >
-                    {pendingAction === sa.value && <Loader2 size={12} className="animate-spin mr-1.5" />}
-                    {sa.label}
+                    {pendingAction === transition.action && <Loader2 size={12} className="animate-spin mr-1.5" />}
+                    {transition.label}
                   </Button>
                 ))}
               </div>

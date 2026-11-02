@@ -51,6 +51,7 @@ const pageTitles: Record<string, string> = {
   '/linen': 'Linen Dashboard',
   '/linen/inventory': 'Linen Inventory',
   '/linen/scanner': 'Scan Linen',
+  '/linen/session': 'Scan Session',
   '/linen/bulk-scan': 'Bulk Scan',
   '/linen/tags': 'Tag Generator',
   '/linen/gate-pass': 'Gate Pass (Camelot)',
