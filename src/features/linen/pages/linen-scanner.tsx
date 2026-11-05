@@ -1,6 +1,8 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useLinenByCode, useLinenTransitions, useScanLinen } from '../hooks/useLinen'
+import { useLinenChannel } from '../realtime/useLinenRealtime'
+import { LinenLiveBadge } from '../components/linen-live-badge'
 import { useLinenCamera } from '../hooks/useLinenCamera'
 import { parseLinenCode } from '../lib/linen-code'
 import { CUSTODY_TINT } from '../lib/linen-custody'
@@ -25,6 +27,9 @@ export default function LinenScanner() {
   const { data: linen, refetch, error, isError, isFetching } = useLinenByCode(scanned ?? undefined)
   const { data: catalogue } = useLinenTransitions()
   const scanMutation = useScanLinen()
+  // Follow the tag that is on screen. Another operator scanning the same linen
+  // (or the pressing station moving it on) updates this card in place.
+  const live = useLinenChannel(scanned)
 
   const lookup = useCallback((raw: string, source: 'camera' | 'typed') => {
     const parsed = parseLinenCode(raw)
@@ -263,6 +268,7 @@ export default function LinenScanner() {
                     <CheckCircle size={10} /> {lastAction.label} applied
                   </span>
                 )}
+                <LinenLiveBadge status={live.status} />
               </div>
               <p className="text-xs text-[var(--text-muted)] truncate">{linen.linen_id} · {linen.item_type} · {linen.client_name}</p>
             </div>

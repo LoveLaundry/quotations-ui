@@ -4,6 +4,9 @@ import JsBarcode from 'jsbarcode'
 import { useRef, useEffect, useState } from 'react'
 import { Loader2 } from 'lucide-react'
 import { useLinen, useLinenEvents, useLinenTransitions, useScanLinen } from '../hooks/useLinen'
+import { useLinenChannel } from '../realtime/useLinenRealtime'
+import { LinenLiveBadge } from '../components/linen-live-badge'
+import { useAuth } from '../../../context/AuthContext'
 import { CUSTODY_TINT, flattenTransitions } from '../lib/linen-custody'
 import { LINEN_STATUS_CONFIG, type LinenStatus } from '../../../types/linen'
 import { Card, CardContent } from '../../../components/ui/card'
@@ -16,7 +19,12 @@ import { toast } from 'sonner'
 
 export default function LinenProfile() {
   const { id } = useParams<{ id: string }>()
+  const { user } = useAuth()
   const { data: linen, isLoading, isError } = useLinen(id)
+  // This screen sits on one tag, so it follows that tag's own channel: the
+  // status shown here is pushed the moment anyone scans it, instead of waiting
+  // for a refetch or a full reload.
+  const live = useLinenChannel(linen?.linen_id)
   const { data: events } = useLinenEvents(id)
   // Actions come from the linen service, so this list cannot drift from the
   // state machine that performs the transition.
@@ -50,6 +58,18 @@ export default function LinenProfile() {
   if (isError || !linen) return <ErrorState />
 
   const stCfg = LINEN_STATUS_CONFIG[linen.status as LinenStatus] ?? { label: linen.status, color: '#6B7280', bg: 'var(--surface-3)' }
+
+  // Someone else moving this linen while it is on screen is worth saying out
+  // loud — the status changes under the reader without them touching anything.
+  // The token may identify the actor by either id, and this session knows the
+  // user by both — comparing against both is what keeps your own scan from
+  // being reported to you as someone else's.
+  const actor = live.lastEvent?.actor
+  const mine = new Set([user?.id, user?.auth_id].filter(Boolean))
+  const lastUpdateByOther =
+    actor?.user_id && !mine.has(actor.user_id)
+      ? { name: actor.name, at: live.lastEvent?.at ?? '' }
+      : null
 
   const handleQuickAction = (action: string) => {
     if (!id) return
@@ -91,12 +111,20 @@ export default function LinenProfile() {
           {/* Status */}
           <Card className="border border-[var(--border)] shadow-sm">
             <CardContent className="p-4">
-              <p className="text-[11px] font-semibold text-[var(--text-muted)] uppercase tracking-wide mb-2">Current Status</p>
+              <div className="flex items-center justify-between gap-2 mb-2">
+                <p className="text-[11px] font-semibold text-[var(--text-muted)] uppercase tracking-wide">Current Status</p>
+                <LinenLiveBadge status={live.status} />
+              </div>
               <div className="flex items-center gap-2.5">
                 <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: stCfg.color }} />
                 <span className="text-lg font-bold" style={{ color: stCfg.color }}>{stCfg.label}</span>
               </div>
               {linen.location && <p className="text-xs text-[var(--text-muted)] mt-1.5">Location: {linen.location}</p>}
+              {lastUpdateByOther && (
+                <p className="text-[11px] text-[var(--text-muted)] mt-1.5">
+                  Updated by {lastUpdateByOther.name || 'another user'} at {formatDate(lastUpdateByOther.at)}
+                </p>
+              )}
             </CardContent>
           </Card>
 

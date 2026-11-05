@@ -2,6 +2,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '../../../context/AuthContext'
 import { useLinenTransitions, useScanLinen, linenKeys } from '../hooks/useLinen'
+import { useLinenLiveStatus } from '../realtime/useLinenRealtime'
+import { LinenLiveBadge } from '../components/linen-live-badge'
 import { useLinenCamera } from '../hooks/useLinenCamera'
 import { linenService } from '../services/linen.service'
 import { parseLinenCode } from '../lib/linen-code'
@@ -73,6 +75,10 @@ export default function LinenSessionPage() {
   const operator = user?.user_name ?? 'unknown'
 
   const { data: catalogue, isLoading: catalogueLoading, error: catalogueError } = useLinenTransitions()
+  // The laundry-wide channel is what the app-level sync already follows; this
+  // only reports whether the push is live, so the operator can trust that the
+  // counts and the history are being updated as the shift scans.
+  const liveStatus = useLinenLiveStatus()
 
   const [target, setTarget] = useState<LinenTransition | null>(null)
   const [location, setLocation] = useState('')
@@ -409,6 +415,7 @@ export default function LinenSessionPage() {
         <span className="inline-flex items-center gap-1"><UserIcon size={11} /> {session.operator}</span>
         <span className="inline-flex items-center gap-1"><Clock size={11} /> started {timeOfDay(session.startedAt)}</span>
         <Badge tone="info" size="xs" dot>Scanning</Badge>
+        <LinenLiveBadge status={liveStatus} />
       </div>
 
       {camera.error && (
