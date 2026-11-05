@@ -1,4 +1,6 @@
 import { useLinenStats } from '../hooks/useLinen'
+import { useLinenLiveStatus } from '../realtime/useLinenRealtime'
+import { LinenLiveBadge } from '../components/linen-live-badge'
 import { LINEN_STATUS_CONFIG, type LinenStatus } from '../../../types/linen'
 import { Card, CardContent } from '../../../components/ui/card'
 import { StatCard } from '../../../components/ui/stat-card'
@@ -15,6 +17,7 @@ const STATUS_ORDER: LinenStatus[] = [
 
 export default function LinenDashboard() {
   const { data: stats, isLoading, isError } = useLinenStats()
+  const liveStatus = useLinenLiveStatus()
 
   if (isLoading) return (
     <div className="space-y-6">
@@ -35,9 +38,12 @@ export default function LinenDashboard() {
       <Breadcrumb items={[{ label: 'Linen' }, { label: 'Dashboard' }]} />
 
       <div>
-        <h1 className="text-2xl font-bold text-[var(--text-primary)]" style={{ fontFamily: '"Spectral", Georgia, serif' }}>
-          Linen Tracking
-        </h1>
+        <div className="flex items-center gap-2">
+          <h1 className="text-2xl font-bold text-[var(--text-primary)]" style={{ fontFamily: '"Spectral", Georgia, serif' }}>
+            Linen Tracking
+          </h1>
+          <LinenLiveBadge status={liveStatus} />
+        </div>
         <p className="text-sm text-[var(--text-muted)] mt-1">Overview of all linen assets across clients and statuses</p>
       </div>
 

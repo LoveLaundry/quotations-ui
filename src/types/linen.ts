@@ -50,6 +50,58 @@ export interface LinenListResponse {
   total: number
 }
 
+/**
+ * The post-change row carried by a socket event.
+ *
+ * Deliberately narrower than `Linen`: it holds only the fields a screen can
+ * render differently after a scan, so one event stays small enough to ship on
+ * every tag at a busy station instead of triggering a refetch.
+ */
+export interface LinenSnapshot {
+  id: string
+  linen_id: string
+  status: LinenStatus | string
+  previous_status: string | null
+  category?: string
+  item_type?: string
+  client_name?: string
+  condition?: string
+  location?: string | null
+  wash_count?: number
+  last_washed_date?: string | null
+  last_scanned_date?: string | null
+  retirement_date?: string | null
+  updated_at?: string | null
+}
+
+export type LinenRealtimeEventName =
+  | 'scan'
+  | 'create'
+  | 'create_bulk'
+  | 'generate_tags'
+  | 'update'
+  | 'delete'
+  | 'bulk_scan'
+
+/** One frame from `/ws/linen` (`type: "linen.event"`). */
+export interface LinenRealtimeEvent {
+  type: 'linen.event'
+  event: LinenRealtimeEventName
+  laundry_id: string
+  clock: number
+  at: string
+  action?: string | null
+  actor?: { user_id: string; name: string; role: string } | null
+  count?: number | null
+  linen?: LinenSnapshot | null
+  linen_ids?: string[]
+}
+
+/** `live` means the socket is carrying events; `fallback` means the app is
+ *  back on the live-clock poll because a socket cannot be held open (a
+ *  serverless deployment rejects the upgrade outright). */
+export type LinenLiveStatus = 'idle' | 'connecting' | 'live' | 'fallback'
+
 export interface LinenEventListResponse {
   items: LinenEvent[]
   total: number
