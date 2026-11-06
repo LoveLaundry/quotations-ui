@@ -255,8 +255,8 @@ export default function TodaySheetPage() {
                             onChange={e => setDel(c.client_name, d.deliveries.map((x, i) => i === idx ? { ...x, specification: e.target.value } : x))} />
                           <input className={`${inputClass} text-right`} type="number" min="0" step="0.01" placeholder="Qty" value={l.quantity}
                             onChange={e => setDel(c.client_name, d.deliveries.map((x, i) => i === idx ? { ...x, quantity: e.target.value } : x))} />
-                          <select className={inputClass} value={l.gate_pass_id} title="Source pass — AUTO uses oldest stock first (FIFO)"
-                            onChange={e => setDel(c.client_name, d.deliveries.map((x, i) => i === idx ? { ...x, gate_pass_id: e.target.value } : x))}>
+                          <select className={inputClass} value={l.gate_pass_id || 'AUTO'} title="Source pass — AUTO uses oldest stock first (FIFO)"
+                            onChange={e => setDel(c.client_name, d.deliveries.map((x, i) => i === idx ? { ...x, gate_pass_id: e.target.value === 'AUTO' ? '' : e.target.value } : x))}>
                             <option value="AUTO">AUTO · FIFO</option>
                             {passes.map(p => (
                               <option key={p.gate_pass_id} value={p.gate_pass_id}>
