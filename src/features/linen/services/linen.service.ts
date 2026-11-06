@@ -66,6 +66,26 @@ async function getTransitions(): Promise<LinenTransitionList> {
   return response.data
 }
 
+export interface ScanActivity {
+  total_scans: number
+  by_action: Record<string, number>
+  by_status: Record<string, number>
+  by_day: Record<string, number>
+  recent: Array<{
+    linen_id?: string
+    action?: string
+    from_status?: string
+    to_status?: string
+    user?: string
+    timestamp?: string | null
+  }>
+}
+
+async function getScanActivity(params?: { date_from?: string; date_to?: string }): Promise<ScanActivity> {
+  const response = await billsApi.get<ScanActivity>('/linens/reports/scan-activity', { params })
+  return response.data
+}
+
 async function deleteLinen(docId: string): Promise<void> {
   await billsApi.delete(`/linens/${docId}`)
 }
@@ -82,5 +102,6 @@ export const linenService = {
   getLinenStats,
   getLiveClock,
   getTransitions,
+  getScanActivity,
   deleteLinen,
 }

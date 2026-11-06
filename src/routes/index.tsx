@@ -15,6 +15,7 @@ import ErrorPage from '../features/quotations/pages/error-page'
 
 const LoginPage = lazy(() => import('../features/auth/pages/login-page'))
 const GuestQuotationsPage = lazy(() => import('../features/quotations/pages/guest-quotations-page'))
+const LinenTrackPage = lazy(() => import('../features/linen/pages/linen-track-page'))
 
 // Daily Operations (landing page)
 const TodayPage = lazy(() => import('../features/today/pages/today-page'))
@@ -124,6 +125,11 @@ export const router = createBrowserRouter([
   {
     path: '/guest/shop',
     element: <GuestQuotationsPage />,
+    errorElement: <ErrorPage />,
+  },
+  {
+    path: '/track/linen/:code',
+    element: <LinenTrackPage />,
     errorElement: <ErrorPage />,
   },
 

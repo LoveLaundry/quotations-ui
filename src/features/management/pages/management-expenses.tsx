@@ -83,6 +83,11 @@ export default function ManagementExpenses() {
   })
 
   const totalExpenses = summary.reduce((s: number, item: any) => s + (item.total || 0), 0)
+
+  const { data: byClient = [] } = useQuery({
+    queryKey: ['mgmt-expense-by-client', startDate, endDate],
+    queryFn: () => expensesApi.summary({ start_date: startDate, end_date: endDate, group_by: 'client' }).then(r => r.data),
+  })
   const openExpenseForm = (expense: any = null) => {
     setEditing(expense)
     setCategoryId(expense?.category_id || defaults.get('exp_category') || '')
@@ -191,6 +196,19 @@ export default function ManagementExpenses() {
         ))}
       </div>
 
+      {byClient.length > 0 && (
+        <div className="bg-white dark:bg-gray-800 rounded-xl border p-4">
+          <p className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">Spend by shop / allocation</p>
+          <div className="flex flex-wrap gap-2">
+            {byClient.map((row: any) => (
+              <span key={row.client} className="text-xs px-2.5 py-1 rounded-full bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300">
+                {row.client}: LKR {Number(row.total).toLocaleString()} ({row.count})
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
       {_isLoading ? (
         <LoadingSpinner label="Loading expenses..." className="py-12" />
       ) : (
@@ -262,6 +280,13 @@ export default function ManagementExpenses() {
               )}
               <input name="amount" type="number" step="0.01" defaultValue={editing?.amount} placeholder="Amount *" required className="w-full px-3 py-2 border rounded-lg text-sm" />
               <input name="description" defaultValue={editing?.description} placeholder="Description" className="w-full px-3 py-2 border rounded-lg text-sm" />
+              <div className="grid grid-cols-2 gap-3">
+                <input name="client_name" defaultValue={editing?.client_name || ''} placeholder="Shop / hotel (blank = shared)" className="px-3 py-2 border rounded-lg text-sm" />
+                <select name="allocation" defaultValue={editing?.allocation || 'SHARED'} className="px-3 py-2 border rounded-lg text-sm">
+                  <option value="SHARED">Shared cost</option>
+                  <option value="SHOP">Shop-allocated</option>
+                </select>
+              </div>
               <div className="grid grid-cols-2 gap-3">
                 <select name="payment_method" defaultValue={editing?.payment_method || defaults.get('exp_method') || 'CASH'} className="px-3 py-2 border rounded-lg text-sm">
                   {PAYMENT_METHODS.map(m => <option key={m} value={m}>{m.replace('_', ' ')}</option>)}
