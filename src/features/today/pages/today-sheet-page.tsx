@@ -10,7 +10,7 @@ import { todaySheetApi, type SheetClient, type SheetCommitResult } from '../serv
 import { expensesApi } from '../../management/api/management-api'
 import { todayISO } from '../../../lib/time'
 
-const inputClass = 'h-9 w-full rounded-lg border border-[#E4E7EC] bg-white px-2 text-[13px] outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/10 transition'
+const inputClass = 'h-8 w-full rounded-md border border-[#E4E7EC] bg-white px-2 text-[12px] outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/10 transition'
 const fmtQty = (v: number) => (Number(v) || 0).toLocaleString('en-LK', { maximumFractionDigits: 2 })
 
 interface RecvLine { key: string; item_name: string; specification: string; quantity: string; unit: string }
@@ -22,10 +22,9 @@ const recv = (item_name = '', specification = ''): RecvLine => ({ key: uid(), it
 const del = (item_name = '', specification = '', gate_pass_id = ''): DelLine => ({ key: uid(), item_name, specification, quantity: '', gate_pass_id })
 const exp = (): ExpLine => ({ key: uid(), category_name: '', amount: '', client_name: '' })
 
-interface ClientDraft {
-  receives: RecvLine[]
-  deliveries: DelLine[]
-}
+interface ClientDraft { receives: RecvLine[]; deliveries: DelLine[] }
+
+const cellLabel = 'text-[10px] font-semibold uppercase tracking-wide text-[#98A2B3]'
 
 export default function TodaySheetPage() {
   const date = todayISO()
@@ -44,7 +43,8 @@ export default function TodaySheetPage() {
   const [expenses, setExpenses] = useState<ExpLine[]>([exp()])
   const [results, setResults] = useState<SheetCommitResult[] | null>(null)
 
-  const clients = data?.clients ?? []
+  const clients = useMemo(() => data?.clients ?? [], [data])
+
   const draftFor = (c: SheetClient): ClientDraft =>
     drafts[c.client_name] ?? {
       receives: [],
@@ -53,8 +53,11 @@ export default function TodaySheetPage() {
       ),
     }
 
-  const patch = (name: string, fn: (d: ClientDraft) => ClientDraft) =>
-    setDrafts(prev => ({ ...prev, [name]: fn(draftFor(clients.find(c => c.client_name === name) as SheetClient)) }))
+  const patch = (name: string, fn: (d: ClientDraft) => ClientDraft) => {
+    const c = clients.find(x => x.client_name === name)
+    if (!c) return
+    setDrafts(prev => ({ ...prev, [name]: fn(draftFor(c)) }))
+  }
 
   const setRecv = (name: string, lines: RecvLine[]) => patch(name, d => ({ ...d, receives: lines }))
   const setDel = (name: string, lines: DelLine[]) => patch(name, d => ({ ...d, deliveries: lines }))
@@ -72,7 +75,6 @@ export default function TodaySheetPage() {
             item_name: l.item_name.trim(),
             specification: l.specification || undefined,
             quantity: Number(l.quantity),
-            // 'AUTO'/empty -> FIFO auto-assign on the server
             gate_pass_id: l.gate_pass_id && l.gate_pass_id !== 'AUTO' ? l.gate_pass_id : undefined,
           }))
         return lines.length ? [{ client_name: c.client_name, items: lines }] : []
@@ -114,8 +116,7 @@ export default function TodaySheetPage() {
     }) || expenses.some(e => e.category_name.trim() && Number(e.amount) > 0),
     [clients, drafts, expenses])
 
-  const passOptions = (c: SheetClient) =>
-    c.pending_passes.filter(p => p.total_available_qty > 0)
+  const passOptions = (c: SheetClient) => c.pending_passes.filter(p => p.total_available_qty > 0)
 
   const itemNames = useMemo(() => {
     const s = new Set<string>()
@@ -126,21 +127,32 @@ export default function TodaySheetPage() {
     return [...s].sort()
   }, [clients])
 
-  if (isLoading) return <div className="space-y-3 p-6"><Skeleton className="h-10 w-64" />{[0,1,2].map(i => <Skeleton key={i} className="h-24 w-full" />)}</div>
+  if (isLoading) return <div className="space-y-3 p-6"><Skeleton className="h-10 w-64" />{[0, 1, 2].map(i => <Skeleton key={i} className="h-24 w-full" />)}</div>
   if (isError) return <div className="p-6 text-[13px] text-[#DC2626]">Could not load the today sheet.</div>
 
+  const totals = {
+    recv: clients.reduce((s, c) => s + (drafts[c.client_name]?.receives ?? []).reduce((a, l) => a + (Number(l.quantity) || 0), 0), 0),
+    del: clients.reduce((s, c) => s + (drafts[c.client_name]?.deliveries ?? []).reduce((a, l) => a + (Number(l.quantity) || 0), 0), 0),
+    exp: expenses.reduce((s, e) => s + (Number(e.amount) || 0), 0),
+  }
+
   return (
-    <div className="space-y-5 pb-10">
+    <div className="space-y-4 pb-10">
       <div className="print:hidden">
         <Breadcrumb items={[{ label: 'Dashboard', href: '/' }, { label: 'Today' }, { label: 'Today Sheet' }]} />
-        <div className="mt-3 flex items-center justify-between rounded-2xl border border-[#E4E7EC] bg-white px-4 py-3 shadow-sm">
+        <div className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-[#E4E7EC] bg-white px-4 py-3 shadow-sm">
           <div>
             <h1 className="text-[17px] font-extrabold text-[#101828]">Today Sheet — {date}</h1>
-            <p className="text-[11px] text-[#98A2B3]">One row per shop: received, delivered (FIFO or pick a pass), and expenses. Save once at the end of the day.</p>
+            <p className="text-[11px] text-[#98A2B3]">Every shop on one sheet. Enter received &amp; delivered quantities, pick a source pass or leave AUTO (FIFO), add expenses, then Save Day.</p>
           </div>
-          <Button onClick={() => commit.mutate()} disabled={!hasInput || commit.isPending} className="gap-2 cursor-pointer">
-            <Save size={16} /> {commit.isPending ? 'Saving…' : 'Save Day'}
-          </Button>
+          <div className="flex items-center gap-3">
+            <span className="text-[12px] text-[#6B7280]">
+              Entering: <b>{fmtQty(totals.recv)}</b> recv · <b>{fmtQty(totals.del)}</b> del · <b>{totals.exp.toLocaleString('en-LK')}</b> exp
+            </span>
+            <Button onClick={() => commit.mutate()} disabled={!hasInput || commit.isPending} className="gap-2 cursor-pointer">
+              <Save size={16} /> {commit.isPending ? 'Saving…' : 'Save Day'}
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -164,106 +176,128 @@ export default function TodaySheetPage() {
         </Card>
       )}
 
-      {clients.length === 0 && (
-        <Card className="p-8 text-center text-[13px] text-[#98A2B3]">No active shops for this day yet.</Card>
-      )}
+      {/* ── The sheet: one row per shop, everything visible at once ── */}
+      <Card className="overflow-hidden print:hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full border-collapse text-[12px]">
+            <thead>
+              <tr className="bg-[#F9FAFB] border-b border-[#E4E7EC]">
+                <th className="px-3 py-2 text-left font-semibold text-[#6B7280] w-[180px]">Shop / Hotel</th>
+                <th className="px-3 py-2 text-left font-semibold text-[#6B7280] w-[110px] text-center">On hand</th>
+                <th className="px-3 py-2 text-left font-semibold text-[#6B7280]">Received today — item · spec · qty · unit</th>
+                <th className="px-3 py-2 text-left font-semibold text-[#6B7280]">Delivered today — item · spec · qty · source pass</th>
+                <th className="px-3 py-2 text-right font-semibold text-[#6B7280] w-[90px]">In / Out</th>
+              </tr>
+            </thead>
+            <tbody>
+              {clients.length === 0 && (
+                <tr><td colSpan={5} className="px-4 py-10 text-center text-[#98A2B3]">No active shops for this day yet.</td></tr>
+              )}
+              {clients.map(c => {
+                const d = draftFor(c)
+                const passes = passOptions(c)
+                const inQty = d.receives.reduce((a, l) => a + (Number(l.quantity) || 0), 0)
+                const outQty = d.deliveries.reduce((a, l) => a + (Number(l.quantity) || 0), 0)
+                return (
+                  <tr key={c.client_name} className="border-b border-[#F2F4F7] align-top hover:bg-[#F9FAFB]/50">
+                    <td className="px-3 py-2.5">
+                      <div className="font-semibold text-[#101828] text-[13px]">{c.client_name}</div>
+                      <div className="text-[10px] text-[#98A2B3] mt-0.5">
+                        recv {fmtQty(c.received_qty)} · del {fmtQty(c.delivered_qty)}
+                        {c.receives.length + c.deliveries.length > 0 && ` · ${c.receives.length + c.deliveries.length} record(s) today`}
+                      </div>
+                    </td>
+                    <td className="px-3 py-2.5 text-center">
+                      <div className="font-bold text-[#101828]">{fmtQty(c.available_qty)}</div>
+                      <div className={cellLabel}>avail</div>
+                    </td>
+                    <td className="px-3 py-2">
+                      {d.receives.map((l, idx) => (
+                        <div key={l.key} className="grid grid-cols-[1fr_90px_64px_28px] gap-1 mb-1 items-center">
+                          <input list="sheet-items" className={inputClass} placeholder="Item" value={l.item_name}
+                            onChange={e => setRecv(c.client_name, d.receives.map((x, i) => i === idx ? { ...x, item_name: e.target.value } : x))} />
+                          <input className={inputClass} placeholder="Spec" value={l.specification}
+                            onChange={e => setRecv(c.client_name, d.receives.map((x, i) => i === idx ? { ...x, specification: e.target.value } : x))} />
+                          <input className={`${inputClass} text-right`} type="number" min="0" step="0.01" placeholder="Qty" value={l.quantity}
+                            onChange={e => setRecv(c.client_name, d.receives.map((x, i) => i === idx ? { ...x, quantity: e.target.value } : x))} />
+                          <button className="p-1 text-[#98A2B3] hover:text-[#DC2626] cursor-pointer" onClick={() => setRecv(c.client_name, d.receives.filter((_, i) => i !== idx))}>
+                            <Trash2 size={13} />
+                          </button>
+                        </div>
+                      ))}
+                      <button className="mt-0.5 inline-flex items-center gap-1 text-[11px] font-medium text-[#2563EB] hover:underline cursor-pointer"
+                        onClick={() => setRecv(c.client_name, [...d.receives, recv()])}>
+                        <Plus size={12} /> received line
+                      </button>
+                    </td>
+                    <td className="px-3 py-2">
+                      {d.deliveries.map((l, idx) => (
+                        <div key={l.key} className="grid grid-cols-[1fr_80px_64px_150px_28px] gap-1 mb-1 items-center">
+                          <input list="sheet-items" className={inputClass} placeholder="Item" value={l.item_name}
+                            onChange={e => setDel(c.client_name, d.deliveries.map((x, i) => i === idx ? { ...x, item_name: e.target.value } : x))} />
+                          <input className={inputClass} placeholder="Spec" value={l.specification}
+                            onChange={e => setDel(c.client_name, d.deliveries.map((x, i) => i === idx ? { ...x, specification: e.target.value } : x))} />
+                          <input className={`${inputClass} text-right`} type="number" min="0" step="0.01" placeholder="Qty" value={l.quantity}
+                            onChange={e => setDel(c.client_name, d.deliveries.map((x, i) => i === idx ? { ...x, quantity: e.target.value } : x))} />
+                          <select className={inputClass} value={l.gate_pass_id} title="Source pass — AUTO uses oldest stock first (FIFO)"
+                            onChange={e => setDel(c.client_name, d.deliveries.map((x, i) => i === idx ? { ...x, gate_pass_id: e.target.value } : x))}>
+                            <option value="AUTO">AUTO · FIFO</option>
+                            {passes.map(p => (
+                              <option key={p.gate_pass_id} value={p.gate_pass_id}>
+                                {p.gate_pass_number} · {fmtQty(p.total_available_qty)} left
+                              </option>
+                            ))}
+                          </select>
+                          <button className="p-1 text-[#98A2B3] hover:text-[#DC2626] cursor-pointer" onClick={() => setDel(c.client_name, d.deliveries.filter((_, i) => i !== idx))}>
+                            <Trash2 size={13} />
+                          </button>
+                        </div>
+                      ))}
+                      <button className="mt-0.5 inline-flex items-center gap-1 text-[11px] font-medium text-[#2563EB] hover:underline cursor-pointer"
+                        onClick={() => setDel(c.client_name, [...d.deliveries, del()])}>
+                        <Plus size={12} /> delivered line
+                      </button>
+                    </td>
+                    <td className="px-3 py-2.5 text-right">
+                      <div className="font-semibold text-[#101828]">{inQty ? `+${fmtQty(inQty)}` : '—'}</div>
+                      <div className="font-semibold text-[#B91C1C]">{outQty ? `−${fmtQty(outQty)}` : '—'}</div>
+                    </td>
+                  </tr>
+                )
+              })}
+              {clients.length > 0 && (
+                <tr className="bg-[#F9FAFB] border-t-2 border-[#E4E7EC] font-bold text-[#101828]">
+                  <td className="px-3 py-2.5">Day totals</td>
+                  <td className="px-3 py-2.5 text-center">{fmtQty(clients.reduce((s, c) => s + c.available_qty, 0))}</td>
+                  <td className="px-3 py-2.5">{fmtQty(totals.recv)} entering</td>
+                  <td className="px-3 py-2.5">{fmtQty(totals.del)} leaving</td>
+                  <td className="px-3 py-2.5 text-right">{fmtQty(totals.recv - totals.del)}</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </Card>
 
-      {clients.map(c => {
-        const d = draftFor(c)
-        const passes = passOptions(c)
-        return (
-          <Card key={c.client_name} className="p-5">
-            <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
-              <div>
-                <h3 className="text-[14px] font-semibold text-[#101828]">{c.client_name}</h3>
-                <p className="text-[11px] text-[#98A2B3]">
-                  Today: received {fmtQty(c.received_qty)} · delivered {fmtQty(c.delivered_qty)} · available {fmtQty(c.available_qty)}
-                  {c.receives.length > 0 && ` · ${c.receives.length} receive(s) recorded`}
-                  {c.deliveries.length > 0 && ` · ${c.deliveries.length} delivery record(s)`}
-                </p>
-              </div>
-            </div>
-
-            {/* Received */}
-            <div className="mb-4">
-              <div className="flex items-center justify-between mb-1.5">
-                <span className="text-[11px] font-semibold uppercase tracking-wide text-[#6B7280]">Received today</span>
-                <Button size="sm" variant="outline" className="gap-1 cursor-pointer" onClick={() => setRecv(c.client_name, [...d.receives, recv()])}>
-                  <Plus size={13} /> Add item
-                </Button>
-              </div>
-              {d.receives.length === 0 && <p className="text-[11px] text-[#98A2B3]">No new stock received — skip if none.</p>}
-              {d.receives.map((l, idx) => (
-                <div key={l.key} className="grid grid-cols-[1fr_1fr_90px_90px_32px] gap-2 mb-1.5 items-center">
-                  <input list="sheet-items" className={inputClass} placeholder="Item" value={l.item_name}
-                    onChange={e => setRecv(c.client_name, d.receives.map((x, i) => i === idx ? { ...x, item_name: e.target.value } : x))} />
-                  <input className={inputClass} placeholder="Spec (optional)" value={l.specification}
-                    onChange={e => setRecv(c.client_name, d.receives.map((x, i) => i === idx ? { ...x, specification: e.target.value } : x))} />
-                  <input className={`${inputClass} text-right`} type="number" min="0" step="0.01" placeholder="Qty" value={l.quantity}
-                    onChange={e => setRecv(c.client_name, d.receives.map((x, i) => i === idx ? { ...x, quantity: e.target.value } : x))} />
-                  <input className={inputClass} placeholder="Unit" value={l.unit}
-                    onChange={e => setRecv(c.client_name, d.receives.map((x, i) => i === idx ? { ...x, unit: e.target.value } : x))} />
-                  <button className="p-1.5 text-[#98A2B3] hover:text-[#DC2626] cursor-pointer" onClick={() => setRecv(c.client_name, d.receives.filter((_, i) => i !== idx))}>
-                    <Trash2 size={14} />
-                  </button>
-                </div>
-              ))}
-            </div>
-
-            {/* Delivered */}
-            <div>
-              <div className="flex items-center justify-between mb-1.5">
-                <span className="text-[11px] font-semibold uppercase tracking-wide text-[#6B7280]">Delivered today</span>
-                <Button size="sm" variant="outline" className="gap-1 cursor-pointer" onClick={() => setDel(c.client_name, [...d.deliveries, del()])}>
-                  <Plus size={13} /> Add item
-                </Button>
-              </div>
-              {d.deliveries.length === 0 && <p className="text-[11px] text-[#98A2B3]">Nothing delivered — skip if none.</p>}
-              {d.deliveries.map((l, idx) => (
-                <div key={l.key} className="grid grid-cols-[1fr_1fr_90px_180px_32px] gap-2 mb-1.5 items-center">
-                  <input list="sheet-items" className={inputClass} placeholder="Item" value={l.item_name}
-                    onChange={e => setDel(c.client_name, d.deliveries.map((x, i) => i === idx ? { ...x, item_name: e.target.value } : x))} />
-                  <input className={inputClass} placeholder="Spec" value={l.specification}
-                    onChange={e => setDel(c.client_name, d.deliveries.map((x, i) => i === idx ? { ...x, specification: e.target.value } : x))} />
-                  <input className={`${inputClass} text-right`} type="number" min="0" step="0.01" placeholder="Qty" value={l.quantity}
-                    onChange={e => setDel(c.client_name, d.deliveries.map((x, i) => i === idx ? { ...x, quantity: e.target.value } : x))} />
-                  <select className={inputClass} value={l.gate_pass_id} title="Source pass — AUTO uses oldest stock first (FIFO)"
-                    onChange={e => setDel(c.client_name, d.deliveries.map((x, i) => i === idx ? { ...x, gate_pass_id: e.target.value } : x))}>
-                    <option value="AUTO">AUTO · FIFO</option>
-                    {passes.map(p => (
-                      <option key={p.gate_pass_id} value={p.gate_pass_id}>
-                        {p.gate_pass_number} · {fmtQty(p.total_available_qty)} left
-                      </option>
-                    ))}
-                  </select>
-                  <button className="p-1.5 text-[#98A2B3] hover:text-[#DC2626] cursor-pointer" onClick={() => setDel(c.client_name, d.deliveries.filter((_, i) => i !== idx))}>
-                    <Trash2 size={14} />
-                  </button>
-                </div>
-              ))}
-            </div>
-          </Card>
-        )
-      })}
-
-      <datalist id="sheet-items">{itemNames.map(n => <option key={n} value={n} />)}</datalist>
-
-      {/* Expenses */}
-      <Card className="p-5">
-        <div className="flex items-center justify-between mb-3">
+      {/* ── Expenses strip ── */}
+      <Card className="p-4 print:hidden">
+        <div className="flex items-center justify-between mb-2">
           <div>
-            <h3 className="text-[14px] font-semibold text-[#101828]">Expenses today</h3>
-            <p className="text-[11px] text-[#98A2B3]">Allocate to a shop or leave Shared for a laundry-wide cost.</p>
+            <h3 className="text-[13px] font-semibold text-[#101828]">Expenses today</h3>
+            <p className="text-[11px] text-[#98A2B3]">Category · amount · shop (blank = shared laundry cost).</p>
           </div>
           <Button size="sm" variant="outline" className="gap-1 cursor-pointer" onClick={() => setExpenses(prev => [...prev, exp()])}>
             <Plus size={13} /> Add expense
           </Button>
         </div>
+        <div className="grid grid-cols-[1fr_110px_180px_32px] gap-2 mb-1.5 px-0.5">
+          {['Category', 'Amount (LKR)', 'Allocate to', ''].map(h => <span key={h} className={cellLabel}>{h}</span>)}
+        </div>
         {expenses.map((e, idx) => (
-          <div key={e.key} className="grid grid-cols-[1fr_110px_170px_32px] gap-2 mb-1.5 items-center">
-            <input className={inputClass} placeholder="Category (e.g. Electricity, Water)" list="exp-categories" value={e.category_name}
+          <div key={e.key} className="grid grid-cols-[1fr_110px_180px_32px] gap-2 mb-1.5 items-center">
+            <input className={inputClass} placeholder="e.g. Electricity, Water, Disposal" list="exp-categories" value={e.category_name}
               onChange={ev => setExpenses(prev => prev.map((x, i) => i === idx ? { ...x, category_name: ev.target.value } : x))} />
-            <input className={`${inputClass} text-right`} type="number" min="0" step="0.01" placeholder="Amount" value={e.amount}
+            <input className={`${inputClass} text-right`} type="number" min="0" step="0.01" placeholder="0.00" value={e.amount}
               onChange={ev => setExpenses(prev => prev.map((x, i) => i === idx ? { ...x, amount: ev.target.value } : x))} />
             <select className={inputClass} value={e.client_name} title="Shop allocation — blank means shared"
               onChange={ev => setExpenses(prev => prev.map((x, i) => i === idx ? { ...x, client_name: ev.target.value } : x))}>
@@ -276,7 +310,10 @@ export default function TodaySheetPage() {
           </div>
         ))}
         <datalist id="exp-categories">{(categories ?? []).map(c => <option key={c.id} value={c.name} />)}</datalist>
+        {totals.exp > 0 && <p className="mt-2 text-right text-[12px] font-semibold text-[#101828]">Expense total: {totals.exp.toLocaleString('en-LK', { minimumFractionDigits: 2 })}</p>}
       </Card>
+
+      <datalist id="sheet-items">{itemNames.map(n => <option key={n} value={n} />)}</datalist>
     </div>
   )
 }
