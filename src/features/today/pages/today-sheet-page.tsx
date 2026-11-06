@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Plus, Trash2, Save, CheckCircle2, AlertCircle } from 'lucide-react'
+import { Plus, Trash2, Save, CheckCircle2, AlertCircle, Printer } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '../../../components/ui/button'
 import { Card } from '../../../components/ui/card'
@@ -149,6 +149,9 @@ export default function TodaySheetPage() {
             <span className="text-[12px] text-[#6B7280]">
               Entering: <b>{fmtQty(totals.recv)}</b> recv · <b>{fmtQty(totals.del)}</b> del · <b>{totals.exp.toLocaleString('en-LK')}</b> exp
             </span>
+            <Button variant="outline" onClick={() => window.print()} className="gap-2 cursor-pointer print:hidden">
+              <Printer size={16} /> Print
+            </Button>
             <Button onClick={() => commit.mutate()} disabled={!hasInput || commit.isPending} className="gap-2 cursor-pointer">
               <Save size={16} /> {commit.isPending ? 'Saving…' : 'Save Day'}
             </Button>
@@ -177,7 +180,7 @@ export default function TodaySheetPage() {
       )}
 
       {/* ── The sheet: one row per shop, everything visible at once ── */}
-      <Card className="overflow-hidden print:hidden">
+      <Card className="overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full border-collapse text-[12px]">
             <thead>
@@ -280,7 +283,7 @@ export default function TodaySheetPage() {
       </Card>
 
       {/* ── Expenses strip ── */}
-      <Card className="p-4 print:hidden">
+      <Card className="p-4">
         <div className="flex items-center justify-between mb-2">
           <div>
             <h3 className="text-[13px] font-semibold text-[#101828]">Expenses today</h3>

@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { expensesApi } from '../api/management-api'
+import { expensesApi, customersApi } from '../api/management-api'
 import { toast } from 'sonner'
 import { Plus, Pencil, Trash2, X, Receipt } from 'lucide-react'
 import { PageHeader } from '../../../components/ui/page-header'
@@ -83,6 +83,13 @@ export default function ManagementExpenses() {
   })
 
   const totalExpenses = summary.reduce((s: number, item: any) => s + (item.total || 0), 0)
+
+  const { data: customersData = { items: [] } } = useQuery({
+    queryKey: ['mgmt-customers-list'],
+    queryFn: () => customersApi.list('', 500, 0).then(r => r.data),
+    retry: 1,
+  })
+  const customerNames = (customersData.items ?? []).map((c: any) => c.name).filter(Boolean) as string[]
 
   const { data: byClient = [] } = useQuery({
     queryKey: ['mgmt-expense-by-client', startDate, endDate],
@@ -281,7 +288,8 @@ export default function ManagementExpenses() {
               <input name="amount" type="number" step="0.01" defaultValue={editing?.amount} placeholder="Amount *" required className="w-full px-3 py-2 border rounded-lg text-sm" />
               <input name="description" defaultValue={editing?.description} placeholder="Description" className="w-full px-3 py-2 border rounded-lg text-sm" />
               <div className="grid grid-cols-2 gap-3">
-                <input name="client_name" defaultValue={editing?.client_name || ''} placeholder="Shop / hotel (blank = shared)" className="px-3 py-2 border rounded-lg text-sm" />
+                <input name="client_name" list="expense-client-names" defaultValue={editing?.client_name || ''} placeholder="Shop / hotel (blank = shared)" className="px-3 py-2 border rounded-lg text-sm" />
+                <datalist id="expense-client-names">{customerNames.map(n => <option key={n} value={n} />)}</datalist>
                 <select name="allocation" defaultValue={editing?.allocation || 'SHARED'} className="px-3 py-2 border rounded-lg text-sm">
                   <option value="SHARED">Shared cost</option>
                   <option value="SHOP">Shop-allocated</option>
