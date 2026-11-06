@@ -38,6 +38,11 @@ export default function TodaySheetPage() {
     queryFn: () => expensesApi.categories().then(r => r.data as Array<{ id: string; name: string }>),
     retry: 1,
   })
+  const { data: recordedExpenses } = useQuery({
+    queryKey: ['today-expenses', date],
+    queryFn: () => expensesApi.list({ start_date: date, end_date: date, limit: 200 }).then(r => r.data as { items?: Array<{ id: string; category_name?: string; amount?: number; client_name?: string; allocation?: string; description?: string }> }),
+    retry: 1,
+  })
 
   const [drafts, setDrafts] = useState<Record<string, ClientDraft>>({})
   const [expenses, setExpenses] = useState<ExpLine[]>([exp()])
@@ -104,6 +109,7 @@ export default function TodaySheetPage() {
       }
       qc.invalidateQueries({ queryKey: ['today-sheet'] })
       qc.invalidateQueries({ queryKey: ['ops'] })
+      qc.invalidateQueries({ queryKey: ['today-expenses'] })
     },
     onError: (e: any) => toast.error(e?.response?.data?.detail || e?.message || 'Commit failed'),
   })
@@ -293,6 +299,22 @@ export default function TodaySheetPage() {
             <Plus size={13} /> Add expense
           </Button>
         </div>
+        {(recordedExpenses?.items?.length ?? 0) > 0 && (
+          <div className="mb-3 rounded-lg border border-[#E4E7EC] bg-[#F9FAFB] p-2.5">
+            <p className={cellLabel + ' mb-1.5'}>Already recorded today ({recordedExpenses!.items!.length})</p>
+            <div className="space-y-1">
+              {recordedExpenses!.items!.map(e => (
+                <div key={e.id} className="flex items-center justify-between text-[12px]">
+                  <span className="text-[#101828]">{e.category_name || e.description || 'Expense'}</span>
+                  <span className="text-[#6B7280]">
+                    {e.allocation === 'SHOP' && e.client_name ? `${e.client_name} · ` : ''}
+                    LKR {Number(e.amount || 0).toLocaleString()}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
         <div className="grid grid-cols-[1fr_110px_180px_32px] gap-2 mb-1.5 px-0.5">
           {['Category', 'Amount (LKR)', 'Allocate to', ''].map(h => <span key={h} className={cellLabel}>{h}</span>)}
         </div>
