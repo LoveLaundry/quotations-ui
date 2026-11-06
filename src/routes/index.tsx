@@ -18,6 +18,7 @@ const GuestQuotationsPage = lazy(() => import('../features/quotations/pages/gues
 
 // Daily Operations (landing page)
 const TodayPage = lazy(() => import('../features/today/pages/today-page'))
+const TodaySheetPage = lazy(() => import('../features/today/pages/today-sheet-page'))
 
 // Operations pages
 const DashboardPage = lazy(() => import('../features/quotations/pages/dashboard-page'))
@@ -137,6 +138,7 @@ export const router = createBrowserRouter([
         children: [
           { index: true, element: <LandingRedirect /> },
           { path: 'today', element: <TodayPage /> },
+          { path: 'today-sheet', element: <TodaySheetPage /> },
           { path: 'dashboard', element: <DashboardPage /> },
           { path: 'business-dashboard', element: <BusinessDashboardPage /> },
           { path: 'notifications', element: <NotificationsPage /> },

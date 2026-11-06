@@ -13,6 +13,7 @@ import { setUnauthorizedHandler } from '../../api/interceptors'
 const pageTitles: Record<string, string> = {
   '/': 'Daily Operations',
   '/today': 'Daily Operations',
+  '/today-sheet': 'Today Sheet',
   '/dashboard': 'Dashboard',
   '/business-dashboard': 'Business Intelligence',
   '/quotations': 'Quotations',

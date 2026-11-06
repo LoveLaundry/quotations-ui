@@ -145,3 +145,62 @@ export const moneyApi = {
   get: (date: string): Promise<DayMoney> =>
     billsApi.get<DayMoney>('/day-money', { params: { date } }).then(r => r.data),
 }
+
+// ── Today sheet (single-screen daily entry) ──────────────────────────────────
+export interface SheetPassItem {
+  item_name: string
+  specification?: string
+  category?: string
+  expected_qty?: number
+  received_qty?: number
+  delivered_qty?: number
+  returned_qty?: number
+  available_qty: number
+  unit?: string
+}
+
+export interface SheetPendingPass {
+  gate_pass_id: string
+  gate_pass_number: string
+  client_name: string
+  receiving_date?: string
+  status: string
+  total_available_qty: number
+  deliverable_items: SheetPassItem[]
+  items: SheetPassItem[]
+}
+
+export interface SheetClient {
+  client_name: string
+  receives: Array<{ id: string; gate_pass_number?: string; receiving_date?: string; items: Array<{ item_name: string; specification?: string; received_qty: number; unit?: string }> }>
+  deliveries: Array<{ id: string; delivery_date?: string; status?: string; items: Array<{ item_name: string; specification?: string; quantity: number; gate_pass_id?: string }> }>
+  pending_passes: SheetPendingPass[]
+  received_qty: number
+  delivered_qty: number
+  available_qty: number
+}
+
+export interface TodaySheetResponse {
+  date: string
+  clients: SheetClient[]
+}
+
+export interface SheetCommitResult {
+  section: 'receive' | 'delivery'
+  client_name: string
+  ok: boolean
+  id?: string
+  gate_pass_number?: string
+  error?: unknown
+}
+
+export const todaySheetApi = {
+  get: (date: string): Promise<TodaySheetResponse> =>
+    billsApi.get<TodaySheetResponse>('/today-sheet', { params: { date } }).then(r => r.data),
+  commit: (body: {
+    date: string
+    receives: Array<{ client_name: string; items: Array<{ item_name: string; specification?: string; unit?: string; quantity: number; piece_count?: number }>; notes?: string }>
+    deliveries: Array<{ client_name: string; items: Array<{ item_name: string; specification?: string; quantity: number; gate_pass_id?: string }>; notes?: string; received_by?: string }>
+  }): Promise<{ date: string; results: SheetCommitResult[] }> =>
+    billsApi.post('/today-sheet/commit', body).then(r => r.data),
+}

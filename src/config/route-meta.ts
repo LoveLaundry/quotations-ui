@@ -43,6 +43,7 @@ export interface RouteMeta extends AccessSpec {
 export const ROUTES: RouteMeta[] = [
   // ── Overview ────────────────────────────────────────────────────────────────
   { path: '/today', title: 'Daily Operations', navLabel: 'Today', group: 'Overview', icon: 'Lightning', keywords: 'today daily operations home' },
+  { path: '/today-sheet', title: 'Today Sheet', navLabel: 'Today Sheet', group: 'Overview', icon: 'Table', keywords: 'today sheet daily entry grid' },
   { path: '/dashboard', title: 'Dashboard', navLabel: 'Dashboard', group: 'Overview', icon: 'House', keywords: 'dashboard overview' },
   { path: '/business-dashboard', title: 'Business Intelligence', navLabel: 'Business Intelligence', group: 'Overview', icon: 'ChartBar', keywords: 'business dashboard analytics insights' },
   { path: '/live-chat', title: 'Live Chat', navLabel: 'Live Chat', group: 'Overview', icon: 'ChatCircleDots', keywords: 'chat assistant', roles: ['ADMIN', 'MANAGER'] },
