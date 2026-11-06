@@ -229,13 +229,15 @@ export default function TodaySheetPage() {
                     </td>
                     <td className="px-3 py-2">
                       {d.receives.map((l, idx) => (
-                        <div key={l.key} className="grid grid-cols-[1fr_90px_64px_28px] gap-1 mb-1 items-center">
+                        <div key={l.key} className="grid grid-cols-[1fr_80px_56px_52px_28px] gap-1 mb-1 items-center">
                           <input list="sheet-items" className={inputClass} placeholder="Item" value={l.item_name}
                             onChange={e => setRecv(c.client_name, d.receives.map((x, i) => i === idx ? { ...x, item_name: e.target.value } : x))} />
                           <input className={inputClass} placeholder="Spec" value={l.specification}
                             onChange={e => setRecv(c.client_name, d.receives.map((x, i) => i === idx ? { ...x, specification: e.target.value } : x))} />
                           <input className={`${inputClass} text-right`} type="number" min="0" step="0.01" placeholder="Qty" value={l.quantity}
                             onChange={e => setRecv(c.client_name, d.receives.map((x, i) => i === idx ? { ...x, quantity: e.target.value } : x))} />
+                          <input className={inputClass} placeholder="Unit" value={l.unit}
+                            onChange={e => setRecv(c.client_name, d.receives.map((x, i) => i === idx ? { ...x, unit: e.target.value } : x))} />
                           <button className="p-1 text-[#98A2B3] hover:text-[#DC2626] cursor-pointer" onClick={() => setRecv(c.client_name, d.receives.filter((_, i) => i !== idx))}>
                             <Trash2 size={13} />
                           </button>
