@@ -108,6 +108,7 @@ export interface LegacyInvoiceCreate {
   shop_name: string
   description?: string
   entries: LegacyInvoiceEntry[]
+  discount?: number
 }
 
 export interface LegacyInvoice {
@@ -118,6 +119,8 @@ export interface LegacyInvoice {
   entries: LegacyInvoiceEntry[]
   total_entries: number
   grand_total: number
+  discount: number
+  laundry_amount: number
   payment_status?: string
   created_at: string
 }

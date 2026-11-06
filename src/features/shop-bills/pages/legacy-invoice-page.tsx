@@ -84,6 +84,7 @@ function makeRow(): InvoiceRow {
 export default function LegacyInvoicePage() {
   const [shopName, setShopName] = useState('')
   const [description, setDescription] = useState('')
+  const [discount, setDiscount] = useState(0)
   const [rows, setRows] = useState<InvoiceRow[]>([makeRow()])
   const [saved, setSaved] = useState<LegacyInvoice | null>(null)
   const [editing, setEditing] = useState<LegacyInvoice | null>(null)
@@ -131,6 +132,9 @@ export default function LegacyInvoicePage() {
 
   const verticalRows = useMemo(() => sortedRows.filter(r => r.billNumber.trim() || r.amount > 0), [sortedRows])
   const grandTotal = useMemo(() => verticalRows.reduce((s, r) => s + (Number(r.amount) || 0), 0), [verticalRows])
+  // The shop owner keeps the discount; the laundry is owed the remainder.
+  const discountAmount = Math.min(Math.max(Number(discount) || 0, 0), grandTotal)
+  const laundryAmount = grandTotal - discountAmount
 
   const saveInvoice = useCreateLegacyInvoice()
   const updateInvoice = useUpdateLegacyInvoice()
@@ -143,6 +147,7 @@ export default function LegacyInvoicePage() {
   const buildPayload = () => ({
     shop_name: shopName.trim(),
     description: description.trim() || undefined,
+    discount: discountAmount || undefined,
     entries: verticalRows.map(r => ({
       date: r.date || undefined,
       bill_number: r.billNumber.trim() || undefined,
@@ -153,6 +158,7 @@ export default function LegacyInvoicePage() {
   const resetForm = () => {
     setShopName('')
     setDescription('')
+    setDiscount(0)
     setRows([makeRow()])
     setSignatures({})
   }
@@ -195,6 +201,7 @@ export default function LegacyInvoicePage() {
     setSaved(invoice)
     setShopName(invoice.shop_name)
     setDescription(invoice.description ?? '')
+    setDiscount(Number(invoice.discount) || 0)
     setRows(
       invoice.entries.length > 0
         ? invoice.entries.map(e => ({
@@ -259,6 +266,8 @@ export default function LegacyInvoicePage() {
 
   const printEntries = saved?.entries ?? verticalRows.map(r => ({ date: r.date, bill_number: r.billNumber, amount: r.amount }))
   const printTotal = saved?.grand_total ?? grandTotal
+  const printDiscount = saved?.discount ?? discountAmount
+  const printLaundry = saved?.laundry_amount ?? laundryAmount
 
   const { data: listData, isLoading: listLoading, isError: listError, error: listErr } = useLegacyInvoices({
     search: searchInput.trim() || undefined,
@@ -314,7 +323,8 @@ export default function LegacyInvoicePage() {
                 )}
               </p>
               <p className="text-[11px] text-[#16A34A]/80">
-                {saved.shop_name} · {saved.total_entries} entr{saved.total_entries === 1 ? 'y' : 'ies'} · {fmtMoney(saved.grand_total)} · {formatDateOnly(saved.created_at)}
+                {saved.shop_name} · {saved.total_entries} entr{saved.total_entries === 1 ? 'y' : 'ies'} · {fmtMoney(saved.grand_total)}
+                {(saved.discount ?? 0) > 0 && ` · laundry ${fmtMoney(saved.laundry_amount)}`} · {formatDateOnly(saved.created_at)}
               </p>
             </div>
           </div>
@@ -423,6 +433,29 @@ export default function LegacyInvoicePage() {
                 </tr>
               </tfoot>
             </table>
+          </div>
+
+          <div className="mt-4 flex flex-col gap-4 border-t border-[#F2F4F7] pt-4 sm:flex-row sm:items-end sm:justify-between">
+            <div className="sm:w-64">
+              <label className="block text-[11px] font-semibold uppercase tracking-wide text-[#6B7280] mb-1.5">Discount (LKR)</label>
+              <input
+                type="number"
+                min="0"
+                step="0.01"
+                max={grandTotal}
+                value={discount || ''}
+                onChange={e => setDiscount(Math.min(Math.max(parseFloat(e.target.value) || 0, 0), grandTotal))}
+                placeholder="0.00"
+                className={`${inputClass} text-right`}
+              />
+              <p className="mt-1 text-[11px] text-[#98A2B3]">Kept by the shop owner — the laundry is owed the rest.</p>
+            </div>
+            <div className="text-right space-y-1">
+              {discountAmount > 0 && (
+                <p className="text-[12px] text-[#6B7280]">Discount (shop owner): −{fmtMoney(discountAmount)}</p>
+              )}
+              <p className="text-[13px] font-bold text-[#101828]">Amount for laundry: {fmtMoney(laundryAmount)}</p>
+            </div>
           </div>
         </Card>
       </div>
@@ -603,12 +636,26 @@ export default function LegacyInvoicePage() {
                     <td className="right">{Math.floor(printTotal).toLocaleString('en-LK')}</td>
                     <td className="center">{Math.round((printTotal % 1) * 100).toString().padStart(2, '0')}</td>
                   </tr>
+                  {printDiscount > 0 && (
+                    <>
+                      <tr>
+                        <td colSpan={3} className="right">Discount (shop owner):</td>
+                        <td className="right">−{Math.floor(printDiscount).toLocaleString('en-LK')}</td>
+                        <td className="center">{Math.round((printDiscount % 1) * 100).toString().padStart(2, '0')}</td>
+                      </tr>
+                      <tr className="li-total-row">
+                        <td colSpan={3} className="right">Amount for Laundry:</td>
+                        <td className="right">{Math.floor(printLaundry).toLocaleString('en-LK')}</td>
+                        <td className="center">{Math.round((printLaundry % 1) * 100).toString().padStart(2, '0')}</td>
+                      </tr>
+                    </>
+                  )}
                 </tbody>
               </table>
 
               <div className="li-net">
-                <span className="label">Grand Total</span>
-                <span className="amount">{fmtMoney(printTotal)}</span>
+                <span className="label">{printDiscount > 0 ? 'Amount for Laundry' : 'Grand Total'}</span>
+                <span className="amount">{fmtMoney(printDiscount > 0 ? printLaundry : printTotal)}</span>
               </div>
 
               {/* Customer signature */}
