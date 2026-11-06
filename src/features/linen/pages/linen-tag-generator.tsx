@@ -1,5 +1,10 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { QRCodeSVG } from 'qrcode.react'
+
+// Public origin that serves /track/linen/:code — override with
+// VITE_TRACK_BASE_URL when a custom domain (e.g. track.lovelaundry.lk)
+// is pointed at this app.
+const TRACK_BASE_URL = (import.meta.env.VITE_TRACK_BASE_URL ?? 'https://lovelaundry-manager.vercel.app').replace(/\/+$/, '')
 import JsBarcode from 'jsbarcode'
 import { useGenerateTags } from '../hooks/useLinen'
 import { LINEN_CATEGORIES } from '../../../types/linen'
@@ -50,7 +55,7 @@ function TagCard({ tag, onReady }: { tag: TagItem; onReady?: (linenId: string, q
   return (
     <div className="border-2 border-black p-3 flex flex-col items-center gap-1 bg-white" style={{ width: '70mm', height: '38mm', pageBreakInside: 'avoid' }}>
       <p className="text-[8px] font-bold uppercase tracking-widest">Love Laundry</p>
-      <div ref={qrRef}><QRCodeSVG value={`https://lovelaundry-manager.vercel.app/track/linen/${tag.linen_id}?ref=qr`} size={50} level="M" /></div>
+      <div ref={qrRef}><QRCodeSVG value={`${TRACK_BASE_URL}/track/linen/${tag.linen_id}?ref=qr`} size={50} level="M" /></div>
       <svg ref={barcodeRef} style={{ width: '80%', height: 20 }} />
       <p className="text-[9px] font-bold font-mono tracking-wider">{tag.linen_id}</p>
     </div>
