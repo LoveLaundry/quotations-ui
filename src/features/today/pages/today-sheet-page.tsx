@@ -22,7 +22,7 @@ const recv = (item_name = '', specification = ''): RecvLine => ({ key: uid(), it
 const del = (item_name = '', specification = '', gate_pass_id = ''): DelLine => ({ key: uid(), item_name, specification, quantity: '', gate_pass_id })
 const exp = (): ExpLine => ({ key: uid(), category_name: '', amount: '', client_name: '' })
 
-interface ClientDraft { receives: RecvLine[]; deliveries: DelLine[] }
+interface ClientDraft { receives: RecvLine[]; deliveries: DelLine[]; receivedBy: string }
 
 const cellLabel = 'text-[10px] font-semibold uppercase tracking-wide text-[#98A2B3]'
 
@@ -56,6 +56,7 @@ export default function TodaySheetPage() {
       deliveries: c.pending_passes.flatMap(p =>
         p.deliverable_items.map(i => del(i.item_name, i.specification ?? '', ''))
       ),
+      receivedBy: '',
     }
 
   const patch = (name: string, fn: (d: ClientDraft) => ClientDraft) => {
@@ -82,7 +83,7 @@ export default function TodaySheetPage() {
             quantity: Number(l.quantity),
             gate_pass_id: l.gate_pass_id && l.gate_pass_id !== 'AUTO' ? l.gate_pass_id : undefined,
           }))
-        return lines.length ? [{ client_name: c.client_name, items: lines }] : []
+        return lines.length ? [{ client_name: c.client_name, items: lines, received_by: drafts[c.client_name]?.receivedBy?.trim() || undefined }] : []
       })
       const sheet = await todaySheetApi.commit({ date, receives, deliveries })
       const expLines = expenses.filter(e => e.category_name.trim() && Number(e.amount) > 0)
@@ -215,6 +216,12 @@ export default function TodaySheetPage() {
                         recv {fmtQty(c.received_qty)} · del {fmtQty(c.delivered_qty)}
                         {c.receives.length + c.deliveries.length > 0 && ` · ${c.receives.length + c.deliveries.length} record(s) today`}
                       </div>
+                      <input
+                        className="mt-1 h-6 w-full rounded border border-[#E4E7EC] px-1.5 text-[10px] text-[#6B7280] outline-none focus:border-[#2563EB]"
+                        placeholder="Client rep (delivery sign-off)"
+                        value={d.receivedBy}
+                        onChange={e => setDrafts(prev => ({ ...prev, [c.client_name]: { ...draftFor(c), receivedBy: e.target.value } }))}
+                      />
                     </td>
                     <td className="px-3 py-2.5 text-center">
                       <div className="font-bold text-[#101828]">{fmtQty(c.available_qty)}</div>
