@@ -30,7 +30,7 @@ export function AccessRoute({
   if (!canAccess(user, spec, supportActive)) {
     // Send the session somewhere it can actually render rather than a fixed
     // page that might itself be gated.
-    return <Navigate to={landingPathFor(user, supportActive)} replace />
+    return <Navigate to={landingPathFor(user)} replace />
   }
 
   return children ?? <Outlet />

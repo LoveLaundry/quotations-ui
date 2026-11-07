@@ -37,10 +37,7 @@ export function usePermissions() {
 
   const isPlatformAdmin = useMemo(() => isPlatformAdminFor(user), [user])
 
-  const landingPath = useMemo(
-    () => landingPathFor(user, supportActive),
-    [user, supportActive],
-  )
+  const landingPath = useMemo(() => landingPathFor(user), [user])
 
   const isAdmin = role === 'ADMIN' || role === 'PLATFORM_ADMIN'
 

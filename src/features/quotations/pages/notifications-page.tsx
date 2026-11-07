@@ -95,8 +95,8 @@ export default function NotificationsPage() {
           <Button variant="secondary" onClick={() => navigate('/gate-passes')}>
             <RiTruckLine size={16} /> Gate Passes
           </Button>
-          <Button variant="secondary" onClick={() => navigate('/quotations')}>
-            <RiFileTextLine size={16} /> All Quotations
+          <Button variant="secondary" onClick={() => navigate('/bills')}>
+            <RiFileTextLine size={16} /> All Bills
           </Button>
         </div>
       </div>
@@ -263,7 +263,7 @@ export default function NotificationsPage() {
                   <Button
                     size="sm"
                     variant="secondary"
-                    onClick={() => navigate(`/quotations/${q.id}`)}
+                    onClick={() => setSelected(row)}
                   >
                     Details
                   </Button>

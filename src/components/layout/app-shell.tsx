@@ -1,5 +1,5 @@
 import { Suspense, useEffect, useState } from 'react'
-import { Navigate, Outlet, useLocation, useNavigate } from 'react-router-dom'
+import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { Sidebar } from './sidebar'
 import { TopBar } from './top-bar'
 import { CommandSearch } from '../ui/command-search'
@@ -7,92 +7,39 @@ import { OfflineSyncBar } from '../ui/offline-sync-bar'
 import { SyncFab } from '../../features/sync/components/global-sync-panel'
 import { PageLoader } from '../ui/loader'
 import { useAuth } from '../../context/AuthContext'
-import { PLATFORM_LANDING, PLATFORM_PATHS, isPlatformOnly } from '../../lib/session-scope'
 import { setUnauthorizedHandler } from '../../api/interceptors'
 
 const pageTitles: Record<string, string> = {
   '/': 'Daily Operations',
   '/today': 'Daily Operations',
   '/today-sheet': 'Today Sheet',
-  '/dashboard': 'Dashboard',
-  '/business-dashboard': 'Business Intelligence',
-  '/quotations': 'Quotations',
-  '/quotations/new': 'New Quotation',
-  '/categories': 'Categories',
-  '/settings': 'Settings',
-  '/profile': 'My Profile',
-  '/bills': 'Bills',
-  '/bills/new': 'Create Bill',
-  '/income': 'Income',
-  '/ledger': 'Ledger',
-  '/statements': 'Client Statement',
-  '/invoices/new': 'Consolidated Invoice',
+  '/notifications': 'Notifications',
   '/gate-passes': 'Gate Passes',
   '/gate-passes/new': 'New Gate Pass',
   '/deliveries': 'Deliveries',
-  '/dispatch': 'Dispatch',
+  '/deliveries/new': 'New Delivery',
+  '/hotel-linen-flow': 'Hotel Linen Flow',
   '/returns': 'Returns',
   '/returns/new': 'Record Return',
-  '/customers': 'Customers',
-  '/deliveries/new': 'New Delivery',
-  '/reports': 'Reports',
-  '/users': 'Users',
-  '/laundries': 'Laundries',
-  '/shops': 'Shops',
-  '/hotels': 'Hotels',
-  '/database-sync': 'Database Sync',
-  '/live-chat': 'Live Chat',
-  '/notifications': 'Notifications',
-  '/workers': 'Staff Management',
-  '/workers/daily-tasks': 'Daily Tasks',
-  '/shop-bills': 'Shop Bills',
-  '/shop-bills/dashboard': 'Shop Bills Dashboard',
-  '/shop-bills/new': 'Create Shop Bill',
-  '/legacy-invoice': 'Legacy Invoice',
+  '/bills': 'Bills',
+  '/bills/new': 'Create Bill',
+  '/statements': 'Client Statement',
   '/linen': 'Linen Dashboard',
   '/linen/inventory': 'Linen Inventory',
   '/linen/scanner': 'Scan Linen',
   '/linen/session': 'Scan Session',
   '/linen/bulk-scan': 'Bulk Scan',
   '/linen/tags': 'Tag Generator',
-  '/linen/gate-pass': 'Gate Pass (Camelot)',
-  '/linen/gate-pass/linen': 'Camelot Linen Receipt',
-  '/linen/gate-pass/uniform': 'Camelot Uniform Receipt',
-  '/management': 'Management Dashboard',
-  '/management/transactions': 'All Transactions',
-  '/management/historical-entry': 'Historical Data Entry',
-  '/management/import': 'Import Historical Data',
-  '/management/customers': 'Manage Customers',
-  '/management/items': 'Items & Categories',
-  '/management/expenses': 'Expense Management',
-  '/management/employees': 'Employees & Salaries',
-  '/management/salary-slip': 'Generate Salary Slip',
-  '/management/salary-history': 'Salary History',
-  '/management/advances': 'Salary Advances',
-  '/management/holidays': 'Holiday Calendar',
-  '/management/extra-work': 'Extra Work Records',
-  '/management/attendance': 'Attendance Entry',
-  '/management/attendance-log': 'Log Attendance — All Staff',
-  '/management/company-settings': 'Company Settings',
-  '/management/payments': 'Payments',
-  '/management/reports': 'Management Reports',
-  '/ai-insights': 'AI Insights',
-  '/reports-backup': 'Reports & Backup',
-  '/hotel-linen-flow': 'Hotel Linen Flow',
+  '/settings': 'Settings',
+  '/profile': 'My Profile',
 }
 
 function getPageTitle(pathname: string): string {
-  if (pathname.match(/^\/quotations\/[^/]+\/edit$/)) return 'Edit Quotation'
-  if (pathname.match(/^\/quotations\/[^/]+$/)) return 'Quotation Details'
-  if (pathname.match(/^\/bills\/[^/]+$/)) return 'Bill Details'
   if (pathname.match(/^\/gate-passes\/[^/]+$/)) return 'Gate Pass Details'
   if (pathname.match(/^\/deliveries\/[^/]+$/)) return 'Delivery Details'
   if (pathname.match(/^\/returns\/[^/]+$/)) return 'Return Details'
-  if (pathname === '/linen/gate-pass') return 'Gate Pass (Camelot)'
-  if (pathname === '/linen/gate-pass/linen') return 'Camelot Linen Receipt'
-  if (pathname === '/linen/gate-pass/uniform') return 'Camelot Uniform Receipt'
+  if (pathname.match(/^\/bills\/[^/]+$/)) return 'Bill Details'
   if (pathname.match(/^\/linen\/[^/]+$/)) return 'Linen Profile'
-  if (pathname.match(/^\/shop-bills\/[^/]+$/)) return 'Shop Bill Details'
   return pageTitles[pathname] ?? 'Love Laundry'
 }
 
@@ -102,7 +49,7 @@ export function AppShell() {
   const [cmdOpen, setCmdOpen] = useState(false)
   const location = useLocation()
   const navigate = useNavigate()
-  const { user, logout, support, exitSupport } = useAuth()
+  const { logout, support, exitSupport } = useAuth()
 
   useEffect(() => {
     setUnauthorizedHandler(() => {
@@ -141,14 +88,8 @@ export function AppShell() {
     return () => mq.removeEventListener('change', onChange)
   }, [])
 
-  // Keep platform-only sessions out of tenant screens. Rendering them would
-  // mount their data hooks (quotations, bills, customers) and 403 on load.
-  if (isPlatformOnly(user, Boolean(support))) {
-    const allowed = PLATFORM_PATHS.some(
-      (path) => location.pathname === path || location.pathname.startsWith(path + '/'),
-    )
-    if (!allowed) return <Navigate to={PLATFORM_LANDING} replace />
-  }
+  // Platform-only sessions used to be confined to the registry; those pages are
+  // gone, so every signed-in session uses the same tenant surface.
 
   return (
     <div className="min-h-dvh bg-[var(--bg)]">

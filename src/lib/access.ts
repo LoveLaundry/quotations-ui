@@ -142,15 +142,9 @@ export function canAccess(
  * surface their capabilities allow, falling back to the profile (which every
  * authenticated session may always open).
  */
-export function landingPathFor(user: User | null | undefined, supportActive = false): string {
+export function landingPathFor(user: User | null | undefined): string {
   if (!user) return '/login'
-  if (isPlatformOnly(user, supportActive)) return '/laundries'
-
-  const candidates: { path: string; spec: AccessSpec }[] = [
-    { path: '/today', spec: {} },
-    { path: '/dashboard', spec: {} },
-    { path: '/management', spec: {} },
-    { path: '/profile', spec: {} },
-  ]
-  return candidates.find((c) => canAccess(user, c.spec, supportActive))?.path ?? '/profile'
+  // Every authenticated session lands on the daily operations hub — it is the
+  // whole product surface now.
+  return '/today'
 }

@@ -2,40 +2,26 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
 import type { LucideIcon as Icon } from 'lucide-react'
 import {
-  House,
-  ChartColumn as ChartBar,
-  ClipboardList as ClipboardText,
   Truck,
-  UsersRound as UsersThree,
-  CircleDollarSign as CurrencyCircleDollar,
   FileText,
-  Building2 as Buildings,
-  FolderOpen,
   Settings as GearSix,
   Users,
-  Database,
   ChevronLeft as CaretLeft,
   ChevronRight as CaretRight,
-  MessageCircle as ChatCircleDots,
   ScanLine as Scan,
-  Upload,
-  ListChecks,
   Receipt,
   CircleUser as UserCircle,
   Package,
   Wallet,
-  Banknote as Money,
-  CalendarDays as CalendarBlank,
-  CalendarPlus,
   X,
   Zap as Lightning,
-  Brain,
-  CloudDownload as CloudArrowDown,
-  Workflow as FlowArrow,
+  Table,
+  RotateCcw,
   ChevronDown as CaretDown,
-  ChartNoAxesCombined as ChartLineUp,
-  Store,
-  Hotel,
+  House,
+  ClipboardList as ClipboardText,
+  CircleDollarSign as CurrencyCircleDollar,
+  Workflow as FlowArrow,
 } from 'lucide-react'
 import { LogoOnDark } from '../brand/logo'
 import { cn } from '../../lib/utils'
@@ -51,10 +37,8 @@ import type { AccessSpec } from '../../lib/access'
  * crashing the rail.
  */
 const ICONS: Record<string, Icon> = {
-  House, ChartBar, ClipboardText, Truck, UsersThree, CurrencyCircleDollar, FileText, Buildings,
-  FolderOpen, GearSix, Users, Database, ChatCircleDots, Scan, Upload, ListChecks, Receipt,
-  UserCircle, Package, Wallet, Money, CalendarBlank, CalendarPlus, Lightning, Brain,
-  CloudArrowDown, FlowArrow, ChartLineUp, Store, Hotel,
+  House, ClipboardText, Truck, CurrencyCircleDollar, FileText, GearSix, Users,
+  Scan, Receipt, UserCircle, Package, Wallet, Lightning, FlowArrow, Table, RotateCcw,
 }
 
 function iconFor(key?: string): Icon {
@@ -68,29 +52,6 @@ interface NavItem {
   end?: boolean
   children?: NavItem[]
 }
-
-/**
- * Children grouped under a parent row. The registry lists these routes
- * flat (the command palette wants them flat); the sidebar nests them.
- */
-const CHILDREN: Record<string, string[]> = {
-  '/workers': ['/workers/daily-tasks'],
-  '/management/employees': [
-    '/management/salary-slip',
-    '/management/salary-history',
-    '/management/advances',
-    '/management/holidays',
-    '/management/extra-work',
-    '/management/attendance',
-    '/management/attendance-log',
-  ],
-}
-
-/** Routes whose access spec is inherited from a parent (children of a guarded
- *  group) rather than declared on the route itself. */
-const INHERIT: Record<string, string> = Object.fromEntries(
-  Object.entries(CHILDREN).flatMap(([parent, kids]) => kids.map((k) => [k, parent])),
-)
 
 interface SidebarProps {
   collapsed: boolean
@@ -231,7 +192,7 @@ function SidebarContent({ collapsed, onToggle, isMobile, onMobileClose }: Sideba
    */
   const groups = useMemo(() => {
     const specFor = (path: string): AccessSpec => {
-      const target = INHERIT[path] ? specFor(INHERIT[path]) : ROUTES.find((r) => r.path === path)
+      const target = ROUTES.find((r) => r.path === path)
       if (!target) return {}
       return {
         permissions: target.permissions,
@@ -245,26 +206,11 @@ function SidebarContent({ collapsed, onToggle, isMobile, onMobileClose }: Sideba
     return NAV_GROUPS.map((group) => {
       const items = ROUTES.filter(
         (r) => r.group === group.id && r.navLabel && canAccess(specFor(r.path)),
-      )
-        .filter((r) => !INHERIT[r.path])
-        .map<NavItem>((r) => {
-          const kids =
-            CHILDREN[r.path]
-              ?.map((p) => ROUTES.find((x) => x.path === p))
-              .filter((x): x is (typeof ROUTES)[number] => Boolean(x) && canAccess(specFor(x!.path)))
-              .map<NavItem>((x) => ({
-                to: x.path,
-                label: x.navLabel ?? x.title,
-                icon: iconFor(x.icon),
-              })) ?? []
-          return {
-            to: r.path,
-            label: r.navLabel ?? r.title,
-            icon: iconFor(r.icon),
-            end: r.path === '/workers',
-            children: kids.length ? kids : undefined,
-          }
-        })
+      ).map<NavItem>((r) => ({
+        to: r.path,
+        label: r.navLabel ?? r.title,
+        icon: iconFor(r.icon),
+      }))
       return { id: group.id as NavGroupId, label: group.label, items }
     }).filter((g) => g.items.length > 0)
   }, [canAccess])

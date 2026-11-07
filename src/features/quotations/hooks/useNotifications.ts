@@ -59,7 +59,7 @@ export function useNotifications() {
         title: 'Ready for Billing',
         message: `${deliveredQuotations.length} delivered order${deliveredQuotations.length !== 1 ? 's' : ''} awaiting billing`,
         count: deliveredQuotations.length,
-        route: '/quotations',
+        route: '/bills',
         quotations: deliveredQuotations,
       })
     }

@@ -11,8 +11,6 @@ import {
   Flag,
   Package,
   Plus,
-  Receipt,
-  CalendarDays as CalendarBlank,
   RotateCcw as ArrowCounterClockwise,
   Truck,
   Wallet,
@@ -111,13 +109,9 @@ function eventLabel(type: string): string {
 // ── Quick actions ─────────────────────────────────────────────────────────────
 
 /**
- * QuickActions — the six things an operator does in a shift.
- *
- * One visual treatment for all six. Previously each action had its own fill
- * colour, which meant the most important thing on the page was decided by hue
- * rather than by use frequency, and the row read as five competing buttons.
- * `Receive` and `Deliver` — the two that actually run the floor — are marked
- * with a badge instead of a fill.
+ * QuickActions — the four stops of the daily flow, in the order the linen
+ * moves: receive → deliver → bill → return. Each carries a `Main` badge rather
+ * than a fill; the row reads as one pipeline, not six peers.
  */
 const QUICK_ACTIONS: {
   to: string
@@ -131,14 +125,6 @@ const QUICK_ACTIONS: {
   { to: '/deliveries/new', label: 'Deliver', hint: 'Record delivery', icon: Truck, primary: true },
   { to: '/bills/new', label: 'Bill', hint: 'Create bill', icon: FileText },
   { to: '/returns/new', label: 'Return', hint: 'Record return', icon: ArrowCounterClockwise },
-  {
-    to: '/management/expenses', label: 'Expense', hint: 'Record expense', icon: Receipt,
-    spec: { adminOnly: true },
-  },
-  {
-    to: '/management/attendance-log', label: 'Attendance', hint: 'Log staff', icon: CalendarBlank,
-    spec: { adminOnly: true },
-  },
 ]
 
 function QuickActions() {
@@ -147,7 +133,7 @@ function QuickActions() {
 
   return (
     <nav aria-label="Quick actions">
-      <ul className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
+      <ul className="grid grid-cols-2 gap-2 sm:grid-cols-4">
         {actions.map((a) => (
           <li key={a.to}>
             <Link
@@ -1154,7 +1140,7 @@ export default function TodayPage() {
 
       <div className="flex justify-end">
         <Button asChild variant="secondary" size="sm">
-          <Link to="/dashboard">Open full dashboard</Link>
+          <Link to="/today-sheet">Open Today Sheet</Link>
         </Button>
       </div>
     </div>

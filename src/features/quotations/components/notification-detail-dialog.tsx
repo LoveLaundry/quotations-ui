@@ -39,8 +39,10 @@ export function NotificationDetailDialog({ open, onOpenChange, data, type }: Not
       const entry = data as GatePassPendingEntry
       navigate(`/gate-passes/${entry.gate_pass_id}`)
     } else {
+      // There is no quotation page anymore — the bill form is where a
+      // delivered, ready-to-bill order goes next in the flow.
       const q = data as Quotation
-      navigate(`/quotations/${q.id}`)
+      navigate(`/bills/new?quotation_id=${q.id}`)
     }
   }
 
