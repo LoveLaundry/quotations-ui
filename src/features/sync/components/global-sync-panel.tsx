@@ -18,6 +18,7 @@ import {
 } from 'lucide-react'
 import { cn } from '../../../lib/utils'
 import { Button } from '../../../components/ui/button'
+import { ErrorState } from '../../../components/ui/empty-state'
 import { toast } from 'sonner'
 import type { SyncHotelStatus, SyncSection } from '../api/sync-api'
 import { fetchSyncStatus, triggerHotelSync, triggerGlobalSync } from '../api/sync-api'
@@ -296,18 +297,19 @@ export function GlobalSyncPanel({
   const [year, setYear] = useState(now.getFullYear())
   const [month, setMonth] = useState(now.getMonth() + 1)
   const [hotels, setHotels] = useState<SyncHotelStatus[]>([])
+  const [loadError, setLoadError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [globalSyncing, setGlobalSyncing] = useState(false)
   const panelRef = useRef<HTMLDivElement>(null)
 
   const load = useCallback(async () => {
     setLoading(true)
+    setLoadError(null)
     try {
       const data = await fetchSyncStatus(year, month)
       setHotels(data)
-    } catch {
-      // If endpoint doesn't exist yet, show mock empty state
-      setHotels([])
+    } catch (err) {
+      setLoadError(err instanceof Error ? err.message : 'Unable to load sync status.')
     } finally {
       setLoading(false)
     }
@@ -456,6 +458,13 @@ export function GlobalSyncPanel({
                 Loading sync status…
               </p>
             </div>
+          ) : loadError ? (
+            <ErrorState
+              title="Could not load sync status"
+              description={loadError}
+              onRetry={() => void load()}
+              className="m-3"
+            />
           ) : hotels.length === 0 ? (
             <div className="sync-empty-state">
               <ArrowsClockwise size={36} className="text-[var(--text-faint)]" />

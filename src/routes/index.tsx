@@ -10,6 +10,7 @@ import ErrorPage from '../features/quotations/pages/error-page'
 // bundle only contains the shell + login.
 
 const LoginPage = lazy(() => import('../features/auth/pages/login-page'))
+const GuestQuotationsPage = lazy(() => import('../features/quotations/pages/guest-quotations-page'))
 const LinenTrackPage = lazy(() => import('../features/linen/pages/linen-track-page'))
 
 // Daily operations (home)
@@ -53,6 +54,12 @@ export const router = createBrowserRouter([
   {
     path: '/login',
     element: <LoginPage />,
+    errorElement: <ErrorPage />,
+  },
+  {
+    // Public shop price list reached by the "Guest bill pass" button on login.
+    path: '/guest/shop',
+    element: <GuestQuotationsPage />,
     errorElement: <ErrorPage />,
   },
   {
