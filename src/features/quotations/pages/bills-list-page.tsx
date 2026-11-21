@@ -19,8 +19,6 @@ import { HotelBadge } from '../components/hotel-badge'
 import { StatusSectionList, type StatusSection } from '../components/status-section-list'
 import { ConfirmDialog } from '../../../components/ui/confirm-dialog'
 import { useHotelScope } from '../../../context/HotelContext'
-import { usePermissions } from '../../../hooks/usePermissions'
-import { CAPABILITIES } from '../../../lib/access'
 import type { Bill } from '../../../types/bill'
 import type { UnbilledGatePass } from '../../../types/bill'
 
@@ -40,8 +38,6 @@ function bucketFor(bill: Bill): SectionKey {
 export default function BillsListPage() {
     const navigate = useNavigate()
     const { hotel } = useHotelScope()
-    const { hasPermission } = usePermissions()
-    const canCreateBill = hasPermission(CAPABILITIES.manageBills)
 
     const [searchInput, setSearchInput] = useState('')
     const [search, setSearch] = useState('')
@@ -249,8 +245,8 @@ export default function BillsListPage() {
                     <EntityCardActions
                         onQuickView={() => setQuickView(bill)}
                         onOpen={() => navigate(`/bills/${bill.id}`)}
-                        onEdit={canCreateBill ? () => navigate(`/bills/${bill.id}`) : undefined}
-                        onDelete={canCreateBill ? () => setDeleting(bill) : undefined}
+                        onEdit={() => navigate(`/bills/${bill.id}`)}
+                        onDelete={() => setDeleting(bill)}
                     />
                 </div>
             </div>
@@ -342,13 +338,11 @@ export default function BillsListPage() {
                     <Button variant="secondary" onClick={handleExportCsv} disabled={!bills.length}>
                         <Download className="h-4 w-4 mr-2" /> Export CSV
                     </Button>
-                    {canCreateBill && (
-                        <Link to="/bills/new">
-                            <Button>
-                                <Plus className="h-4 w-4" /> New Bill
-                            </Button>
-                        </Link>
-                    )}
+                    <Link to="/bills/new">
+                        <Button>
+                            <Plus className="h-4 w-4" /> New Bill
+                        </Button>
+                    </Link>
                 </div>
             </div>
 
@@ -428,13 +422,13 @@ export default function BillsListPage() {
                                 : 'Create your first bill from an existing quotation.'
                     }
                     action={
-                        !hasFilters && canCreateBill ? (
+                        !hasFilters && (
                             <Link to="/bills/new">
                                 <Button>
                                     <Plus className="h-4 w-4" /> New Bill
                                 </Button>
                             </Link>
-                        ) : null
+                        )
                     }
                 />
             ) : sections.some(section => section.items.length > 0) ? (

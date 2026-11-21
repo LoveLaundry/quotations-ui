@@ -5,10 +5,10 @@ import { usePermissions } from '../../hooks/usePermissions'
  * LandingRedirect — sends `/` (and any access-denied bounce) to the best page
  * for the current session.
  *
- * The index route used to hard-redirect to `/today`, which stranded hotel/shop
- * account roles on a tenant operations screen. `landingPathFor` now picks a
- * page the session may actually open: the daily hub for laundry operators, the
- * profile for client accounts.
+ * The index route used to hard-redirect to `/today`. A platform-only session
+ * was then bounced again out of `/today` by the app shell, and a session whose
+ * role lacked every Overview surface would land on a page it could not use.
+ * `landingPathFor` picks the first surface the session may actually open.
  */
 export function LandingRedirect() {
   const { landingPath } = usePermissions()

@@ -27,7 +27,6 @@ import {
   configureQueryDefaults,
   shouldPersistQuery,
 } from './cache/cache-config'
-import { useLiveLinenSync } from './features/linen/hooks/useLiveLinenSync'
 
 const queryClientConfig: QueryClientConfig = {
   defaultOptions: {
@@ -89,10 +88,6 @@ function CacheHostProvider({ children }: { children: ReactNode }) {
   const scope = cacheScopeFor(user)
   const persister = useMemo(() => createIndexedDbPersister(scope), [scope])
   const prevScope = useRef(scope)
-
-  // Cross-device linen sync: while signed in, the app watches the laundry's
-  // live clock and refetches linen data the moment any other device scans.
-  useLiveLinenSync(queryClient)
 
   // Point the offline outbox at this user's cache and start the sync engine
   // once (idempotent). The engine replays queued writes and refreshes cache.

@@ -1,5 +1,6 @@
 import { useCallback, useMemo } from 'react'
 import { useAuth } from '../context/AuthContext'
+import { useRouteAccess } from '../context/RouteAccessContext'
 import {
   canAccess as canAccessFor,
   hasPermission as hasPermissionFor,
@@ -10,29 +11,22 @@ import {
   type AccessSpec,
 } from '../lib/access'
 
-/**
- * usePermissions — the session's access decisions, memoised.
- *
- * Previously this hook rebuilt `hasPermission` on every render, so any consumer
- * that listed it in a dependency array re-ran on each pass (the sidebar filtered
- * its whole tree every render, the palette re-filtered every keystroke). The
- * callbacks are now stable for the life of a session, and every decision is
- * delegated to lib/access.ts so the hook can never drift from the route guards.
- */
 export function usePermissions() {
   const { user, support } = useAuth()
+  const { overrides } = useRouteAccess()
   const supportActive = Boolean(support)
   const role = roleOf(user)
   const permissions = useMemo(() => permissionsOf(user), [user])
+  const disabledPaths = useMemo(() => overrides?.[role]?.disabled_routes || [], [overrides, role])
 
   const hasPermission = useCallback(
-    (permission: string) => hasPermissionFor(user, permission, supportActive),
-    [user, supportActive],
+    (permission: string) => hasPermissionFor(user, permission),
+    [user],
   )
 
   const canAccess = useCallback(
-    (spec: AccessSpec) => canAccessFor(user, spec, supportActive),
-    [user, supportActive],
+    (spec: AccessSpec, routePath?: string) => canAccessFor(user, spec, supportActive, { routePath, disabledPaths }),
+    [user, supportActive, disabledPaths],
   )
 
   const isPlatformAdmin = useMemo(() => isPlatformAdminFor(user), [user])

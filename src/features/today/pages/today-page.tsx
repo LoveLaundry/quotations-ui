@@ -11,6 +11,8 @@ import {
   Flag,
   Package,
   Plus,
+  Receipt,
+  CalendarDays as CalendarBlank,
   RotateCcw as ArrowCounterClockwise,
   Truck,
   Wallet,
@@ -24,7 +26,7 @@ import {
 import { cn } from '../../../lib/utils'
 import { addDaysISO, TIME_ZONE, todayISO } from '../../../lib/time'
 import { usePermissions } from '../../../hooks/usePermissions'
-import { accessSpecForPath } from '../../../config/route-meta'
+import type { AccessSpec } from '../../../lib/access'
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card'
 import { Button } from '../../../components/ui/button'
 import { Skeleton } from '../../../components/ui/skeleton'
@@ -109,9 +111,13 @@ function eventLabel(type: string): string {
 // ── Quick actions ─────────────────────────────────────────────────────────────
 
 /**
- * QuickActions — the four stops of the daily flow, in the order the linen
- * moves: receive → deliver → bill → return. Each carries a `Main` badge rather
- * than a fill; the row reads as one pipeline, not six peers.
+ * QuickActions — the six things an operator does in a shift.
+ *
+ * One visual treatment for all six. Previously each action had its own fill
+ * colour, which meant the most important thing on the page was decided by hue
+ * rather than by use frequency, and the row read as five competing buttons.
+ * `Receive` and `Deliver` — the two that actually run the floor — are marked
+ * with a badge instead of a fill.
  */
 const QUICK_ACTIONS: {
   to: string
@@ -119,20 +125,29 @@ const QUICK_ACTIONS: {
   hint: string
   icon: typeof ClipboardText
   primary?: boolean
+  spec?: AccessSpec
 }[] = [
   { to: '/gate-passes/new', label: 'Receive', hint: 'New gate pass', icon: ClipboardText, primary: true },
   { to: '/deliveries/new', label: 'Deliver', hint: 'Record delivery', icon: Truck, primary: true },
   { to: '/bills/new', label: 'Bill', hint: 'Create bill', icon: FileText },
   { to: '/returns/new', label: 'Return', hint: 'Record return', icon: ArrowCounterClockwise },
+  {
+    to: '/management/expenses', label: 'Expense', hint: 'Record expense', icon: Receipt,
+    spec: { adminOnly: true },
+  },
+  {
+    to: '/management/attendance-log', label: 'Attendance', hint: 'Log staff', icon: CalendarBlank,
+    spec: { adminOnly: true },
+  },
 ]
 
 function QuickActions() {
   const { canAccess } = usePermissions()
-  const actions = QUICK_ACTIONS.filter((action) => canAccess(accessSpecForPath(action.to)))
+  const actions = QUICK_ACTIONS.filter((action) => !action.spec || canAccess(action.spec))
 
   return (
     <nav aria-label="Quick actions">
-      <ul className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+      <ul className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
         {actions.map((a) => (
           <li key={a.to}>
             <Link
@@ -1139,7 +1154,7 @@ export default function TodayPage() {
 
       <div className="flex justify-end">
         <Button asChild variant="secondary" size="sm">
-          <Link to="/today-sheet">Open Today Sheet</Link>
+          <Link to="/dashboard">Open full dashboard</Link>
         </Button>
       </div>
     </div>

@@ -8,7 +8,6 @@ import type {
   LinenBulkCreate,
   LinenScanAction,
   LinenTagGenerate,
-  LinenTransitionList,
 } from '../../../types/linen'
 
 async function listLinens(params: LinenListParams = {}): Promise<LinenListResponse> {
@@ -56,36 +55,6 @@ async function getLinenStats(): Promise<LinenStats> {
   return response.data
 }
 
-async function getLiveClock(): Promise<number> {
-  const response = await billsApi.get<{ clock: number }>('/linens/live-clock')
-  return Number(response.data?.clock ?? 0)
-}
-
-async function getTransitions(): Promise<LinenTransitionList> {
-  const response = await billsApi.get<LinenTransitionList>('/linens/transitions')
-  return response.data
-}
-
-export interface ScanActivity {
-  total_scans: number
-  by_action: Record<string, number>
-  by_status: Record<string, number>
-  by_day: Record<string, number>
-  recent: Array<{
-    linen_id?: string
-    action?: string
-    from_status?: string
-    to_status?: string
-    user?: string
-    timestamp?: string | null
-  }>
-}
-
-async function getScanActivity(params?: { date_from?: string; date_to?: string }): Promise<ScanActivity> {
-  const response = await billsApi.get<ScanActivity>('/linens/reports/scan-activity', { params })
-  return response.data
-}
-
 async function deleteLinen(docId: string): Promise<void> {
   await billsApi.delete(`/linens/${docId}`)
 }
@@ -100,8 +69,5 @@ export const linenService = {
   bulkScan,
   getLinenEvents,
   getLinenStats,
-  getLiveClock,
-  getTransitions,
-  getScanActivity,
   deleteLinen,
 }

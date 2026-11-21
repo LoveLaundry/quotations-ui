@@ -50,58 +50,6 @@ export interface LinenListResponse {
   total: number
 }
 
-/**
- * The post-change row carried by a socket event.
- *
- * Deliberately narrower than `Linen`: it holds only the fields a screen can
- * render differently after a scan, so one event stays small enough to ship on
- * every tag at a busy station instead of triggering a refetch.
- */
-export interface LinenSnapshot {
-  id: string
-  linen_id: string
-  status: LinenStatus | string
-  previous_status: string | null
-  category?: string
-  item_type?: string
-  client_name?: string
-  condition?: string
-  location?: string | null
-  wash_count?: number
-  last_washed_date?: string | null
-  last_scanned_date?: string | null
-  retirement_date?: string | null
-  updated_at?: string | null
-}
-
-export type LinenRealtimeEventName =
-  | 'scan'
-  | 'create'
-  | 'create_bulk'
-  | 'generate_tags'
-  | 'update'
-  | 'delete'
-  | 'bulk_scan'
-
-/** One frame from `/ws/linen` (`type: "linen.event"`). */
-export interface LinenRealtimeEvent {
-  type: 'linen.event'
-  event: LinenRealtimeEventName
-  laundry_id: string
-  clock: number
-  at: string
-  action?: string | null
-  actor?: { user_id: string; name: string; role: string } | null
-  count?: number | null
-  linen?: LinenSnapshot | null
-  linen_ids?: string[]
-}
-
-/** `live` means the socket is carrying events; `fallback` means the app is
- *  back on the live-clock poll because a socket cannot be held open (a
- *  serverless deployment rejects the upgrade outright). */
-export type LinenLiveStatus = 'idle' | 'connecting' | 'live' | 'fallback'
-
 export interface LinenEventListResponse {
   items: LinenEvent[]
   total: number
@@ -167,35 +115,6 @@ export interface LinenTagGenerate {
   department?: string
 }
 
-/**
- * One scan action exactly as `GET /linens/transitions` describes it. The
- * server owns the status vocabulary, so the state picker is built from these
- * rows rather than from a list kept in this app (which would drift the moment
- * the backend gained or renamed a state).
- */
-export interface LinenTransition {
-  action: string
-  label: string
-  to_status: string
-  to_status_label: string
-  custody: LinenCustody
-  terminal: boolean
-}
-
-export type LinenCustody = 'hotel' | 'laundry' | 'exception'
-
-export interface LinenTransitionGroup {
-  custody: LinenCustody
-  label: string
-  description: string
-  transitions: LinenTransition[]
-}
-
-export interface LinenTransitionList {
-  groups: LinenTransitionGroup[]
-  statuses: LinenStatus[]
-}
-
 export const LINEN_STATUS_CONFIG: Record<LinenStatus, { label: string; color: string; bg: string }> = {
   IN_STOCK:    { label: 'In Stock',    color: '#16A34A', bg: '#DCFCE7' },
   AT_CLIENT:   { label: 'At Client',   color: '#2563EB', bg: '#DBEAFE' },
@@ -233,6 +152,15 @@ export const LINEN_CONDITIONS: { value: string; label: string }[] = [
   { value: 'DAMAGED', label: 'Damaged' },
 ]
 
-// There is deliberately no list of scan actions here. `GET /linens/transitions`
-// is the only source: a copy in this file would let the picker offer states the
-// linen service has already changed the meaning of.
+export const SCAN_ACTIONS: { value: string; label: string; color: string }[] = [
+  { value: 'collect', label: 'Collect', color: '#9333EA' },
+  { value: 'receive', label: 'Receive', color: '#EA580C' },
+  { value: 'start_wash', label: 'Start Wash', color: '#0891B2' },
+  { value: 'complete_wash', label: 'Complete Wash', color: '#D97706' },
+  { value: 'press', label: 'Press', color: '#7C3AED' },
+  { value: 'ready', label: 'Ready', color: '#16A34A' },
+  { value: 'deliver', label: 'Deliver', color: '#059669' },
+  { value: 'mark_missing', label: 'Mark Missing', color: '#DC2626' },
+  { value: 'mark_damaged', label: 'Mark Damaged', color: '#DC2626' },
+  { value: 'retire', label: 'Retire', color: '#6B7280' },
+]

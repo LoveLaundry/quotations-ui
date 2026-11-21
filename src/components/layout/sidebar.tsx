@@ -2,32 +2,45 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
 import type { LucideIcon as Icon } from 'lucide-react'
 import {
+  House,
+  ChartColumn as ChartBar,
+  ClipboardList as ClipboardText,
   Truck,
+  UsersRound as UsersThree,
+  CircleDollarSign as CurrencyCircleDollar,
   FileText,
+  Building2 as Buildings,
+  FolderOpen,
   Settings as GearSix,
   Users,
+  Database,
   ChevronLeft as CaretLeft,
   ChevronRight as CaretRight,
+  MessageCircle as ChatCircleDots,
   ScanLine as Scan,
+  Upload,
+  ListChecks,
   Receipt,
   CircleUser as UserCircle,
   Package,
   Wallet,
+  Banknote as Money,
+  CalendarDays as CalendarBlank,
+  CalendarPlus,
   X,
   Zap as Lightning,
-  Table,
-  RotateCcw,
-  ChevronDown as CaretDown,
-  House,
-  ClipboardList as ClipboardText,
-  CircleDollarSign as CurrencyCircleDollar,
+  Brain,
+  CloudDownload as CloudArrowDown,
   Workflow as FlowArrow,
+  ChevronDown as CaretDown,
+  ChartNoAxesCombined as ChartLineUp,
 } from 'lucide-react'
 import { LogoOnDark } from '../brand/logo'
 import { cn } from '../../lib/utils'
 import { useAuth } from '../../context/AuthContext'
-import { accessSpecForPath, NAV_GROUPS, ROUTES, type NavGroupId } from '../../config/route-meta'
+import { NAV_GROUPS, ROUTES, type NavGroupId } from '../../config/route-meta'
 import { usePermissions } from '../../hooks/usePermissions'
+import type { AccessSpec } from '../../lib/access'
 
 /**
  * Icon lookup. `route-meta.ts` stores icon *keys* so it stays a plain data
@@ -36,8 +49,10 @@ import { usePermissions } from '../../hooks/usePermissions'
  * crashing the rail.
  */
 const ICONS: Record<string, Icon> = {
-  House, ClipboardText, Truck, CurrencyCircleDollar, FileText, GearSix, Users,
-  Scan, Receipt, UserCircle, Package, Wallet, Lightning, FlowArrow, Table, RotateCcw,
+  House, ChartBar, ClipboardText, Truck, UsersThree, CurrencyCircleDollar, FileText, Buildings,
+  FolderOpen, GearSix, Users, Database, ChatCircleDots, Scan, Upload, ListChecks, Receipt,
+  UserCircle, Package, Wallet, Money, CalendarBlank, CalendarPlus, Lightning, Brain,
+  CloudArrowDown, FlowArrow, ChartLineUp,
 }
 
 function iconFor(key?: string): Icon {
@@ -51,6 +66,29 @@ interface NavItem {
   end?: boolean
   children?: NavItem[]
 }
+
+/**
+ * Children grouped under a parent row. The registry lists these routes
+ * flat (the command palette wants them flat); the sidebar nests them.
+ */
+const CHILDREN: Record<string, string[]> = {
+  '/workers': ['/workers/daily-tasks'],
+  '/management/employees': [
+    '/management/salary-slip',
+    '/management/salary-history',
+    '/management/advances',
+    '/management/holidays',
+    '/management/extra-work',
+    '/management/attendance',
+    '/management/attendance-log',
+  ],
+}
+
+/** Routes whose access spec is inherited from a parent (children of a guarded
+ *  group) rather than declared on the route itself. */
+const INHERIT: Record<string, string> = Object.fromEntries(
+  Object.entries(CHILDREN).flatMap(([parent, kids]) => kids.map((k) => [k, parent])),
+)
 
 interface SidebarProps {
   collapsed: boolean
@@ -184,19 +222,47 @@ function SidebarContent({ collapsed, onToggle, isMobile, onMobileClose }: Sideba
 
   /**
    * The rail is built from the route registry, so a listed link and an allowed
-   * route are decided by the same rule. A tenant session sees whatever its
-   * capabilities allow; hotel/shop account roles see only the account group.
-   * Groups with nothing left after filtering are dropped.
+   * route are decided by the same rule. A platform-only session sees only the
+   * Platform group (canAccess rejects every tenant group for it); a tenant
+   * session sees whatever its capabilities allow. Groups with nothing left
+   * after filtering are dropped.
    */
   const groups = useMemo(() => {
+    const specFor = (path: string): AccessSpec => {
+      const target = INHERIT[path] ? specFor(INHERIT[path]) : ROUTES.find((r) => r.path === path)
+      if (!target) return {}
+      return {
+        permissions: target.permissions,
+        roles: target.roles,
+        adminOnly: target.adminOnly,
+        platformOnly: target.platformOnly,
+        tenantOnly: target.tenantOnly,
+      }
+    }
+
     return NAV_GROUPS.map((group) => {
       const items = ROUTES.filter(
-        (r) => r.group === group.id && r.navLabel && canAccess(accessSpecForPath(r.path)),
-      ).map<NavItem>((r) => ({
-        to: r.path,
-        label: r.navLabel ?? r.title,
-        icon: iconFor(r.icon),
-      }))
+        (r) => r.group === group.id && r.navLabel && canAccess(specFor(r.path), r.path),
+      )
+        .filter((r) => !INHERIT[r.path])
+        .map<NavItem>((r) => {
+          const kids =
+            CHILDREN[r.path]
+              ?.map((p) => ROUTES.find((x) => x.path === p))
+              .filter((x): x is (typeof ROUTES)[number] => Boolean(x) && canAccess(specFor(x!.path), x!.path))
+              .map<NavItem>((x) => ({
+                to: x.path,
+                label: x.navLabel ?? x.title,
+                icon: iconFor(x.icon),
+              })) ?? []
+          return {
+            to: r.path,
+            label: r.navLabel ?? r.title,
+            icon: iconFor(r.icon),
+            end: r.path === '/workers',
+            children: kids.length ? kids : undefined,
+          }
+        })
       return { id: group.id as NavGroupId, label: group.label, items }
     }).filter((g) => g.items.length > 0)
   }, [canAccess])

@@ -27,8 +27,6 @@ import type { GatePassBalanceItem, Return } from '../../../types/operations'
 import { ops, type TransactionEvent } from '../../today/services/ops.service'
 import { todayISO } from '../../../lib/time'
 import { Portal } from '../../../components/ui/portal'
-import { usePermissions } from '../../../hooks/usePermissions'
-import { CAPABILITIES } from '../../../lib/access'
 
 /** Stable empty array so `?? NO_ITEMS` doesn't invalidate memos on every render. */
 const NO_ITEMS: never[] = []
@@ -148,8 +146,6 @@ function eventDetail(e: TransactionEvent): React.ReactNode {
 
 export default function GatePassDetailPage() {
     const { id } = useParams()
-    const { hasPermission } = usePermissions()
-    const canCreateBill = hasPermission(CAPABILITIES.manageBills)
     
     const { data: gp, isLoading, isError, error } = useGatePass(id)
     // The server's canonical balance for THIS pass, and the deliveries that drew
@@ -536,16 +532,14 @@ export default function GatePassDetailPage() {
                         </Button>
                     </Link>
 
-                    {canCreateBill && (
-                        <Button
-                            size="sm"
-                            variant="secondary"
-                            onClick={() => setBillingOpen(o => !o)}
-                            disabled={createBill.isPending}
-                        >
-                            <Receipt className="h-3.5 w-3.5" /> Create Bill
-                        </Button>
-                    )}
+                    <Button
+                        size="sm"
+                        variant="secondary"
+                        onClick={() => setBillingOpen(o => !o)}
+                        disabled={createBill.isPending}
+                    >
+                        <Receipt className="h-3.5 w-3.5" /> Create Bill
+                    </Button>
                 </div>
             </div>
 
@@ -672,7 +666,7 @@ export default function GatePassDetailPage() {
             )}
 
             {/* Create Bill from Gate Pass */}
-            {canCreateBill && billingOpen && (
+            {billingOpen && (
                 <Card className="p-4">
                     <div className="flex items-center justify-between mb-3">
                         <p className="text-[13px] font-semibold text-[var(--text-primary)]">Create Bill from this Gate Pass</p>

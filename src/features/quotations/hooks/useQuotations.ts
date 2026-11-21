@@ -4,6 +4,7 @@ import { quotationService } from '../services/quotation.service'
 import type { Quotation, QuotationPayload, OrderStatus } from '../../../types/quotation'
 import { invalidateResource } from '../../../cache/invalidation'
 import { useAuth } from '../../../context/AuthContext'
+import { isPlatformOnly } from '../../../lib/session-scope'
 
 export const quotationKeys = {
   all: ['quotations'] as const,
@@ -13,11 +14,14 @@ export const quotationKeys = {
 }
 
 export function useQuotations() {
-  const { isAuthenticated } = useAuth()
+  const { user, support } = useAuth()
   return useQuery({
     queryKey: quotationKeys.list(),
     queryFn: quotationService.getAllQuotations,
-    enabled: isAuthenticated,
+    // The app shell reads quotations for the top bar and hotel context, so this
+    // runs on every page. A platform-only session has no business fetching
+    // tenant data — doing so produced a 403 on each screen load.
+    enabled: !isPlatformOnly(user, Boolean(support)),
   })
 }
 
