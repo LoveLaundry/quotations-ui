@@ -1,7 +1,9 @@
 import { useState, useRef, useEffect, useId } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useQueryClient } from '@tanstack/react-query'
 import {
   Search as MagnifyingGlass,
+  RefreshCw,
   Bell,
   Menu as List,
   LogOut as SignOut,
@@ -66,8 +68,23 @@ export function TopBar({
   ] = useState<{ item: Quotation | GatePassPendingEntry; type: NotificationType } | null>(null)
   const notificationsRef = useRef<HTMLDivElement>(null)
   const notifId = useId()
+  const queryClient = useQueryClient()
+  const [refreshing, setRefreshing] = useState(false)
+  const [lastUpdated, setLastUpdated] = useState<string | null>(null)
 
   const { totalCount, notificationItems, isLoading } = useNotifications()
+
+  /** Re-run every API query owned by the page currently on screen. */
+  const refreshPage = async (): Promise<void> => {
+    if (refreshing) return
+    setRefreshing(true)
+    try {
+      await queryClient.refetchQueries({ type: 'active' })
+      setLastUpdated(new Date().toLocaleTimeString())
+    } finally {
+      setRefreshing(false)
+    }
+  }
 
   const handleLogout = () => {
     logout()
@@ -149,8 +166,30 @@ export function TopBar({
           )}
         </div>
 
-        {/* Right: scope, search, notifications, account */}
+        {/* Right: page refresh, scope, search, notifications, account */}
         <div className="flex shrink-0 items-center gap-1.5">
+          <button
+            type="button"
+            onClick={() => void refreshPage()}
+            disabled={refreshing}
+            aria-label={refreshing ? 'Refreshing page data' : 'Refresh page data'}
+            title={lastUpdated ? `Last refreshed at ${lastUpdated}` : 'Refresh page data'}
+            className={cn(iconBtn, 'sm:h-8 sm:w-auto sm:gap-1.5 sm:border-[var(--border-2)] sm:px-2.5')}
+          >
+            <RefreshCw size={16} aria-hidden className={refreshing ? 'animate-spin' : undefined} />
+            <span className="hidden text-[12.5px] font-medium lg:inline">
+              {refreshing ? 'Refreshing…' : 'Refresh'}
+            </span>
+          </button>
+          {lastUpdated && (
+            <span
+              className="hidden text-[11px] tabular-nums text-[var(--text-faint)] xl:inline"
+              title="Page data last refreshed"
+            >
+              {lastUpdated}
+            </span>
+          )}
+
           <HotelSelector />
           <LaundrySwitcher />
 
