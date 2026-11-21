@@ -1,5 +1,5 @@
 import { Suspense, useEffect, useState } from 'react'
-import { Navigate, Outlet, useLocation, useNavigate } from 'react-router-dom'
+import { Navigate, Outlet, useLocation } from 'react-router-dom'
 import { Sidebar } from './sidebar'
 import { TopBar } from './top-bar'
 import { CommandSearch } from '../ui/command-search'
@@ -8,7 +8,6 @@ import { SyncFab } from '../../features/sync/components/global-sync-panel'
 import { PageLoader } from '../ui/loader'
 import { useAuth } from '../../context/AuthContext'
 import { PLATFORM_LANDING, PLATFORM_PATHS, isPlatformOnly } from '../../lib/session-scope'
-import { setUnauthorizedHandler } from '../../api/interceptors'
 
 const pageTitles: Record<string, string> = {
   '/': 'Daily Operations',
@@ -97,16 +96,12 @@ export function AppShell() {
   const [mobileOpen, setMobileOpen] = useState(false)
   const [cmdOpen, setCmdOpen] = useState(false)
   const location = useLocation()
-  const navigate = useNavigate()
-  const { user, logout, support, exitSupport } = useAuth()
+  const { user, support, exitSupport } = useAuth()
 
-  useEffect(() => {
-    setUnauthorizedHandler(() => {
-      logout()
-      navigate('/login', { replace: true })
-    })
-    return () => setUnauthorizedHandler(null)
-  }, [logout, navigate])
+  // Session expiry is handled centrally by AuthProvider (it listens for the
+  // API layer's expiry event), so even a 401 that arrives before this shell's
+  // effects run cannot leave a half-signed-in state. ProtectedRoute then
+  // redirects to /login as soon as isAuthenticated flips to false.
 
   // Ctrl/Cmd+K opens search from anywhere, including inside inputs and textareas.
   useEffect(() => {

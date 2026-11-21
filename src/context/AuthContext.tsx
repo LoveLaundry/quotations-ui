@@ -1,8 +1,24 @@
-import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from 'react'
+import {
+    createContext,
+    useContext,
+    useState,
+    useCallback,
+    useEffect,
+    useRef,
+    type ReactNode,
+} from 'react'
 import type { User } from '../types/auth'
 import { deleteCacheDb } from '../cache/db'
 import { cacheScopeFor } from '../cache/scope'
-import { setSupportToken } from '../lib/auth-token'
+import {
+    SESSION_EXPIRED_EVENT,
+    TOKEN_STORAGE_KEY,
+    USER_STORAGE_KEY,
+    clearStoredSession,
+    isTokenExpired,
+    resetSessionExpiryGuard,
+    setSupportToken,
+} from '../lib/auth-token'
 import authApi from '../api/auth-api'
 
 export interface SupportSession {
@@ -30,24 +46,28 @@ interface AuthCtx {
 const AuthContext = createContext<AuthCtx | null>(null)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-    const [token, setToken] = useState<string | null>(() => localStorage.getItem('ll_token'))
+    const [token, setToken] = useState<string | null>(() => localStorage.getItem(TOKEN_STORAGE_KEY))
     const [support, setSupport] = useState<SupportSession | null>(null)
     const [user, setUser] = useState<User | null>(() => {
-        try { return JSON.parse(localStorage.getItem('ll_user') ?? 'null') } catch { return null }
+        try { return JSON.parse(localStorage.getItem(USER_STORAGE_KEY) ?? 'null') } catch { return null }
     })
 
     const login = useCallback((tok: string, usr: User) => {
-        localStorage.setItem('ll_token', tok)
-        localStorage.setItem('ll_user', JSON.stringify(usr))
+        // A lingering support token (memory-only, from an earlier support
+        // entry in this tab) would override the freshly issued token on every
+        // request and get the new session rejected with 401.
+        setSupportToken(null)
+        setSupport(null)
+        resetSessionExpiryGuard()
+        localStorage.setItem(TOKEN_STORAGE_KEY, tok)
+        localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(usr))
         setToken(tok)
         setUser(usr)
     }, [])
 
     const logout = useCallback(() => {
         const scope = user?.id
-        localStorage.removeItem('ll_token')
-        localStorage.removeItem('ll_user')
-        setSupportToken(null)
+        clearStoredSession()
         setSupport(null)
         setToken(null)
         setUser(null)
@@ -57,7 +77,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }, [user])
 
     const updateUser = useCallback((usr: User) => {
-        if (!support) localStorage.setItem('ll_user', JSON.stringify(usr))
+        if (!support) localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(usr))
         setUser(usr)
     }, [support])
 
@@ -70,8 +90,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 token_type: string
                 user: User
             }
-            localStorage.setItem('ll_token', access_token)
-            localStorage.setItem('ll_user', JSON.stringify(nextUser))
+            // This response replaces the active session: no stale support
+            // token or expiry flag may survive it.
+            setSupportToken(null)
+            setSupport(null)
+            resetSessionExpiryGuard()
+            localStorage.setItem(TOKEN_STORAGE_KEY, access_token)
+            localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(nextUser))
             setToken(access_token)
             setUser(nextUser)
             if (previous) void deleteCacheDb(cacheScopeFor(previous))
@@ -95,27 +120,52 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (support) void deleteCacheDb(cacheScopeFor(support.user))
         setSupportToken(null)
         setSupport(null)
-        setToken(localStorage.getItem('ll_token'))
+        setToken(localStorage.getItem(TOKEN_STORAGE_KEY))
         try {
-            setUser(JSON.parse(localStorage.getItem('ll_user') ?? 'null'))
+            setUser(JSON.parse(localStorage.getItem(USER_STORAGE_KEY) ?? 'null'))
         } catch {
             setUser(null)
         }
     }, [support])
 
+    // The API layer announces a confirmed session expiry; keep the ref fresh
+    // so the listener can stay mounted once and still call the latest logout.
+    const logoutRef = useRef(logout)
+    useEffect(() => { logoutRef.current = logout }, [logout])
+    const tokenRef = useRef(token)
+    useEffect(() => { tokenRef.current = token }, [token])
+
+    useEffect(() => {
+        const onExpired = () => logoutRef.current()
+        // When another tab signs out, follow it. Without this the two tabs
+        // drift apart: one has no stored token while the other still believes
+        // it is signed in, and the next click looks like a random logout.
+        const onStorage = (e: StorageEvent) => {
+            if (e.key === TOKEN_STORAGE_KEY && e.newValue === null && tokenRef.current) {
+                logoutRef.current()
+            }
+        }
+        window.addEventListener(SESSION_EXPIRED_EVENT, onExpired)
+        window.addEventListener('storage', onStorage)
+        return () => {
+            window.removeEventListener(SESSION_EXPIRED_EVENT, onExpired)
+            window.removeEventListener('storage', onStorage)
+        }
+    }, [])
+
     // Proactively detect an expired JWT so the user is sent to login cleanly
-    // instead of hitting a silent 401 on the first data request.
+    // instead of hitting a silent 401 on the first data request. The helper
+    // allows clock skew, so a server-issued token is never discarded just
+    // because the two clocks differ slightly.
     useEffect(() => {
         if (!token) return
-        try {
-            const payload = JSON.parse(atob(token.split('.')[1] ?? ''))
-            if (payload?.exp && payload.exp * 1000 < Date.now()) {
-                logout()
-            }
-        } catch {
-            // Malformed token — leave it; the API will reject and trigger logout.
+        if (isTokenExpired(token)) {
+            // Expiring a support token should drop back to the platform
+            // session, not sign the platform user out entirely.
+            if (support) exitSupport()
+            else logout()
         }
-    }, [token, logout])
+    }, [token, support, logout, exitSupport])
 
     return (
         <AuthContext.Provider

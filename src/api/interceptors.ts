@@ -1,20 +1,6 @@
 import type { AxiosError, AxiosInstance } from 'axios'
 import { withNestedItems } from '../lib/api-normalise'
-
-type UnauthorizedHandler = () => void
-
-let unauthorizedHandler: UnauthorizedHandler | null = null
-let redirecting = false
-
-/**
- * Register a handler invoked when the API returns 401 on a non-auth request.
- * The handler should perform a clean SPA redirect to the login page.
- * Resetting the handler (passing null) also clears the one-shot redirect guard.
- */
-export function setUnauthorizedHandler(handler: UnauthorizedHandler | null) {
-  unauthorizedHandler = handler
-  if (handler) redirecting = false
-}
+import { getActiveToken, isTokenExpired, notifySessionExpired } from '../lib/auth-token'
 
 /**
  * Reduce any thrown value to a human-readable message.
@@ -52,7 +38,10 @@ function extractMessage(err: AxiosError): string {
  * Attaches a response interceptor that:
  *  - Repairs omitted collections before any consumer sees the payload.
  *  - Never force-reloads the page or hijacks login errors.
- *  - On 401 (outside auth endpoints) triggers a single clean SPA logout redirect.
+ *  - On 401, ends the session ONLY when the token that was sent is expired or
+ *    missing. A 401 from a healthy token is a service/permission error, not a
+ *    logout — destroying the session there caused users to be signed out at
+ *    random after login or on the next click.
  *  - Normalizes error messages so they are never "[object Object]".
  */
 export function attachResponseInterceptor(instance: AxiosInstance) {
@@ -79,13 +68,23 @@ export function attachResponseInterceptor(instance: AxiosInstance) {
           url.includes('/auth/login') ||
           url.includes('/token') ||
           url.includes('/auth/')
+
         if (!isAuthCall) {
-          localStorage.removeItem('ll_token')
-          localStorage.removeItem('ll_user')
-          if (!redirecting && unauthorizedHandler) {
-            redirecting = true
-            unauthorizedHandler()
+          // Use the token actually attached to this request (a support token
+          // can override the stored one) and require it to be genuinely
+          // expired before ending the session. This single gate is the fix
+          // for intermittent logouts caused by transient 401s from the many
+          // backend services this app talks to.
+          const authHeader = err.config?.headers?.Authorization
+          const sentToken =
+            typeof authHeader === 'string'
+              ? authHeader.replace(/^Bearer\s+/i, '')
+              : getActiveToken()
+
+          if (isTokenExpired(sentToken)) {
+            notifySessionExpired()
           }
+          // Otherwise: keep the session and let the page show the error.
         }
       }
       // Preserve the original error's shape (including .response) so that
