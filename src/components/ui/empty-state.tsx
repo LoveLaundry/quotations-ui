@@ -54,7 +54,7 @@ export function EmptyState({
   return (
     <Wrapper
       className={cn(
-        'flex flex-col items-center justify-center px-6 py-10 text-center',
+        'empty-state flex flex-col items-center justify-center px-6 py-10 text-center',
         !bare && 'rounded-lg border border-dashed border-[var(--border-2)] bg-[var(--surface-2)]',
         className,
       )}

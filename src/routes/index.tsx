@@ -33,6 +33,7 @@ const ProfilePage = lazy(() => import('../features/quotations/pages/profile-page
 const BillsListPage = lazy(() => import('../features/quotations/pages/bills-list-page'))
 const IncomePage = lazy(() => import('../features/quotations/pages/income-page'))
 const LedgerPage = lazy(() => import('../features/quotations/pages/ledger-page'))
+const PlatformOverviewPage = lazy(() => import('../features/platform/pages/platform-overview-page'))
 const LaundriesPage = lazy(() => import('../features/platform/pages/laundries-page'))
 const ShopsPage = lazy(() => import('../features/platform/pages/shops-page'))
 const HotelsPage = lazy(() => import('../features/platform/pages/hotels-page'))
@@ -264,6 +265,7 @@ export const router = createBrowserRouter([
           {
             element: <PlatformAdminRoute />,
             children: [
+              { path: 'platform', element: <PlatformOverviewPage /> },
               { path: 'laundries', element: <LaundriesPage /> },
               { path: 'users', element: <UsersPage /> },
               { path: 'shops', element: <ShopsPage /> },

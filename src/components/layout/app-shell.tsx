@@ -8,6 +8,7 @@ import { SyncFab } from '../../features/sync/components/global-sync-panel'
 import { PageLoader } from '../ui/loader'
 import { useAuth } from '../../context/AuthContext'
 import { PLATFORM_LANDING, PLATFORM_PATHS, isPlatformOnly } from '../../lib/session-scope'
+import { ROUTES } from '../../config/route-meta'
 
 const pageTitles: Record<string, string> = {
   '/': 'Daily Operations',
@@ -77,6 +78,10 @@ const pageTitles: Record<string, string> = {
 }
 
 function getPageTitle(pathname: string): string {
+  // The registry owns page titles — a new page gets a correct top-bar label
+  // without another hard-coded map to forget.
+  const registered = ROUTES.find((r) => r.path === pathname)?.title
+  if (registered) return registered
   if (pathname.match(/^\/quotations\/[^/]+\/edit$/)) return 'Edit Quotation'
   if (pathname.match(/^\/quotations\/[^/]+$/)) return 'Quotation Details'
   if (pathname.match(/^\/bills\/[^/]+$/)) return 'Bill Details'
@@ -132,9 +137,13 @@ export function AppShell() {
     return () => mq.removeEventListener('change', onChange)
   }, [])
 
+  const platformOnly = isPlatformOnly(user, Boolean(support))
+
   // Keep platform-only sessions out of tenant screens. Rendering them would
   // mount their data hooks (quotations, bills, customers) and 403 on load.
-  if (isPlatformOnly(user, Boolean(support))) {
+  // The allowlist comes from the navigation registry, so every Platform page
+  // is reachable and no tenant page is.
+  if (platformOnly) {
     const allowed = PLATFORM_PATHS.some(
       (path) => location.pathname === path || location.pathname.startsWith(path + '/'),
     )
@@ -163,13 +172,16 @@ export function AppShell() {
         mobileMenuOpen={mobileOpen}
         onMobileMenuToggle={() => setMobileOpen((v) => !v)}
         onOpenSearch={() => setCmdOpen(true)}
+        platformOnly={platformOnly}
       />
 
       <CommandSearch open={cmdOpen} onClose={() => setCmdOpen(false)} />
 
-      <OfflineSyncBar />
-
-      <SyncFab />
+      {/* Offline caching and hotel sync belong to a single laundry's data. A
+          platform operator has no tenant scope, so these floated over every
+          registry screen with nothing meaningful to say. */}
+      {!platformOnly && <OfflineSyncBar />}
+      {!platformOnly && <SyncFab />}
 
       {/* Platform support entry: unmissable, always one tap from exit. */}
       {support && (

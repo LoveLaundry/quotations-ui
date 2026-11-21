@@ -120,11 +120,23 @@ export const ROUTES: RouteMeta[] = [
   { path: '/reports-backup', title: 'Reports & Backup', navLabel: 'Reports & Backup', group: 'System', icon: 'CloudArrowDown', keywords: 'backup restore export', roles: ['ADMIN'], guarded: true },
 
   // ── Platform (registry) ─────────────────────────────────────────────────────
+  { path: '/platform', title: 'Platform Overview', navLabel: 'Overview', group: 'Platform', icon: 'ChartLineUp', keywords: 'platform overview dashboard ecosystem', platformOnly: true, guarded: true },
   { path: '/laundries', title: 'Laundries', navLabel: 'Laundries', group: 'Platform', icon: 'Buildings', keywords: 'laundries platform tenants registry businesses', platformOnly: true, guarded: true },
   { path: '/users', title: 'Users', navLabel: 'Users', group: 'Platform', icon: 'Users', keywords: 'users staff accounts', platformOnly: true, guarded: true },
   { path: '/shops', title: 'Shops', navLabel: 'Shops', group: 'Platform', icon: 'Buildings', keywords: 'shops stores', platformOnly: true, guarded: true },
   { path: '/hotels', title: 'Hotels', navLabel: 'Hotels', group: 'Platform', icon: 'Buildings', keywords: 'hotels clients', platformOnly: true, guarded: true },
   { path: '/route-access', title: 'Route Access', navLabel: 'Route Access', group: 'Platform', icon: 'GearSix', keywords: 'route access permissions toggles roles shop hotel', platformOnly: true, guarded: true },
+]
+
+/**
+ * Every route a platform-only session may mount, derived from the registry so
+ * a new platform page can never be added here and silently rejected by the
+ * shell's guard (the bug that used to leave only /users and /laundries usable).
+ * /profile is deliberately included: a platform operator still has a profile.
+ */
+export const PLATFORM_PATHS: string[] = [
+  ...ROUTES.filter((r) => r.platformOnly).map((r) => r.path),
+  '/profile',
 ]
 
 /** The navigation groups, in sidebar order, each with the routes it lists. */

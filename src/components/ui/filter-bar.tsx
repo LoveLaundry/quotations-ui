@@ -16,7 +16,7 @@ export function FilterBar({ children, className }: FilterBarProps) {
       role="group"
       aria-label="Filters"
       className={cn(
-        'scroll-fade -mx-1 flex items-center gap-1.5 overflow-x-auto px-1 py-0.5 sm:flex-wrap sm:overflow-visible',
+        'filter-bar scroll-fade -mx-1 flex items-center gap-1.5 overflow-x-auto px-1 py-0.5 sm:flex-wrap sm:overflow-visible',
         className,
       )}
     >

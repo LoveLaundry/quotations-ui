@@ -71,7 +71,7 @@ export function Badge({
   return (
     <span
       className={cn(
-        'inline-flex max-w-full items-center rounded-sm border whitespace-nowrap',
+        'app-badge inline-flex max-w-full items-center rounded-sm border whitespace-nowrap',
         size === 'xs'
           ? 'gap-1 px-1.5 py-px text-[10.5px] leading-[1.5]'
           : 'gap-1.5 px-1.5 py-0.5 text-[11.5px] leading-[1.45]',

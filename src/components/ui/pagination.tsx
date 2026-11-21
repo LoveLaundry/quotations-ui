@@ -48,7 +48,7 @@ export function Pagination({ total, limit, offset, onChange, className, itemLabe
   return (
     <nav
       aria-label="Pagination"
-      className={cn('flex flex-wrap items-center justify-between gap-x-4 gap-y-2', className)}
+      className={cn('app-pagination flex flex-wrap items-center justify-between gap-x-4 gap-y-2', className)}
     >
       {/* Range summary — full text on desktop, page counter on mobile. */}
       <div className="order-2 min-w-0 sm:order-1">

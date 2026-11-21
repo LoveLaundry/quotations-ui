@@ -2145,3 +2145,665 @@ button:not(:disabled):active,
     scroll-behavior: auto !important;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   7 · PRODUCT REFRESH LAYER — the whole main UI
+   ───────────────────────────────────────────────────────────────────────────
+   A single screen-safe layer that gives every surface the same rhythm:
+   · a quiet canvas wash behind the content;
+   · a top bar with depth and one deliberate brand accent;
+   · a navigation rail with an unmistakable active state;
+   · cards, ledgers, badges, dialogs and empty states that read as one family;
+   · a dedicated Platform control-room language (hero, section cards,
+     registry panels) built from the same semantic tokens.
+   Everything is screen-only so the print layers above remain untouched, and
+   the reduced-motion rule above still governs every transition below.
+═══════════════════════════════════════════════════════════════════════════ */
+@media screen {
+  :root {
+    --ui-hairline: color-mix(in srgb, var(--border) 72%, transparent);
+    --ui-canvas-wash: color-mix(in srgb, var(--brand) 5%, transparent);
+    --ui-brand-mist: color-mix(in srgb, var(--brand) 7%, var(--surface));
+    --ui-accent-mist: color-mix(in srgb, var(--accent-text) 6%, var(--surface));
+  }
+
+  body {
+    background-color: var(--bg);
+  }
+
+  /* Canvas — a barely-there wash that keeps long lists from feeling flat. */
+  #main-content {
+    background:
+      radial-gradient(1100px 380px at 82% -12%, var(--ui-canvas-wash), transparent 72%),
+      var(--bg);
+  }
+
+  /* ── Top bar ───────────────────────────────────────────────────────────── */
+  .app-topbar-accent {
+    background: color-mix(in srgb, var(--surface) 94%, var(--bg));
+    box-shadow:
+      0 1px 0 var(--ui-hairline),
+      0 10px 24px -22px color-mix(in srgb, var(--text-primary) 45%, transparent);
+    -webkit-backdrop-filter: blur(14px) saturate(140%);
+    backdrop-filter: blur(14px) saturate(140%);
+  }
+  .app-topbar-accent::after {
+    content: '';
+    position: absolute;
+    inset-inline: 0;
+    bottom: -1px;
+    height: 2px;
+    pointer-events: none;
+    background: linear-gradient(
+      90deg,
+      var(--brand) 0%,
+      color-mix(in srgb, var(--accent-text) 70%, var(--brand)) 46%,
+      transparent 100%
+    );
+    opacity: 0.9;
+  }
+  .app-topbar-accent h1 {
+    letter-spacing: -0.018em;
+  }
+  .topbar-divider {
+    display: inline-block;
+    width: 1px;
+    height: 20px;
+    margin-inline: 2px;
+    background: var(--border-2);
+  }
+
+  /* ── Navigation rail ──────────────────────────────────────────────────── */
+  .sidebar-dark {
+    box-shadow: 1px 0 0 color-mix(in srgb, var(--sidebar-indicator) 18%, transparent);
+  }
+  .sidebar-dark nav p {
+    color: color-mix(in srgb, var(--sidebar-label) 82%, transparent);
+  }
+  .sidebar-dark .sidebar-nav-active {
+    background:
+      linear-gradient(
+        90deg,
+        color-mix(in srgb, var(--sidebar-indicator) 18%, transparent),
+        transparent 72%
+      ),
+      var(--sidebar-active-bg);
+    box-shadow:
+      inset 3px 0 0 var(--sidebar-indicator),
+      inset 0 0 0 1px var(--sidebar-active-border);
+  }
+  .sidebar-dark nav a {
+    transition: transform 120ms var(--ease-travel), background-color 120ms ease,
+      color 120ms ease;
+  }
+  .sidebar-dark nav a:hover:not(.sidebar-nav-active) {
+    transform: translateX(1px);
+  }
+
+  /* ── Page rhythm ──────────────────────────────────────────────────────── */
+  #main-content .page-header {
+    margin-bottom: 18px;
+  }
+  #main-content .page-header h1 {
+    letter-spacing: -0.028em;
+  }
+  #main-content .page-header::after {
+    content: '';
+    display: block;
+    width: 42px;
+    height: 3px;
+    margin-top: 14px;
+    border-radius: 999px;
+    background: linear-gradient(
+      90deg,
+      var(--brand) 0%,
+      color-mix(in srgb, var(--accent-text) 65%, var(--brand)) 100%
+    );
+    opacity: 0.9;
+  }
+
+  /* ── Shared surfaces ──────────────────────────────────────────────────── */
+  #main-content .panel,
+  #main-content .card-surface,
+  #main-content .card-interactive,
+  #main-content .luxury-card,
+  #main-content .stat-card,
+  #main-content .registry-panel {
+    border-color: var(--ui-hairline);
+    background: linear-gradient(
+      180deg,
+      var(--surface) 0%,
+      color-mix(in srgb, var(--surface) 96%, var(--bg)) 100%
+    );
+    box-shadow: var(--shadow-xs);
+  }
+  #main-content .card-interactive:hover,
+  #main-content .luxury-card:hover,
+  #main-content .stat-card:hover {
+    border-color: var(--border-strong);
+    box-shadow: var(--shadow-md);
+  }
+
+  #main-content .app-button {
+    letter-spacing: -0.006em;
+    box-shadow: var(--shadow-xs);
+  }
+  #main-content .app-button:hover {
+    box-shadow: var(--shadow-sm);
+  }
+  #main-content .app-button:active {
+    box-shadow: none;
+  }
+
+  #main-content .app-badge {
+    letter-spacing: 0.01em;
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--surface) 45%, transparent);
+  }
+  #main-content .app-badge .status-dot {
+    box-shadow: 0 0 0 3px color-mix(in srgb, currentColor 14%, transparent);
+  }
+
+  #main-content .filter-bar {
+    padding-block: 4px;
+  }
+  #main-content .app-pagination {
+    gap: 12px 18px;
+  }
+
+  /* ── Ledgers ──────────────────────────────────────────────────────────── */
+  #main-content .ledger thead th {
+    background: color-mix(in srgb, var(--surface-2) 76%, var(--surface));
+    letter-spacing: 0.06em;
+  }
+  #main-content .ledger tbody td {
+    padding-block: 11px;
+  }
+  #main-content .ledger tbody tr:hover {
+    background: color-mix(in srgb, var(--brand-soft) 38%, var(--surface-hover));
+  }
+  #main-content .data-table-mobile > div {
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-xs);
+  }
+
+  /* ── Dialogs and empty states (portals live outside #main-content) ────── */
+  .app-dialog-content {
+    border-color: var(--border-2);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-pop);
+  }
+  .app-dialog-content::before {
+    content: '';
+    position: absolute;
+    inset: 0 0 auto;
+    height: 3px;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    background: linear-gradient(
+      90deg,
+      var(--brand) 0%,
+      color-mix(in srgb, var(--accent-text) 65%, var(--brand)) 100%
+    );
+    pointer-events: none;
+  }
+  #main-content .empty-state {
+    border-radius: var(--radius-lg);
+  }
+
+  /* ── Platform page frame ──────────────────────────────────────────────── */
+  .platform-page {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    padding-bottom: 24px;
+  }
+
+  .platform-hero {
+    position: relative;
+    isolation: isolate;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 24px;
+    align-items: center;
+    min-height: 196px;
+    margin-bottom: 2px;
+    padding: 28px 30px;
+    overflow: hidden;
+    border: 1px solid color-mix(in srgb, var(--brand-border) 70%, var(--border));
+    border-radius: var(--radius-xl);
+    background:
+      radial-gradient(
+        520px 220px at 92% 18%,
+        color-mix(in srgb, var(--brand) 14%, transparent),
+        transparent 70%
+      ),
+      linear-gradient(135deg, var(--surface) 0%, var(--ui-brand-mist) 55%, var(--ui-accent-mist) 100%);
+    box-shadow: var(--shadow-md);
+  }
+  .platform-hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    opacity: 0.35;
+    background-image:
+      linear-gradient(var(--ui-hairline) 1px, transparent 1px),
+      linear-gradient(90deg, var(--ui-hairline) 1px, transparent 1px);
+    background-size: 32px 32px;
+    -webkit-mask-image: linear-gradient(90deg, transparent 35%, #000 100%);
+    mask-image: linear-gradient(90deg, transparent 35%, #000 100%);
+  }
+  .platform-hero-copy {
+    max-width: 720px;
+  }
+  .platform-hero-kicker {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0;
+    color: var(--brand-text);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .platform-hero h2 {
+    margin: 9px 0 8px;
+    color: var(--text-primary);
+    font-size: clamp(22px, 2.2vw, 30px);
+    font-weight: 650;
+    letter-spacing: -0.03em;
+    line-height: 1.18;
+  }
+  .platform-hero-copy > p:not(.platform-hero-kicker) {
+    max-width: 620px;
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 13.5px;
+    line-height: 1.65;
+  }
+  .platform-hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 20px;
+  }
+  .platform-hero-primary,
+  .platform-hero-secondary {
+    display: inline-flex;
+    height: 38px;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 0 14px;
+    border-radius: 9px;
+    font-size: 12.5px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background-color 120ms ease, border-color 120ms ease,
+      color 120ms ease, transform 120ms var(--ease-travel);
+  }
+  .platform-hero-primary {
+    border: 1px solid var(--brand);
+    background: var(--brand);
+    color: #fff;
+    box-shadow: var(--shadow-sm);
+  }
+  .platform-hero-primary:hover {
+    border-color: var(--brand-hover);
+    background: var(--brand-hover);
+    transform: translateY(-1px);
+  }
+  .platform-hero-secondary {
+    border: 1px solid var(--border-2);
+    background: var(--surface);
+    color: var(--text-secondary);
+  }
+  .platform-hero-secondary:hover {
+    border-color: var(--border-strong);
+    background: var(--surface-hover);
+    color: var(--text-primary);
+    transform: translateY(-1px);
+  }
+  .platform-hero-mark {
+    display: grid;
+    width: 168px;
+    height: 168px;
+    place-items: center;
+    border: 1px solid var(--brand-border);
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--brand-soft) 72%, var(--surface));
+    box-shadow:
+      0 0 0 14px color-mix(in srgb, var(--brand-soft) 38%, transparent),
+      var(--shadow-md);
+    color: color-mix(in srgb, var(--brand-text) 70%, var(--accent-text));
+  }
+
+  .platform-section {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .platform-section-head {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .platform-section-head h2 {
+    color: var(--text-primary);
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: -0.015em;
+  }
+  .platform-section-head p {
+    margin-top: 2px;
+    color: var(--text-muted);
+    font-size: 12px;
+  }
+  .platform-link-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 12px;
+  }
+  .platform-link-card {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    gap: 12px;
+    padding: 14px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background: var(--surface);
+    box-shadow: var(--shadow-xs);
+    color: inherit;
+    text-decoration: none;
+    transition: transform 160ms var(--ease-travel), border-color 120ms ease,
+      box-shadow 160ms var(--ease-travel);
+  }
+  .platform-link-card:hover {
+    transform: translateY(-2px);
+    border-color: color-mix(in srgb, var(--brand) 45%, var(--border-strong));
+    box-shadow: var(--shadow-md);
+  }
+  .platform-link-card:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--ring) 28%, transparent),
+      var(--shadow-md);
+  }
+  .platform-link-icon {
+    display: flex;
+    width: 36px;
+    height: 36px;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--surface-2);
+    color: var(--text-secondary);
+  }
+  .platform-link-card[data-tone='brand'] .platform-link-icon {
+    border-color: var(--brand-border);
+    background: var(--brand-soft);
+    color: var(--brand-text);
+  }
+  .platform-link-card[data-tone='info'] .platform-link-icon {
+    border-color: var(--info-border);
+    background: var(--info-soft);
+    color: var(--info-text);
+  }
+  .platform-link-card[data-tone='success'] .platform-link-icon {
+    border-color: var(--success-border);
+    background: var(--success-soft);
+    color: var(--success-text);
+  }
+  .platform-link-card[data-tone='warning'] .platform-link-icon {
+    border-color: var(--warning-border);
+    background: var(--warning-soft);
+    color: var(--warning-text);
+  }
+  .platform-link-card[data-tone='accent'] .platform-link-icon {
+    border-color: var(--accent-border);
+    background: var(--accent-soft);
+    color: var(--accent-text);
+  }
+  .platform-link-arrow {
+    margin-left: auto;
+    color: var(--text-faint);
+    transition: transform 120ms var(--ease-travel), color 120ms ease;
+  }
+  .platform-link-card:hover .platform-link-arrow {
+    color: var(--brand-text);
+    transform: translate(2px, -2px);
+  }
+  .platform-text-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--brand-text);
+    font-size: 12px;
+    font-weight: 600;
+    text-decoration: none;
+  }
+  .platform-text-link:hover {
+    color: var(--brand-hover);
+    text-decoration: underline;
+  }
+  .platform-recent-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .platform-recent-list li {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 11px 14px;
+    border-bottom: 1px solid var(--border);
+    transition: background-color 120ms ease;
+  }
+  .platform-recent-list li:last-child {
+    border-bottom: 0;
+  }
+  .platform-recent-list li:hover {
+    background: var(--surface-hover);
+  }
+  .platform-footnote {
+    margin-top: -4px;
+    color: var(--text-faint);
+    font-size: 11.5px;
+  }
+
+  /* ── Registry pages (Hotels, Shops) ───────────────────────────────────── */
+  .registry-page {
+    gap: 16px;
+  }
+  .registry-panel {
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    background: var(--surface);
+    box-shadow: var(--shadow-xs);
+  }
+  .registry-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+    background: color-mix(in srgb, var(--surface-sunken) 70%, var(--surface));
+  }
+  .registry-search {
+    display: flex;
+    height: 38px;
+    min-width: 220px;
+    flex: 1 1 280px;
+    align-items: center;
+    gap: 8px;
+    padding: 0 10px;
+    border: 1px solid var(--border-2);
+    border-radius: 9px;
+    background: var(--surface);
+    color: var(--text-faint);
+    transition: border-color 120ms ease, box-shadow 120ms ease;
+  }
+  .registry-search:focus-within {
+    border-color: var(--brand);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand) 16%, transparent);
+  }
+  .registry-search input {
+    height: auto;
+    min-width: 0;
+    flex: 1;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+    color: var(--text-primary);
+    font-size: 12.5px;
+  }
+  .registry-search input:focus {
+    outline: none;
+    box-shadow: none;
+  }
+  .registry-search input::placeholder {
+    color: var(--text-placeholder);
+  }
+  .registry-search button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-faint);
+  }
+  .registry-search button:hover {
+    color: var(--text-primary);
+  }
+  .registry-select {
+    height: 38px;
+    padding: 0 30px 0 10px;
+    border: 1px solid var(--border-2);
+    border-radius: 9px;
+    background: var(--surface);
+    box-shadow: var(--shadow-xs);
+    color: var(--text-secondary);
+    font-size: 12.5px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: border-color 120ms ease, box-shadow 120ms ease;
+  }
+  .registry-select:hover {
+    border-color: var(--border-strong);
+  }
+  .registry-select:focus {
+    border-color: var(--brand);
+    outline: none;
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand) 16%, transparent);
+  }
+  .registry-icon-btn {
+    display: inline-flex;
+    width: 30px;
+    height: 30px;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--text-muted);
+    transition: background-color 120ms ease, border-color 120ms ease,
+      color 120ms ease;
+  }
+  .registry-icon-btn:hover {
+    border-color: var(--brand-border);
+    background: var(--brand-soft);
+    color: var(--brand-text);
+  }
+  .registry-icon-btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+  .registry-pagination {
+    padding: 11px 14px;
+    border-top: 1px solid var(--border);
+    background: color-mix(in srgb, var(--surface-sunken) 50%, var(--surface));
+  }
+  .registry-add-member {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 130px auto;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .registry-member-list {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    list-style: none;
+  }
+  .registry-member-list li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .registry-member-list li:last-child {
+    border-bottom: 0;
+  }
+  .registry-member-list li:hover {
+    background: var(--surface-hover);
+  }
+
+  /* ── Responsive ───────────────────────────────────────────────────────── */
+  @media (max-width: 900px) {
+    .platform-hero {
+      grid-template-columns: 1fr;
+      padding: 24px;
+    }
+    .platform-hero-mark {
+      display: none;
+    }
+  }
+
+  @media (max-width: 640px) {
+    #main-content .page-header::after {
+      width: 32px;
+      margin-top: 10px;
+    }
+    .platform-page {
+      gap: 14px;
+    }
+    .platform-hero {
+      min-height: 0;
+      padding: 20px;
+    }
+    .platform-hero h2 {
+      font-size: 22px;
+    }
+    .platform-link-grid {
+      grid-template-columns: 1fr;
+    }
+    .platform-section-head {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .registry-toolbar {
+      padding: 10px;
+    }
+    .registry-search {
+      width: 100%;
+      flex-basis: 100%;
+    }
+    .registry-select {
+      width: 100%;
+    }
+    .registry-add-member {
+      grid-template-columns: 1fr;
+    }
+    .registry-member-list li {
+      padding: 9px 10px;
+    }
+  }
+}

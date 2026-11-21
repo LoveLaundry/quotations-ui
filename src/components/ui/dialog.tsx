@@ -59,7 +59,7 @@ const DialogContent = React.forwardRef<
       id={id}
       className={cn(
         // Mobile: bottom sheet. Desktop: centred dialog.
-        'fixed z-50 flex flex-col bg-[var(--surface)] shadow-[var(--shadow-pop)]',
+        'app-dialog-content fixed z-50 flex flex-col bg-[var(--surface)] shadow-[var(--shadow-pop)]',
         'inset-x-0 bottom-0 max-h-[92dvh] w-full rounded-t-md border-t border-[var(--border)]',
         'sm:inset-x-auto sm:top-1/2 sm:bottom-auto sm:left-1/2 sm:max-h-[calc(100dvh-48px)] sm:w-[calc(100vw-48px)] sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded sm:border',
         'outline-none',

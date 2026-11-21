@@ -19,7 +19,7 @@ import { cn } from '../../lib/utils'
  */
 const buttonVariants = cva(
   [
-    'relative inline-flex shrink-0 select-none items-center justify-center gap-1.5',
+    'app-button relative inline-flex shrink-0 select-none items-center justify-center gap-1.5',
     'whitespace-nowrap rounded font-medium',
     'border transition-[background-color,border-color,color,box-shadow] duration-100',
     'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--ring-offset)]',

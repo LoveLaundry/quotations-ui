@@ -109,7 +109,7 @@ export function DataTable<T extends Record<string, any>>({
   return (
     <>
       {/* ── Desktop / tablet ─────────────────────────────────────────────── */}
-      <div className={cn('hidden md:block', className)}>
+      <div className={cn('data-table-desktop hidden md:block', className)}>
         <TableFrame>
           <table className={cn('ledger', dense && 'ledger-dense')}>
             {caption && <caption className="sr-only">{caption}</caption>}
@@ -184,7 +184,7 @@ export function DataTable<T extends Record<string, any>>({
 
       {/* ── Mobile ───────────────────────────────────────────────────────── */}
       {mobile === 'cards' && (
-        <div className={cn('space-y-2 md:hidden', className)}>
+        <div className={cn('data-table-mobile space-y-2 md:hidden', className)}>
           {data.length === 0 ? (
             emptyState ?? <TableEmpty />
           ) : (

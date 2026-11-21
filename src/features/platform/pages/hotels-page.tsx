@@ -1,12 +1,6 @@
-import { PageHeader } from '../../../components/ui/page-header'
+import EntityRegistryPage from '../components/entity-registry-page'
 
+/** Platform hotel registry — see the shared registry page for the UI. */
 export default function HotelsPage() {
-  return (
-    <div className="space-y-6 p-4 md:p-6">
-      <PageHeader title="Hotels" subtitle="Manage hotel accounts and settings (platform admin)." />
-      <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-6 text-sm text-[var(--text-muted)]">
-        Hotels management UI (route restored). Hook up to your hotels API when ready.
-      </div>
-    </div>
-  )
+  return <EntityRegistryPage kind="hotels" />
 }

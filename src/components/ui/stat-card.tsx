@@ -101,7 +101,7 @@ export function StatCard({
           : undefined
       }
       className={cn(
-        'min-w-0 rounded-md border border-[var(--border)] bg-[var(--surface)] px-3.5 py-3 shadow-[var(--shadow-xs)]',
+        'stat-card min-w-0 rounded-md border border-[var(--border)] bg-[var(--surface)] px-3.5 py-3 shadow-[var(--shadow-xs)]',
         clickable &&
           'card-interactive pressable lift cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:ring-offset-1',
         className,

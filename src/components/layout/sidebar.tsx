@@ -382,7 +382,7 @@ function SidebarNavItem({
               // Active = soft branded chip (a whisper of the brand, not a slab).
               // Inactive = transparent until hover.
               isActive
-                ? 'bg-[var(--sidebar-active-bg)] font-semibold text-[var(--sidebar-active)] shadow-[inset_0_0_0_1px_var(--sidebar-active-border)]'
+                ? 'sidebar-nav-active bg-[var(--sidebar-active-bg)] font-semibold text-[var(--sidebar-active)] shadow-[inset_0_0_0_1px_var(--sidebar-active-border)]'
                 : 'text-[var(--sidebar-text)] hover:bg-[var(--sidebar-hover-bg)] hover:text-[var(--sidebar-hover-text)]',
             )
           }
@@ -429,7 +429,7 @@ function SidebarNavItem({
                     'transition-colors duration-100',
                     'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]',
                     isActive
-                      ? 'bg-[var(--sidebar-active-bg)] text-[var(--sidebar-active)]'
+                      ? 'sidebar-nav-active bg-[var(--sidebar-active-bg)] text-[var(--sidebar-active)]'
                       : 'text-[var(--sidebar-text)] hover:bg-[var(--sidebar-hover-bg)] hover:text-[var(--sidebar-hover-text)]',
                   )
                 }

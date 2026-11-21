@@ -36,7 +36,7 @@ export function PageHeader({
   children,
 }: PageHeaderProps) {
   return (
-    <header className={cn('mb-4 min-w-0', className)}>
+    <header className={cn('page-header mb-4 min-w-0', className)}>
       {breadcrumb && breadcrumb.length > 0 && (
         <Breadcrumb items={breadcrumb} className="mb-1.5" />
       )}
