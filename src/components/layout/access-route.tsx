@@ -17,16 +17,14 @@ export function AccessRoute({
   const { user, isAuthenticated, support } = useAuth()
   const { overrides } = useRouteAccess()
   const location = useLocation()
-  const supportActive = Boolean(support)
-
   if (!isAuthenticated) {
     return <Navigate to="/login" replace state={{ from: location.pathname }} />
   }
 
   const role = roleOf(user)
   const disabledPaths = overrides?.[role]?.disabled_routes || []
-  if (!canAccess(user, spec, supportActive, { routePath: location.pathname, disabledPaths })) {
-    return <Navigate to={landingPathFor(user, supportActive)} replace />
+  if (!canAccess(user, spec, support, { routePath: location.pathname, disabledPaths })) {
+    return <Navigate to={landingPathFor(user, support)} replace />
   }
 
   return children ?? <Outlet />

@@ -6,7 +6,8 @@ import { CommandSearch } from '../ui/command-search'
 import { OfflineSyncBar } from '../ui/offline-sync-bar'
 import { SyncFab } from '../../features/sync/components/global-sync-panel'
 import { PageLoader } from '../ui/loader'
-import { useAuth } from '../../context/AuthContext'
+import { supportSessionLabel, useAuth } from '../../context/AuthContext'
+import { entitySupportPath } from '../../lib/access'
 import { PLATFORM_LANDING, PLATFORM_PATHS, isPlatformOnly } from '../../lib/session-scope'
 import { ROUTES } from '../../config/route-meta'
 
@@ -93,7 +94,9 @@ function getPageTitle(pathname: string): string {
   if (pathname === '/linen/gate-pass/uniform') return 'Camelot Uniform Receipt'
   if (pathname.match(/^\/linen\/[^/]+$/)) return 'Linen Profile'
   if (pathname.match(/^\/shop-bills\/[^/]+$/)) return 'Shop Bill Details'
-  return pageTitles[pathname] ?? 'Love Laundry'
+  if (pathname.startsWith('/support/hotels/')) return 'Hotel Support'
+  if (pathname.startsWith('/support/shops/')) return 'Shop Support'
+  return pageTitles[pathname] ?? 'Workspace'
 }
 
 export function AppShell() {
@@ -137,17 +140,20 @@ export function AppShell() {
     return () => mq.removeEventListener('change', onChange)
   }, [])
 
-  const platformOnly = isPlatformOnly(user, Boolean(support))
+  const platformOnly = isPlatformOnly(user, support)
+  const activeSupportPath = entitySupportPath(support)
 
   // Keep platform-only sessions out of tenant screens. Rendering them would
   // mount their data hooks (quotations, bills, customers) and 403 on load.
-  // The allowlist comes from the navigation registry, so every Platform page
-  // is reachable and no tenant page is.
+  // An entity support session is narrower still: it may only render its own
+  // entity page, never a laundry registry or a tenant operations screen.
   if (platformOnly) {
-    const allowed = PLATFORM_PATHS.some(
-      (path) => location.pathname === path || location.pathname.startsWith(path + '/'),
-    )
-    if (!allowed) return <Navigate to={PLATFORM_LANDING} replace />
+    const allowed = activeSupportPath
+      ? location.pathname === activeSupportPath || location.pathname.startsWith(activeSupportPath + '/')
+      : PLATFORM_PATHS.some(
+          (path) => location.pathname === path || location.pathname.startsWith(path + '/'),
+        )
+    if (!allowed) return <Navigate to={activeSupportPath ?? PLATFORM_LANDING} replace />
   }
 
   return (
@@ -190,7 +196,7 @@ export function AppShell() {
           className="fixed inset-x-0 top-0 z-50 flex h-9 items-center justify-center gap-x-3 gap-2 overflow-hidden bg-amber-500 px-4 text-[12.5px] font-semibold whitespace-nowrap text-amber-950 shadow-md"
         >
           <span className="min-w-0 truncate">
-            Support session in {support.laundryName} — audited.
+            {support.kind === 'laundry' ? 'Support session in' : 'Support session for'} {supportSessionLabel(support)} — audited.
           </span>
           <button
             type="button"

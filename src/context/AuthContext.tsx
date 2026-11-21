@@ -21,11 +21,32 @@ import {
 } from '../lib/auth-token'
 import authApi from '../api/auth-api'
 
-export interface SupportSession {
-    token: string
-    user: User
-    laundryId: string
-    laundryName: string
+/**
+ * A support session is scoped to exactly one kind of entity.
+ *
+ * Laundry support uses the laundry operations surface. Hotel and shop support
+ * is entity-scoped and must never be handed to a laundry page: the token has no
+ * `laundry_id` claim, so treating it as laundry support fails every data call
+ * and is how "enter shop" used to open a broken laundry session.
+ */
+export type SupportSession =
+    | {
+        kind: 'laundry'
+        token: string
+        user: User
+        laundryId: string
+        laundryName: string
+      }
+    | {
+        kind: 'hotel' | 'shop'
+        token: string
+        user: User
+        entityId: string
+        entityName: string
+      }
+
+export function supportSessionLabel(session: SupportSession): string {
+    return session.kind === 'laundry' ? session.laundryName : session.entityName
 }
 
 interface AuthCtx {

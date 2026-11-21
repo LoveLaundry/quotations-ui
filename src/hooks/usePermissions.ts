@@ -14,7 +14,6 @@ import {
 export function usePermissions() {
   const { user, support } = useAuth()
   const { overrides } = useRouteAccess()
-  const supportActive = Boolean(support)
   const role = roleOf(user)
   const permissions = useMemo(() => permissionsOf(user), [user])
   const disabledPaths = useMemo(() => overrides?.[role]?.disabled_routes || [], [overrides, role])
@@ -25,15 +24,15 @@ export function usePermissions() {
   )
 
   const canAccess = useCallback(
-    (spec: AccessSpec, routePath?: string) => canAccessFor(user, spec, supportActive, { routePath, disabledPaths }),
-    [user, supportActive, disabledPaths],
+    (spec: AccessSpec, routePath?: string) => canAccessFor(user, spec, support, { routePath, disabledPaths }),
+    [user, support, disabledPaths],
   )
 
   const isPlatformAdmin = useMemo(() => isPlatformAdminFor(user), [user])
 
   const landingPath = useMemo(
-    () => landingPathFor(user, supportActive),
-    [user, supportActive],
+    () => landingPathFor(user, support),
+    [user, support],
   )
 
   const isAdmin = role === 'ADMIN' || role === 'PLATFORM_ADMIN'

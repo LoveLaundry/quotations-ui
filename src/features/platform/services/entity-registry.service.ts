@@ -38,7 +38,18 @@ export interface RegistryMember {
   user_name?: string
   role?: string
   status?: string
+  /** Which identity store supplied this roster row. */
+  source?: 'client' | 'staff' | string
   created_at?: string | null
+}
+
+export interface RegistryMemberPayload {
+  auth_id: string
+  role: string
+  /** Required only when the portal login does not exist yet. */
+  user_name?: string
+  password?: string
+  email?: string
 }
 
 export interface RegistryListParams {
@@ -101,6 +112,9 @@ export function entityService(kind: EntityKind) {
     kind,
     label: kind === 'hotels' ? 'Hotel' : 'Shop',
 
+    get: (id: string) =>
+      authApi.get<RegistryEntity>(`${root}/${encodeURIComponent(id)}`).then((r) => r.data),
+
     list: (params: RegistryListParams = {}) =>
       authApi
         .get<{ items: RegistryEntity[]; total: number }>(root, {
@@ -141,7 +155,7 @@ export function entityService(kind: EntityKind) {
     members: (id: string) =>
       authApi.get<RegistryMember[]>(`${root}/${encodeURIComponent(id)}/members`).then((r) => r.data),
 
-    addMember: (id: string, payload: { auth_id: string; role?: string }) =>
+    addMember: (id: string, payload: RegistryMemberPayload) =>
       authApi
         .post<RegistryMember>(`${root}/${encodeURIComponent(id)}/members`, payload)
         .then((r) => r.data),

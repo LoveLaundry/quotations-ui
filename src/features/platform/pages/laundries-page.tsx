@@ -111,6 +111,7 @@ export default function LaundriesPage() {
     mutationFn: (laundry: Laundry) => laundryService.enter(laundry.laundry_id),
     onSuccess: (res, laundry) => {
       enterSupport({
+        kind: 'laundry',
         token: res.access_token,
         user: res.user,
         laundryId: laundry.laundry_id,

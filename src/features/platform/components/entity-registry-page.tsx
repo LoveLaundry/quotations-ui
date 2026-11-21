@@ -29,6 +29,15 @@ import {
 const PAGE_SIZE = 20
 const STATUSES = ['ACTIVE', 'SUSPENDED', 'ARCHIVED'] as const
 
+/** Portal roles are entity-specific; generic ADMIN/MANAGER/STAFF are laundry roles. */
+const MEMBER_ROLES = {
+  hotels: ['HOTEL_ADMIN', 'HOTEL_MANAGER'],
+  shops: ['SHOP_ADMIN', 'SHOP_STAFF'],
+} as const
+
+const defaultMemberRole = (kind: EntityKind): string =>
+  kind === 'hotels' ? 'HOTEL_MANAGER' : 'SHOP_STAFF'
+
 const TONE: Record<string, 'success' | 'warning' | 'neutral'> = {
   ACTIVE: 'success',
   SUSPENDED: 'warning',
@@ -71,9 +80,12 @@ export default function EntityRegistryPage({ kind }: { kind: EntityKind }) {
   const [membersFor, setMembersFor] = useState<RegistryEntity | null>(null)
   const [statusTarget, setStatusTarget] = useState<{ row: RegistryEntity; to: string } | null>(null)
   const [memberAuthId, setMemberAuthId] = useState('')
-  const [memberRole, setMemberRole] = useState('ADMIN')
+  const [memberName, setMemberName] = useState('')
+  const [memberPassword, setMemberPassword] = useState('')
+  const [memberRole, setMemberRole] = useState(() => defaultMemberRole(kind))
 
   useEffect(() => setOffset(0), [search, status, laundryId])
+  useEffect(() => setMemberRole(defaultMemberRole(kind)), [kind])
 
   const invalidate = () => {
     void qc.invalidateQueries({ queryKey: ['registry', kind] })
@@ -136,10 +148,18 @@ export default function EntityRegistryPage({ kind }: { kind: EntityKind }) {
   })
 
   const addMemberMutation = useMutation({
-    mutationFn: () => svc.addMember(entityId(membersFor!), { auth_id: memberAuthId.trim(), role: memberRole }),
+    mutationFn: () => svc.addMember(entityId(membersFor!), {
+      auth_id: memberAuthId.trim(),
+      role: memberRole,
+      user_name: memberName.trim() || undefined,
+      password: memberPassword || undefined,
+    }),
     onSuccess: () => {
-      toast.success('Member added')
+      toast.success('Portal access assigned')
       setMemberAuthId('')
+      setMemberName('')
+      setMemberPassword('')
+      setMemberRole(defaultMemberRole(kind))
       void qc.invalidateQueries({ queryKey: ['registry', kind, 'members'] })
       invalidate()
     },
@@ -181,15 +201,20 @@ export default function EntityRegistryPage({ kind }: { kind: EntityKind }) {
 
   const enter = async (row: RegistryEntity) => {
     try {
-      const res = await svc.enter(entityId(row))
+      const id = entityId(row)
+      const res = await svc.enter(id)
+      // The backend issues an entity-scoped token with no laundry claim. Keep
+      // that scope intact: never reinterpret this as laundry support and never
+      // send the operator to the laundry operations screen.
       enterSupport({
+        kind: kind === 'hotels' ? 'hotel' : 'shop',
         token: res.access_token,
         user: res.user,
-        laundryId: row.associated_laundry_id,
-        laundryName: row.name,
+        entityId: id,
+        entityName: row.name,
       })
-      toast.success(`Entered ${row.name} as a support session`)
-      navigate('/today', { replace: true })
+      toast.success(`Support session for ${row.name} — audited, 1 hour`)
+      navigate(`/support/${kind}/${encodeURIComponent(id)}`, { replace: true })
     } catch (err) {
       toast.error(err instanceof Error ? err.message : `Could not enter ${row.name}`)
     }
@@ -430,24 +455,46 @@ export default function EntityRegistryPage({ kind }: { kind: EntityKind }) {
             <DialogTitle>{membersFor?.name} — members</DialogTitle>
           </DialogHeader>
           <DialogBody>
-            <div className="registry-add-member">
-              <Input
-                value={memberAuthId}
-                onChange={(e) => setMemberAuthId(e.target.value)}
-                placeholder="Auth ID to add"
-                aria-label="Auth ID to add"
-              />
-              <select className="registry-select" value={memberRole} onChange={(e) => setMemberRole(e.target.value)} aria-label="Role">
-                <option value="ADMIN">ADMIN</option>
-                <option value="MANAGER">MANAGER</option>
-                <option value="STAFF">STAFF</option>
-              </select>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <Field label="Auth ID" required>
+                <Input
+                  value={memberAuthId}
+                  onChange={(e) => setMemberAuthId(e.target.value)}
+                  placeholder="Portal login"
+                  aria-label="Auth ID to add"
+                />
+              </Field>
+              <Field label="Role" required>
+                <select className="registry-select w-full" value={memberRole} onChange={(e) => setMemberRole(e.target.value)} aria-label="Role">
+                  {MEMBER_ROLES[kind].map((role) => <option key={role} value={role}>{role}</option>)}
+                </select>
+              </Field>
+              <Field label="Display name">
+                <Input
+                  value={memberName}
+                  onChange={(e) => setMemberName(e.target.value)}
+                  placeholder="Optional for an existing login"
+                  aria-label="Display name"
+                />
+              </Field>
+              <Field label="Password" hint="Required only when creating a new portal login">
+                <Input
+                  type="password"
+                  value={memberPassword}
+                  onChange={(e) => setMemberPassword(e.target.value)}
+                  placeholder="At least 8 characters"
+                  aria-label="Password"
+                  autoComplete="new-password"
+                />
+              </Field>
+            </div>
+            <div className="mt-3 flex justify-end">
               <Button
                 variant="secondary"
                 disabled={!memberAuthId.trim() || addMemberMutation.isPending}
                 onClick={() => addMemberMutation.mutate()}
               >
-                <UserPlus size={14} /> Add
+                <UserPlus size={14} /> {addMemberMutation.isPending ? 'Assigning…' : 'Assign portal access'}
               </Button>
             </div>
 
@@ -466,7 +513,9 @@ export default function EntityRegistryPage({ kind }: { kind: EntityKind }) {
                       <p className="truncate text-[12.5px] font-medium text-[var(--text-primary)]">
                         {m.user_name || m.auth_id}
                       </p>
-                      <p className="text-[11px] text-[var(--text-faint)]">{m.auth_id} · {m.role ?? 'member'}</p>
+                      <p className="text-[11px] text-[var(--text-faint)]">
+                        {m.auth_id} · {m.role ?? 'member'}{m.source ? ` · ${m.source}` : ''}
+                      </p>
                     </div>
                     <button
                       type="button"

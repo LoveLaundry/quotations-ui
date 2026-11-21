@@ -1,3 +1,4 @@
+import type { SupportSession } from '../context/AuthContext'
 import type { User } from '../types/auth'
 
 /**
@@ -32,17 +33,36 @@ export function isPlatformAdmin(user: User | null | undefined): boolean {
 }
 
 /**
+ * Historical callers pass a boolean; new callers pass the support session so
+ * laundry support and hotel/shop support can be told apart.
+ */
+export type SupportState = boolean | SupportSession | null | undefined
+
+function supportKind(support: SupportState): 'none' | 'laundry' | 'entity' {
+  if (!support) return 'none'
+  if (typeof support === 'boolean') return support ? 'laundry' : 'none'
+  return support.kind === 'laundry' ? 'laundry' : 'entity'
+}
+
+export function entitySupportPath(support: SupportState): string | null {
+  if (!support || typeof support === 'boolean' || support.kind === 'laundry') return null
+  const segment = support.kind === 'hotel' ? 'hotels' : 'shops'
+  return `/support/${segment}/${encodeURIComponent(support.entityId)}`
+}
+
+/**
  * True when this session may only use the platform surface (Laundries, Users).
  *
- * A support session is the exception: a platform administrator who has entered
- * a laundry is operating *as* that laundry and must load its data. Support
- * tokens are memory-only, so `supportActive` is the reliable signal.
+ * Laundry support is the exception: a platform administrator who has entered a
+ * laundry operates *as* that laundry and must load its tenant data. A hotel or
+ * shop support token has no laundry claim, so it stays on the platform side and
+ * is confined to its entity support page.
  */
 export function isPlatformOnly(
   user: User | null | undefined,
-  supportActive: boolean,
+  support: SupportState = false,
 ): boolean {
-  if (supportActive || !user) return false
+  if (!user || supportKind(support) === 'laundry') return false
   return isPlatformAdmin(user)
 }
 
@@ -99,13 +119,15 @@ export interface AccessSpec {
   platformOnly?: boolean
   /** Platform administrators may NOT reach this (tenant operations). */
   tenantOnly?: boolean
+  /** Only an active hotel/shop support session may mount this route. */
+  entitySupport?: boolean
 }
 
 /** True when the session satisfies every constraint present in the spec. */
 export function canAccess(
   user: User | null | undefined,
   spec: AccessSpec = {},
-  supportActive = false,
+  support: SupportState = false,
   opts?: { routePath?: string; disabledPaths?: string[] },
 ): boolean {
   if (!user) return false
@@ -116,12 +138,20 @@ export function canAccess(
   }
 
   const role = roleOf(user)
-  const platform = isPlatformOnly(user, supportActive)
+  const kind = supportKind(support)
+  const platform = isPlatformOnly(user, support)
+
+  // An entity support token is not a general platform or tenant session. It
+  // can only reach the route that owns the active entity session; every other
+  // route bounces back to that page instead of trying laundry APIs with a
+  // token that has no laundry scope.
+  if (kind === 'entity' && !spec.entitySupport) return false
+  if (spec.entitySupport && kind !== 'entity') return false
 
   // Scope first: a platform-only session is confined to the platform surface,
   // and a tenant-only screen is closed to a full platform administrator.
   if (spec.platformOnly && !isPlatformAdmin(user)) return false
-  if (platform && !spec.platformOnly) return false
+  if (platform && !spec.platformOnly && !spec.entitySupport) return false
   if (spec.tenantOnly && isPlatformAdmin(user)) return false
 
   if (spec.adminOnly) {
@@ -144,9 +174,12 @@ export function canAccess(
  * "you cannot see that" bounce, so a user is never dropped on a page their own
  * session cannot render.
  */
-export function landingPathFor(user: User | null | undefined, supportActive = false): string {
+export function landingPathFor(user: User | null | undefined, support: SupportState = false): string {
   if (!user) return '/login'
-  if (isPlatformOnly(user, supportActive)) return '/laundries'
+
+  const entityPath = entitySupportPath(support)
+  if (entityPath) return entityPath
+  if (isPlatformOnly(user, support)) return '/laundries'
 
   const candidates: { path: string; spec: AccessSpec }[] = [
     { path: '/today', spec: {} },
@@ -156,5 +189,5 @@ export function landingPathFor(user: User | null | undefined, supportActive = fa
   ]
   // Note: landingPathFor doesn't have overrides context; callers should be careful.
   // For now, keep simple.
-  return candidates.find((c) => canAccess(user, c.spec, supportActive))?.path ?? '/profile'
+  return candidates.find((c) => canAccess(user, c.spec, support))?.path ?? '/profile'
 }

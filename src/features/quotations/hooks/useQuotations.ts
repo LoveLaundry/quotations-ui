@@ -21,7 +21,7 @@ export function useQuotations() {
     // The app shell reads quotations for the top bar and hotel context, so this
     // runs on every page. A platform-only session has no business fetching
     // tenant data — doing so produced a 403 on each screen load.
-    enabled: !isPlatformOnly(user, Boolean(support)),
+    enabled: !isPlatformOnly(user, support),
   })
 }
 

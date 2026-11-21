@@ -1,13 +1,13 @@
 import type { User } from '../types/auth'
 import { PLATFORM_PATHS as REGISTRY_PLATFORM_PATHS } from '../config/route-meta'
-import { isPlatformOnly as isPlatformOnlyFor, landingPathFor } from './access'
+import { isPlatformOnly as isPlatformOnlyFor, landingPathFor, type SupportState } from './access'
 
 /**
  * Re-exported from lib/access.ts so the session-scope helpers and the access
  * helpers are one implementation. Existing imports keep working.
  */
-export function isPlatformOnly(user: User | null, supportActive: boolean): boolean {
-  return isPlatformOnlyFor(user, supportActive)
+export function isPlatformOnly(user: User | null, support: SupportState = false): boolean {
+  return isPlatformOnlyFor(user, support)
 }
 
 /**

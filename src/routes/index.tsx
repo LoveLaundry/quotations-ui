@@ -6,6 +6,7 @@ import { AdminRoute } from '../components/layout/admin-route'
 import { PlatformAdminRoute } from '../components/layout/platform-admin-route'
 import { ManagerRoute } from '../components/layout/manager-route'
 import { LandingRedirect } from '../components/layout/landing-redirect'
+import { EntitySupportRoute } from '../components/layout/entity-support-route'
 // Eager: must always be available to render if a lazy chunk fails to load.
 import ErrorPage from '../features/quotations/pages/error-page'
 
@@ -38,6 +39,7 @@ const LaundriesPage = lazy(() => import('../features/platform/pages/laundries-pa
 const ShopsPage = lazy(() => import('../features/platform/pages/shops-page'))
 const HotelsPage = lazy(() => import('../features/platform/pages/hotels-page'))
 const RouteAccessPage = lazy(() => import('../features/platform/pages/route-access-page'))
+const EntitySupportPage = lazy(() => import('../features/platform/pages/entity-support-page'))
 const CreateBillPage = lazy(() => import('../features/quotations/pages/create-bill-page'))
 const BillDetailPage = lazy(() => import('../features/quotations/pages/bill-detail-page'))
 const InvoiceCreatePage = lazy(() => import('../features/quotations/pages/invoice-create-page'))
@@ -258,6 +260,22 @@ export const router = createBrowserRouter([
             children: [
               { path: 'database-sync', element: <DatabaseSyncPage /> },
               { path: 'reports-backup', element: <ReportsBackupPage /> },
+            ],
+          },
+
+          // Entity support routes. Separate from PlatformAdminRoute because a
+          // hotel/shop support token must be confined to one entity, not given
+          // the whole registry.
+          {
+            element: <EntitySupportRoute kind="hotels" />,
+            children: [
+              { path: 'support/hotels/:entityId', element: <EntitySupportPage kind="hotels" /> },
+            ],
+          },
+          {
+            element: <EntitySupportRoute kind="shops" />,
+            children: [
+              { path: 'support/shops/:entityId', element: <EntitySupportPage kind="shops" /> },
             ],
           },
 
