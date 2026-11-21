@@ -1,8 +1,9 @@
-import { lazy } from 'react'
+import { lazy, type ReactElement } from 'react'
 import { createBrowserRouter, Navigate } from 'react-router-dom'
 import { AppShell } from '../components/layout/app-shell'
-import { ProtectedRoute } from '../components/layout/protected-route'
+import { AccessRoute } from '../components/layout/access-route'
 import { LandingRedirect } from '../components/layout/landing-redirect'
+import { accessSpecForPath } from '../config/route-meta'
 // Eager: must always be available to render if a lazy chunk fails to load.
 import ErrorPage from '../features/quotations/pages/error-page'
 
@@ -49,6 +50,13 @@ const SettingsPage = lazy(() => import('../features/quotations/pages/settings-pa
 const ProfilePage = lazy(() => import('../features/quotations/pages/profile-page'))
 const NotFoundPage = lazy(() => import('../features/quotations/pages/not-found-page'))
 
+/** Wrap a page in the guard derived from the same route registry that builds
+ *  the sidebar and command palette. A link can never offer a page the guard
+ *  would bounce, and a forbidden URL can never render its page. */
+function guarded(path: string, element: ReactElement) {
+  return <AccessRoute spec={accessSpecForPath(path)}>{element}</AccessRoute>
+}
+
 export const router = createBrowserRouter([
   // ── Public routes ─────────────────────────────────────────────────────────────
   {
@@ -71,7 +79,8 @@ export const router = createBrowserRouter([
 
   // ── Protected routes (require auth) ──────────────────────────────────────────
   {
-    element: <ProtectedRoute />,
+    // Authentication gate only; each page below adds its own access spec.
+    element: <AccessRoute spec={{}} />,
     errorElement: <ErrorPage />,
     children: [
       {
@@ -81,34 +90,37 @@ export const router = createBrowserRouter([
           { index: true, element: <LandingRedirect /> },
 
           // Today — the hub of the flow
-          { path: 'today', element: <TodayPage /> },
-          { path: 'today-sheet', element: <TodaySheetPage /> },
-          { path: 'notifications', element: <NotificationsPage /> },
+          { path: 'today', element: guarded('/today', <TodayPage />) },
+          { path: 'today-sheet', element: guarded('/today-sheet', <TodaySheetPage />) },
+          { path: 'notifications', element: guarded('/notifications', <NotificationsPage />) },
 
           // Receive → deliver → return → bill
-          { path: 'gate-passes', element: <GatePassesPage /> },
-          { path: 'gate-passes/new', element: <CreateGatePassPage /> },
-          { path: 'gate-passes/:id', element: <GatePassDetailPage /> },
-          { path: 'deliveries', element: <DeliveriesPage /> },
-          { path: 'deliveries/new', element: <CreateDeliveryPage /> },
-          { path: 'deliveries/:id', element: <DeliveryDetailPage /> },
-          { path: 'hotel-linen-flow', element: <HotelLinenFlowPage /> },
-          { path: 'returns', element: <ReturnsPage /> },
-          { path: 'returns/new', element: <CreateReturnPage /> },
-          { path: 'returns/:id', element: <ReturnDetailPage /> },
-          { path: 'statements', element: <StatementsPage /> },
-          { path: 'bills', element: <BillsListPage /> },
-          { path: 'bills/new', element: <CreateBillPage /> },
-          { path: 'bills/:id', element: <BillDetailPage /> },
+          { path: 'gate-passes', element: guarded('/gate-passes', <GatePassesPage />) },
+          { path: 'gate-passes/new', element: guarded('/gate-passes/new', <CreateGatePassPage />) },
+          { path: 'gate-passes/:id', element: guarded('/gate-passes/:id', <GatePassDetailPage />) },
+          { path: 'deliveries', element: guarded('/deliveries', <DeliveriesPage />) },
+          { path: 'deliveries/new', element: guarded('/deliveries/new', <CreateDeliveryPage />) },
+          { path: 'deliveries/:id', element: guarded('/deliveries/:id', <DeliveryDetailPage />) },
+          {
+            path: 'hotel-linen-flow',
+            element: guarded('/hotel-linen-flow', <HotelLinenFlowPage />),
+          },
+          { path: 'returns', element: guarded('/returns', <ReturnsPage />) },
+          { path: 'returns/new', element: guarded('/returns/new', <CreateReturnPage />) },
+          { path: 'returns/:id', element: guarded('/returns/:id', <ReturnDetailPage />) },
+          { path: 'statements', element: guarded('/statements', <StatementsPage />) },
+          { path: 'bills', element: guarded('/bills', <BillsListPage />) },
+          { path: 'bills/new', element: guarded('/bills/new', <CreateBillPage />) },
+          { path: 'bills/:id', element: guarded('/bills/:id', <BillDetailPage />) },
 
           // Linen tracking & scanning
-          { path: 'linen', element: <LinenDashboard /> },
-          { path: 'linen/inventory', element: <LinenInventory /> },
-          { path: 'linen/:id', element: <LinenProfile /> },
-          { path: 'linen/scanner', element: <LinenScanner /> },
-          { path: 'linen/bulk-scan', element: <LinenBulkScan /> },
-          { path: 'linen/session', element: <LinenSession /> },
-          { path: 'linen/tags', element: <LinenTagGenerator /> },
+          { path: 'linen', element: guarded('/linen', <LinenDashboard />) },
+          { path: 'linen/inventory', element: guarded('/linen/inventory', <LinenInventory />) },
+          { path: 'linen/:id', element: guarded('/linen/:id', <LinenProfile />) },
+          { path: 'linen/scanner', element: guarded('/linen/scanner', <LinenScanner />) },
+          { path: 'linen/bulk-scan', element: guarded('/linen/bulk-scan', <LinenBulkScan />) },
+          { path: 'linen/session', element: guarded('/linen/session', <LinenSession />) },
+          { path: 'linen/tags', element: guarded('/linen/tags', <LinenTagGenerator />) },
 
           // Account
           { path: 'settings', element: <SettingsPage /> },

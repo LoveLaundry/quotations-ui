@@ -5,6 +5,8 @@ import { useNavigate } from 'react-router-dom'
 import type { Quotation } from '../../../types/quotation'
 import type { GatePassPendingEntry, NotificationType } from '../../../types/notification'
 import { formatDate } from '../../../lib/utils'
+import { usePermissions } from '../../../hooks/usePermissions'
+import { CAPABILITIES } from '../../../lib/access'
 
 interface NotificationDetailDialogProps {
   open: boolean
@@ -15,6 +17,8 @@ interface NotificationDetailDialogProps {
 
 export function NotificationDetailDialog({ open, onOpenChange, data, type }: NotificationDetailDialogProps) {
   const navigate = useNavigate()
+  const { hasPermission } = usePermissions()
+  const canCreateBill = hasPermission(CAPABILITIES.manageBills)
 
   if (!data) return null
 
@@ -183,22 +187,24 @@ export function NotificationDetailDialog({ open, onOpenChange, data, type }: Not
             {isGatePass ? <RiTruckLine size={16} className="mr-1.5" /> : <RiEditLine size={16} className="mr-1.5" />}
             View Details
           </Button>
-          <Button
-            className="w-full sm:w-auto bg-[#DC2626] hover:bg-[#B91C1C] text-white"
-            onClick={handlePrimaryAction}
-          >
-            {isGatePass ? (
-              <>
-                <RiTruckLine size={16} className="mr-1.5" />
-                Open Gate Pass
-              </>
-            ) : (
-              <>
-                <RiAddLine size={16} className="mr-1.5" />
-                Create Bill
-              </>
-            )}
-          </Button>
+          {(isGatePass || canCreateBill) && (
+            <Button
+              className="w-full sm:w-auto bg-[#DC2626] hover:bg-[#B91C1C] text-white"
+              onClick={handlePrimaryAction}
+            >
+              {isGatePass ? (
+                <>
+                  <RiTruckLine size={16} className="mr-1.5" />
+                  Open Gate Pass
+                </>
+              ) : (
+                <>
+                  <RiAddLine size={16} className="mr-1.5" />
+                  Create Bill
+                </>
+              )}
+            </Button>
+          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>

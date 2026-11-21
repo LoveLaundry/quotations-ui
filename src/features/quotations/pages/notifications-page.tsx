@@ -11,6 +11,8 @@ import { useNotifications } from '../hooks/useNotifications'
 import { NotificationDetailDialog } from '../components/notification-detail-dialog'
 import type { Quotation } from '../../../types/quotation'
 import type { GatePassPendingEntry } from '../../../types/notification'
+import { usePermissions } from '../../../hooks/usePermissions'
+import { CAPABILITIES } from '../../../lib/access'
 
 type TabFilter = 'all' | 'pending' | 'accepted'
 
@@ -20,6 +22,8 @@ type Row =
 
 export default function NotificationsPage() {
   const navigate = useNavigate()
+  const { hasPermission } = usePermissions()
+  const canCreateBill = hasPermission(CAPABILITIES.manageBills)
   const { gatePassPending, deliveredQuotations, pendingCount, acceptedCount, totalCount, isLoading } = useNotifications()
   const [filter, setFilter] = useState<TabFilter>('all')
   const [search, setSearch] = useState('')
@@ -267,13 +271,15 @@ export default function NotificationsPage() {
                   >
                     Details
                   </Button>
-                  <Button
-                    size="sm"
-                    onClick={() => handleAction(row)}
-                    className="bg-[var(--text-primary)] hover:bg-[#374151]"
-                  >
-                    <RiAddLine size={14} /> Create Bill
-                  </Button>
+                  {canCreateBill && (
+                    <Button
+                      size="sm"
+                      onClick={() => handleAction(row)}
+                      className="bg-[var(--text-primary)] hover:bg-[#374151]"
+                    >
+                      <RiAddLine size={14} /> Create Bill
+                    </Button>
+                  )}
                   <button
                     onClick={() => setSelected(row)}
                     className="flex h-8 w-8 items-center justify-center rounded-lg text-[#98A2B3] hover:bg-[var(--surface-3)] hover:text-[#111827] transition-colors cursor-pointer"

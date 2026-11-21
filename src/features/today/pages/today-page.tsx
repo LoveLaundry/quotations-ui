@@ -24,7 +24,7 @@ import {
 import { cn } from '../../../lib/utils'
 import { addDaysISO, TIME_ZONE, todayISO } from '../../../lib/time'
 import { usePermissions } from '../../../hooks/usePermissions'
-import type { AccessSpec } from '../../../lib/access'
+import { accessSpecForPath } from '../../../config/route-meta'
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card'
 import { Button } from '../../../components/ui/button'
 import { Skeleton } from '../../../components/ui/skeleton'
@@ -119,7 +119,6 @@ const QUICK_ACTIONS: {
   hint: string
   icon: typeof ClipboardText
   primary?: boolean
-  spec?: AccessSpec
 }[] = [
   { to: '/gate-passes/new', label: 'Receive', hint: 'New gate pass', icon: ClipboardText, primary: true },
   { to: '/deliveries/new', label: 'Deliver', hint: 'Record delivery', icon: Truck, primary: true },
@@ -129,7 +128,7 @@ const QUICK_ACTIONS: {
 
 function QuickActions() {
   const { canAccess } = usePermissions()
-  const actions = QUICK_ACTIONS.filter((action) => !action.spec || canAccess(action.spec))
+  const actions = QUICK_ACTIONS.filter((action) => canAccess(accessSpecForPath(action.to)))
 
   return (
     <nav aria-label="Quick actions">

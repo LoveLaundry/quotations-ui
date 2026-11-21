@@ -26,8 +26,8 @@ export function usePermissions() {
   const permissions = useMemo(() => permissionsOf(user), [user])
 
   const hasPermission = useCallback(
-    (permission: string) => hasPermissionFor(user, permission),
-    [user],
+    (permission: string) => hasPermissionFor(user, permission, supportActive),
+    [user, supportActive],
   )
 
   const canAccess = useCallback(
@@ -37,7 +37,10 @@ export function usePermissions() {
 
   const isPlatformAdmin = useMemo(() => isPlatformAdminFor(user), [user])
 
-  const landingPath = useMemo(() => landingPathFor(user), [user])
+  const landingPath = useMemo(
+    () => landingPathFor(user, supportActive),
+    [user, supportActive],
+  )
 
   const isAdmin = role === 'ADMIN' || role === 'PLATFORM_ADMIN'
 

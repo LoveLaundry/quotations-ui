@@ -192,8 +192,9 @@ export class LinenSocket {
   // ── internals ──────────────────────────────────────────────────────────
   private open(): void {
     if (!this.token) return
-    if (typeof WebSocket === 'undefined') {
-      // Non-browser runtime: polling is the only option.
+    if (typeof WebSocket === 'undefined' && this.factory === defaultFactory) {
+      // Non-browser runtime with the real factory: polling is the only option.
+      // An injected factory (tests, or a host-provided transport) still works.
       this.setStatus('fallback')
       return
     }

@@ -26,9 +26,8 @@ import {
 import { LogoOnDark } from '../brand/logo'
 import { cn } from '../../lib/utils'
 import { useAuth } from '../../context/AuthContext'
-import { NAV_GROUPS, ROUTES, type NavGroupId } from '../../config/route-meta'
+import { accessSpecForPath, NAV_GROUPS, ROUTES, type NavGroupId } from '../../config/route-meta'
 import { usePermissions } from '../../hooks/usePermissions'
-import type { AccessSpec } from '../../lib/access'
 
 /**
  * Icon lookup. `route-meta.ts` stores icon *keys* so it stays a plain data
@@ -185,27 +184,14 @@ function SidebarContent({ collapsed, onToggle, isMobile, onMobileClose }: Sideba
 
   /**
    * The rail is built from the route registry, so a listed link and an allowed
-   * route are decided by the same rule. A platform-only session sees only the
-   * Platform group (canAccess rejects every tenant group for it); a tenant
-   * session sees whatever its capabilities allow. Groups with nothing left
-   * after filtering are dropped.
+   * route are decided by the same rule. A tenant session sees whatever its
+   * capabilities allow; hotel/shop account roles see only the account group.
+   * Groups with nothing left after filtering are dropped.
    */
   const groups = useMemo(() => {
-    const specFor = (path: string): AccessSpec => {
-      const target = ROUTES.find((r) => r.path === path)
-      if (!target) return {}
-      return {
-        permissions: target.permissions,
-        roles: target.roles,
-        adminOnly: target.adminOnly,
-        platformOnly: target.platformOnly,
-        tenantOnly: target.tenantOnly,
-      }
-    }
-
     return NAV_GROUPS.map((group) => {
       const items = ROUTES.filter(
-        (r) => r.group === group.id && r.navLabel && canAccess(specFor(r.path)),
+        (r) => r.group === group.id && r.navLabel && canAccess(accessSpecForPath(r.path)),
       ).map<NavItem>((r) => ({
         to: r.path,
         label: r.navLabel ?? r.title,

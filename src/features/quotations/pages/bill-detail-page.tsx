@@ -20,6 +20,8 @@ import { BillStatusBadge } from '../../../components/ui/bill-status-badge'
 import { useRef } from 'react'
 import { formatCalendarDate } from '../../../lib/time'
 import { todayISO } from '../../../lib/time'
+import { usePermissions } from '../../../hooks/usePermissions'
+import { CAPABILITIES } from '../../../lib/access'
 
 function RecordPaymentModal({
   isOpen,
@@ -150,6 +152,9 @@ function RecordPaymentModal({
 export default function BillDetailPage() {
   const navigate = useNavigate()
   const { id } = useParams()
+  const { hasPermission } = usePermissions()
+  const canManageBills = hasPermission(CAPABILITIES.manageBills)
+  const canManagePayments = hasPermission(CAPABILITIES.managePayments)
 
   const { data: bill, isLoading, isError, error } = useBill(id)
   const { data: payments = [], isLoading: paymentsLoading } = usePayments(id)
@@ -235,7 +240,7 @@ export default function BillDetailPage() {
             <Button variant="secondary" size="sm" onClick={handlePrintClick}>
               <Printer className="h-3.5 w-3.5" /> Print
             </Button>
-            {bill.payment_status !== 'PAID' && bill.payment_status !== 'CANCELLED' && (
+            {canManageBills && bill.payment_status !== 'PAID' && bill.payment_status !== 'CANCELLED' && (
               <>
                 {isEditing ? (
                   <>
@@ -253,15 +258,17 @@ export default function BillDetailPage() {
                 )}
               </>
             )}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleDelete}
-              disabled={deleteBill.isPending}
-              className="text-[#DC2626] hover:bg-[#FEF2F2]"
-            >
-              <Trash2 className="h-3.5 w-3.5" /> Delete
-            </Button>
+            {canManageBills && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleDelete}
+                disabled={deleteBill.isPending}
+                className="text-[#DC2626] hover:bg-[#FEF2F2]"
+              >
+                <Trash2 className="h-3.5 w-3.5" /> Delete
+              </Button>
+            )}
           </div>
         )}
       </div>
@@ -423,7 +430,7 @@ export default function BillDetailPage() {
                   <span className="text-[16px] font-bold text-[#DC2626]">LKR {outstanding.toFixed(2)}</span>
                 </div>
 
-                {outstanding > 0 && (
+                {canManagePayments && outstanding > 0 && (
                   <Button
                     onClick={() => setIsPaymentModalOpen(true)}
                     className="w-full bg-[#16A34A] hover:bg-[#15803D] text-white shadow-sm mt-2"
@@ -473,7 +480,7 @@ export default function BillDetailPage() {
         </div>
       )}
 
-      {bill && isPaymentModalOpen && (
+      {bill && canManagePayments && isPaymentModalOpen && (
         <RecordPaymentModal
           isOpen={isPaymentModalOpen}
           onClose={() => setIsPaymentModalOpen(false)}

@@ -8,6 +8,9 @@ import {
 } from 'lucide-react'
 import { useAuth } from '../../../context/AuthContext'
 import { authService } from '../services/auth.service'
+import { accessSpecForPath } from '../../../config/route-meta'
+import { canAccess, landingPathFor } from '../../../lib/access'
+import type { User } from '../../../types/auth'
 import { Logo } from '../../../components/brand/logo'
 import { Button } from '../../../components/ui/button'
 import { Input } from '../../../components/ui/input'
@@ -22,6 +25,42 @@ import { Field } from '../../../components/ui/field'
  * still guards a paste-and-submit, and the reason is stated rather than implied
  * by a greyed button.
  */
+/** The guard stores either a string or the older `{ pathname }` shape. Read
+ *  both, but never follow an external or login URL handed to us in state. */
+function attemptedPath(state: unknown): string | null {
+  let raw: unknown = state
+  if (raw && typeof raw === 'object' && 'from' in raw) {
+    raw = (raw as { from?: unknown }).from
+  }
+
+  let target = ''
+  if (typeof raw === 'string') {
+    target = raw
+  } else if (raw && typeof raw === 'object') {
+    const value = raw as { pathname?: unknown; search?: unknown }
+    target = `${typeof value.pathname === 'string' ? value.pathname : ''}${
+      typeof value.search === 'string' ? value.search : ''
+    }`
+  }
+
+  if (
+    !target.startsWith('/') ||
+    target.startsWith('//') ||
+    target === '/login' ||
+    target === '/'
+  ) {
+    return null
+  }
+  return target
+}
+
+/** Return to the deep link only when the signed-in user may actually open it;
+ *  otherwise send them to the best page for their role. */
+function destinationFor(user: User, attempted: string | null): string {
+  if (attempted && canAccess(user, accessSpecForPath(attempted))) return attempted
+  return landingPathFor(user)
+}
+
 export default function LoginPage() {
   const { login } = useAuth()
   const navigate = useNavigate()
@@ -38,7 +77,7 @@ export default function LoginPage() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
-  const from = (location.state as { from?: { pathname?: string } } | null)?.from?.pathname ?? '/'
+  const attempted = attemptedPath(location.state)
 
   useEffect(() => {
     if (error) errorRef.current?.focus()
@@ -81,14 +120,15 @@ export default function LoginPage() {
           password,
         })
         login(res.access_token, res.user)
-        navigate(from, { replace: true })
+        navigate(landingPathFor(res.user), { replace: true })
         return
       }
       const res = await authService.login({ username: username.trim(), password })
       login(res.access_token, res.user)
 
-      // Every signed-in session lands on the daily operations hub.
-      navigate(from === '/login' || !from ? '/today' : from, { replace: true })
+      // Return an authorised session to its deep link; otherwise land on the
+      // best page for that role.
+      navigate(destinationFor(res.user, attempted), { replace: true })
     } catch (err: any) {
       const status = err?.response?.status ?? err?.status
       if (mode === 'setup' && status === 403) {

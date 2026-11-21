@@ -24,13 +24,15 @@ export function AccessRoute({
   const supportActive = Boolean(support)
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace state={{ from: location.pathname }} />
+    // Keep the attempted URL so login can return an authorised session to it.
+    const from = `${location.pathname}${location.search}`
+    return <Navigate to="/login" replace state={{ from }} />
   }
 
   if (!canAccess(user, spec, supportActive)) {
     // Send the session somewhere it can actually render rather than a fixed
     // page that might itself be gated.
-    return <Navigate to={landingPathFor(user)} replace />
+    return <Navigate to={landingPathFor(user, supportActive)} replace />
   }
 
   return children ?? <Outlet />

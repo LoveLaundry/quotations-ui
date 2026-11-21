@@ -14,7 +14,7 @@ import {
 import type { LucideIcon as Icon } from 'lucide-react'
 import { cn } from '../../lib/utils'
 import { Dialog, DialogContent, DialogTitle } from './dialog'
-import { ROUTES } from '../../config/route-meta'
+import { accessSpecForPath, ROUTES } from '../../config/route-meta'
 import { usePermissions } from '../../hooks/usePermissions'
 import type { AccessSpec } from '../../lib/access'
 
@@ -41,7 +41,7 @@ const NAV_ITEMS: NavTarget[] = ROUTES.filter(
   label: r.navLabel ?? r.title,
   keywords: `${r.title} ${r.keywords ?? ''}`,
   path: r.path,
-  spec: { permissions: r.permissions, roles: r.roles, adminOnly: r.adminOnly, platformOnly: r.platformOnly },
+  spec: accessSpecForPath(r.path),
 }))
 
 const QUICK_ACTIONS: {
@@ -50,11 +50,11 @@ const QUICK_ACTIONS: {
   icon: Icon
   spec: AccessSpec
 }[] = [
-  { label: 'New Gate Pass', path: '/gate-passes/new', icon: ClipboardText, spec: { permissions: ['view_gate_passes'] } },
-  { label: 'New Delivery', path: '/deliveries/new', icon: Truck, spec: { permissions: ['view_deliveries'] } },
-  { label: 'New Bill', path: '/bills/new', icon: Receipt, spec: { permissions: ['view_bills'] } },
-  { label: 'Record Return', path: '/returns/new', icon: ArrowCounterClockwise, spec: { permissions: ['view_gate_passes'] } },
-  { label: 'Today Sheet', path: '/today-sheet', icon: Table, spec: {} },
+  { label: 'New Gate Pass', path: '/gate-passes/new', icon: ClipboardText, spec: accessSpecForPath('/gate-passes/new') },
+  { label: 'New Delivery', path: '/deliveries/new', icon: Truck, spec: accessSpecForPath('/deliveries/new') },
+  { label: 'New Bill', path: '/bills/new', icon: Receipt, spec: accessSpecForPath('/bills/new') },
+  { label: 'Record Return', path: '/returns/new', icon: ArrowCounterClockwise, spec: accessSpecForPath('/returns/new') },
+  { label: 'Today Sheet', path: '/today-sheet', icon: Table, spec: accessSpecForPath('/today-sheet') },
 ]
 
 /**
