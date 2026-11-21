@@ -12,7 +12,7 @@ interface RouteAccessCtx {
 const RouteAccessContext = createContext<RouteAccessCtx | null>(null)
 
 export function RouteAccessProvider({ children }: { children: ReactNode }) {
-  const { isAuthenticated, user } = useAuth()
+  const { isAuthenticated } = useAuth()
   const [overrides, setOverrides] = useState<RouteAccessOverrides>({})
   const [loading, setLoading] = useState(false)
 
