@@ -1,20 +1,599 @@
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { Link } from 'react-router-dom'
+import { toast } from 'sonner'
+import {
+  AlertTriangle,
+  ArrowRight,
+  Camera,
+  CameraOff,
+  CheckCircle2,
+  Clock,
+  RefreshCw,
+  ScanLine,
+  Search,
+  UserRound,
+} from 'lucide-react'
+import { useAuth } from '../../../context/AuthContext'
+import { useBulkScan, useLinenTransitions } from '../hooks/useLinen'
+import { useLinenCamera } from '../hooks/useLinenCamera'
+import { parseLinenCode } from '../lib/linen-code'
+import {
+  OUTCOME_LABEL,
+  OUTCOME_TONE,
+  applyBulkResult,
+  createSession,
+  endSession,
+  failQueued,
+  failedTotal,
+  filterRecords,
+  queuedCodes,
+  recordScan,
+  requeueUnresolved,
+  summarise,
+  type ScanRecord,
+  type ScanSession,
+} from '../lib/scan-session'
+import {
+  LINEN_STATUS_CONFIG,
+  type LinenBulkScanResult,
+  type LinenStatus,
+  type LinenTransition,
+} from '../../../types/linen'
+import { Card, CardContent } from '../../../components/ui/card'
+import { Button } from '../../../components/ui/button'
+import { Badge } from '../../../components/ui/badge'
 import { Breadcrumb } from '../../../components/ui/breadcrumb'
 
+type Phase = 'select' | 'scanning' | 'summary'
+
+const TONE_BADGE = {
+  green: 'success',
+  amber: 'warning',
+  red: 'danger',
+  blue: 'info',
+  neutral: 'neutral',
+} as const
+
+function statusLabel(status?: string): string {
+  if (!status) return '—'
+  return LINEN_STATUS_CONFIG[status as LinenStatus]?.label ?? status
+}
+
+function timeOfDay(ms?: number): string {
+  if (!ms) return '—'
+  return new Date(ms).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+}
+
 export default function LinenSession() {
-  return (
-    <div className="space-y-6 p-4 md:p-6">
-      <Breadcrumb items={[{ label: 'Linen' }, { label: 'Session' }]} />
-      <div>
-        <h1 className="text-2xl font-bold text-[var(--text-primary)]" style={{ fontFamily: '"Spectral", Georgia, serif' }}>
-          Linen Session
-        </h1>
-        <p className="text-sm text-[var(--text-muted)] mt-1">
-          Session-based linen tracking workflow. (Route restored; implement content as needed.)
-        </p>
+  const { user } = useAuth()
+  const operator = user?.user_name ?? 'unknown'
+  const { data: catalogue, isLoading: catalogueLoading, error: catalogueError, refetch: refetchCatalogue } = useLinenTransitions()
+  const bulkMutation = useBulkScan()
+
+  const [phase, setPhase] = useState<Phase>('select')
+  const [target, setTarget] = useState<LinenTransition | null>(null)
+  const [location, setLocation] = useState('')
+  const [session, setSession] = useState<ScanSession | null>(null)
+  const [apiResult, setApiResult] = useState<LinenBulkScanResult | null>(null)
+  const [codeInput, setCodeInput] = useState('')
+  const [filter, setFilter] = useState('')
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  const focusScanner = useCallback(() => {
+    requestAnimationFrame(() => inputRef.current?.focus())
+  }, [])
+
+  useEffect(() => {
+    if (phase === 'scanning') focusScanner()
+  }, [phase, focusScanner])
+
+  const processScan = useCallback((raw: string) => {
+    if (phase !== 'scanning' || bulkMutation.isPending) return
+
+    if (!parseLinenCode(raw)) {
+      toast.warning('That read was not a linen tag')
+    }
+    setSession(current => (current ? recordScan(current, raw) : current))
+    setCodeInput('')
+    focusScanner()
+  }, [bulkMutation.isPending, focusScanner, phase])
+
+  const camera = useLinenCamera({ onCode: raw => processScan(raw) })
+
+  const beginSession = useCallback((transition: LinenTransition) => {
+    setSession(createSession({
+      action: transition.action,
+      actionLabel: transition.label,
+      toStatus: transition.to_status,
+      custody: transition.custody,
+      operator,
+    }))
+    setTarget(transition)
+    setApiResult(null)
+    setCodeInput('')
+    setFilter('')
+    setPhase('scanning')
+  }, [operator])
+
+  /**
+   * OK is the only write point in the whole flow. Every valid scan has been
+   * queued locally up to here; one bulk request updates the linen and its
+   * response becomes the summary.
+   */
+  const commitBatch = useCallback(async () => {
+    if (!session || !target || phase !== 'scanning' || bulkMutation.isPending) return
+
+    const codes = queuedCodes(session)
+    if (!codes.length) {
+      toast.warning('Scan at least one linen before pressing OK')
+      focusScanner()
+      return
+    }
+
+    try {
+      const response = await bulkMutation.mutateAsync({
+        codes,
+        action: target.action,
+        location: location.trim() || undefined,
+      })
+      setSession(current => (current ? endSession(applyBulkResult(current, response)) : current))
+      setApiResult(response)
+      setPhase('summary')
+      camera.stop()
+    } catch {
+      // The request never landed: keep every code retryable and stay on the
+      // scanning screen so the operator can press OK again.
+      setSession(current => (current ? failQueued(current, 'Batch was not submitted') : current))
+      focusScanner()
+    }
+  }, [bulkMutation, camera, focusScanner, location, phase, session, target])
+
+  const retryUnresolved = useCallback(() => {
+    setSession(current => (current ? requeueUnresolved(current) : current))
+    setApiResult(null)
+    setFilter('')
+    setPhase('scanning')
+  }, [])
+
+  const startNewSession = useCallback(() => {
+    camera.stop()
+    setSession(null)
+    setTarget(null)
+    setApiResult(null)
+    setLocation('')
+    setCodeInput('')
+    setFilter('')
+    setPhase('select')
+  }, [camera])
+
+  const discardSession = useCallback(() => {
+    if (!window.confirm('Discard this session? No linen has been updated yet.')) return
+    startNewSession()
+  }, [startNewSession])
+
+  const summary = useMemo(() => (session ? summarise(session) : null), [session])
+  const visibleRecords = useMemo(
+    () => (session ? filterRecords(session.records, filter) : []),
+    [session, filter]
+  )
+
+  // Queued scans exist only in this tab. Warn before an accidental reload or
+  // navigation away loses the batch; after OK the summary is locally complete.
+  useEffect(() => {
+    if (phase !== 'scanning' || !session || !queuedCodes(session).length) return
+    const warn = (event: BeforeUnloadEvent) => {
+      event.preventDefault()
+      event.returnValue = ''
+    }
+    window.addEventListener('beforeunload', warn)
+    return () => window.removeEventListener('beforeunload', warn)
+  }, [phase, session])
+
+  // ── 1. Pick the destination state from the server catalogue ─────────────
+  if (phase === 'select' || !session || !target) {
+    return (
+      <div className="space-y-5">
+        <Breadcrumb items={[{ label: 'Linen' }, { label: 'Scan Session' }]} />
+        <div>
+          <h1 className="text-2xl font-bold text-[var(--text-primary)]" style={{ fontFamily: '"Spectral", Georgia, serif' }}>
+            Scan Session
+          </h1>
+          <p className="text-sm text-[var(--text-muted)] mt-1">
+            Choose a state, scan continuously, then press OK once to update every linen in the batch.
+          </p>
+        </div>
+
+        <Card className="border border-[var(--brand-border)] bg-[var(--brand-soft)] shadow-sm">
+          <CardContent className="p-3.5 text-xs text-[var(--brand-text)]">
+            Nothing is written to linen while you scan. All valid tags are held in this session until you press OK.
+          </CardContent>
+        </Card>
+
+        {catalogueLoading && (
+          <Card className="border border-[var(--border)] shadow-sm">
+            <CardContent className="p-8 text-center text-sm text-[var(--text-muted)]">
+              <RefreshCw size={15} className="mr-2 inline animate-spin" /> Loading states from the linen service…
+            </CardContent>
+          </Card>
+        )}
+
+        {catalogueError && (
+          <Card className="border border-[var(--danger-border)] bg-[var(--danger-soft)] shadow-sm">
+            <CardContent className="p-5 text-center">
+              <p className="text-sm font-medium text-[var(--danger-text)]">
+                The linen service did not answer, so no states can be listed. The picker is intentionally server-driven.
+              </p>
+              <Button variant="secondary" size="sm" className="mt-3" onClick={() => void refetchCatalogue()}>
+                <RefreshCw size={12} className="mr-1" /> Retry
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+
+        {!catalogueLoading && !catalogueError && !catalogue?.groups?.length && (
+          <Card className="border border-[var(--border)] shadow-sm">
+            <CardContent className="p-8 text-center text-sm text-[var(--text-muted)]">
+              No scan actions are available from the linen service.
+            </CardContent>
+          </Card>
+        )}
+
+        {catalogue?.groups.map(group => (
+          <section key={group.custody} className="space-y-2">
+            <div>
+              <h2 className="text-[11px] font-semibold uppercase tracking-wide text-[var(--text-muted)]">{group.label}</h2>
+              <p className="text-xs text-[var(--text-muted)]">{group.description}</p>
+            </div>
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+              {group.transitions.map(transition => (
+                <button
+                  key={transition.action}
+                  type="button"
+                  onClick={() => beginSession(transition)}
+                  className="flex aspect-square flex-col justify-between rounded-md border border-[var(--border)] bg-[var(--surface)] p-3 text-left shadow-[var(--shadow-xs)] transition-colors hover:border-[var(--brand)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
+                >
+                  <span className="inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wide text-[var(--text-muted)]">
+                    {transition.custody === 'exception' ? <AlertTriangle size={11} /> : <ScanLine size={11} />}
+                    {transition.to_status_label}
+                  </span>
+                  <span className="text-base font-bold leading-tight text-[var(--text-primary)]">{transition.label}</span>
+                  <span className="flex items-center justify-between gap-2">
+                    <span className="font-[family-name:var(--font-mono)] text-[10px] text-[var(--text-muted)]">{transition.to_status}</span>
+                    {transition.terminal && <Badge size="xs" tone="warning">Final</Badge>}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </section>
+        ))}
       </div>
-      <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-6 text-sm text-[var(--text-muted)]">
-        Linen session UI goes here.
+    )
+  }
+
+  // ── 3. Summary after the OK batch ───────────────────────────────────────
+  if (phase === 'summary' && summary) {
+    const unresolved = failedTotal(summary)
+    return (
+      <div className="space-y-5">
+        <Breadcrumb items={[{ label: 'Linen' }, { label: 'Scan Session' }, { label: 'Summary' }]} />
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h1 className="text-2xl font-bold text-[var(--text-primary)]" style={{ fontFamily: '"Spectral", Georgia, serif' }}>
+              Session Summary
+            </h1>
+            <p className="text-sm text-[var(--text-muted)] mt-1">
+              <span className="font-[family-name:var(--font-mono)]">{session.id}</span> · {target.label} → {statusLabel(session.toStatus)} · {timeOfDay(session.startedAt)}–{timeOfDay(session.endedAt)}
+              {location.trim() ? ` · ${location.trim()}` : ''}
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {unresolved > 0 && (
+              <Button variant="outline" size="sm" onClick={retryUnresolved}>
+                <RefreshCw size={12} className="mr-1" /> Retry / Correct
+              </Button>
+            )}
+            <Button variant="secondary" size="sm" asChild>
+              <Link to="/linen/inventory">View Inventory</Link>
+            </Button>
+            <Button variant="primary" size="sm" onClick={startNewSession}>
+              New Session
+            </Button>
+          </div>
+        </div>
+
+        {unresolved > 0 && (
+          <Card className="border border-[var(--warning-border)] bg-[var(--warning-soft)] shadow-sm">
+            <CardContent className="flex items-start gap-3 p-4">
+              <AlertTriangle size={18} className="mt-0.5 flex-shrink-0 text-[var(--warning-text)]" />
+              <div>
+                <p className="text-sm font-medium text-[var(--warning-text)]">
+                  {unresolved} scan(s) did not update linen.
+                </p>
+                <p className="text-xs text-[var(--text-secondary)] mt-1">
+                  {summary.notFound} not registered, {summary.rejected} rejected, {summary.failed} could not be reached and {summary.unreadable} were not valid tags.
+                  Retry / Correct puts the usable codes back in the queue so they can be submitted in one more batch.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          {[
+            ['Scans', summary.attempts],
+            ['Linen updated', summary.successful],
+            ['Not updated', unresolved],
+            ['Duplicates', summary.duplicates],
+          ].map(([label, value]) => (
+            <Card key={String(label)} className="border border-[var(--border)] shadow-sm">
+              <CardContent className="p-3">
+                <p className="text-[10px] uppercase text-[var(--text-muted)]">{label}</p>
+                <p className="text-xl font-bold tabular-nums text-[var(--text-primary)]">{value}</p>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        {apiResult && (
+          <div className="grid gap-4 lg:grid-cols-2">
+            <Card className="border border-[var(--border)] shadow-sm">
+              <CardContent className="p-4">
+                <div className="mb-2 flex items-center justify-between">
+                  <h2 className="text-[11px] font-semibold uppercase tracking-wide text-[var(--text-muted)]">Updated by the linen service</h2>
+                  <Badge tone="success" size="xs" dot>{apiResult.total_processed}</Badge>
+                </div>
+                {apiResult.processed.length === 0 ? (
+                  <p className="py-4 text-center text-xs text-[var(--text-muted)]">No linen was updated.</p>
+                ) : (
+                  <ul className="max-h-64 space-y-1 overflow-y-auto">
+                    {apiResult.processed.map(row => (
+                      <li key={row.linen_id} className="flex items-center gap-2 rounded border border-[var(--border)] bg-[var(--surface-2)] px-2 py-1.5 text-xs">
+                        <CheckCircle2 size={13} className="flex-shrink-0 text-[var(--success-text)]" />
+                        <span className="font-[family-name:var(--font-mono)] font-semibold text-[var(--text-primary)]">{row.linen_id}</span>
+                        <span className="ml-auto flex items-center gap-1 text-[10px] text-[var(--text-muted)]">
+                          {statusLabel(row.from_status)} <ArrowRight size={10} /> {statusLabel(row.to_status)}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card className="border border-[var(--border)] shadow-sm">
+              <CardContent className="p-4">
+                <div className="mb-2 flex items-center justify-between">
+                  <h2 className="text-[11px] font-semibold uppercase tracking-wide text-[var(--text-muted)]">Not updated by the linen service</h2>
+                  <Badge tone={apiResult.total_errors ? 'warning' : 'neutral'} size="xs" dot>{apiResult.total_errors}</Badge>
+                </div>
+                {apiResult.errors.length === 0 ? (
+                  <p className="py-4 text-center text-xs text-[var(--text-muted)]">No server-side errors.</p>
+                ) : (
+                  <ul className="max-h-64 space-y-1 overflow-y-auto">
+                    {apiResult.errors.map(row => (
+                      <li key={row.linen_id} className="flex items-start gap-2 rounded border border-[var(--danger-border)] bg-[var(--danger-soft)] px-2 py-1.5 text-xs">
+                        <AlertTriangle size={13} className="mt-0.5 flex-shrink-0 text-[var(--danger-text)]" />
+                        <div className="min-w-0">
+                          <p className="font-[family-name:var(--font-mono)] font-semibold text-[var(--text-primary)]">{row.linen_id}</p>
+                          <p className="text-[10px] text-[var(--danger-text)]">{row.error}</p>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        <SessionHistory
+          records={visibleRecords}
+          total={session.records.length}
+          filter={filter}
+          setFilter={setFilter}
+        />
+      </div>
+    )
+  }
+
+  // ── 2. Continuous scan → scan → scan → OK ───────────────────────────────
+  const queuedCount = summary?.queued ?? 0
+
+  return (
+    <div className="space-y-4">
+      <Breadcrumb items={[{ label: 'Linen' }, { label: 'Scan Session' }]} />
+
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="min-w-0">
+          <h1 className="text-2xl font-bold text-[var(--text-primary)]" style={{ fontFamily: '"Spectral", Georgia, serif' }}>
+            {target.label} <span className="text-[var(--text-muted)]">→</span> {statusLabel(session.toStatus)}
+          </h1>
+          <p className="text-sm text-[var(--text-muted)] mt-1">
+            Keep passing tags. Each valid tag is queued once; Press OK when the batch is complete.
+          </p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {!camera.active ? (
+            <Button variant="secondary" size="sm" onClick={camera.start} disabled={camera.starting}>
+              {camera.starting ? <RefreshCw size={14} className="animate-spin" /> : <Camera size={14} />}
+              {camera.starting ? 'Starting…' : 'Camera'}
+            </Button>
+          ) : (
+            <Button variant="secondary" size="sm" onClick={camera.stop}>
+              <CameraOff size={14} /> Stop Camera
+            </Button>
+          )}
+          <Button variant="ghost" size="sm" onClick={discardSession} disabled={bulkMutation.isPending}>
+            Discard
+          </Button>
+          <Button variant="primary" size="sm" onClick={() => void commitBatch()} disabled={!queuedCount} loading={bulkMutation.isPending}>
+            <CheckCircle2 size={14} /> OK — Update {queuedCount} {queuedCount === 1 ? 'Item' : 'Items'}
+          </Button>
+        </div>
+      </div>
+
+      <div className="flex flex-wrap items-center gap-x-5 gap-y-1 text-[11px] text-[var(--text-muted)]">
+        <span className="inline-flex items-center gap-1">
+          <ScanLine size={11} /> <span className="font-[family-name:var(--font-mono)]">{session.id}</span>
+        </span>
+        <span className="inline-flex items-center gap-1"><UserRound size={11} /> {session.operator}</span>
+        <span className="inline-flex items-center gap-1"><Clock size={11} /> started {timeOfDay(session.startedAt)}</span>
+        <Badge tone="info" size="xs" dot>Scanning</Badge>
+        <span className="text-[var(--text-tertiary)]">Nothing written to linen until OK</span>
+      </div>
+
+      {camera.error && (
+        <Card className="border border-[var(--danger-border)] bg-[var(--danger-soft)] shadow-sm">
+          <CardContent className="p-4 text-xs text-[var(--danger-text)]">{camera.error}</CardContent>
+        </Card>
+      )}
+
+      <div
+        ref={camera.containerRef}
+        className="relative overflow-hidden rounded-md border border-[var(--border)] bg-black"
+        style={{ display: camera.active || camera.starting ? 'block' : 'none', minHeight: 260 }}
+      >
+        {camera.active && (
+          <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center">
+            <div className="h-52 w-52 rounded-2xl border-2 border-white/60" />
+          </div>
+        )}
+        {camera.active && (
+          <div className="absolute inset-x-0 bottom-0 z-10 bg-black/40 p-2 text-center text-xs text-white/80">
+            Keep passing tags — every read is captured automatically
+          </div>
+        )}
+      </div>
+
+      <Card className="border border-[var(--brand-border)] bg-[var(--brand-soft)] shadow-sm">
+        <CardContent className="p-4">
+          <div className="flex gap-3">
+            <div className="relative flex-1">
+              <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)]" />
+              <input
+                ref={inputRef}
+                value={codeInput}
+                onChange={event => setCodeInput(event.target.value)}
+                onKeyDown={event => {
+                  if (event.key === 'Enter') {
+                    event.preventDefault()
+                    processScan(event.currentTarget.value)
+                  }
+                }}
+                placeholder="Scan or type a linen ID (LL-XXXXXX)"
+                autoComplete="off"
+                disabled={bulkMutation.isPending}
+                className="w-full rounded-md border border-[var(--border)] bg-[var(--surface)] py-3 pl-10 pr-4 font-[family-name:var(--font-mono)] text-lg text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)] disabled:opacity-50"
+              />
+            </div>
+            <Button variant="primary" onClick={() => processScan(codeInput)} disabled={!codeInput.trim() || bulkMutation.isPending} className="px-5">
+              <ScanLine size={14} /> Record scan
+            </Button>
+          </div>
+          <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center">
+            <input
+              value={location}
+              onChange={event => setLocation(event.target.value)}
+              placeholder="Location / station (optional, applied on OK)"
+              disabled={bulkMutation.isPending}
+              className="flex-1 rounded-md border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-xs text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)] disabled:opacity-50"
+            />
+            <p className="max-w-md text-[11px] text-[var(--text-muted)]">
+              Focus returns here after every scan, so a keyboard-wedge scanner can keep reading without a tap.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+
+      {summary && (
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+          {[
+            ['Scans', summary.attempts],
+            ['Ready for OK', summary.queued],
+            ['Duplicates', summary.duplicates],
+            ['Needs attention', failedTotal(summary)],
+          ].map(([label, value]) => (
+            <div key={String(label)} className="rounded-md border border-[var(--border)] bg-[var(--surface)] px-2 py-2 text-center shadow-[var(--shadow-xs)]">
+              <p className="text-[10px] uppercase text-[var(--text-muted)]">{label}</p>
+              <p className="text-lg font-bold tabular-nums text-[var(--text-primary)]">{value}</p>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <SessionHistory
+        records={visibleRecords}
+        total={session.records.length}
+        filter={filter}
+        setFilter={setFilter}
+        compact
+      />
+
+      <div className="flex justify-end">
+        <Button variant="primary" size="lg" onClick={() => void commitBatch()} disabled={!queuedCount} loading={bulkMutation.isPending}>
+          <CheckCircle2 size={16} /> OK — Update Linen
+        </Button>
       </div>
     </div>
+  )
+}
+
+interface SessionHistoryProps {
+  records: ScanRecord[]
+  total: number
+  filter: string
+  setFilter: (value: string) => void
+  compact?: boolean
+}
+
+function SessionHistory({ records, total, filter, setFilter, compact }: SessionHistoryProps) {
+  return (
+    <Card className="border border-[var(--border)] shadow-sm">
+      <CardContent className={compact ? 'p-3' : 'p-4'}>
+        <div className="mb-2 flex items-center justify-between gap-3">
+          <h2 className="text-[11px] font-semibold uppercase tracking-wide text-[var(--text-muted)]">
+            Scan history {filter ? `(${records.length} of ${total})` : `(${total})`}
+          </h2>
+          <input
+            value={filter}
+            onChange={event => setFilter(event.target.value)}
+            placeholder="Filter…"
+            className="w-40 rounded-md border border-[var(--border)] bg-[var(--surface)] px-2 py-1 text-xs text-[var(--text-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--ring)]"
+          />
+        </div>
+
+        {records.length === 0 ? (
+          <p className="py-6 text-center text-xs text-[var(--text-muted)]">
+            {total ? 'No scan matches that filter.' : 'Nothing scanned yet — pass the first tag.'}
+          </p>
+        ) : (
+          <ul className="max-h-[22rem] divide-y divide-[var(--border)] overflow-y-auto">
+            {records.map((record, index) => {
+              const tone = TONE_BADGE[OUTCOME_TONE[record.outcome]]
+              return (
+                <li key={`${record.code}-${record.attemptedAt}-${index}`} className="flex items-center gap-3 py-2 text-sm">
+                  <span className="min-w-[7.5rem] truncate font-[family-name:var(--font-mono)] text-xs font-semibold text-[var(--text-primary)]">
+                    {record.code}
+                  </span>
+                  <span className="hidden flex-1 truncate text-[11px] text-[var(--text-muted)] md:block">
+                    {record.message ?? statusLabel(record.fromStatus)}
+                  </span>
+                  <span className="hidden items-center gap-1 text-[11px] tabular-nums text-[var(--text-muted)] lg:flex">
+                    {statusLabel(record.fromStatus)} <ArrowRight size={10} /> {statusLabel(record.toStatus)}
+                  </span>
+                  <Badge tone={tone} size="xs">
+                    {record.outcome === 'success' && <CheckCircle2 size={10} />}
+                    {OUTCOME_LABEL[record.outcome]}
+                  </Badge>
+                  <span className="w-[5.5rem] text-right text-[11px] tabular-nums text-[var(--text-muted)]">
+                    {timeOfDay(record.attemptedAt)}
+                  </span>
+                </li>
+              )
+            })}
+          </ul>
+        )}
+      </CardContent>
+    </Card>
   )
 }

@@ -8,6 +8,8 @@ import type {
   LinenBulkCreate,
   LinenScanAction,
   LinenTagGenerate,
+  LinenTransitionList,
+  LinenBulkScanResult,
 } from '../../../types/linen'
 
 async function listLinens(params: LinenListParams = {}): Promise<LinenListResponse> {
@@ -40,8 +42,13 @@ async function scanLinen(docId: string, payload: LinenScanAction): Promise<Linen
   return response.data
 }
 
-async function bulkScan(codes: string[], action: string, location?: string): Promise<{ processed: any[]; errors: any[]; total_processed: number; total_errors: number }> {
-  const response = await billsApi.post('/linens/bulk-scan', codes, { params: { action, location } })
+async function bulkScan(codes: string[], action: string, location?: string): Promise<LinenBulkScanResult> {
+  const response = await billsApi.post<LinenBulkScanResult>('/linens/bulk-scan', codes, { params: { action, location } })
+  return response.data
+}
+
+async function getTransitions(): Promise<LinenTransitionList> {
+  const response = await billsApi.get<LinenTransitionList>('/linens/transitions')
   return response.data
 }
 
@@ -67,6 +74,7 @@ export const linenService = {
   generateTags,
   scanLinen,
   bulkScan,
+  getTransitions,
   getLinenEvents,
   getLinenStats,
   deleteLinen,

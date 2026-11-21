@@ -10,6 +10,7 @@ export const linenKeys = {
   byCode: (code: string) => [...linenKeys.all, 'code', code] as const,
   events: (id: string) => [...linenKeys.all, id, 'events'] as const,
   stats: () => [...linenKeys.all, 'stats'] as const,
+  transitions: () => [...linenKeys.all, 'transitions'] as const,
 }
 
 export function useLinens(params: LinenListParams = {}) {
@@ -47,6 +48,16 @@ export function useLinenStats() {
   return useQuery({
     queryKey: linenKeys.stats(),
     queryFn: () => linenService.getLinenStats(),
+  })
+}
+
+/** The action catalogue is server-owned and changes far less often than the
+ * linen data, so it is cached separately from the inventory queries. */
+export function useLinenTransitions() {
+  return useQuery({
+    queryKey: linenKeys.transitions(),
+    queryFn: () => linenService.getTransitions(),
+    staleTime: 10 * 60 * 1000,
   })
 }
 
@@ -93,9 +104,11 @@ export function useBulkScan() {
       linenService.bulkScan(codes, action, location),
     onSuccess: (data) => {
       qc.invalidateQueries({ queryKey: linenKeys.all })
-      toast.success(`Processed ${data.total_processed} items`)
+      toast.success(
+        `Processed ${data.total_processed} item(s)${data.total_errors ? ` with ${data.total_errors} error(s)` : ''}`
+      )
     },
-    onError: () => toast.error('Failed to bulk scan'),
+    onError: () => toast.error('Bulk update failed — your codes were not updated'),
   })
 }
 

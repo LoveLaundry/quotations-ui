@@ -115,6 +115,51 @@ export interface LinenTagGenerate {
   department?: string
 }
 
+/** One action exactly as `GET /linens/transitions` describes it. The server
+ * owns the vocabulary, so the session state picker is built from these rows
+ * instead of a list duplicated in the frontend. */
+export interface LinenTransition {
+  action: string
+  label: string
+  to_status: string
+  to_status_label: string
+  custody: LinenCustody
+  terminal: boolean
+}
+
+export type LinenCustody = 'hotel' | 'laundry' | 'exception'
+
+export interface LinenTransitionGroup {
+  custody: LinenCustody
+  label: string
+  description: string
+  transitions: LinenTransition[]
+}
+
+export interface LinenTransitionList {
+  groups: LinenTransitionGroup[]
+  statuses: LinenStatus[]
+}
+
+/** Response rows from `POST /linens/bulk-scan`. */
+export interface LinenBulkScanRow {
+  linen_id: string
+  from_status?: string
+  to_status?: string
+}
+
+export interface LinenBulkScanError {
+  linen_id: string
+  error: string
+}
+
+export interface LinenBulkScanResult {
+  processed: LinenBulkScanRow[]
+  errors: LinenBulkScanError[]
+  total_processed: number
+  total_errors: number
+}
+
 export const LINEN_STATUS_CONFIG: Record<LinenStatus, { label: string; color: string; bg: string }> = {
   IN_STOCK:    { label: 'In Stock',    color: '#16A34A', bg: '#DCFCE7' },
   AT_CLIENT:   { label: 'At Client',   color: '#2563EB', bg: '#DBEAFE' },
