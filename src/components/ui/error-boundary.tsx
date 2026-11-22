@@ -1,4 +1,4 @@
-import { Component, type ReactNode } from 'react'
+import { Component, Fragment, type ReactNode } from 'react'
 import { AlertTriangle, RefreshCw, Home } from 'lucide-react'
 import { Button } from './button'
 
@@ -9,20 +9,31 @@ interface Props {
 interface State {
     hasError: boolean
     error: Error | null
+    /** Bumped on reset so the failed subtree is remounted, not merely unhidden. */
+    resetKey: number
 }
 
 export class ErrorBoundary extends Component<Props, State> {
     constructor(props: Props) {
         super(props)
-        this.state = { hasError: false, error: null }
+        this.state = { hasError: false, error: null, resetKey: 0 }
     }
 
-    static getDerivedStateFromError(error: Error): State {
+    static getDerivedStateFromError(error: Error): Pick<State, 'hasError' | 'error'> {
         return { hasError: true, error }
     }
 
     componentDidCatch(error: Error, info: { componentStack: string }) {
         console.error('[ErrorBoundary]', error, info.componentStack)
+    }
+
+    /** Recover in place: a transient render fault should not cost a reload. */
+    handleReset = () => {
+        this.setState((state) => ({
+            hasError: false,
+            error: null,
+            resetKey: state.resetKey + 1,
+        }))
     }
 
     handleReload = () => {
@@ -34,7 +45,9 @@ export class ErrorBoundary extends Component<Props, State> {
     }
 
     render() {
-        if (!this.state.hasError) return this.props.children
+        if (!this.state.hasError) {
+            return <Fragment key={this.state.resetKey}>{this.props.children}</Fragment>
+        }
 
         return (
             <div className="flex min-h-screen items-center justify-center bg-[var(--bg)] px-4 py-10">
@@ -48,8 +61,8 @@ export class ErrorBoundary extends Component<Props, State> {
                                 Something went wrong
                             </h1>
                             <p className="mt-1 text-[13px] leading-[1.55] text-[var(--text-muted)]">
-                                This screen failed to load. Reloading usually clears it. If it keeps
-                                happening, send the details below to your administrator.
+                                This screen failed to load. Try again in place first; if it keeps
+                                happening, reload or return to the dashboard.
                             </p>
                         </div>
                     </div>
@@ -66,13 +79,17 @@ export class ErrorBoundary extends Component<Props, State> {
                     )}
 
                     <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-                        <Button variant="secondary" onClick={this.handleHome}>
+                        <Button variant="ghost" onClick={this.handleHome}>
                             <Home aria-hidden />
                             Dashboard
                         </Button>
-                        <Button variant="primary" onClick={this.handleReload}>
+                        <Button variant="secondary" onClick={this.handleReload}>
                             <RefreshCw aria-hidden />
                             Reload page
+                        </Button>
+                        <Button variant="primary" onClick={this.handleReset}>
+                            <RefreshCw aria-hidden />
+                            Try again
                         </Button>
                     </div>
                 </div>

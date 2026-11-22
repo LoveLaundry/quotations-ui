@@ -17,17 +17,22 @@ export function Skeleton({ className }: { className?: string }) {
 }
 
 /** A ledger-shaped placeholder: header rules plus body rows. */
-export function SkeletonTable({ rows = 6, cols = 5 }: { rows?: number; cols?: number }) {
+export function SkeletonTable({
+  rows = 6,
+  cols = 5,
+  dense = false,
+}: { rows?: number; cols?: number; dense?: boolean }) {
+  const padding = dense ? 'px-3 py-1.5' : 'px-3 py-2.5'
   return (
     <div className="rounded border border-[var(--border)]" aria-busy="true" aria-live="polite">
-      <div className="flex gap-4 border-b border-[var(--border)] bg-[var(--surface-2)] px-3 py-2.5">
+      <div className={cn('flex gap-4 border-b border-[var(--border)] bg-[var(--surface-2)]', padding)}>
         {Array.from({ length: cols }).map((_, i) => (
           <Skeleton key={i} className="h-3 flex-1" />
         ))}
       </div>
       <div className="divide-y divide-[var(--border)]">
         {Array.from({ length: rows }).map((_, i) => (
-          <div key={i} className="flex items-center gap-4 px-3 py-2.5">
+          <div key={i} className={cn('flex items-center gap-4', padding)}>
             {Array.from({ length: cols }).map((_, c) => (
               <Skeleton key={c} className={cn('h-3.5 flex-1', c === 0 && 'max-w-[30%]')} />
             ))}

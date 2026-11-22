@@ -11,18 +11,23 @@ import {
   CircleUser as UserCircle,
   Send as PaperPlaneTilt,
   FileText,
-  CaseSensitive as TextAa,
   ShieldCheck,
 } from 'lucide-react'
 import { cn } from '../../lib/utils'
 import { useAuth } from '../../context/AuthContext'
 import { PLATFORM_LANDING } from '../../lib/session-scope'
-import { useTheme, isFontSize } from '../../context/ThemeContext'
 import { useNotifications } from '../../features/quotations/hooks/useNotifications'
 import { NotificationDetailDialog } from '../../features/quotations/components/notification-detail-dialog'
 import { HotelSelector } from './hotel-selector'
 import { LaundrySwitcher } from './laundry-switcher'
 import { DropdownMenu, type MenuGroup } from '../ui/dropdown-menu'
+import { ConfirmDialog } from '../ui/confirm-dialog'
+import {
+  FeatureLauncherButton, HighContrastToggle, LargeTextToggle, LastSignInInfo,
+  OfflineIndicator, QueuedActionsBadge, RoleLabel, ScopeBadge,
+} from '../../features/feature-pack'
+import { useFeatures, useScrolled } from '../../features/feature-pack/hooks'
+import { cacheKeyFor } from '../../features/feature-pack/utils'
 import type { Quotation } from '../../types/quotation'
 import type { GatePassPendingEntry, NotificationType } from '../../types/notification'
 
@@ -239,21 +244,21 @@ export function TopBar({
 }: TopBarProps) {
   const { user, support, logout, exitSupport } = useAuth()
   const navigate = useNavigate()
-  const { fontSize, setFontSize } = useTheme()
+  const { largeText, toggleLargeText, setPanelOpen } = useFeatures()
+  const scrolled = useScrolled()
   const queryClient = useQueryClient()
   const [refreshing, setRefreshing] = useState(false)
   const [lastUpdated, setLastUpdated] = useState<string | null>(null)
+  const [signOutOpen, setSignOutOpen] = useState(false)
+  const [lastSignIn, setLastSignIn] = useState<string | null>(null)
 
-  const comfortOn = fontSize === 'xxxl'
-  const toggleComfort = () => {
-    if (comfortOn) {
-      const prev = localStorage.getItem('theme-font-size-prev')
-      setFontSize(isFontSize(prev) && prev !== 'xxxl' ? prev : 'md')
-    } else {
-      localStorage.setItem('theme-font-size-prev', fontSize)
-      setFontSize('xxxl')
-    }
-  }
+  const lastSignInKey = cacheKeyFor(user?.id, 'last-sign-in')
+  useEffect(() => {
+    if (!user) { setLastSignIn(null); return }
+    const previous = localStorage.getItem(lastSignInKey)
+    setLastSignIn(previous)
+    localStorage.setItem(lastSignInKey, new Date().toISOString())
+  }, [lastSignInKey, user])
 
   /** Re-run every API query owned by the page currently on screen. */
   const refreshPage = async (): Promise<void> => {
@@ -266,6 +271,12 @@ export function TopBar({
       setRefreshing(false)
     }
   }
+
+  useEffect(() => {
+    const onRefresh = () => void refreshPage()
+    window.addEventListener('feature:refresh-page', onRefresh)
+    return () => window.removeEventListener('feature:refresh-page', onRefresh)
+  })
 
   const handleLogout = () => {
     // While supporting an entity the visible "user" is the temporary support
@@ -281,7 +292,7 @@ export function TopBar({
   }
 
   const initials = user?.user_name ? user.user_name.slice(0, 2).toUpperCase() : 'U'
-  const roleLabel = user?.role_id ? String(user.role_id).toLowerCase() : 'staff'
+  const roleIdLabel = user?.role_id ? String(user.role_id) : 'staff'
 
   const userMenu: MenuGroup[] = [
     {
@@ -303,7 +314,7 @@ export function TopBar({
           label: support ? 'Exit support' : 'Sign out',
           icon: <SignOut size={16} />,
           destructive: !support,
-          onSelect: handleLogout,
+          onSelect: support ? handleLogout : () => setSignOutOpen(true),
         },
       ],
     },
@@ -314,7 +325,8 @@ export function TopBar({
       <header
         className={cn(
           'app-topbar app-topbar-accent fixed right-0 z-30 flex h-13 items-center gap-2 border-b border-[var(--border)] bg-[var(--surface)]',
-          'px-3 transition-[left] duration-150 ease-out sm:px-4',
+          'px-3 transition-[left,box-shadow] duration-150 ease-out sm:px-4',
+          scrolled && 'shadow-[var(--shadow-sm)]',
           support ? 'top-9' : 'top-0',
           sidebarCollapsed ? 'left-0 lg:left-[60px]' : 'left-0 lg:left-[236px]',
         )}
@@ -343,6 +355,9 @@ export function TopBar({
               Platform
             </span>
           )}
+          <span className="hidden min-w-0 sm:inline-flex">
+            <ScopeBadge support={support} />
+          </span>
         </div>
 
         {/* Right: refresh, tenant scope, search, comfort, notifications, account */}
@@ -394,24 +409,14 @@ export function TopBar({
             </kbd>
           </button>
 
-          {/* Comfort text size — one tap, easy for elders */}
-          <button
-            type="button"
-            onClick={toggleComfort}
-            aria-label={comfortOn ? 'Comfort text size on — tap for normal size' : 'Comfort text size off — tap for largest text'}
-            aria-pressed={comfortOn}
-            title={comfortOn ? 'Comfort text: on' : 'Comfort text: off'}
-            className={cn(
-              iconBtn,
-              'sm:h-8 sm:w-auto sm:gap-1.5 sm:px-2.5',
-              comfortOn
-                ? 'border-[var(--brand-border)] bg-[var(--brand-soft)] text-[var(--brand-text)]'
-                : 'sm:border-[var(--border-2)]',
-            )}
-          >
-            <TextAa size={17} aria-hidden />
-            <span className="hidden text-[12.5px] font-medium sm:inline">Aa</span>
-          </button>
+          {/* Connectivity state is always visible when it matters. */}
+          <OfflineIndicator />
+          <QueuedActionsBadge />
+
+          {/* Accessibility and discoverability controls stay in one cluster. */}
+          <HighContrastToggle />
+          <LargeTextToggle pressed={largeText} onToggle={toggleLargeText} />
+          <FeatureLauncherButton onClick={() => setPanelOpen(true)} />
 
           {!platformOnly && <NotificationMenu />}
 
@@ -419,6 +424,7 @@ export function TopBar({
           <DropdownMenu
             label="Account"
             groups={userMenu}
+            footer={<LastSignInInfo at={lastSignIn} />}
             trigger={(p) => (
               <button
                 {...(p as any)}
@@ -443,8 +449,8 @@ export function TopBar({
                   <span className="block truncate text-[12.5px] font-medium text-[var(--text-primary)]">
                     {user?.user_name ?? 'User'}
                   </span>
-                  <span className="block truncate text-[11px] text-[var(--text-muted)] capitalize">
-                    {roleLabel}
+                  <span className="block truncate text-[11px] text-[var(--text-muted)]">
+                    <RoleLabel role={roleIdLabel} />
                   </span>
                 </span>
               </button>
@@ -452,6 +458,16 @@ export function TopBar({
           />
         </div>
       </header>
+
+      <ConfirmDialog
+        open={signOutOpen}
+        title="Sign out of LoveLaundry?"
+        message="Unsaved drafts stay on this device, but cached workspace data for this account is cleared."
+        confirmLabel="Sign out"
+        variant="warning"
+        onConfirm={() => { setSignOutOpen(false); handleLogout() }}
+        onCancel={() => setSignOutOpen(false)}
+      />
     </>
   )
 }

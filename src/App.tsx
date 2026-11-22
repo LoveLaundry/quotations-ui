@@ -14,6 +14,7 @@ import { cacheScopeFor } from './cache/scope'
 import { createIndexedDbPersister } from './cache/persister'
 import { invalidateDerived } from './cache/invalidation'
 import { PendingSyncProvider } from './cache/pending-sync'
+import { FeatureProvider } from './features/feature-pack'
 import { setCacheScope } from './cache/scope'
 import {
   isSyncEngineStarted,
@@ -142,29 +143,31 @@ function App() {
     <CacheHostProvider>
       <PendingSyncProvider>
         <ThemeProvider>
-          <DefaultsProvider>
-          {/* Suspense covers route-level lazy chunks: the loader only shows while
-              a page bundle is actually being fetched, removing the old 600ms wait. */}
-          <Suspense fallback={<PageLoader />}>
-            <HotelProvider>
-              <RouterProvider router={router} />
-            </HotelProvider>
-          </Suspense>
-          <Toaster
-            richColors
-            position="top-right"
-            toastOptions={{
-              duration: 4000,
-              className: 'toast-custom',
-              style: {
-                padding: '16px',
-                borderRadius: 'var(--radius-md)',
-                fontSize: '14px',
-                fontWeight: '500',
-              },
-            }}
-          />
-          </DefaultsProvider>
+          <FeatureProvider>
+            <DefaultsProvider>
+              {/* Suspense covers route-level lazy chunks: the loader only shows while
+                  a page bundle is actually being fetched, removing the old 600ms wait. */}
+              <Suspense fallback={<PageLoader />}>
+                <HotelProvider>
+                  <RouterProvider router={router} />
+                </HotelProvider>
+              </Suspense>
+              <Toaster
+                richColors
+                position="top-right"
+                toastOptions={{
+                  duration: 4000,
+                  className: 'toast-custom',
+                  style: {
+                    padding: '16px',
+                    borderRadius: 'var(--radius-md)',
+                    fontSize: '14px',
+                    fontWeight: '500',
+                  },
+                }}
+              />
+            </DefaultsProvider>
+          </FeatureProvider>
         </ThemeProvider>
       </PendingSyncProvider>
     </CacheHostProvider>

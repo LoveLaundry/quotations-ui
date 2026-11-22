@@ -36,6 +36,8 @@ export interface DropdownMenuProps {
   menuClassName?: string
   /** Accessible name for the menu itself. */
   label?: string
+  /** Optional pinned content below the items (e.g. session metadata). */
+  footer?: React.ReactNode
 }
 
 /**
@@ -55,6 +57,7 @@ export function DropdownMenu({
   className,
   menuClassName,
   label = 'Actions',
+  footer,
 }: DropdownMenuProps) {
   const [open, setOpen] = React.useState(false)
   const [activeIndex, setActiveIndex] = React.useState(-1)
@@ -193,6 +196,9 @@ export function DropdownMenu({
           )}
           style={{ maxHeight }}
         >
+          {footer && (
+            <div className="border-t border-[var(--border)] px-2 pt-1 pb-0.5">{footer}</div>
+          )}
           {groups.map((group, gi) => (
             <div key={group.label ?? gi}>
               {group.label && (

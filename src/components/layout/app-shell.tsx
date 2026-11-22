@@ -1,5 +1,5 @@
 import { Suspense, useEffect, useState } from 'react'
-import { Navigate, Outlet, useLocation } from 'react-router-dom'
+import { Navigate, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { Sidebar } from './sidebar'
 import { TopBar } from './top-bar'
 import { CommandSearch } from '../ui/command-search'
@@ -10,6 +10,9 @@ import { supportSessionLabel, useAuth } from '../../context/AuthContext'
 import { entitySupportPath } from '../../lib/access'
 import { PLATFORM_LANDING, PLATFORM_PATHS, isPlatformOnly } from '../../lib/session-scope'
 import { ROUTES } from '../../config/route-meta'
+import {
+  FeatureRouteBridge, SessionWarningBanner, useFeatures, usePersistentState, useSessionWarning,
+} from '../../features/feature-pack'
 
 const pageTitles: Record<string, string> = {
   '/': 'Daily Operations',
@@ -100,28 +103,19 @@ function getPageTitle(pathname: string): string {
 }
 
 export function AppShell() {
-  const [collapsed, setCollapsed] = useState(false)
+  const [collapsed, setCollapsed] = usePersistentState('feature-sidebar-collapsed', false)
   const [mobileOpen, setMobileOpen] = useState(false)
-  const [cmdOpen, setCmdOpen] = useState(false)
+  const { commandOpen, setCommandOpen } = useFeatures()
   const location = useLocation()
-  const { user, support, exitSupport } = useAuth()
+  const navigate = useNavigate()
+  const { user, support, token, logout, exitSupport } = useAuth()
+  const session = useSessionWarning(token)
+  const title = getPageTitle(location.pathname)
 
   // Session expiry is handled centrally by AuthProvider (it listens for the
   // API layer's expiry event), so even a 401 that arrives before this shell's
   // effects run cannot leave a half-signed-in state. ProtectedRoute then
   // redirects to /login as soon as isAuthenticated flips to false.
-
-  // Ctrl/Cmd+K opens search from anywhere, including inside inputs and textareas.
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
-        e.preventDefault()
-        setCmdOpen(true)
-      }
-    }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [])
 
   // A new route should start at the top. Without this, a scrolled list keeps its
   // scroll offset and the next page appears to open halfway down.
@@ -147,84 +141,92 @@ export function AppShell() {
   // mount their data hooks (quotations, bills, customers) and 403 on load.
   // An entity support session is narrower still: it may only render its own
   // entity page, never a laundry registry or a tenant operations screen.
+  let redirectTo: string | null = null
   if (platformOnly) {
     const allowed = activeSupportPath
       ? location.pathname === activeSupportPath || location.pathname.startsWith(activeSupportPath + '/')
       : PLATFORM_PATHS.some(
           (path) => location.pathname === path || location.pathname.startsWith(path + '/'),
         )
-    if (!allowed) return <Navigate to={activeSupportPath ?? PLATFORM_LANDING} replace />
+    if (!allowed) redirectTo = activeSupportPath ?? PLATFORM_LANDING
   }
 
   return (
-    <div className="min-h-dvh bg-[var(--bg)]">
-      <a
-        href="#main-content"
-        className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:rounded focus:bg-[var(--brand)] focus:px-3 focus:py-2 focus:text-[13px] focus:font-medium focus:text-white"
-      >
-        Skip to content
-      </a>
+    <>
+      <FeatureRouteBridge title={title} />
+      {redirectTo ? (
+        <Navigate to={redirectTo} replace />
+      ) : (
+        <div className="min-h-dvh bg-[var(--bg)]">
+          <Sidebar
+            collapsed={collapsed}
+            onToggle={() => setCollapsed((c) => !c)}
+            mobileOpen={mobileOpen}
+            onMobileClose={() => setMobileOpen(false)}
+          />
 
-      <Sidebar
-        collapsed={collapsed}
-        onToggle={() => setCollapsed((c) => !c)}
-        mobileOpen={mobileOpen}
-        onMobileClose={() => setMobileOpen(false)}
-      />
+          <TopBar
+            title={title}
+            sidebarCollapsed={collapsed}
+            mobileMenuOpen={mobileOpen}
+            onMobileMenuToggle={() => setMobileOpen((v) => !v)}
+            onOpenSearch={() => setCommandOpen(true)}
+            platformOnly={platformOnly}
+          />
 
-      <TopBar
-        title={getPageTitle(location.pathname)}
-        sidebarCollapsed={collapsed}
-        mobileMenuOpen={mobileOpen}
-        onMobileMenuToggle={() => setMobileOpen((v) => !v)}
-        onOpenSearch={() => setCmdOpen(true)}
-        platformOnly={platformOnly}
-      />
+          <CommandSearch open={commandOpen} onClose={() => setCommandOpen(false)} />
 
-      <CommandSearch open={cmdOpen} onClose={() => setCmdOpen(false)} />
+          {/* Offline caching and hotel sync belong to a single laundry's data. A
+              platform operator has no tenant scope, so these floated over every
+              registry screen with nothing meaningful to say. */}
+          {!platformOnly && <OfflineSyncBar />}
+          {!platformOnly && <SyncFab />}
 
-      {/* Offline caching and hotel sync belong to a single laundry's data. A
-          platform operator has no tenant scope, so these floated over every
-          registry screen with nothing meaningful to say. */}
-      {!platformOnly && <OfflineSyncBar />}
-      {!platformOnly && <SyncFab />}
+          {/* Platform support entry: unmissable, always one tap from exit. */}
+          {support && (
+            <div
+              role="status"
+              className="fixed inset-x-0 top-0 z-50 flex h-9 items-center justify-center gap-x-3 gap-2 overflow-hidden bg-amber-500 px-4 text-[12.5px] font-semibold whitespace-nowrap text-amber-950 shadow-md"
+            >
+              <span className="min-w-0 truncate">
+                {support.kind === 'laundry' ? 'Support session in' : 'Support session for'} {supportSessionLabel(support)} — audited.
+              </span>
+              <button
+                type="button"
+                onClick={exitSupport}
+                aria-label="Exit support session"
+                className="shrink-0 cursor-pointer rounded bg-amber-950/90 px-2.5 py-1 text-[12px] font-bold text-amber-50 transition-colors hover:bg-amber-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+              >
+                Exit support
+              </button>
+            </div>
+          )}
 
-      {/* Platform support entry: unmissable, always one tap from exit. */}
-      {support && (
-        <div
-          role="status"
-          className="fixed inset-x-0 top-0 z-50 flex h-9 items-center justify-center gap-x-3 gap-2 overflow-hidden bg-amber-500 px-4 text-[12.5px] font-semibold whitespace-nowrap text-amber-950 shadow-md"
-        >
-          <span className="min-w-0 truncate">
-            {support.kind === 'laundry' ? 'Support session in' : 'Support session for'} {supportSessionLabel(support)} — audited.
-          </span>
-          <button
-            type="button"
-            onClick={exitSupport}
-            className="shrink-0 cursor-pointer rounded bg-amber-950/90 px-2.5 py-1 text-[12px] font-bold text-amber-50 transition-colors hover:bg-amber-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+          <main
+            id="main-content"
+            aria-label="Page content"
+            className={`min-h-dvh transition-[padding-left] duration-150 ease-out ${
+              collapsed ? 'lg:pl-[60px]' : 'lg:pl-[236px]'
+            } ${support ? 'pt-22' : 'pt-13'}`}
           >
-            Exit support
-          </button>
+            {/* Wide cap with a tighter margin on small screens: a 320px viewport
+                gets 16px of gutter, a desktop gets a comfortable measure. */}
+            <div className="mx-auto w-full max-w-[1480px] px-4 py-4 sm:px-5 sm:py-5 lg:px-7 lg:py-6">
+              <Suspense fallback={<PageLoader />}>
+                {/* Keyed by route so each page arrival plays the enter motion once. */}
+                <div key={location.pathname} className="route-enter">
+                  <Outlet />
+                </div>
+              </Suspense>
+            </div>
+          </main>
         </div>
       )}
-
-      <main
-        id="main-content"
-        className={`min-h-dvh transition-[padding-left] duration-150 ease-out ${
-          collapsed ? 'lg:pl-[60px]' : 'lg:pl-[236px]'
-        } ${support ? 'pt-22' : 'pt-13'}`}
-      >
-        {/* Wide cap with a tighter margin on small screens: a 320px viewport
-            gets 16px of gutter, a desktop gets a comfortable measure. */}
-        <div className="mx-auto w-full max-w-[1480px] px-4 py-4 sm:px-5 sm:py-5 lg:px-7 lg:py-6">
-          <Suspense fallback={<PageLoader />}>
-            {/* Keyed by route so each page arrival plays the enter motion once. */}
-            <div key={location.pathname} className="route-enter">
-              <Outlet />
-            </div>
-          </Suspense>
-        </div>
-      </main>
-    </div>
+      <SessionWarningBanner
+        remaining={session.remaining}
+        onSignOut={() => { logout(); navigate('/login', { replace: true }) }}
+        onDismiss={() => undefined}
+      />
+    </>
   )
 }

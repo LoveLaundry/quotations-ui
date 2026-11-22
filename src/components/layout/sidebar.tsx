@@ -41,6 +41,7 @@ import { useAuth } from '../../context/AuthContext'
 import { NAV_GROUPS, ROUTES, type NavGroupId } from '../../config/route-meta'
 import { usePermissions } from '../../hooks/usePermissions'
 import type { AccessSpec } from '../../lib/access'
+import { useFocusTrap } from '../../features/feature-pack'
 
 /**
  * Icon lookup. `route-meta.ts` stores icon *keys* so it stays a plain data
@@ -101,59 +102,19 @@ export function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose }: Side
   const location = useLocation()
   const { support } = useAuth()
   const mobileDrawerRef = useRef<HTMLElement>(null)
-  const closeMobileRef = useRef(onMobileClose)
 
-  useEffect(() => {
-    closeMobileRef.current = onMobileClose
-  }, [onMobileClose])
+  // One focus implementation for every overlay: trap Tab in the drawer while
+  // it is open and return focus to the menu button when it closes.
+  useFocusTrap(mobileDrawerRef, mobileOpen)
 
   useEffect(() => {
     if (!mobileOpen) return
-
-    const previouslyFocused = document.activeElement instanceof HTMLElement
-      ? document.activeElement
-      : null
-    const drawer = mobileDrawerRef.current
-    drawer?.focus()
-
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        event.preventDefault()
-        closeMobileRef.current()
-        return
-      }
-      if (event.key !== 'Tab' || !drawer) return
-
-      const focusable = Array.from(
-        drawer.querySelectorAll<HTMLElement>(
-          'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])',
-        ),
-      ).filter((element) => element.getAttribute('aria-hidden') !== 'true')
-      if (focusable.length === 0) {
-        event.preventDefault()
-        return
-      }
-
-      const first = focusable[0]
-      const last = focusable[focusable.length - 1]
-      if (!drawer.contains(document.activeElement)) {
-        event.preventDefault()
-        ;(event.shiftKey ? last : first).focus()
-      } else if (event.shiftKey && document.activeElement === first) {
-        event.preventDefault()
-        last.focus()
-      } else if (!event.shiftKey && document.activeElement === last) {
-        event.preventDefault()
-        first.focus()
-      }
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') onMobileClose()
     }
-
-    document.addEventListener('keydown', onKeyDown)
-    return () => {
-      document.removeEventListener('keydown', onKeyDown)
-      if (previouslyFocused?.isConnected) previouslyFocused.focus()
-    }
-  }, [mobileOpen])
+    document.addEventListener('keydown', onKey)
+    return () => document.removeEventListener('keydown', onKey)
+  }, [mobileOpen, onMobileClose])
 
   // Any navigation closes the mobile drawer.
   useEffect(() => {
@@ -372,7 +333,6 @@ function SidebarNavItem({
             }
           }}
           title={collapsed ? label : undefined}
-          aria-current={undefined}
           className={({ isActive }) =>
             cn(
               'group relative flex items-center gap-2.5 rounded-md py-2 pr-2.5 pl-2.5',

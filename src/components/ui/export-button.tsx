@@ -3,6 +3,7 @@ import { Download, FileJson, FileSpreadsheet } from 'lucide-react'
 import { cn } from '../../lib/utils'
 import { Button } from './button'
 import { DropdownMenu, type MenuGroup } from './dropdown-menu'
+import { toCSV, toJSON } from '../../features/feature-pack/utils'
 
 interface ExportColumn {
   key: string
@@ -30,29 +31,6 @@ function downloadBlob(content: string, filename: string, mimeType: string) {
   a.click()
   document.body.removeChild(a)
   URL.revokeObjectURL(url)
-}
-
-/** Escapes a value for CSV, and neutralises spreadsheet formula injection. */
-function csvCell(value: unknown): string {
-  if (value === null || value === undefined) return ''
-  let s = String(value)
-  if (/^[=+\-@\t\r]/.test(s)) s = `'${s}`
-  return `"${s.replace(/"/g, '""')}"`
-}
-
-function toCSV(data: Record<string, any>[], columns: ExportColumn[]): string {
-  const header = columns.map((c) => csvCell(c.label)).join(',')
-  const rows = data.map((row) => columns.map((c) => csvCell(row[c.key])).join(','))
-  return [header, ...rows].join('\r\n')
-}
-
-function toJSON(data: Record<string, any>[], columns: ExportColumn[]): string {
-  const mapped = data.map((row) => {
-    const obj: Record<string, any> = {}
-    for (const c of columns) obj[c.label] = row[c.key]
-    return obj
-  })
-  return JSON.stringify(mapped, null, 2)
 }
 
 /**

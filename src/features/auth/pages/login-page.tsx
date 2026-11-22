@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, type FormEvent } from 'react'
+import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import {
   Eye,
@@ -12,15 +12,20 @@ import { Logo } from '../../../components/brand/logo'
 import { Button } from '../../../components/ui/button'
 import { Input } from '../../../components/ui/input'
 import { Field } from '../../../components/ui/field'
+import {
+  ClientTypeBadge, FormErrorSummary, PasswordStrengthMeter,
+} from '../../feature-pack/components'
+import {
+  normalizeError, validateRegistration, type FieldErrors,
+} from '../../feature-pack/utils'
 
 /**
  * Login — a single column form on a neutral surface.
  *
- * The error is a live region tied to the submit, so a screen reader announces a
- * failed sign-in rather than the user discovering a silent no-op. The submit
- * stays disabled until both fields have content, but `required` on the inputs
- * still guards a paste-and-submit, and the reason is stated rather than implied
- * by a greyed button.
+ * Validation is shared with the feature pack: setup uses the same rules as the
+ * registration helper, while sign-in keeps only the two required credentials.
+ * Errors are shown once in a summary and on the owning field, so a screen reader
+ * hears what is wrong without the form growing a second copy of each message.
  */
 export default function LoginPage() {
   const { login } = useAuth()
@@ -37,8 +42,24 @@ export default function LoginPage() {
   const [showPw, setShowPw] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [attempted, setAttempted] = useState(false)
 
   const from = (location.state as { from?: { pathname?: string } } | null)?.from?.pathname ?? '/'
+
+  const fieldErrors = useMemo<FieldErrors>(() => {
+    if (mode === 'setup') {
+      return validateRegistration({ username, displayName, password, confirm })
+    }
+    const errors: FieldErrors = {}
+    if (!username.trim()) errors.username = 'Enter your username.'
+    if (!password) errors.password = 'Enter your password.'
+    return errors
+  }, [mode, username, displayName, password, confirm])
+
+  const validationErrors = useMemo(
+    () => Object.values(fieldErrors).filter((message): message is string => Boolean(message)),
+    [fieldErrors],
+  )
 
   useEffect(() => {
     if (error) errorRef.current?.focus()
@@ -50,31 +71,24 @@ export default function LoginPage() {
     setPassword('')
     setConfirm('')
     setDisplayName('')
+    setAttempted(false)
   }
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
+    setAttempted(true)
     setError('')
 
-    // Validate here rather than disabling the button. A disabled primary action
-    // tells a first-time user nothing about what is wrong, and on a fresh
-    // database the setup form is the only way forward — hiding it strands them.
-    if (!username.trim() || !password) {
-      setError('Enter your username and password.')
-      return
-    }
-    if (mode === 'setup' && password.length < 8) {
-      setError('Choose a password of at least 8 characters.')
+    // Keep the primary action enabled: a disabled button explains nothing on a
+    // fresh database, where setup is the only way in. The summary does that.
+    if (validationErrors.length > 0) {
+      usernameRef.current?.focus()
       return
     }
 
     setLoading(true)
     try {
       if (mode === 'setup') {
-        if (password !== confirm) {
-          setError('Passwords do not match.')
-          return
-        }
         const res = await authService.bootstrap({
           auth_id: username.trim(),
           user_name: displayName.trim() || username.trim(),
@@ -92,14 +106,17 @@ export default function LoginPage() {
         res.user?.platform_admin === true ||
         String(res.user?.role_id ?? '').toUpperCase() === 'PLATFORM_ADMIN'
       navigate(platformSession && from === '/' ? '/laundries' : from, { replace: true })
-    } catch (err: any) {
-      const status = err?.response?.status ?? err?.status
+    } catch (err: unknown) {
+      const status = err && typeof err === 'object'
+        ? ((err as { response?: { status?: number }; status?: number }).response?.status ??
+           (err as { status?: number }).status)
+        : undefined
       if (mode === 'setup' && status === 403) {
         setError('An admin already exists — sign in instead.')
       } else if (mode === 'setup' && (status === 404 || status === 405)) {
         setError('Server update is still deploying — wait a minute and try again.')
       } else {
-        setError(err?.message || 'Invalid username or password')
+        setError(normalizeError(err, 'Invalid username or password'))
       }
       // Put focus back where the correction happens.
       usernameRef.current?.select()
@@ -107,7 +124,6 @@ export default function LoginPage() {
       setLoading(false)
     }
   }
-
 
   return (
     <div className="relative flex min-h-dvh flex-col bg-[var(--bg)]">
@@ -135,13 +151,18 @@ export default function LoginPage() {
                   ? 'First-time setup. Works once — afterwards sign in instead.'
                   : 'Use the account your administrator gave you.'}
               </p>
+              <div className="mt-2.5">
+                <ClientTypeBadge />
+              </div>
             </div>
 
             <form onSubmit={handleSubmit} noValidate className="space-y-4">
               <Field
                 id="username"
                 label={mode === 'setup' ? 'Admin username' : 'Username or email'}
-                hint={error ? undefined : mode === 'setup' ? 'At least 3 characters.' : 'Case-insensitive.'}
+                hint={attempted || error ? undefined : mode === 'setup' ? 'At least 3 characters.' : 'Case-insensitive.'}
+                error={attempted ? fieldErrors.username : undefined}
+                required
               >
                 <Input
                   ref={usernameRef}
@@ -159,13 +180,18 @@ export default function LoginPage() {
                   }}
                   required
                   autoFocus
-                  invalid={Boolean(error)}
+                  invalid={Boolean(error) || Boolean(attempted && fieldErrors.username)}
                   className="h-10"
                 />
               </Field>
 
               {mode === 'setup' && (
-                <Field id="displayName" label="Display name">
+                <Field
+                  id="displayName"
+                  label="Display name"
+                  error={attempted ? fieldErrors.displayName : undefined}
+                  required
+                >
                   <Input
                     id="displayName"
                     name="displayName"
@@ -177,18 +203,25 @@ export default function LoginPage() {
                       setDisplayName(e.target.value)
                       if (error) setError('')
                     }}
+                    required
+                    invalid={Boolean(attempted && fieldErrors.displayName)}
                     className="h-10"
                   />
                 </Field>
               )}
 
-              <Field id="password" label={mode === 'setup' ? 'Password (min 8 characters)' : 'Password'}>
+              <Field
+                id="password"
+                label={mode === 'setup' ? 'Password (min 8 characters)' : 'Password'}
+                error={attempted ? fieldErrors.password : undefined}
+                required
+              >
                 <div className="relative">
                   <Input
                     id="password"
                     name="password"
                     type={showPw ? 'text' : 'password'}
-                    autoComplete="current-password"
+                    autoComplete={mode === 'setup' ? 'new-password' : 'current-password'}
                     placeholder="Enter your password"
                     value={password}
                     onChange={(e) => {
@@ -196,7 +229,7 @@ export default function LoginPage() {
                       if (error) setError('')
                     }}
                     required
-                    invalid={Boolean(error)}
+                    invalid={Boolean(error) || Boolean(attempted && fieldErrors.password)}
                     className="h-10 pr-10"
                   />
                   <button
@@ -209,10 +242,16 @@ export default function LoginPage() {
                     {showPw ? <EyeSlash size={16} aria-hidden /> : <Eye size={16} aria-hidden />}
                   </button>
                 </div>
+                {mode === 'setup' && <PasswordStrengthMeter password={password} />}
               </Field>
 
               {mode === 'setup' && (
-                <Field id="confirm" label="Confirm password">
+                <Field
+                  id="confirm"
+                  label="Confirm password"
+                  error={attempted ? fieldErrors.confirm : undefined}
+                  required
+                >
                   <Input
                     id="confirm"
                     name="confirm"
@@ -225,11 +264,13 @@ export default function LoginPage() {
                       if (error) setError('')
                     }}
                     required
-                    invalid={Boolean(error)}
+                    invalid={Boolean(attempted && fieldErrors.confirm)}
                     className="h-10"
                   />
                 </Field>
               )}
+
+              <FormErrorSummary errors={attempted ? validationErrors : []} />
 
               <div
                 ref={errorRef}

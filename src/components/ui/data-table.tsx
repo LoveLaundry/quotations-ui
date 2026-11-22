@@ -12,6 +12,8 @@ export interface Column<T> {
   width?: string
   /** Right-align and tabular — money and quantities. */
   numeric?: boolean
+  /** Announces the active sort direction on the column header cell. */
+  sortDirection?: 'ascending' | 'descending' | 'none'
   className?: string
   headerClassName?: string
   render?: (row: T, index: number) => React.ReactNode
@@ -119,6 +121,7 @@ export function DataTable<T extends Record<string, any>>({
                   <th
                     key={col.key}
                     scope="col"
+                    aria-sort={col.sortDirection}
                     style={col.width ? { width: col.width } : undefined}
                     className={cn(
                       alignClass[col.headerAlign ?? col.align ?? 'left'],
@@ -148,7 +151,7 @@ export function DataTable<T extends Record<string, any>>({
                       onKeyDown={
                         onRowClick
                           ? (e) => {
-                              if (e.key === 'Enter') {
+                              if (e.key === 'Enter' || e.key === ' ') {
                                 e.preventDefault()
                                 onRowClick(row)
                               }

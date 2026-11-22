@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import {
   Plus, Pencil, Users, LogIn, Ban, CheckCircle2, Search, X,
-  UserPlus, UserMinus, Building2, Archive,
+  UserPlus, UserMinus, Building2, Archive, LockKeyhole,
 } from 'lucide-react'
 import { PageHeader } from '../../../components/ui/page-header'
 import { StatCard } from '../../../components/ui/stat-card'
@@ -25,15 +25,13 @@ import {
   entityService, entityId, type EntityKind, type RegistryEntity, type RegistryMember,
   type RegistryPayload,
 } from '../services/entity-registry.service'
+import { RoleLabel } from '../../feature-pack/components'
+import {
+  ENTITY_ROLES, isActiveAssociation, isEntityRole, roleLabel,
+} from '../../feature-pack/utils'
 
 const PAGE_SIZE = 20
 const STATUSES = ['ACTIVE', 'SUSPENDED', 'ARCHIVED'] as const
-
-/** Portal roles are entity-specific; generic ADMIN/MANAGER/STAFF are laundry roles. */
-const MEMBER_ROLES = {
-  hotels: ['HOTEL_ADMIN', 'HOTEL_MANAGER'],
-  shops: ['SHOP_ADMIN', 'SHOP_STAFF'],
-} as const
 
 const defaultMemberRole = (kind: EntityKind): string =>
   kind === 'hotels' ? 'HOTEL_MANAGER' : 'SHOP_STAFF'
@@ -152,7 +150,9 @@ export default function EntityRegistryPage({ kind }: { kind: EntityKind }) {
   const addMemberMutation = useMutation({
     mutationFn: () => svc.addMember(entityId(membersFor!), {
       auth_id: memberAuthId.trim(),
-      role: memberRole,
+      // The select only offers the entity's two roles. Guard here too so a
+      // stale form value can never promote someone to a generic laundry role.
+      role: isEntityRole(memberRole) ? memberRole : defaultMemberRole(kind),
       user_name: memberName.trim() || undefined,
       password: memberPassword || undefined,
     }),
@@ -205,6 +205,10 @@ export default function EntityRegistryPage({ kind }: { kind: EntityKind }) {
 
   const enter = async (row: RegistryEntity) => {
     const id = entityId(row)
+    if (!isActiveAssociation(row.status)) {
+      toast.error(`Support entry is disabled for ${String(row.status ?? 'inactive').toLowerCase()} ${singular.toLowerCase()}s`)
+      return
+    }
     // A double click must not create two audited sessions or two short-lived
     // tokens for the same operator action.
     if (enteringRef.current) return
@@ -305,7 +309,7 @@ export default function EntityRegistryPage({ kind }: { kind: EntityKind }) {
               <CheckCircle2 size={14} />
             </button>
           )}
-          {String(row.status).toUpperCase() === 'ACTIVE' && (
+          {isActiveAssociation(row.status) ? (
             <button
               type="button"
               className="registry-icon-btn"
@@ -315,6 +319,16 @@ export default function EntityRegistryPage({ kind }: { kind: EntityKind }) {
               onClick={() => void enter(row)}
             >
               <LogIn size={14} />
+            </button>
+          ) : (
+            <button
+              type="button"
+              className="registry-icon-btn"
+              title={`Support entry disabled · ${String(row.status ?? 'inactive').toLowerCase()}`}
+              aria-label={`Support entry disabled for ${row.name}`}
+              disabled
+            >
+              <LockKeyhole size={14} />
             </button>
           )}
         </div>
@@ -393,6 +407,7 @@ export default function EntityRegistryPage({ kind }: { kind: EntityKind }) {
           columns={columns}
           data={page.items}
           rowKey={(row) => String(entityId(row))}
+          caption={`${page.total} ${upper.toLowerCase()}, page ${Math.floor(offset / PAGE_SIZE) + 1}`}
           emptyState={
             <EmptyState
               title={`No ${upper.toLowerCase()} found`}
@@ -487,7 +502,9 @@ export default function EntityRegistryPage({ kind }: { kind: EntityKind }) {
               </Field>
               <Field id="member-role" label="Role" required>
                 <select id="member-role" className="registry-select w-full" value={memberRole} onChange={(e) => setMemberRole(e.target.value)}>
-                  {MEMBER_ROLES[kind].map((role) => <option key={role} value={role}>{role}</option>)}
+                  {ENTITY_ROLES[kind].map((role) => (
+                    <option key={role} value={role}>{roleLabel(role)}</option>
+                  ))}
                 </select>
               </Field>
               <Field id="member-name" label="Display name">
@@ -535,7 +552,7 @@ export default function EntityRegistryPage({ kind }: { kind: EntityKind }) {
                         {m.user_name || m.auth_id}
                       </p>
                       <p className="text-[11px] text-[var(--text-faint)]">
-                        {m.auth_id} · {m.role ?? 'member'}{m.source ? ` · ${m.source}` : ''}
+                        {m.auth_id} · <RoleLabel role={m.role} />{m.source ? ` · ${m.source}` : ''}
                       </p>
                     </div>
                     <button

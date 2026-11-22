@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { toast } from 'sonner'
 import { quotationService } from '../services/quotation.service'
+import { useNotify } from '../../feature-pack/hooks'
 import type { Quotation, QuotationPayload, OrderStatus } from '../../../types/quotation'
 import { invalidateResource } from '../../../cache/invalidation'
 import { useAuth } from '../../../context/AuthContext'
@@ -35,19 +35,26 @@ export function useQuotation(id?: string) {
 
 export function useCreateQuotation() {
   const qc = useQueryClient()
+  const notify = useNotify()
   return useMutation({
     mutationFn: (payload: QuotationPayload) => quotationService.createQuotation(payload),
     onSuccess: (created) => {
-      qc.setQueryData<Quotation[]>(quotationKeys.list(), (prev = []) => [created, ...prev])
+      // Drop the optimistic placeholder written by the form before the server
+      // responded, then insert the real record.
+      qc.setQueryData<Quotation[]>(quotationKeys.list(), (prev = []) => [
+        created,
+        ...prev.filter((row) => !String(row.id).startsWith('temp-')),
+      ])
       qc.invalidateQueries({ queryKey: quotationKeys.list() })
-      toast.success('Quotation created')
+      notify.success('Quotation created')
     },
-    onError: () => toast.error('Failed to create quotation'),
+    onError: () => notify.error('Failed to create quotation'),
   })
 }
 
 export function useUpdateQuotation() {
   const qc = useQueryClient()
+  const notify = useNotify()
   return useMutation({
     mutationFn: ({ id, payload }: { id: string; payload: QuotationPayload }) =>
       quotationService.updateQuotation(id, payload),
@@ -57,14 +64,15 @@ export function useUpdateQuotation() {
       )
       qc.setQueryData<Quotation>(quotationKeys.detail(String(updated.id)), updated)
       qc.invalidateQueries({ queryKey: quotationKeys.list() })
-      toast.success('Quotation updated')
+      notify.success('Quotation updated')
     },
-    onError: () => toast.error('Failed to update quotation'),
+    onError: () => notify.error('Failed to update quotation'),
   })
 }
 
 export function useDeleteQuotation() {
   const qc = useQueryClient()
+  const notify = useNotify()
   return useMutation({
     mutationFn: (id: string) => quotationService.deleteQuotation(id),
     onMutate: async (id) => {
@@ -77,27 +85,28 @@ export function useDeleteQuotation() {
     },
     onError: (_e, _id, ctx) => {
       if (ctx?.previous) qc.setQueryData(quotationKeys.list(), ctx.previous)
-      toast.error('Deletion failed')
+      notify.error('Deletion failed')
     },
     onSuccess: (_r, id) => {
       qc.removeQueries({ queryKey: quotationKeys.detail(id) })
       invalidateResource(qc, 'quotations')
-      toast.success('Quotation deleted')
+      notify.success('Quotation deleted')
     },
   })
 }
 
 export function useAdvanceQuotationStatus() {
   const qc = useQueryClient()
+  const notify = useNotify()
   return useMutation({
     mutationFn: ({ id, status, note }: { id: string; status: OrderStatus; note?: string }) =>
       quotationService.advanceStatus(id, status, note),
     onSuccess: (updated) => {
       qc.setQueryData<Quotation>(quotationKeys.detail(String(updated.id)), updated)
       qc.invalidateQueries({ queryKey: quotationKeys.list() })
-      toast.success(`Moved to "${updated.status}"`)
+      notify.success(`Moved to "${updated.status}"`)
     },
-    onError: (e: Error) => toast.error(e.message || 'Failed to update status'),
+    onError: (e: Error) => notify.error(e.message || 'Failed to update status'),
   })
 }
 
@@ -111,6 +120,7 @@ export function useQuotationTags(id?: string) {
 
 export function useCreateTags() {
   const qc = useQueryClient()
+  const notify = useNotify()
   return useMutation({
     mutationFn: ({
       id,
@@ -130,10 +140,10 @@ export function useCreateTags() {
       if (written !== variables.id) {
         qc.setQueryData(quotationKeys.tags(variables.id), data)
       }
-      toast.success(
+      notify.success(
         data.tags.length === 1 ? 'Tag generated' : `${data.tags.length} tags generated`,
       )
     },
-    onError: () => toast.error('Failed to generate tags'),
+    onError: () => notify.error('Failed to generate tags'),
   })
 }

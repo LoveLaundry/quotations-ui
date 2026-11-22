@@ -2146,6 +2146,21 @@ button:not(:disabled):active,
   }
 }
 
+/* The in-app reduced-motion toggle writes this attribute from FeatureProvider,
+   so the same safety rule applies even when the OS setting is off. */
+:root[data-reduce-motion='true'] *,
+:root[data-reduce-motion='true'] *::before,
+:root[data-reduce-motion='true'] *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
+:root[data-reduce-motion='true'] .animate-shimmer {
+  animation: none !important;
+  opacity: 0.75;
+}
+
 /* ═══════════════════════════════════════════════════════════════════════════
    7 · PRODUCT REFRESH LAYER — the whole main UI
    ───────────────────────────────────────────────────────────────────────────
