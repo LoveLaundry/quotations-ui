@@ -17,7 +17,7 @@ import {
 } from 'lucide-react'
 import { cn } from '../../lib/utils'
 import { useAuth } from '../../context/AuthContext'
-import { useTheme } from '../../context/ThemeContext'
+import { ThemeSwitcher, useAppearance } from '../../ll-theme'
 import { PLATFORM_LANDING } from '../../lib/session-scope'
 import { useNotifications } from '../../features/quotations/hooks/useNotifications'
 import { NotificationDetailDialog } from '../../features/quotations/components/notification-detail-dialog'
@@ -49,12 +49,11 @@ const iconBtn =
 
 /** Quick light/dark switch using the app's existing persisted theme context. */
 function AppearanceToggle() {
-  const { theme, setTheme } = useTheme()
-  const dark = theme === 'dark' || theme === 'nightblue' || theme === 'contrast-dark'
+  const { isDark: dark, toggleAppearance } = useAppearance()
   return (
     <button
       type="button"
-      onClick={() => setTheme(dark ? 'light' : 'dark')}
+      onClick={() => toggleAppearance()}
       aria-label={dark ? 'Switch to light mode' : 'Switch to dark mode'}
       aria-pressed={dark}
       title={dark ? 'Light mode' : 'Dark mode'}
@@ -438,6 +437,7 @@ export function TopBar({
           <QueuedActionsBadge />
 
           {/* Accessibility and discoverability controls stay in one cluster. */}
+          <ThemeSwitcher compact />
           <AppearanceToggle />
           <HighContrastToggle />
           <LargeTextToggle pressed={largeText} onToggle={toggleLargeText} />

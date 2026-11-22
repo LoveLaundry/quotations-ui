@@ -9,6 +9,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card'
 import { Breadcrumb } from '../../../components/ui/breadcrumb'
 import { useTheme, type FontSize, type ThemePreset } from '../../../context/ThemeContext'
+import { THEMES } from '../../../ll-theme'
 
 const FONT_OPTIONS: { value: FontSize; label: string; desc: string; px: string }[] = [
   { value: 'xs', label: 'Extra Small', desc: 'Maximum content density', px: '12px' },
@@ -33,20 +34,18 @@ interface ThemePresetOption {
   swatchMuted: string
 }
 
-const THEME_OPTIONS: ThemePresetOption[] = [
-  {
-    value: 'light', label: 'Light', desc: 'Clean white surfaces, dark blue actions',
-    icon: <Sun className="h-4 w-4 text-[var(--brand)]" />,
-    group: 'light',
-    swatchBg: 'var(--surface-2)', swatchSurface: 'var(--surface)', swatchBorder: 'var(--border)', swatchText: 'var(--text-primary)', swatchMuted: 'var(--text-muted)',
-  },
-  {
-    value: 'dark', label: 'Dark', desc: 'Black surfaces, white typography, blue selection',
-    icon: <Moon className="h-4 w-4 text-[var(--brand)]" />,
-    group: 'dark',
-    swatchBg: 'var(--bg)', swatchSurface: 'var(--surface)', swatchBorder: 'var(--border-2)', swatchText: 'var(--text-primary)', swatchMuted: 'var(--text-muted)',
-  },
-]
+const THEME_OPTIONS: ThemePresetOption[] = THEMES.map(t => ({
+  value: t.id,
+  label: t.label,
+  desc: `${t.mode === 'dark' ? 'Dark' : 'Light'} theme · ${t.swatch}`,
+  icon: t.mode === 'light' ? <Sun className="h-4 w-4" style={{ color: t.swatch }} /> : <Moon className="h-4 w-4" style={{ color: t.swatch }} />,
+  group: t.mode,
+  swatchBg: t.background,
+  swatchSurface: t.swatch,
+  swatchBorder: t.swatch,
+  swatchText: t.mode === 'dark' ? '#FAFAFA' : '#111111',
+  swatchMuted: t.swatch,
+}))
 
 function OptionButton({ active, onClick, children, className = '' }: { active: boolean; onClick: () => void; children: React.ReactNode; className?: string }) {
   return (

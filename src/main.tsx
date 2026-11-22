@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client'
 import './index.css'
 import './ll-design-tokens.css'
 import App from './App.tsx'
+import { ThemeProvider } from './ll-theme'
 import { AuthProvider } from './context/AuthContext'
 import { RouteAccessProvider } from './context/RouteAccessContext'
 import { ErrorBoundary } from './components/ui/error-boundary'
@@ -72,11 +73,13 @@ if (typeof CSS !== 'undefined' && CSS.supports && !CSS.supports('selector(:has(*
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <ErrorBoundary>
-      <AuthProvider>
-        <RouteAccessProvider>
-          <App />
-        </RouteAccessProvider>
-      </AuthProvider>
+      <ThemeProvider>
+        <AuthProvider>
+          <RouteAccessProvider>
+            <App />
+          </RouteAccessProvider>
+        </AuthProvider>
+      </ThemeProvider>
     </ErrorBoundary>
   </StrictMode>,
 )
