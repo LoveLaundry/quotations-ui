@@ -132,11 +132,13 @@ export const ROUTES: RouteMeta[] = [
  * Every route a platform-only session may mount, derived from the registry so
  * a new platform page can never be added here and silently rejected by the
  * shell's guard (the bug that used to leave only /users and /laundries usable).
- * /profile is deliberately included: a platform operator still has a profile.
+ * /profile and /settings are deliberately included: a platform operator still
+ * has an account and local preferences even though they own no laundry scope.
  */
 export const PLATFORM_PATHS: string[] = [
   ...ROUTES.filter((r) => r.platformOnly).map((r) => r.path),
   '/profile',
+  '/settings',
 ]
 
 /** The navigation groups, in sidebar order, each with the routes it lists. */

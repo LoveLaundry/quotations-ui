@@ -82,7 +82,7 @@ export function attachResponseInterceptor(instance: AxiosInstance) {
               : getActiveToken()
 
           if (isTokenExpired(sentToken)) {
-            notifySessionExpired()
+            notifySessionExpired(sentToken)
           }
           // Otherwise: keep the session and let the page show the error.
         }

@@ -1,7 +1,13 @@
+import {
+  Database,
+  RefreshCw,
+  Check,
+  TriangleAlert,
+  Clock,
+} from 'lucide-react'
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
-import { RiDatabase2Line, RiRefreshLine, RiCheckLine, RiErrorWarningLine, RiTimeLine } from 'react-icons/ri'
 import { formatTimestamp } from '../../../lib/time'
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card'
 import { Breadcrumb } from '../../../components/ui/breadcrumb'
@@ -9,7 +15,6 @@ import { Button } from '../../../components/ui/button'
 import { Skeleton } from '../../../components/ui/skeleton'
 import billsApi from '../../../api/bills-api'
 import { invalidateResource } from '../../../cache/invalidation'
-
 interface DatabaseStatus {
   main: { status: string }
   secondary: { status: string; sync_status: string }
@@ -102,7 +107,7 @@ export default function DatabaseSyncPage() {
         <Breadcrumb items={[{ label: 'Dashboard', href: '/' }, { label: 'Database Sync' }]} />
         <div className="flex items-center gap-3 mt-1">
           <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#EFF6FF] border border-[#BFDBFE]">
-            <RiDatabase2Line className="h-4 w-4 text-[#2563EB]" />
+            <Database className="h-4 w-4 text-[#2563EB]" />
           </div>
           <div>
             <h1 className="text-dashboard-title">Database Synchronization</h1>
@@ -121,7 +126,7 @@ export default function DatabaseSyncPage() {
         </div>
       ) : isError ? (
         <div className="rounded-lg border border-[#FCA5A5] bg-[#FEF2F2] p-4 flex items-start gap-3">
-          <RiErrorWarningLine className="h-5 w-5 text-[#DC2626] mt-0.5 shrink-0" />
+          <TriangleAlert className="h-5 w-5 text-[#DC2626] mt-0.5 shrink-0" />
           <div>
             <p className="text-[13px] font-semibold text-[#DC2626]">Failed to load database status</p>
             <p className="text-[12px] text-[#B91C1C] mt-0.5">
@@ -142,7 +147,7 @@ export default function DatabaseSyncPage() {
             <CardContent className="pt-5">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <RiDatabase2Line className="h-4 w-4 text-[#2563EB]" />
+                  <Database className="h-4 w-4 text-[#2563EB]" />
                   <span className="text-[13px] font-semibold text-[var(--text-primary)]">Main Database</span>
                 </div>
                 <StatusDot online={status?.main?.status === 'ONLINE'} />
@@ -158,7 +163,7 @@ export default function DatabaseSyncPage() {
             <CardContent className="pt-5">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <RiRefreshLine className="h-4 w-4 text-[#16A34A]" />
+                  <RefreshCw className="h-4 w-4 text-[#16A34A]" />
                   <span className="text-[13px] font-semibold text-[var(--text-primary)]">Secondary Database</span>
                 </div>
                 <StatusDot online={status?.secondary?.status === 'ONLINE'} />
@@ -176,7 +181,7 @@ export default function DatabaseSyncPage() {
                 onClick={() => syncSecondary.mutate()}
                 disabled={syncSecondary.isPending}
               >
-                <RiRefreshLine className="h-3.5 w-3.5 mr-1" />
+                <RefreshCw className="h-3.5 w-3.5 mr-1" />
                 {syncSecondary.isPending ? 'Syncing...' : 'Sync Now'}
               </Button>
             </CardContent>
@@ -187,7 +192,7 @@ export default function DatabaseSyncPage() {
             <CardContent className="pt-5">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <RiTimeLine className="h-4 w-4 text-[#D97706]" />
+                  <Clock className="h-4 w-4 text-[#D97706]" />
                   <span className="text-[13px] font-semibold text-[var(--text-primary)]">Local Database</span>
                 </div>
                 <StatusDot online={status?.local?.status === 'ONLINE'} />
@@ -206,12 +211,12 @@ export default function DatabaseSyncPage() {
               >
                 {syncing || syncLocal.isPending ? (
                   <>
-                    <RiRefreshLine className="h-3.5 w-3.5 mr-1 animate-spin" />
+                    <RefreshCw className="h-3.5 w-3.5 mr-1 animate-spin" />
                     Synchronizing...
                   </>
                 ) : (
                   <>
-                    <RiDatabase2Line className="h-3.5 w-3.5 mr-1" />
+                    <Database className="h-3.5 w-3.5 mr-1" />
                     Sync Local Database
                   </>
                 )}
@@ -230,9 +235,9 @@ export default function DatabaseSyncPage() {
           <CardContent className="pt-4">
             <div className="flex items-center gap-2 mb-4">
               {syncLocal.data.status === 'SUCCESS' ? (
-                <RiCheckLine className="h-4 w-4 text-[#16A34A]" />
+                <Check className="h-4 w-4 text-[#16A34A]" />
               ) : (
-                <RiErrorWarningLine className="h-4 w-4 text-[#D97706]" />
+                <TriangleAlert className="h-4 w-4 text-[#D97706]" />
               )}
               <span className="text-[13px] font-semibold text-[var(--text-primary)]">
                 {syncLocal.data.status === 'SUCCESS' ? '✓ Local database synchronized' : '⚠ Synchronization completed with errors'}
@@ -262,7 +267,7 @@ export default function DatabaseSyncPage() {
 
       <div className="flex justify-end">
         <Button variant="ghost" size="sm" onClick={() => refetch()}>
-          <RiRefreshLine className="h-3.5 w-3.5 mr-1" />
+          <RefreshCw className="h-3.5 w-3.5 mr-1" />
           Refresh Status
         </Button>
       </div>

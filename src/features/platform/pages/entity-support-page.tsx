@@ -71,6 +71,9 @@ export default function EntitySupportPage({ kind }: { kind: EntityKind }) {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
+            {entity.isLoading && (
+              <p className="text-[12.5px] text-[var(--text-muted)]" role="status">Loading entity…</p>
+            )}
             <dl className="grid gap-3 text-[12.5px]">
               <div className="flex items-center justify-between gap-3">
                 <dt className="text-[var(--text-muted)]">Entity ID</dt>

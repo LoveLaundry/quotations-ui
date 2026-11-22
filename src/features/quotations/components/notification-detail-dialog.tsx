@@ -1,6 +1,12 @@
+import {
+  FileText,
+  Plus,
+  X,
+  Truck,
+  Pencil,
+} from 'lucide-react'
 import { Dialog, DialogContent, DialogHeader, DialogBody, DialogTitle, DialogDescription, DialogFooter } from '../../../components/ui/dialog'
 import { Button } from '../../../components/ui/button'
-import { RiCloseLine, RiFileTextLine, RiEditLine, RiAddLine, RiTruckLine } from 'react-icons/ri'
 import { useNavigate } from 'react-router-dom'
 import type { Quotation } from '../../../types/quotation'
 import type { GatePassPendingEntry, NotificationType } from '../../../types/notification'
@@ -53,7 +59,7 @@ export function NotificationDetailDialog({ open, onOpenChange, data, type }: Not
               <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${
                 isGatePass ? 'bg-[#FEF2F2] text-[#DC2626]' : 'bg-[#F0FDF4] text-[#16A34A]'
               }`}>
-                {isGatePass ? <RiTruckLine size={20} /> : <RiFileTextLine size={20} />}
+                {isGatePass ? <Truck size={20} /> : <FileText size={20} />}
               </div>
               <div>
                 <DialogTitle className="text-[16px] font-semibold text-[var(--text-primary)]">
@@ -71,7 +77,7 @@ export function NotificationDetailDialog({ open, onOpenChange, data, type }: Not
               className="flex h-7 w-7 items-center justify-center rounded-lg text-[#98A2B3] hover:bg-[var(--surface-3)] hover:text-[#111827] transition-colors"
               aria-label="Close"
             >
-              <RiCloseLine size={18} />
+              <X size={18} />
             </button>
           </div>
         </DialogHeader>
@@ -178,7 +184,7 @@ export function NotificationDetailDialog({ open, onOpenChange, data, type }: Not
             className="w-full sm:w-auto"
             onClick={handleViewDetails}
           >
-            {isGatePass ? <RiTruckLine size={16} className="mr-1.5" /> : <RiEditLine size={16} className="mr-1.5" />}
+            {isGatePass ? <Truck size={16} className="mr-1.5" /> : <Pencil size={16} className="mr-1.5" />}
             View Details
           </Button>
           <Button
@@ -187,12 +193,12 @@ export function NotificationDetailDialog({ open, onOpenChange, data, type }: Not
           >
             {isGatePass ? (
               <>
-                <RiTruckLine size={16} className="mr-1.5" />
+                <Truck size={16} className="mr-1.5" />
                 Open Gate Pass
               </>
             ) : (
               <>
-                <RiAddLine size={16} className="mr-1.5" />
+                <Plus size={16} className="mr-1.5" />
                 Create Bill
               </>
             )}

@@ -1,9 +1,13 @@
+import {
+  FileText,
+  Search,
+  Plus,
+  ChevronRight,
+  X,
+  Truck,
+} from 'lucide-react'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import {
-  RiFileTextLine, RiSearchLine, RiAddLine,
-  RiArrowRightSLine, RiCloseLine, RiTruckLine,
-} from 'react-icons/ri'
 import { Button } from '../../../components/ui/button'
 import { EmptyState } from '../../../components/ui/empty-state'
 import { Skeleton } from '../../../components/ui/skeleton'
@@ -93,10 +97,10 @@ export default function NotificationsPage() {
         </div>
         <div className="flex gap-2">
           <Button variant="secondary" onClick={() => navigate('/gate-passes')}>
-            <RiTruckLine size={16} /> Gate Passes
+            <Truck size={16} /> Gate Passes
           </Button>
           <Button variant="secondary" onClick={() => navigate('/quotations')}>
-            <RiFileTextLine size={16} /> All Quotations
+            <FileText size={16} /> All Quotations
           </Button>
         </div>
       </div>
@@ -129,7 +133,7 @@ export default function NotificationsPage() {
         </div>
 
         <div className="relative w-full md:w-72">
-          <RiSearchLine size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#98A2B3]" />
+          <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#98A2B3]" />
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -142,7 +146,7 @@ export default function NotificationsPage() {
               className="absolute right-3 top-1/2 -translate-y-1/2 text-[#98A2B3] hover:text-[#111827]"
               aria-label="Clear search"
             >
-              <RiCloseLine size={15} />
+              <X size={15} />
             </button>
           )}
         </div>
@@ -171,7 +175,7 @@ export default function NotificationsPage() {
                     className="flex items-start gap-4 flex-1 min-w-0 text-left cursor-pointer"
                   >
                     <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border bg-[#FEF2F2] text-[#DC2626] border-[#FECACA]">
-                      <RiTruckLine size={20} />
+                      <Truck size={20} />
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-2">
@@ -206,14 +210,14 @@ export default function NotificationsPage() {
                       onClick={() => navigate(`/gate-passes/${e.gate_pass_id}`)}
                       className="bg-[#DC2626] hover:bg-[#B91C1C]"
                     >
-                      <RiTruckLine size={14} /> View Gate Pass
+                      <Truck size={14} /> View Gate Pass
                     </Button>
                     <button
                       onClick={() => setSelected(row)}
                       className="flex h-8 w-8 items-center justify-center rounded-lg text-[#98A2B3] hover:bg-[var(--surface-3)] hover:text-[#111827] transition-colors cursor-pointer"
                       aria-label="Open details"
                     >
-                      <RiArrowRightSLine size={18} />
+                      <ChevronRight size={18} />
                     </button>
                   </div>
                 </div>
@@ -231,7 +235,7 @@ export default function NotificationsPage() {
                   className="flex items-start gap-4 flex-1 min-w-0 text-left cursor-pointer"
                 >
                   <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border bg-[#FFF7ED] text-[#EA580C] border-[#FED7AA]">
-                    <RiFileTextLine size={20} />
+                    <FileText size={20} />
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
@@ -272,14 +276,14 @@ export default function NotificationsPage() {
                     onClick={() => handleAction(row)}
                     className="bg-[var(--text-primary)] hover:bg-[#374151]"
                   >
-                    <RiAddLine size={14} /> Create Bill
+                    <Plus size={14} /> Create Bill
                   </Button>
                   <button
                     onClick={() => setSelected(row)}
                     className="flex h-8 w-8 items-center justify-center rounded-lg text-[#98A2B3] hover:bg-[var(--surface-3)] hover:text-[#111827] transition-colors cursor-pointer"
                     aria-label="Open details"
                   >
-                    <RiArrowRightSLine size={18} />
+                    <ChevronRight size={18} />
                   </button>
                 </div>
               </div>

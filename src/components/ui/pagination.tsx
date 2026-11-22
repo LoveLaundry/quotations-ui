@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { cn } from '../../lib/utils'
 
@@ -22,13 +23,22 @@ interface PaginationProps {
  */
 export function Pagination({ total, limit, offset, onChange, className, itemLabel }: PaginationProps) {
   const safeTotal = Number(total) || 0
+  const limitSafe = Math.max(1, limit)
+  const totalPages = Math.max(1, Math.ceil(safeTotal / limitSafe))
+  const maxOffset = Math.max(0, (totalPages - 1) * limitSafe)
+
+  // A filter can shrink the result set while the operator is on a later page.
+  // Pull them back to the last real page instead of showing "41–45 of 5".
+  useEffect(() => {
+    if (safeTotal > 0 && offset > maxOffset) onChange(maxOffset)
+  }, [safeTotal, maxOffset, offset, onChange])
+
   if (safeTotal <= 0) return null
 
-  const limitSafe = Math.max(1, limit)
-  const currentPage = Math.floor(offset / limitSafe) + 1
-  const totalPages = Math.max(1, Math.ceil(safeTotal / limitSafe))
-  const start = offset + 1
-  const end = Math.min(offset + limitSafe, safeTotal)
+  const currentPage = Math.min(Math.floor(offset / limitSafe) + 1, totalPages)
+  const displayOffset = Math.min(offset, maxOffset)
+  const start = displayOffset + 1
+  const end = Math.min(displayOffset + limitSafe, safeTotal)
 
   const pages = pageWindow(currentPage, totalPages)
 
@@ -62,7 +72,7 @@ export function Pagination({ total, limit, offset, onChange, className, itemLabe
       <div className="order-1 flex items-center gap-1 sm:order-2">
         <button
           type="button"
-          onClick={() => onChange(Math.max(0, offset - limitSafe))}
+          onClick={() => onChange(Math.max(0, displayOffset - limitSafe))}
           disabled={currentPage === 1}
           className={cn(
             navBtn,
@@ -103,7 +113,7 @@ export function Pagination({ total, limit, offset, onChange, className, itemLabe
 
         <button
           type="button"
-          onClick={() => onChange(Math.min((totalPages - 1) * limitSafe, offset + limitSafe))}
+          onClick={() => onChange(Math.min(maxOffset, displayOffset + limitSafe))}
           disabled={currentPage === totalPages}
           className={cn(
             navBtn,

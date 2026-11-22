@@ -12,6 +12,7 @@ import { deleteCacheDb } from '../cache/db'
 import { cacheScopeFor } from '../cache/scope'
 import {
     SESSION_EXPIRED_EVENT,
+    SUPPORT_SESSION_EXPIRED_EVENT,
     TOKEN_STORAGE_KEY,
     USER_STORAGE_KEY,
     clearStoredSession,
@@ -140,6 +141,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // the next person on this device.
         if (support) void deleteCacheDb(cacheScopeFor(support.user))
         setSupportToken(null)
+        resetSessionExpiryGuard()
         setSupport(null)
         setToken(localStorage.getItem(TOKEN_STORAGE_KEY))
         try {
@@ -149,15 +151,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
     }, [support])
 
-    // The API layer announces a confirmed session expiry; keep the ref fresh
-    // so the listener can stay mounted once and still call the latest logout.
+    // The API layer announces a confirmed session expiry; keep the refs fresh
+    // so the listeners can stay mounted once and still call the latest handlers.
     const logoutRef = useRef(logout)
     useEffect(() => { logoutRef.current = logout }, [logout])
+    const exitSupportRef = useRef(exitSupport)
+    useEffect(() => { exitSupportRef.current = exitSupport }, [exitSupport])
     const tokenRef = useRef(token)
     useEffect(() => { tokenRef.current = token }, [token])
 
     useEffect(() => {
         const onExpired = () => logoutRef.current()
+        // A support token is deliberately ephemeral. Its expiry must return to
+        // the stored platform session instead of destroying it.
+        const onSupportExpired = () => exitSupportRef.current()
         // When another tab signs out, follow it. Without this the two tabs
         // drift apart: one has no stored token while the other still believes
         // it is signed in, and the next click looks like a random logout.
@@ -167,9 +174,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             }
         }
         window.addEventListener(SESSION_EXPIRED_EVENT, onExpired)
+        window.addEventListener(SUPPORT_SESSION_EXPIRED_EVENT, onSupportExpired)
         window.addEventListener('storage', onStorage)
         return () => {
             window.removeEventListener(SESSION_EXPIRED_EVENT, onExpired)
+            window.removeEventListener(SUPPORT_SESSION_EXPIRED_EVENT, onSupportExpired)
             window.removeEventListener('storage', onStorage)
         }
     }, [])

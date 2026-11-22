@@ -16,6 +16,7 @@ import {
 } from 'lucide-react'
 import { cn } from '../../lib/utils'
 import { useAuth } from '../../context/AuthContext'
+import { PLATFORM_LANDING } from '../../lib/session-scope'
 import { useTheme, isFontSize } from '../../context/ThemeContext'
 import { useNotifications } from '../../features/quotations/hooks/useNotifications'
 import { NotificationDetailDialog } from '../../features/quotations/components/notification-detail-dialog'
@@ -236,7 +237,7 @@ export function TopBar({
   onOpenSearch,
   platformOnly = false,
 }: TopBarProps) {
-  const { user, support, logout } = useAuth()
+  const { user, support, logout, exitSupport } = useAuth()
   const navigate = useNavigate()
   const { fontSize, setFontSize } = useTheme()
   const queryClient = useQueryClient()
@@ -267,6 +268,14 @@ export function TopBar({
   }
 
   const handleLogout = () => {
+    // While supporting an entity the visible "user" is the temporary support
+    // identity. Signing out here must end that narrow session, not delete the
+    // platform operator's stored login.
+    if (support) {
+      exitSupport()
+      navigate(PLATFORM_LANDING, { replace: true })
+      return
+    }
     logout()
     navigate('/login', { replace: true })
   }
@@ -291,9 +300,9 @@ export function TopBar({
         },
         {
           id: 'logout',
-          label: 'Sign out',
+          label: support ? 'Exit support' : 'Sign out',
           icon: <SignOut size={16} />,
-          destructive: true,
+          destructive: !support,
           onSelect: handleLogout,
         },
       ],

@@ -19,6 +19,7 @@
  */
 
 export const SESSION_EXPIRED_EVENT = 'll:session-expired'
+export const SUPPORT_SESSION_EXPIRED_EVENT = 'll:support-session-expired'
 export const TOKEN_STORAGE_KEY = 'll_token'
 export const USER_STORAGE_KEY = 'll_user'
 
@@ -82,21 +83,35 @@ export function clearStoredSession(): void {
 }
 
 /**
- * Called by the API interceptor when a protected request proves the session
- * is no longer usable. Clears storage immediately (so even a very early 401
- * cannot leave a half-signed-in browser) and notifies the mounted auth layer.
- * The one-shot flag prevents a burst of parallel 401s from firing repeatedly.
+ * Called by the API interceptor when a protected request proves the token that
+ * was actually sent is no longer usable. The one-shot flag prevents a burst of
+ * parallel 401s from firing repeatedly.
+ *
+ * A support token is short-lived by design. When it expires, only the
+ * in-memory support session may be dropped; the operator's underlying stored
+ * platform session must survive so they land back on the registry. Passing the
+ * sent token lets us tell the two apart even when several services answer 401
+ * at once.
  */
-export function notifySessionExpired(): void {
+export function notifySessionExpired(sentToken?: string | null): void {
   if (expiryNotified) return
   expiryNotified = true
+
+  if (sentToken && sentToken === supportToken) {
+    setSupportToken(null)
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new Event(SUPPORT_SESSION_EXPIRED_EVENT))
+    }
+    return
+  }
+
   clearStoredSession()
   if (typeof window !== 'undefined') {
     window.dispatchEvent(new Event(SESSION_EXPIRED_EVENT))
   }
 }
 
-/** Reset the one-shot guard when a user signs in again. */
+/** Reset the one-shot guard on every sign-in, scope switch and support exit. */
 export function resetSessionExpiryGuard(): void {
   expiryNotified = false
 }

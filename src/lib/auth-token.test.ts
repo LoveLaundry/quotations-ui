@@ -1,8 +1,13 @@
-import { describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import {
+    SESSION_EXPIRED_EVENT,
+    SUPPORT_SESSION_EXPIRED_EVENT,
+    TOKEN_STORAGE_KEY,
+    USER_STORAGE_KEY,
     decodeToken,
     getActiveToken,
     isTokenExpired,
+    notifySessionExpired,
     resetSessionExpiryGuard,
     setSupportToken,
 } from './auth-token'
@@ -16,6 +21,7 @@ function jwt(exp: number | null, extra: Record<string, unknown> = {}): string {
 }
 
 const FUTURE = Math.floor(Date.now() / 1000) + 60 * 60
+const PAST = Math.floor(Date.now() / 1000) - 2 * 60 * 60
 
 describe('isTokenExpired', () => {
     it('does not expire a valid token', () => {
@@ -23,7 +29,7 @@ describe('isTokenExpired', () => {
     })
 
     it('expires a token well past its exp', () => {
-        expect(isTokenExpired(jwt(FUTURE - 2 * 60 * 60))).toBe(true)
+        expect(isTokenExpired(jwt(PAST))).toBe(true)
     })
 
     it('tolerates a token that expired moments ago (clock skew)', () => {
@@ -53,5 +59,70 @@ describe('getActiveToken', () => {
         expect(getActiveToken()).toBe('support-token')
         setSupportToken(null)
         expect(getActiveToken()).toBeNull()
+    })
+})
+
+describe('session expiry notifications', () => {
+    let store: Map<string, string>
+    let dispatched: Event[]
+
+    beforeEach(() => {
+        store = new Map()
+        dispatched = []
+        vi.stubGlobal('localStorage', {
+            getItem: (key: string) => store.get(key) ?? null,
+            setItem: (key: string, value: string) => void store.set(key, value),
+            removeItem: (key: string) => void store.delete(key),
+            clear: () => store.clear(),
+        })
+        vi.stubGlobal('window', { dispatchEvent: (event: Event) => void dispatched.push(event) })
+        store.set(TOKEN_STORAGE_KEY, jwt(FUTURE))
+        store.set(USER_STORAGE_KEY, JSON.stringify({ id: 'platform-user' }))
+        setSupportToken(null)
+        resetSessionExpiryGuard()
+    })
+
+    afterEach(() => {
+        setSupportToken(null)
+        resetSessionExpiryGuard()
+        vi.unstubAllGlobals()
+    })
+
+    it('drops only the support token when its short-lived session expires', () => {
+        const support = jwt(PAST, { support_entry: true })
+        setSupportToken(support)
+
+        notifySessionExpired(support)
+
+        expect(dispatched.map((event) => event.type)).toEqual([SUPPORT_SESSION_EXPIRED_EVENT])
+        expect(store.get(TOKEN_STORAGE_KEY)).toBeTruthy()
+        expect(store.get(USER_STORAGE_KEY)).toBeTruthy()
+        expect(getActiveToken()).toBe(store.get(TOKEN_STORAGE_KEY))
+    })
+
+    it('clears the stored session when the platform token expires', () => {
+        const platform = jwt(PAST)
+        store.set(TOKEN_STORAGE_KEY, platform)
+
+        notifySessionExpired(platform)
+
+        expect(dispatched.map((event) => event.type)).toEqual([SESSION_EXPIRED_EVENT])
+        expect(store.has(TOKEN_STORAGE_KEY)).toBe(false)
+        expect(store.has(USER_STORAGE_KEY)).toBe(false)
+    })
+
+    it('allows a later platform expiry after a support token expires', () => {
+        const support = jwt(PAST, { support_entry: true })
+        setSupportToken(support)
+        notifySessionExpired(support)
+        setSupportToken(null)
+        resetSessionExpiryGuard()
+
+        notifySessionExpired(jwt(PAST))
+
+        expect(dispatched.map((event) => event.type)).toEqual([
+            SUPPORT_SESSION_EXPIRED_EVENT,
+            SESSION_EXPIRED_EVENT,
+        ])
     })
 })

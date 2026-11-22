@@ -1,11 +1,18 @@
+import {
+  UserRound,
+  Camera,
+  Save,
+  Mail,
+  Phone,
+  IdCard,
+  UsersRound,
+} from 'lucide-react'
 import { useState, useRef } from 'react'
-import { RiUserLine, RiCameraLine, RiSaveLine, RiMailLine, RiPhoneLine, RiIdCardLine, RiUser3Line } from 'react-icons/ri'
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card'
 import { Breadcrumb } from '../../../components/ui/breadcrumb'
 import { useAuth } from '../../../context/AuthContext'
 import { toast } from 'sonner'
 import authApi from '../../../api/auth-api'
-
 export default function ProfilePage() {
   const { user, setUser } = useAuth()
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -105,7 +112,7 @@ export default function ProfilePage() {
         <Breadcrumb items={[{ label: 'Dashboard', href: '/' }, { label: 'Profile' }]} />
         <div className="flex items-center gap-3 mt-1">
           <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[var(--surface-3)] border border-[var(--border)]">
-            <RiUserLine className="h-4 w-4 text-[#374151]" />
+            <UserRound className="h-4 w-4 text-[#374151]" />
           </div>
           <div>
             <h1 className="text-dashboard-title">My Profile</h1>
@@ -140,7 +147,7 @@ export default function ProfilePage() {
                 </button>
                 {isEditing && (
                   <div className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-full opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-                    <RiCameraLine className="h-8 w-8 text-white" />
+                    <Camera className="h-8 w-8 text-white" />
                   </div>
                 )}
                 <input
@@ -159,12 +166,12 @@ export default function ProfilePage() {
 
               <div className="w-full mt-6 space-y-2">
                 <div className="flex items-center gap-2 text-[13px]" style={{ color: 'var(--text-secondary)' }}>
-                  <RiIdCardLine className="h-4 w-4" />
+                  <IdCard className="h-4 w-4" />
                   <span>{user?.auth_id}</span>
                 </div>
                 {user?.employee_id && (
                   <div className="flex items-center gap-2 text-[13px]" style={{ color: 'var(--text-secondary)' }}>
-                    <RiUser3Line className="h-4 w-4" />
+                    <UsersRound className="h-4 w-4" />
                     <span>Employee ID: {user.employee_id}</span>
                   </div>
                 )}
@@ -193,7 +200,7 @@ export default function ProfilePage() {
                       </>
                     ) : (
                       <>
-                        <RiSaveLine className="h-4 w-4" />
+                        <Save className="h-4 w-4" />
                         Save
                       </>
                     )}
@@ -252,7 +259,7 @@ export default function ProfilePage() {
               {/* Email */}
               <div>
                 <label className="block text-[13px] font-semibold text-[#344054] mb-2 flex items-center gap-2">
-                  <RiMailLine className="h-4 w-4" />
+                  <Mail className="h-4 w-4" />
                   Email Address
                 </label>
                 <input
@@ -268,7 +275,7 @@ export default function ProfilePage() {
               {/* Mobile */}
               <div>
                 <label className="block text-[13px] font-semibold text-[#344054] mb-2 flex items-center gap-2">
-                  <RiPhoneLine className="h-4 w-4" />
+                  <Phone className="h-4 w-4" />
                   Mobile Number
                 </label>
                 <input

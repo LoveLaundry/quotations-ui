@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
@@ -83,6 +83,8 @@ export default function EntityRegistryPage({ kind }: { kind: EntityKind }) {
   const [memberName, setMemberName] = useState('')
   const [memberPassword, setMemberPassword] = useState('')
   const [memberRole, setMemberRole] = useState(() => defaultMemberRole(kind))
+  const [enteringId, setEnteringId] = useState<string | null>(null)
+  const enteringRef = useRef<string | null>(null)
 
   useEffect(() => setOffset(0), [search, status, laundryId])
   useEffect(() => setMemberRole(defaultMemberRole(kind)), [kind])
@@ -178,7 +180,9 @@ export default function EntityRegistryPage({ kind }: { kind: EntityKind }) {
 
   const openCreate = () => {
     setEditing(null)
-    setForm({ ...blankForm, associated_laundry_id: laundries[0]?.laundry_id ?? '' })
+    // Never pick an owner on the operator's behalf: a mistaken tenant here
+    // gives the wrong laundry access to the new entity.
+    setForm({ ...blankForm })
     setShowForm(true)
   }
 
@@ -200,8 +204,13 @@ export default function EntityRegistryPage({ kind }: { kind: EntityKind }) {
   }
 
   const enter = async (row: RegistryEntity) => {
+    const id = entityId(row)
+    // A double click must not create two audited sessions or two short-lived
+    // tokens for the same operator action.
+    if (enteringRef.current) return
+    enteringRef.current = id
+    setEnteringId(id)
     try {
-      const id = entityId(row)
       const res = await svc.enter(id)
       // The backend issues an entity-scoped token with no laundry claim. Keep
       // that scope intact: never reinterpret this as laundry support and never
@@ -217,6 +226,9 @@ export default function EntityRegistryPage({ kind }: { kind: EntityKind }) {
       navigate(`/support/${kind}/${encodeURIComponent(id)}`, { replace: true })
     } catch (err) {
       toast.error(err instanceof Error ? err.message : `Could not enter ${row.name}`)
+    } finally {
+      enteringRef.current = null
+      setEnteringId(null)
     }
   }
 
@@ -294,7 +306,14 @@ export default function EntityRegistryPage({ kind }: { kind: EntityKind }) {
             </button>
           )}
           {String(row.status).toUpperCase() === 'ACTIVE' && (
-            <button type="button" className="registry-icon-btn" title={`Enter ${singular.toLowerCase()}`} aria-label={`Enter ${row.name}`} onClick={() => void enter(row)}>
+            <button
+              type="button"
+              className="registry-icon-btn"
+              title={enteringId === entityId(row) ? `Entering ${row.name}…` : `Enter ${singular.toLowerCase()}`}
+              aria-label={enteringId === entityId(row) ? `Entering ${row.name}` : `Enter ${row.name}`}
+              disabled={enteringId === entityId(row)}
+              onClick={() => void enter(row)}
+            >
               <LogIn size={14} />
             </button>
           )}
@@ -394,19 +413,21 @@ export default function EntityRegistryPage({ kind }: { kind: EntityKind }) {
           </DialogHeader>
           <DialogBody>
             <FormGrid cols={2}>
-              <Field label={`${singular} ID`} required hint="Unique identifier used across the platform.">
+              <Field id="entity-code" label={`${singular} ID`} required hint="Unique identifier used across the platform.">
                 <Input
+                  id="entity-code"
                   value={form.code}
                   onChange={(e) => setForm({ ...form, code: e.target.value })}
                   placeholder={kind === 'hotels' ? 'hotel-colombo-01' : 'shop-galle-01'}
                   disabled={Boolean(editing)}
                 />
               </Field>
-              <Field label="Display name" required>
-                <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Name" />
+              <Field id="entity-name" label="Display name" required>
+                <Input id="entity-name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Name" />
               </Field>
-              <Field label="Owning laundry" required className="sm:col-span-2">
+              <Field id="entity-laundry" label="Owning laundry" required className="sm:col-span-2">
                 <select
+                  id="entity-laundry"
                   className="registry-select w-full"
                   value={form.associated_laundry_id}
                   onChange={(e) => setForm({ ...form, associated_laundry_id: e.target.value })}
@@ -415,23 +436,23 @@ export default function EntityRegistryPage({ kind }: { kind: EntityKind }) {
                   {laundries.map((l) => <option key={l.laundry_id} value={l.laundry_id}>{l.name}</option>)}
                 </select>
               </Field>
-              <Field label="Location">
-                <Input value={form.location ?? ''} onChange={(e) => setForm({ ...form, location: e.target.value })} placeholder="City / area" />
+              <Field id="entity-location" label="Location">
+                <Input id="entity-location" value={form.location ?? ''} onChange={(e) => setForm({ ...form, location: e.target.value })} placeholder="City / area" />
               </Field>
-              <Field label="Contact number">
-                <Input value={form.contact_number ?? ''} onChange={(e) => setForm({ ...form, contact_number: e.target.value })} placeholder="07…" />
+              <Field id="entity-contact" label="Contact number">
+                <Input id="entity-contact" value={form.contact_number ?? ''} onChange={(e) => setForm({ ...form, contact_number: e.target.value })} placeholder="07…" />
               </Field>
-              <Field label="Email">
-                <Input type="email" value={form.email ?? ''} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="name@example.com" />
+              <Field id="entity-email" label="Email">
+                <Input id="entity-email" type="email" value={form.email ?? ''} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="name@example.com" />
               </Field>
-              <Field label="Subscription plan">
-                <Input value={form.subscription_plan ?? ''} onChange={(e) => setForm({ ...form, subscription_plan: e.target.value })} placeholder="Optional" />
+              <Field id="entity-plan" label="Subscription plan">
+                <Input id="entity-plan" value={form.subscription_plan ?? ''} onChange={(e) => setForm({ ...form, subscription_plan: e.target.value })} placeholder="Optional" />
               </Field>
-              <Field label="Address" className="sm:col-span-2">
-                <Input value={form.address ?? ''} onChange={(e) => setForm({ ...form, address: e.target.value })} placeholder="Street address" />
+              <Field id="entity-address" label="Address" className="sm:col-span-2">
+                <Input id="entity-address" value={form.address ?? ''} onChange={(e) => setForm({ ...form, address: e.target.value })} placeholder="Street address" />
               </Field>
-              <Field label="Notes" className="sm:col-span-2">
-                <Input value={form.description ?? ''} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Optional description" />
+              <Field id="entity-notes" label="Notes" className="sm:col-span-2">
+                <Input id="entity-notes" value={form.description ?? ''} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Optional description" />
               </Field>
             </FormGrid>
           </DialogBody>
@@ -456,34 +477,34 @@ export default function EntityRegistryPage({ kind }: { kind: EntityKind }) {
           </DialogHeader>
           <DialogBody>
             <div className="grid gap-3 sm:grid-cols-2">
-              <Field label="Auth ID" required>
+              <Field id="member-auth-id" label="Auth ID" required>
                 <Input
+                  id="member-auth-id"
                   value={memberAuthId}
                   onChange={(e) => setMemberAuthId(e.target.value)}
                   placeholder="Portal login"
-                  aria-label="Auth ID to add"
                 />
               </Field>
-              <Field label="Role" required>
-                <select className="registry-select w-full" value={memberRole} onChange={(e) => setMemberRole(e.target.value)} aria-label="Role">
+              <Field id="member-role" label="Role" required>
+                <select id="member-role" className="registry-select w-full" value={memberRole} onChange={(e) => setMemberRole(e.target.value)}>
                   {MEMBER_ROLES[kind].map((role) => <option key={role} value={role}>{role}</option>)}
                 </select>
               </Field>
-              <Field label="Display name">
+              <Field id="member-name" label="Display name">
                 <Input
+                  id="member-name"
                   value={memberName}
                   onChange={(e) => setMemberName(e.target.value)}
                   placeholder="Optional for an existing login"
-                  aria-label="Display name"
                 />
               </Field>
-              <Field label="Password" hint="Required only when creating a new portal login">
+              <Field id="member-password" label="Password" hint="Required only when creating a new portal login">
                 <Input
+                  id="member-password"
                   type="password"
                   value={memberPassword}
                   onChange={(e) => setMemberPassword(e.target.value)}
                   placeholder="At least 8 characters"
-                  aria-label="Password"
                   autoComplete="new-password"
                 />
               </Field>

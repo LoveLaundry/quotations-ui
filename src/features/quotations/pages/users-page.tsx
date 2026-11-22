@@ -1,11 +1,19 @@
+import {
+  RefreshCw,
+  Check,
+  Eye,
+  X,
+  UserPlus,
+  EyeOff,
+  ShieldCheck,
+  Pencil,
+  Building2,
+  UserRoundPlus,
+  UserRoundMinus,
+} from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useQuery, useQueries, useMutation, useQueryClient } from '@tanstack/react-query'
-import {
-    RiUserAddLine, RiCloseLine, RiEyeLine, RiEyeOffLine,
-    RiRefreshLine, RiShieldCheckLine, RiEditLine, RiBuilding2Line,
-    RiUserFollowLine, RiUserUnfollowLine, RiCheckLine
-} from 'react-icons/ri'
 import { toast } from 'sonner'
 import authApi from '../../../api/auth-api'
 import { laundryService } from '../../platform/services/laundry.service'
@@ -251,11 +259,11 @@ export default function UsersPage() {
                         disabled={loadingUsers}
                         className="flex items-center gap-1.5"
                     >
-                        <RiRefreshLine size={15} className={loadingUsers ? 'animate-spin' : ''} />
+                        <RefreshCw size={15} className={loadingUsers ? 'animate-spin' : ''} />
                         Refresh
                     </Button>
                     <Button onClick={openModal} className="flex items-center gap-1.5">
-                        <RiUserAddLine size={15} />
+                        <UserPlus size={15} />
                         Create User
                     </Button>
                 </div>
@@ -291,7 +299,7 @@ export default function UsersPage() {
                     description="Create the first user to give someone access to this system."
                     action={
                         <Button onClick={openModal}>
-                            <RiUserAddLine aria-hidden /> Create first user
+                            <UserPlus aria-hidden /> Create first user
                         </Button>
                     }
                 />
@@ -332,7 +340,7 @@ export default function UsersPage() {
                                                             title={memberships.map(m => `${m.name} (${m.role})`).join(', ') || 'Not enrolled in any laundry'}
                                                             className="inline-flex items-center gap-1 rounded-md border border-[var(--border)] bg-[var(--surface-2)] px-2 py-0.5 text-[10px] text-[#6B7280]"
                                                         >
-                                                            <RiBuilding2Line size={11} />
+                                                            <Building2 size={11} />
                                                             {memberships.length === 0
                                                                 ? 'No laundry'
                                                                 : `${memberships.length} laundr${memberships.length === 1 ? 'y' : 'ies'}`}
@@ -349,7 +357,7 @@ export default function UsersPage() {
                                                         aria-label="Manage laundries"
                                                         className="flex h-7 w-7 items-center justify-center rounded-lg text-[#6B7280] hover:bg-[var(--surface-3)] hover:text-[var(--text-primary)] transition-colors"
                                                     >
-                                                        <RiBuilding2Line size={15} />
+                                                        <Building2 size={15} />
                                                     </button>
                                                 )}
                                                 <button
@@ -358,7 +366,7 @@ export default function UsersPage() {
                                                     title="Edit user"
                                                     className="flex h-7 w-7 items-center justify-center rounded-lg text-[#6B7280] hover:bg-[var(--surface-3)] hover:text-[var(--text-primary)] transition-colors"
                                                 >
-                                                    <RiEditLine size={15} />
+                                                    <Pencil size={15} />
                                                 </button>
                                             </div>
                                         </div>
@@ -395,7 +403,7 @@ export default function UsersPage() {
                                 <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--border)]">
                                     <div className="flex items-center gap-3">
                                         <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--text-primary)] text-white">
-                                            <RiEditLine size={16} />
+                                            <Pencil size={16} />
                                         </div>
                                         <div>
                                             <p className="text-[14px] font-bold text-[var(--text-primary)]">{editId ? 'Edit User' : 'Create User'}</p>
@@ -407,7 +415,7 @@ export default function UsersPage() {
                                         onClick={() => setShowModal(false)}
                                         className="flex h-7 w-7 items-center justify-center rounded-lg text-[#6B7280] hover:bg-[var(--surface-3)] hover:text-[var(--text-primary)] transition-colors"
                                     >
-                                        <RiCloseLine size={16} />
+                                        <X size={16} />
                                     </button>
                                 </div>
 
@@ -462,7 +470,7 @@ export default function UsersPage() {
                                                 className="absolute right-3 top-1/2 -translate-y-1/2 text-[#98A2B3] hover:text-[#374151] transition-colors"
                                                 tabIndex={-1}
                                             >
-                                                {showPw ? <RiEyeOffLine size={16} /> : <RiEyeLine size={16} />}
+                                                {showPw ? <EyeOff size={16} /> : <Eye size={16} />}
                                             </button>
                                         </div>
                                     </div>
@@ -547,7 +555,7 @@ export default function UsersPage() {
 
                                     {/* Admin notice */}
                                     <div className="flex items-start gap-2 rounded-lg bg-[#F0FDF4] border border-[#BBF7D0] px-3 py-2.5">
-                                        <RiShieldCheckLine size={14} className="text-[#16A34A] mt-0.5 shrink-0" />
+                                        <ShieldCheck size={14} className="text-[#16A34A] mt-0.5 shrink-0" />
                                         <p className="text-[11px] text-[#166534]">
                                             {editId
                                                 ? 'Changes are saved immediately. Enter a new password only if you want to reset it.'
@@ -570,12 +578,12 @@ export default function UsersPage() {
                                         >
                                             {submitting ? (
                                                 <>
-                                                    <RiRefreshLine size={14} className="animate-spin" />
+                                                    <RefreshCw size={14} className="animate-spin" />
                                                     {editId ? 'Saving…' : 'Creating…'}
                                                 </>
                                             ) : (
                                                 <>
-                                                    <RiEditLine size={14} />
+                                                    <Pencil size={14} />
                                                     {editId ? 'Save Changes' : 'Create User'}
                                                 </>
                                             )}
@@ -675,7 +683,7 @@ function ManageLaundriesModal({
                             <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--border)]">
                                 <div className="flex items-center gap-3 min-w-0">
                                     <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--text-primary)] text-white">
-                                        <RiBuilding2Line size={16} />
+                                        <Building2 size={16} />
                                     </div>
                                     <div className="min-w-0">
                                         <p className="text-[14px] font-bold text-[var(--text-primary)] truncate">Manage laundries</p>
@@ -687,7 +695,7 @@ function ManageLaundriesModal({
                                     onClick={onClose}
                                     className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-[#6B7280] hover:bg-[var(--surface-3)] hover:text-[var(--text-primary)] transition-colors"
                                 >
-                                    <RiCloseLine size={16} />
+                                    <X size={16} />
                                 </button>
                             </div>
 
@@ -750,7 +758,7 @@ function ManageLaundryRow({
                 className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-md border ${isMember ? 'border-[#BBF7D0] bg-[#F0FDF4] text-[#16A34A]' : 'border-[var(--border)] bg-[var(--surface-2)] text-[#98A2B3]'}`}
                 title={isMember ? 'Member' : 'Not a member'}
             >
-                {isMember ? <RiCheckLine size={13} /> : <RiBuilding2Line size={13} />}
+                {isMember ? <Check size={13} /> : <Building2 size={13} />}
             </span>
             <div className="min-w-0 flex-1">
                 <p className="text-[13px] font-medium text-[var(--text-primary)] truncate">{laundry.name}</p>
@@ -775,7 +783,7 @@ function ManageLaundryRow({
                     title="Remove from laundry"
                     className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-[#DC2626] hover:bg-[#FEF2F2] transition-colors disabled:opacity-50"
                 >
-                    <RiUserUnfollowLine size={15} />
+                    <UserRoundMinus size={15} />
                 </button>
             ) : (
                 <button
@@ -785,7 +793,7 @@ function ManageLaundryRow({
                     title="Add to laundry"
                     className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-[#16A34A] hover:bg-[#F0FDF4] transition-colors disabled:opacity-50"
                 >
-                    <RiUserFollowLine size={15} />
+                    <UserRoundPlus size={15} />
                 </button>
             )}
         </div>

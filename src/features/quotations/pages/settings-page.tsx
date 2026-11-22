@@ -1,7 +1,17 @@
 import {
-  RiSettings3Line, RiTextSpacing, RiSunLine, RiContrastLine, RiMoonLine, RiCheckLine, RiPaletteLine,
-  RiDropLine, RiLeafLine, RiArtboard2Line, RiCloudLine, RiEyeLine,
-} from 'react-icons/ri'
+  Check,
+  Settings2,
+  Type,
+  Sun,
+  Contrast,
+  Moon,
+  Palette,
+  Droplet,
+  Leaf,
+  Frame,
+  Cloud,
+  Eye,
+} from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card'
 import { Breadcrumb } from '../../../components/ui/breadcrumb'
 import { useTheme, type FontSize, type ThemePreset } from '../../../context/ThemeContext'
@@ -33,56 +43,56 @@ const THEME_OPTIONS: ThemePresetOption[] = [
   // Light themes
   {
     value: 'light', label: 'Light', desc: 'The classic clean look',
-    icon: <RiSunLine className="h-4 w-4 text-[#F59E0B]" />,
+    icon: <Sun className="h-4 w-4 text-[#F59E0B]" />,
     group: 'light',
     swatchBg: 'var(--surface-2)', swatchSurface: '#FFFFFF', swatchBorder: 'var(--border)', swatchText: '#101828', swatchMuted: '#6B7280',
   },
   {
     value: 'contrast', label: 'High Contrast', desc: 'Stronger borders, darker text',
-    icon: <RiContrastLine className="h-4 w-4 text-[#2563EB]" />,
+    icon: <Contrast className="h-4 w-4 text-[#2563EB]" />,
     group: 'light',
     swatchBg: 'var(--surface-3)', swatchSurface: '#FFFFFF', swatchBorder: '#94A3B8', swatchText: '#0B1220', swatchMuted: '#334155',
   },
   {
     value: 'ocean', label: 'Ocean Blue', desc: 'Cool blue-tinted professional',
-    icon: <RiDropLine className="h-4 w-4 text-[#2563EB]" />,
+    icon: <Droplet className="h-4 w-4 text-[#2563EB]" />,
     group: 'light',
     swatchBg: '#F0F5FF', swatchSurface: '#FFFFFF', swatchBorder: '#C7D7F0', swatchText: '#0C1929', swatchMuted: '#4A6485',
   },
   {
     value: 'forest', label: 'Forest Green', desc: 'Natural green-tinted warmth',
-    icon: <RiLeafLine className="h-4 w-4 text-[#16A34A]" />,
+    icon: <Leaf className="h-4 w-4 text-[#16A34A]" />,
     group: 'light',
     swatchBg: '#F0FAF4', swatchSurface: '#FFFFFF', swatchBorder: '#C5E0CC', swatchText: '#0A1F12', swatchMuted: '#376B44',
   },
   {
     value: 'sepia', label: 'Warm Sepia', desc: 'Cream newspaper tone',
-    icon: <RiArtboard2Line className="h-4 w-4 text-[#D9520A]" />,
+    icon: <Frame className="h-4 w-4 text-[#D9520A]" />,
     group: 'light',
     swatchBg: '#FAF6F0', swatchSurface: '#FFFDF9', swatchBorder: '#DDD5C7', swatchText: '#2C2416', swatchMuted: '#6E6047',
   },
   {
     value: 'slate', label: 'Slate', desc: 'Balanced medium-grey professional',
-    icon: <RiCloudLine className="h-4 w-4 text-[#475569]" />,
+    icon: <Cloud className="h-4 w-4 text-[#475569]" />,
     group: 'light',
     swatchBg: '#E8ECF1', swatchSurface: '#FFFFFF', swatchBorder: '#B8C0CC', swatchText: '#0F172A', swatchMuted: '#475569',
   },
   // Dark themes
   {
     value: 'dark', label: 'Midnight', desc: 'Professional dark mode',
-    icon: <RiMoonLine className="h-4 w-4 text-[#7C8A99]" />,
+    icon: <Moon className="h-4 w-4 text-[#7C8A99]" />,
     group: 'dark',
     swatchBg: '#0F141B', swatchSurface: '#171E27', swatchBorder: '#2A3543', swatchText: '#F4F7FB', swatchMuted: '#93A0AE',
   },
   {
     value: 'nightblue', label: 'Night Blue', desc: 'Deep blue-tinted dark',
-    icon: <RiMoonLine className="h-4 w-4 text-[#818CF8]" />,
+    icon: <Moon className="h-4 w-4 text-[#818CF8]" />,
     group: 'dark',
     swatchBg: '#0D0F1A', swatchSurface: '#141728', swatchBorder: '#252A42', swatchText: '#E8EAFF', swatchMuted: '#8890C0',
   },
   {
     value: 'contrast-dark', label: 'Contrast Dark', desc: 'Maximum contrast dark mode',
-    icon: <RiEyeLine className="h-4 w-4 text-[#FF4444]" />,
+    icon: <Eye className="h-4 w-4 text-[#FF4444]" />,
     group: 'dark',
     swatchBg: '#000000', swatchSurface: '#0D0D0D', swatchBorder: '#3A3A3A', swatchText: '#FFFFFF', swatchMuted: '#AAAAAA',
   },
@@ -103,7 +113,7 @@ function OptionButton({ active, onClick, children, className = '' }: { active: b
     >
       {active && (
         <span className="absolute right-2.5 top-2.5 flex h-4 w-4 items-center justify-center rounded-full bg-[var(--red-600)]">
-          <RiCheckLine className="h-2.5 w-2.5 text-white" />
+          <Check className="h-2.5 w-2.5 text-white" />
         </span>
       )}
       {children}
@@ -122,7 +132,7 @@ export default function SettingsPage() {
         <Breadcrumb items={[{ label: 'Dashboard', href: '/' }, { label: 'Settings' }]} />
         <div className="flex items-center gap-3 mt-1">
           <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[var(--surface-2)] border border-[var(--border)]">
-            <RiSettings3Line className="h-4 w-4" style={{ color: 'var(--text-secondary)' }} />
+            <Settings2 className="h-4 w-4" style={{ color: 'var(--text-secondary)' }} />
           </div>
           <div>
             <h1 className="text-dashboard-title">Settings</h1>
@@ -138,7 +148,7 @@ export default function SettingsPage() {
         <CardHeader className="border-b pb-4" style={{ borderColor: 'var(--border)' }}>
           <div className="flex items-center gap-3">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#EFF6FF] border border-[#BFDBFE]">
-              <RiPaletteLine className="h-4 w-4 text-[#2563EB]" />
+              <Palette className="h-4 w-4 text-[#2563EB]" />
             </div>
             <div>
               <CardTitle>Light Themes</CardTitle>
@@ -175,7 +185,7 @@ export default function SettingsPage() {
         <CardHeader className="border-b pb-4" style={{ borderColor: 'var(--border)' }}>
           <div className="flex items-center gap-3">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#1E1B4B] border border-[#4338CA]">
-              <RiMoonLine className="h-4 w-4 text-[#A5B4FC]" />
+              <Moon className="h-4 w-4 text-[#A5B4FC]" />
             </div>
             <div>
               <CardTitle>Dark Themes</CardTitle>
@@ -212,7 +222,7 @@ export default function SettingsPage() {
         <CardHeader className="border-b pb-4" style={{ borderColor: 'var(--border)' }}>
           <div className="flex items-center gap-3">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#F0FDF4] border border-[#BBF7D0]">
-              <RiTextSpacing className="h-4 w-4 text-[#16A34A]" />
+              <Type className="h-4 w-4 text-[#16A34A]" />
             </div>
             <div>
               <CardTitle>Font Size</CardTitle>
@@ -240,7 +250,7 @@ export default function SettingsPage() {
         <CardHeader className="border-b pb-4" style={{ borderColor: 'var(--border)' }}>
           <div className="flex items-center gap-3">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#FFF7ED] border border-[#FED7AA]">
-              <RiPaletteLine className="h-4 w-4 text-[#EA580C]" />
+              <Palette className="h-4 w-4 text-[#EA580C]" />
             </div>
             <div>
               <CardTitle>Live Preview</CardTitle>
