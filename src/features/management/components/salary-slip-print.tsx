@@ -156,44 +156,44 @@ export function SalarySlipPrint({ slip, lang = 'EN' }: SalarySlipProps) {
           body { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
           .no-print { display: none !important; }
         }
-        .slip-container { border: 1.5px solid #C1121F; padding: 0; }
-        .slip-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; padding: 12px 20px; border-bottom: 1.5px solid #C1121F; }
-        .brand-logo { width: 44px; height: 44px; object-fit: contain; background: #FFFFFF; border: 1.5px solid #C1121F; border-radius: 50%; padding: 5px; box-sizing: border-box; flex-shrink: 0; }
-        .brand-name { font-weight: 700; letter-spacing: -0.25px; font-size: 20px; color: #C1121F; line-height: 1.15; }
-        .brand-tagline { font-size: 11px; color: #767676; margin-top: 1px; }
-        .brand-contact { font-size: 10px; color: #A6A6A6; margin-top: 4px; line-height: 1.45; }
+        .slip-container { border: 1.5px solid #FF0000; padding: 0; }
+        .slip-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; padding: 12px 20px; border-bottom: 1.5px solid #FF0000; }
+        .brand-logo { width: 44px; height: 44px; object-fit: contain; background: #FFFFFF; border: 1.5px solid #FF0000; border-radius: 50%; padding: 5px; box-sizing: border-box; flex-shrink: 0; }
+        .brand-name { font-weight: 700; letter-spacing: -0.25px; font-size: 20px; color: var(--danger-deep); line-height: 1.15; }
+        .brand-tagline { font-size: 11px; color: var(--text-secondary); margin-top: 1px; }
+        .brand-contact { font-size: 10px; color: var(--text-faint); margin-top: 4px; line-height: 1.45; }
         .doc-meta { text-align: right; }
-        .doc-title { font-size: 17px; font-weight: 800; letter-spacing: 2.5px; text-transform: uppercase; color: #C1121F; line-height: 1.1; }
-        .doc-period { font-size: 12px; color: #0A1D3A; margin-top: 3px; font-weight: 600; }
+        .doc-title { font-size: 17px; font-weight: 800; letter-spacing: 2.5px; text-transform: uppercase; color: var(--danger-deep); line-height: 1.1; }
+        .doc-period { font-size: 12px; color: var(--brand-deep); margin-top: 3px; font-weight: 600; }
         .slip-body { padding: 10px 20px 14px; }
-        .info-grid { display: grid; grid-template-columns: 1fr 1fr; column-gap: 28px; background: #F9E7E9; border: 1px solid #EEBDC0; border-radius: 6px; padding: 7px 12px; }
+        .info-grid { display: grid; grid-template-columns: 1fr 1fr; column-gap: 28px; background: var(--surface-2); border: 1px solid rgba(255, 0, 0, 0.25); border-radius: 6px; padding: 7px 12px; }
         .info-row { display: flex; justify-content: space-between; gap: 10px; padding: 2px 0; font-size: 12px; }
-        .info-label { color: #767676; font-weight: 500; }
+        .info-label { color: var(--text-secondary); font-weight: 500; }
         .info-value { font-weight: 700; text-align: right; }
         .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 0 20px; margin-top: 8px; }
-        .section-title { color: #C1121F; border-left: 3px solid #C1121F; padding: 1px 0 1px 8px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+        .section-title { color: var(--danger-deep); border-left: 3px solid #FF0000; padding: 1px 0 1px 8px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
         .calc-table { width: 100%; border-collapse: collapse; font-size: 12px; }
-        .calc-table td { padding: 2.5px 6px; border-bottom: 1px solid #F9E7E9; }
+        .calc-table td { padding: 2.5px 6px; border-bottom: 1px solid rgba(255, 0, 0, 0.12); }
         .calc-table tr:last-child td { border-bottom: none; }
         .calc-table td:last-child { text-align: right; font-weight: 600; }
-        .calc-table tr.total-row td { border-top: 1.5px solid #C1121F; border-bottom: none; font-weight: 800; color: #7D0C14; }
-        .calc-table td .sub { display: block; font-size: 10px; color: #A6A6A6; font-weight: 400; }
+        .calc-table tr.total-row td { border-top: 1.5px solid #FF0000; border-bottom: none; font-weight: 800; color: var(--danger-deep); }
+        .calc-table td .sub { display: block; font-size: 10px; color: var(--text-faint); font-weight: 400; }
         .advance-table { width: 100%; border-collapse: collapse; font-size: 11px; }
-        .advance-table th { text-align: left; padding: 3px 6px; color: #7D0C14; font-weight: 700; border-bottom: 1.5px solid #C1121F; }
+        .advance-table th { text-align: left; padding: 3px 6px; color: var(--danger-deep); font-weight: 700; border-bottom: 1.5px solid #FF0000; }
         .advance-table th:last-child { text-align: right; }
-        .advance-table td { padding: 2.5px 6px; border-bottom: 1px solid #F9E7E9; }
+        .advance-table td { padding: 2.5px 6px; border-bottom: 1px solid rgba(255, 0, 0, 0.12); }
         .advance-table td:last-child { text-align: right; }
-        .net-salary { display: flex; align-items: center; justify-content: space-between; border: 1.5px solid #C1121F; border-radius: 6px; padding: 9px 16px; margin-top: 10px; background: #FFFFFF; }
-        .net-salary .label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #7D0C14; }
-        .net-salary .amount { font-size: 24px; font-weight: 800; color: #C1121F; }
+        .net-salary { display: flex; align-items: center; justify-content: space-between; border: 1.5px solid #FF0000; border-radius: 6px; padding: 9px 16px; margin-top: 10px; background: #FFFFFF; }
+        .net-salary .label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--danger-deep); }
+        .net-salary .amount { font-size: 24px; font-weight: 800; color: var(--danger-deep); }
         .slip-footer { display: flex; justify-content: space-between; align-items: flex-end; padding: 6px 20px 0; margin-top: 2px; font-size: 11px; }
-        .sig-line { border-top: 1px solid #0A1D3A; width: 30%; text-align: center; padding-top: 4px; }
-        .slip-number { font-size: 10px; color: #A6A6A6; }
+        .sig-line { border-top: 1px solid #00008B; width: 30%; text-align: center; padding-top: 4px; }
+        .slip-number { font-size: 10px; color: var(--text-faint); }
         .status-badge { display: inline-block; padding: 1px 8px; border-radius: 4px; font-size: 10px; font-weight: 700; text-transform: uppercase; }
-        .status-DRAFT { background: #EEBDC0; color: #7D0C14; }
-        .status-FINALIZED { background: #BDDBC9; color: #0E5328; }
-        .status-CANCELLED { background: #F9E7E9; color: #7D0C14; }
-        .status-DELETED { background: #BCC4D1; color: #0A1D3A; }
+        .status-DRAFT { background: var(--danger-border); color: var(--danger-deep); }
+        .status-FINALIZED { background: var(--success-border); color: var(--success-deep); }
+        .status-CANCELLED { background: var(--surface-2); color: var(--danger-deep); }
+        .status-DELETED { background: var(--border-2); color: var(--brand-deep); }
       `}</style>
 
       <div className="slip-container">
@@ -234,15 +234,15 @@ export function SalarySlipPrint({ slip, lang = 'EN' }: SalarySlipProps) {
                 <tbody>
                   <tr><td>{t.calendarDays}</td><td>{slip.calendar_days}</td></tr>
                   <tr><td>{t.workingDays}</td><td>{slip.working_days}</td></tr>
-                  <tr><td>{t.workedDays}</td><td style={{ color: '#15803D' }}>{slip.worked_days}</td></tr>
-                  {slip.leave_days > 0 && <tr><td>{t.leaveDays}</td><td style={{ color: '#0F2C59' }}>{slip.leave_days}</td></tr>}
-                  {slip.absent_days > 0 && <tr><td>{t.absentDays}</td><td style={{ color: '#C1121F' }}>{slip.absent_days}</td></tr>}
-                  {slip.holiday_count > 0 && <tr><td>{t.holidays}</td><td style={{ color: '#3A5277' }}>{slip.holiday_count}</td></tr>}
-                  {slip.weekend_count > 0 && <tr><td>{t.weekends}</td><td style={{ color: '#3A5277' }}>{slip.weekend_count}</td></tr>}
+                  <tr><td>{t.workedDays}</td><td style={{ color: 'var(--success-text)' }}>{slip.worked_days}</td></tr>
+                  {slip.leave_days > 0 && <tr><td>{t.leaveDays}</td><td style={{ color: 'var(--brand-text)' }}>{slip.leave_days}</td></tr>}
+                  {slip.absent_days > 0 && <tr><td>{t.absentDays}</td><td style={{ color: 'var(--danger-text)' }}>{slip.absent_days}</td></tr>}
+                  {slip.holiday_count > 0 && <tr><td>{t.holidays}</td><td style={{ color: 'var(--brand-text)' }}>{slip.holiday_count}</td></tr>}
+                  {slip.weekend_count > 0 && <tr><td>{t.weekends}</td><td style={{ color: 'var(--brand-text)' }}>{slip.weekend_count}</td></tr>}
                 </tbody>
               </table>
               ) : (
-                <div style={{ fontSize: 12, color: '#7D0C14', background: '#F9E7E9', border: '1px solid #EEBDC0', padding: '8px 10px', borderRadius: 4, fontWeight: 600 }}>
+                <div style={{ fontSize: 12, color: 'var(--danger-text)', background: 'var(--danger-text)', border: '1px solid rgba(255, 0, 0, 0.25)', padding: '8px 10px', borderRadius: 4, fontWeight: 600 }}>
                   {t.attendanceNotRequired}
                 </div>
               )}
@@ -317,7 +317,7 @@ export function SalarySlipPrint({ slip, lang = 'EN' }: SalarySlipProps) {
           </div>
 
           {slip.notes && (
-            <div style={{ fontSize: 11, color: '#0A1D3A', marginTop: 8, padding: '6px 10px', background: '#FFFFFF', border: '1px solid #EEBDC0', borderLeft: '3px solid #C1121F', borderRadius: 4 }}>
+            <div style={{ fontSize: 11, color: 'var(--text-primary)', marginTop: 8, padding: '6px 10px', background: 'var(--ll-white)', border: '1px solid rgba(255, 0, 0, 0.25)', borderLeft: '3px solid #FF0000', borderRadius: 4 }}>
               <strong>{t.notes}:</strong> {slip.notes}
             </div>
           )}

@@ -164,7 +164,7 @@ export default function GatePassesPage() {
             <div className="rounded-xl border border-[var(--border)] bg-white p-4 shadow-[var(--shadow-xs)] transition-shadow hover:shadow-md">
                 <div className="flex items-start justify-between gap-2">
                     <div className="flex min-w-0 items-start gap-3">
-                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-[#BCC4D1] bg-[#E7EAEE] text-[#0F2C59]">
+                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-[var(--border)] bg-[var(--surface-2)] text-[var(--brand-text)]">
                             <ClipboardList size={16} />
                         </div>
                         <div className="min-w-0">
@@ -175,23 +175,23 @@ export default function GatePassesPage() {
                                     <p className="truncate text-[12px] text-[var(--text-muted)]">{gp.client_name || '—'}</p>
                                 )}
                             </div>
-                            <p className="mt-1 text-[11px] text-[#7B8BA4]">{formatDateOnly(gp.receiving_date)}</p>
+                            <p className="mt-1 text-[11px] text-[var(--text-faint)]">{formatDateOnly(gp.receiving_date)}</p>
                         </div>
                     </div>
                     <GatePassStatusPill status={gp.status} />
                 </div>
 
-                <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-[var(--border)] pt-3 text-[12px] text-[#767676]">
-                    <span><span className="font-semibold text-[#0A1D3A]">{(gp.items ?? []).length}</span> types</span>
-                    <span><span className="font-semibold text-[#0A1D3A]">{total}</span> pcs</span>
-                    <span>by <span className="font-medium text-[#0A1D3A]">{gp.received_by || '—'}</span></span>
+                <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-[var(--border)] pt-3 text-[12px] text-[var(--text-muted)]">
+                    <span><span className="font-semibold text-[var(--text-primary)]">{(gp.items ?? []).length}</span> types</span>
+                    <span><span className="font-semibold text-[var(--text-primary)]">{total}</span> pcs</span>
+                    <span>by <span className="font-medium text-[var(--text-primary)]">{gp.received_by || '—'}</span></span>
                     {mismatches > 0 && (
-                        <span className="inline-flex items-center gap-1 font-medium text-[#CC3D47]">
+                        <span className="inline-flex items-center gap-1 font-medium text-[var(--danger-text)]">
                             <AlertTriangle size={11} /> {mismatches} mismatch{mismatches > 1 ? 'es' : ''}
                         </span>
                     )}
                     {rewashedQty > 0 && (
-                        <span className="inline-flex items-center gap-1 font-medium text-[#15803D]">
+                        <span className="inline-flex items-center gap-1 font-medium text-[var(--success-text)]">
                             <RotateCcw size={11} /> {rewashedQty} pcs re-wash · not billed
                         </span>
                     )}
@@ -216,11 +216,11 @@ export default function GatePassesPage() {
                 <div>
                     <Breadcrumb items={[{ label: 'Dashboard', href: '/' }, { label: 'Gate Passes' }]} />
                     <h1 className="text-dashboard-title mt-1">Gate Passes</h1>
-                    <p className="text-[13px] text-[#7B8BA4] mt-0.5">
+                    <p className="text-[13px] text-[var(--text-faint)] mt-0.5">
                         Receipts, mismatches, and delivery readiness — organized by hotel.
                     </p>
                     <div className="mt-1.5">
-                        <span className="text-[12px] font-medium text-[#767676]">
+                        <span className="text-[12px] font-medium text-[var(--text-muted)]">
                             {isLoading ? 'Loading…' : `${rows.length} gate pass${rows.length !== 1 ? 'es' : ''}`}
                             {hotel ? ` · ${hotel}` : ' · All hotels'}
                         </span>
@@ -228,7 +228,7 @@ export default function GatePassesPage() {
                     </div>
                 </div>
                 <Link to="/gate-passes/new" className="shrink-0">
-                    <Button className="bg-[#0F2C59] hover:bg-[#0F2C59] text-white shadow-lg shadow-blue-800/20">
+                    <Button className="bg-[var(--brand)] hover:bg-[var(--brand)] text-white shadow-lg shadow-blue-800/20">
                         <Plus className="h-4 w-4" /> Create Gate Pass
                     </Button>
                 </Link>
@@ -241,19 +241,19 @@ export default function GatePassesPage() {
             <div className="rounded-xl border border-[var(--border)] bg-white p-3 shadow-[var(--shadow-xs)]">
                 <div className="flex flex-col gap-2.5 lg:flex-row lg:items-center">
                     <div className="relative flex-1">
-                        <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#7B8BA4]" />
+                        <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--text-faint)]" />
                         <input
                             type="text"
                             value={searchInput}
                             onChange={event => setSearchInput(event.target.value)}
                             placeholder={`Search ${hotel ? hotel : 'all hotels'} by gate pass no., item, person…`}
-                            className="h-10 w-full rounded-lg border border-[var(--border)] bg-white pl-9 pr-8 text-[13px] text-[var(--text-primary)] shadow-sm outline-none focus:border-[#0F2C59] focus:ring-2 focus:ring-[#0F2C59]/10"
+                            className="h-10 w-full rounded-lg border border-[var(--border)] bg-white pl-9 pr-8 text-[13px] text-[var(--text-primary)] shadow-sm outline-none focus:border-[var(--brand)] focus:ring-2 focus:ring-[var(--brand)]/10"
                         />
                         {searchInput && (
                             <button
                                 type="button"
                                 onClick={() => setSearchInput('')}
-                                className="absolute right-2.5 top-1/2 -translate-y-1/2 cursor-pointer text-[#7B8BA4] hover:text-[#0A1D3A]"
+                                className="absolute right-2.5 top-1/2 -translate-y-1/2 cursor-pointer text-[var(--text-faint)] hover:text-[var(--text-primary)]"
                             >
                                 <X className="h-3.5 w-3.5" />
                             </button>
@@ -277,23 +277,23 @@ export default function GatePassesPage() {
                 {showMore && (
                     <div className="mt-3 grid gap-2.5 border-t border-[var(--border)] pt-3 sm:grid-cols-2">
                         <div className="relative">
-                            <CalendarDays className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#7B8BA4]" />
+                            <CalendarDays className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--text-faint)]" />
                             <input
                                 type="date"
                                 value={dateFrom}
                                 onChange={event => setDateFrom(event.target.value)}
                                 aria-label="Received from"
-                                className="h-10 w-full rounded-lg border border-[var(--border)] bg-white pl-9 pr-3 text-[13px] text-[var(--text-primary)] shadow-sm outline-none focus:border-[#0F2C59] focus:ring-2 focus:ring-[#0F2C59]/10"
+                                className="h-10 w-full rounded-lg border border-[var(--border)] bg-white pl-9 pr-3 text-[13px] text-[var(--text-primary)] shadow-sm outline-none focus:border-[var(--brand)] focus:ring-2 focus:ring-[var(--brand)]/10"
                             />
                         </div>
                         <div className="relative">
-                            <CalendarDays className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#7B8BA4]" />
+                            <CalendarDays className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--text-faint)]" />
                             <input
                                 type="date"
                                 value={dateTo}
                                 onChange={event => setDateTo(event.target.value)}
                                 aria-label="Received to"
-                                className="h-10 w-full rounded-lg border border-[var(--border)] bg-white pl-9 pr-3 text-[13px] text-[var(--text-primary)] shadow-sm outline-none focus:border-[#0F2C59] focus:ring-2 focus:ring-[#0F2C59]/10"
+                                className="h-10 w-full rounded-lg border border-[var(--border)] bg-white pl-9 pr-3 text-[13px] text-[var(--text-primary)] shadow-sm outline-none focus:border-[var(--brand)] focus:ring-2 focus:ring-[var(--brand)]/10"
                             />
                         </div>
                     </div>
@@ -326,7 +326,7 @@ export default function GatePassesPage() {
                         description="Record your first gate pass when laundry is received from a hotel."
                         action={
                             <Link to="/gate-passes/new">
-                                <Button className="bg-[#0F2C59] hover:bg-[#0F2C59] text-white">
+                                <Button className="bg-[var(--brand)] hover:bg-[var(--brand)] text-white">
                                     <Plus className="h-4 w-4" /> Create Gate Pass
                                 </Button>
                             </Link>

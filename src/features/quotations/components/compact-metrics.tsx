@@ -11,11 +11,11 @@ export interface MetricItem {
 }
 
 const toneMap = {
-    blue: { iconBg: 'border-[#BCC4D1] bg-[#E7EAEE] text-[#0F2C59]', valueText: 'text-[#0F2C59]' },
-    green: { iconBg: 'border-[#BDDBC9] bg-[#E8F2EC] text-[#15803D]', valueText: 'text-[#15803D]' },
-    amber: { iconBg: 'border-[#DD7D84] bg-[#F9E7E9] text-[#CC3D47]', valueText: 'text-[#7D0C14]' },
-    red: { iconBg: 'border-[#EEBDC0] bg-[#F9E7E9] text-[#C1121F]', valueText: 'text-[#C1121F]' },
-    gray: { iconBg: 'border-[var(--border)] bg-[var(--surface-2)] text-[#0A1D3A]', valueText: 'text-[#0A1D3A]' },
+    blue: { iconBg: 'border-[var(--border)] bg-[var(--surface-2)] text-[var(--brand-text)]', valueText: 'text-[var(--brand-text)]' },
+    green: { iconBg: 'border-[var(--success-border)] bg-[var(--success-soft)] text-[var(--success-text)]', valueText: 'text-[var(--success-text)]' },
+    amber: { iconBg: 'border-[var(--danger-border)] bg-[var(--danger-soft)] text-[var(--danger-text)]', valueText: 'text-[var(--danger-text)]' },
+    red: { iconBg: 'border-[var(--danger-border)] bg-[var(--danger-soft)] text-[var(--danger-text)]', valueText: 'text-[var(--danger-text)]' },
+    gray: { iconBg: 'border-[var(--border)] bg-[var(--surface-2)] text-[var(--text-primary)]', valueText: 'text-[var(--text-primary)]' },
 }
 
 export function CompactMetrics({ items, className }: { items: MetricItem[]; className?: string }) {
@@ -37,7 +37,7 @@ export function CompactMetrics({ items, className }: { items: MetricItem[]; clas
                             <p className={cn('text-[18px] font-bold leading-none tracking-tight', metric.money && 'text-[14px]', tone.valueText)} title={metric.money ? `LKR ${metric.value.toLocaleString()}` : undefined}>
                                 {metric.money ? `LKR ${metric.value.toLocaleString()}` : metric.value}
                             </p>
-                            <p className="mt-1 truncate text-[11px] font-medium text-[#7B8BA4]">{metric.label}</p>
+                            <p className="mt-1 truncate text-[11px] font-medium text-[var(--text-faint)]">{metric.label}</p>
                         </div>
                     </div>
                 )

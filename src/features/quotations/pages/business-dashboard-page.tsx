@@ -86,12 +86,12 @@ function KpiCard({ label, value, icon, accent, delta, to }: KpiProps) {
         }
       } : undefined}
       className={`rounded-2xl border border-[var(--border)] bg-white p-5 shadow-sm transition-all hover:shadow-md ${
-        clickable ? 'cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-700/40 hover:border-[#BCC4D1]' : ''
+        clickable ? 'cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-700/40 hover:border-[var(--border)]' : ''
       }`}
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="text-[12px] font-semibold uppercase tracking-wide text-[#767676]">{label}</p>
+          <p className="text-[12px] font-semibold uppercase tracking-wide text-[var(--text-muted)]">{label}</p>
           <p className="mt-2 text-[27px] font-bold text-[var(--text-primary)] leading-none truncate">{value}</p>
         </div>
         <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${accent}`}>
@@ -102,12 +102,12 @@ function KpiCard({ label, value, icon, accent, delta, to }: KpiProps) {
         <div className="mt-3 flex items-center gap-1.5">
           <span
             className={`inline-flex items-center gap-0.5 text-[12px] font-semibold ${
-              delta.good ? 'text-[#15803D]' : 'text-[#C1121F]'
+              delta.good ? 'text-[var(--success-text)]' : 'text-[var(--danger-text)]'
             }`}
           >
             {delta.text}
           </span>
-          <span className="text-[12px] text-[#7B8BA4]">vs prev</span>
+          <span className="text-[12px] text-[var(--text-faint)]">vs prev</span>
         </div>
       )}
     </div>
@@ -118,7 +118,7 @@ function ChartTooltip({ active, payload, label, money = true }: any) {
   if (!active || !payload?.length) return null
   return (
     <div className="rounded-lg border border-[var(--border)] bg-white px-3 py-2 shadow-md">
-      <p className="text-[12px] font-medium text-[#767676]">{label}</p>
+      <p className="text-[12px] font-medium text-[var(--text-muted)]">{label}</p>
       {payload.map((p: any, i: number) => (
         <p key={i} className="text-[13px] font-semibold text-[var(--text-primary)]">
           {p.name}: {money ? fmtMoney(p.value) : fmtNum(p.value)}
@@ -185,7 +185,7 @@ export default function BusinessDashboardPage() {
       label: 'Revenue',
       value: fmtMoney(current.revenue),
       icon: <Banknote size={20} />,
-      accent: 'bg-[#F9E7E9] text-[#C1121F]',
+      accent: 'bg-[var(--danger-soft)] text-[var(--danger-text)]',
       cur: current.revenue,
       prev: previous.revenue,
       better: true,
@@ -195,7 +195,7 @@ export default function BusinessDashboardPage() {
       label: 'Collected',
       value: fmtMoney(current.collected),
       icon: <Wallet size={20} />,
-      accent: 'bg-[#E8F2EC] text-[#15803D]',
+      accent: 'bg-[var(--success-soft)] text-[var(--success-text)]',
       cur: current.collected,
       prev: previous.collected,
       better: true,
@@ -205,7 +205,7 @@ export default function BusinessDashboardPage() {
       label: 'Outstanding',
       value: fmtMoney(current.outstanding),
       icon: <Receipt size={20} />,
-      accent: 'bg-[#F9E7E9] text-[#CC3D47]',
+      accent: 'bg-[var(--danger-soft)] text-[var(--danger-text)]',
       cur: current.outstanding,
       prev: previous.outstanding,
       better: false,
@@ -215,7 +215,7 @@ export default function BusinessDashboardPage() {
       label: 'Collection Rate',
       value: `${current.collectionRate.toFixed(1)}%`,
       icon: <Percent size={20} />,
-      accent: 'bg-[#E7EAEE] text-[#0F2C59]',
+      accent: 'bg-[var(--surface-2)] text-[var(--brand-text)]',
       cur: current.collectionRate,
       prev: previous.collectionRate,
       better: true,
@@ -237,7 +237,7 @@ export default function BusinessDashboardPage() {
       label: 'Gate Passes',
       value: fmtNum(current.gatePasses),
       icon: <Package size={20} />,
-      accent: 'bg-[#E7EAEE] text-[#0F2C59]',
+      accent: 'bg-[var(--surface-2)] text-[var(--brand-text)]',
       cur: current.gatePasses,
       prev: previous.gatePasses,
       better: true,
@@ -247,7 +247,7 @@ export default function BusinessDashboardPage() {
       label: 'Items Received',
       value: fmtNum(current.itemsReceived),
       icon: <Boxes size={20} />,
-      accent: 'bg-[#E8F2EC] text-[#15803D]',
+      accent: 'bg-[var(--success-soft)] text-[var(--success-text)]',
       cur: current.itemsReceived,
       prev: previous.itemsReceived,
       better: true,
@@ -257,7 +257,7 @@ export default function BusinessDashboardPage() {
       label: 'Items Delivered',
       value: fmtNum(current.itemsDelivered),
       icon: <Truck size={20} />,
-      accent: 'bg-[#E8F2EC] text-[#15803D]',
+      accent: 'bg-[var(--success-soft)] text-[var(--success-text)]',
       cur: current.itemsDelivered,
       prev: previous.itemsDelivered,
       better: true,
@@ -267,7 +267,7 @@ export default function BusinessDashboardPage() {
       label: 'Pending Items',
       value: fmtNum(current.itemsPending),
       icon: <AlertTriangle size={20} />,
-      accent: 'bg-[#F9E7E9] text-[#C1121F]',
+      accent: 'bg-[var(--danger-soft)] text-[var(--danger-text)]',
       cur: current.itemsPending,
       prev: previous.itemsPending,
       better: false,
@@ -276,9 +276,9 @@ export default function BusinessDashboardPage() {
   ]
 
   const pipeline = [
-    { name: 'Draft', value: current.quotationsDraft, color: '#7B8BA4' },
-    { name: 'Sent', value: current.quotationsSent, color: '#CC3D47' },
-    { name: 'Accepted', value: current.quotationsAccepted, color: '#15803D' },
+    { name: 'Draft', value: current.quotationsDraft, color: 'var(--text-faint)' },
+    { name: 'Sent', value: current.quotationsSent, color: 'var(--danger-text)' },
+    { name: 'Accepted', value: current.quotationsAccepted, color: 'var(--success-text)' },
   ]
 
   return (
@@ -288,12 +288,12 @@ export default function BusinessDashboardPage() {
         <div>
           <div className="inline-flex items-center gap-2 mb-1.5">
             <div className="h-2 w-2 rounded-full bg-blue-700" />
-            <p className="text-[11px] sm:text-[12px] font-semibold uppercase tracking-wide text-[#767676]">
+            <p className="text-[11px] sm:text-[12px] font-semibold uppercase tracking-wide text-[var(--text-muted)]">
               Deep Analytics & Insights
             </p>
           </div>
           <h1 className="text-dashboard-title">Business Intelligence</h1>
-          <p className="text-[13px] text-[#7B8BA4] mt-0.5">
+          <p className="text-[13px] text-[var(--text-faint)] mt-0.5">
             Financial, operational and client performance for the selected period
           </p>
           <SyncStatusBar queryKey={['dashboard']} label="Dashboard" className="mt-2" />
@@ -307,7 +307,7 @@ export default function BusinessDashboardPage() {
               className={`px-3 py-1.5 text-[13px] font-medium rounded-lg transition-all cursor-pointer ${
                 period === p.key
                   ? 'bg-white text-[var(--text-primary)] shadow-sm'
-                  : 'text-[#767676] hover:text-[#0A1D3A]'
+                  : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'
               }`}
             >
               {p.label}
@@ -324,10 +324,10 @@ export default function BusinessDashboardPage() {
               key={a.id}
               className={`flex items-start gap-3 rounded-xl border p-3.5 ${
                 a.severity === 'high'
-                  ? 'bg-[#F9E7E9] border-[#EEBDC0] text-[#7D0C14]'
+                  ? 'bg-[var(--danger-soft)] border-[var(--danger-border)] text-[var(--danger-text)]'
                   : a.severity === 'medium'
-                    ? 'bg-[#F9E7E9] border-[#DD7D84] text-[#7D0C14]'
-                    : 'bg-[#E7EAEE] border-[#BCC4D1] text-[#0A1D3A]'
+                    ? 'bg-[var(--danger-soft)] border-[var(--danger-border)] text-[var(--danger-text)]'
+                    : 'bg-[var(--surface-2)] border-[var(--border)] text-[var(--text-primary)]'
               }`}
             >
               <AlertTriangle size={18} className="mt-0.5 shrink-0" />
@@ -385,18 +385,18 @@ export default function BusinessDashboardPage() {
                 <AreaChart data={current.revenueSeries} margin={{ left: 4, right: 8, top: 8 }}>
                   <defs>
                     <linearGradient id="rev" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#C1121F" stopOpacity={0.25} />
-                      <stop offset="100%" stopColor="#C1121F" stopOpacity={0} />
+                      <stop offset="0%" stopColor="var(--danger-text)" stopOpacity={0.25} />
+                      <stop offset="100%" stopColor="var(--danger-text)" stopOpacity={0} />
                     </linearGradient>
                     <linearGradient id="col" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#15803D" stopOpacity={0.25} />
-                      <stop offset="100%" stopColor="#15803D" stopOpacity={0} />
+                      <stop offset="0%" stopColor="var(--success-text)" stopOpacity={0.25} />
+                      <stop offset="100%" stopColor="var(--success-text)" stopOpacity={0} />
                     </linearGradient>
                   </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#E7EAEE" vertical={false} />
-                  <XAxis dataKey="label" stroke="#7B8BA4" fontSize={12} tickLine={false} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--surface-2)" vertical={false} />
+                  <XAxis dataKey="label" stroke="var(--text-faint)" fontSize={12} tickLine={false} />
                   <YAxis
-                    stroke="#7B8BA4"
+                    stroke="var(--text-faint)"
                     fontSize={12}
                     tickLine={false}
                     tickFormatter={(v: number) => `${Math.round(v / 1000)}k`}
@@ -407,7 +407,7 @@ export default function BusinessDashboardPage() {
                     type="monotone"
                     dataKey="revenue"
                     name="Revenue"
-                    stroke="#C1121F"
+                    stroke="var(--danger-text)"
                     strokeWidth={2}
                     fill="url(#rev)"
                   />
@@ -415,14 +415,14 @@ export default function BusinessDashboardPage() {
                     type="monotone"
                     dataKey="collected"
                     name="Collected"
-                    stroke="#15803D"
+                    stroke="var(--success-text)"
                     strokeWidth={2}
                     fill="url(#col)"
                   />
                 </AreaChart>
               </ResponsiveContainer>
             ) : (
-              <div className="flex h-[280px] items-center justify-center text-[13px] text-[#7B8BA4]">
+              <div className="flex h-[280px] items-center justify-center text-[13px] text-[var(--text-faint)]">
                 No revenue data for this period
               </div>
             )}
@@ -453,13 +453,13 @@ export default function BusinessDashboardPage() {
                 </PieChart>
               </ResponsiveContainer>
             ) : (
-              <div className="flex h-[280px] items-center justify-center text-[13px] text-[#7B8BA4]">
+              <div className="flex h-[280px] items-center justify-center text-[13px] text-[var(--text-faint)]">
                 No billing data
               </div>
             )}
             <div className="mt-2 flex flex-wrap justify-center gap-3">
               {current.paymentStatus.map((s) => (
-                <div key={s.name} className="flex items-center gap-1.5 text-[12px] text-[#767676]">
+                <div key={s.name} className="flex items-center gap-1.5 text-[12px] text-[var(--text-muted)]">
                   <span className="h-2.5 w-2.5 rounded-full" style={{ background: s.color }} />
                   {s.name} · {fmtMoney(s.value)}
                 </div>
@@ -483,26 +483,26 @@ export default function BusinessDashboardPage() {
                   layout="vertical"
                   margin={{ left: 8, right: 16 }}
                 >
-                  <CartesianGrid strokeDasharray="3 3" stroke="#E7EAEE" horizontal={false} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--surface-2)" horizontal={false} />
                   <XAxis
                     type="number"
-                    stroke="#7B8BA4"
+                    stroke="var(--text-faint)"
                     fontSize={12}
                     tickFormatter={(v: number) => `${Math.round(v / 1000)}k`}
                   />
                   <YAxis
                     type="category"
                     dataKey="client_name"
-                    stroke="#7B8BA4"
+                    stroke="var(--text-faint)"
                     fontSize={11}
                     width={110}
                   />
                   <Tooltip content={<ChartTooltip />} />
-                  <Bar dataKey="revenue" name="Revenue" fill="#C1121F" radius={[0, 4, 4, 0]} />
+                  <Bar dataKey="revenue" name="Revenue" fill="var(--danger-text)" radius={[0, 4, 4, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             ) : (
-              <div className="flex h-[260px] items-center justify-center text-[13px] text-[#7B8BA4]">
+              <div className="flex h-[260px] items-center justify-center text-[13px] text-[var(--text-faint)]">
                 No client data for this period
               </div>
             )}
@@ -518,13 +518,13 @@ export default function BusinessDashboardPage() {
               {pipeline.map((p) => (
                 <div key={p.name} className="rounded-xl border border-[var(--border)] p-3 text-center">
                   <p className="text-[22px] font-bold text-[var(--text-primary)]">{p.value}</p>
-                  <p className="text-[12px] text-[#767676]">{p.name}</p>
+                  <p className="text-[12px] text-[var(--text-muted)]">{p.name}</p>
                 </div>
               ))}
             </div>
             <ResponsiveContainer width="100%" height={120}>
               <BarChart data={pipeline} margin={{ left: 8, right: 8, top: 8 }}>
-                <XAxis dataKey="name" stroke="#7B8BA4" fontSize={12} tickLine={false} axisLine={false} />
+                <XAxis dataKey="name" stroke="var(--text-faint)" fontSize={12} tickLine={false} axisLine={false} />
                 <Tooltip cursor={false} content={<ChartTooltip money={false} />} />
                 <Bar dataKey="value" radius={[4, 4, 0, 0]}>
                   {pipeline.map((p) => (
@@ -534,8 +534,8 @@ export default function BusinessDashboardPage() {
               </BarChart>
             </ResponsiveContainer>
             <div className="flex items-center justify-between rounded-xl bg-[var(--surface-2)] px-4 py-3">
-              <div className="flex items-center gap-2 text-[13px] text-[#767676]">
-                <FileText size={16} className="text-[#0F2C59]" />
+              <div className="flex items-center gap-2 text-[13px] text-[var(--text-muted)]">
+                <FileText size={16} className="text-[var(--brand-text)]" />
                 Accepted value
               </div>
               <span className="text-[15px] font-bold text-[var(--text-primary)]">
@@ -553,7 +553,7 @@ export default function BusinessDashboardPage() {
             <CardTitle>Top Clients</CardTitle>
             <button
               onClick={() => navigate('/bills')}
-              className="inline-flex items-center gap-1 text-[12px] font-medium text-[#C1121F] hover:text-[#C1121F]"
+              className="inline-flex items-center gap-1 text-[12px] font-medium text-[var(--danger-text)] hover:text-[var(--danger-text)]"
             >
               View all <ArrowUpRight size={14} />
             </button>
@@ -569,12 +569,12 @@ export default function BusinessDashboardPage() {
                         <p className="truncate text-[13px] font-semibold text-[var(--text-primary)]">
                           {c.client_name}
                         </p>
-                        <p className="text-[11px] text-[#7B8BA4]">
+                        <p className="text-[11px] text-[var(--text-faint)]">
                           {c.bills} bill{c.bills !== 1 ? 's' : ''} · {fmtMoney(c.outstanding)} outstanding
                         </p>
-                        <div className="mt-1.5 h-1.5 w-full max-w-[200px] rounded-full bg-[#E7EAEE]">
+                        <div className="mt-1.5 h-1.5 w-full max-w-[200px] rounded-full bg-[var(--surface-2)]">
                           <div
-                            className="h-1.5 rounded-full bg-[#C1121F]"
+                            className="h-1.5 rounded-full bg-[var(--danger)]"
                             style={{ width: `${Math.min(100, pct)}%` }}
                           />
                         </div>
@@ -587,7 +587,7 @@ export default function BusinessDashboardPage() {
                 })}
               </div>
             ) : (
-              <p className="py-8 text-center text-[13px] text-[#7B8BA4]">No client data</p>
+              <p className="py-8 text-center text-[13px] text-[var(--text-faint)]">No client data</p>
             )}
           </CardContent>
         </Card>
@@ -597,7 +597,7 @@ export default function BusinessDashboardPage() {
             <CardTitle>Items Pending Delivery</CardTitle>
             <button
               onClick={() => navigate('/gate-passes')}
-              className="inline-flex items-center gap-1 text-[12px] font-medium text-[#C1121F] hover:text-[#C1121F]"
+              className="inline-flex items-center gap-1 text-[12px] font-medium text-[var(--danger-text)] hover:text-[var(--danger-text)]"
             >
               Gate passes <ArrowUpRight size={14} />
             </button>
@@ -611,16 +611,16 @@ export default function BusinessDashboardPage() {
                       <p className="truncate text-[13px] font-semibold text-[var(--text-primary)]">
                         {g.client_name}
                       </p>
-                      <p className="text-[11px] text-[#7B8BA4] font-mono">#{g.gate_pass_number}</p>
+                      <p className="text-[11px] text-[var(--text-faint)] font-mono">#{g.gate_pass_number}</p>
                     </div>
-                    <span className="shrink-0 inline-flex items-center gap-1 rounded-full bg-[#F9E7E9] px-2.5 py-1 text-[12px] font-semibold text-[#C1121F] border border-[#EEBDC0]">
+                    <span className="shrink-0 inline-flex items-center gap-1 rounded-full bg-[var(--danger-soft)] px-2.5 py-1 text-[12px] font-semibold text-[var(--danger-text)] border border-[var(--danger-border)]">
                       <Boxes size={13} /> {fmtNum(g.pending)} pending
                     </span>
                   </div>
                 ))}
               </div>
             ) : (
-              <p className="py-8 text-center text-[13px] text-[#15803D]">
+              <p className="py-8 text-center text-[13px] text-[var(--success-text)]">
                 All received items have been delivered
               </p>
             )}
@@ -631,21 +631,21 @@ export default function BusinessDashboardPage() {
       {/* Clients summary footer */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <div className="rounded-2xl border border-[var(--border)] bg-white p-5 shadow-sm">
-          <div className="flex items-center gap-2 text-[#767676]">
+          <div className="flex items-center gap-2 text-[var(--text-muted)]">
             <Users size={16} />
             <p className="text-[12px] font-semibold uppercase tracking-wide">Active Clients</p>
           </div>
           <p className="mt-2 text-[24px] font-bold text-[var(--text-primary)]">{fmtNum(current.activeClients)}</p>
         </div>
         <div className="rounded-2xl border border-[var(--border)] bg-white p-5 shadow-sm">
-          <div className="flex items-center gap-2 text-[#767676]">
+          <div className="flex items-center gap-2 text-[var(--text-muted)]">
             <UserPlus size={16} />
             <p className="text-[12px] font-semibold uppercase tracking-wide">New Clients</p>
           </div>
           <p className="mt-2 text-[24px] font-bold text-[var(--text-primary)]">{fmtNum(current.newClients)}</p>
         </div>
         <div className="rounded-2xl border border-[var(--border)] bg-white p-5 shadow-sm">
-          <div className="flex items-center gap-2 text-[#767676]">
+          <div className="flex items-center gap-2 text-[var(--text-muted)]">
             <TrendingUp size={16} />
             <p className="text-[12px] font-semibold uppercase tracking-wide">Avg Bill Value</p>
           </div>

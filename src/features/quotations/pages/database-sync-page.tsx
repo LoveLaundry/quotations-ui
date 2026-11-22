@@ -40,7 +40,7 @@ interface SyncReport {
 function StatusDot({ online }: { online: boolean }) {
   return (
     <span
-      className={`inline-block h-2.5 w-2.5 rounded-full ${online ? 'bg-[#15803D]' : 'bg-[#C1121F]'}`}
+      className={`inline-block h-2.5 w-2.5 rounded-full ${online ? 'bg-[var(--success)]' : 'bg-[var(--danger)]'}`}
     />
   )
 }
@@ -106,12 +106,12 @@ export default function DatabaseSyncPage() {
       <div>
         <Breadcrumb items={[{ label: 'Dashboard', href: '/' }, { label: 'Database Sync' }]} />
         <div className="flex items-center gap-3 mt-1">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#E7EAEE] border border-[#BCC4D1]">
-            <Database className="h-4 w-4 text-[#0F2C59]" />
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[var(--surface-2)] border border-[var(--border)]">
+            <Database className="h-4 w-4 text-[var(--brand-text)]" />
           </div>
           <div>
             <h1 className="text-dashboard-title">Database Synchronization</h1>
-            <p className="text-[13px] mt-0.5 text-[#7B8BA4]">
+            <p className="text-[13px] mt-0.5 text-[var(--text-faint)]">
               Monitor and manage Main, Secondary, and Local database sync
             </p>
           </div>
@@ -125,16 +125,16 @@ export default function DatabaseSyncPage() {
           ))}
         </div>
       ) : isError ? (
-        <div className="rounded-lg border border-[#EEBDC0] bg-[#F9E7E9] p-4 flex items-start gap-3">
-          <TriangleAlert className="h-5 w-5 text-[#C1121F] mt-0.5 shrink-0" />
+        <div className="rounded-lg border border-[var(--danger-border)] bg-[var(--danger-soft)] p-4 flex items-start gap-3">
+          <TriangleAlert className="h-5 w-5 text-[var(--danger-text)] mt-0.5 shrink-0" />
           <div>
-            <p className="text-[13px] font-semibold text-[#C1121F]">Failed to load database status</p>
-            <p className="text-[12px] text-[#C1121F] mt-0.5">
+            <p className="text-[13px] font-semibold text-[var(--danger-text)]">Failed to load database status</p>
+            <p className="text-[12px] text-[var(--danger-text)] mt-0.5">
               {(error as Error)?.message || 'Could not reach the bill service. Check that the service is running and that JWT_SECRET matches between user-service and bill-service on Vercel.'}
             </p>
             <button
               onClick={() => refetch()}
-              className="mt-2 text-[12px] font-medium text-[#C1121F] underline underline-offset-2"
+              className="mt-2 text-[12px] font-medium text-[var(--danger-text)] underline underline-offset-2"
             >
               Retry
             </button>
@@ -147,12 +147,12 @@ export default function DatabaseSyncPage() {
             <CardContent className="pt-5">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Database className="h-4 w-4 text-[#0F2C59]" />
+                  <Database className="h-4 w-4 text-[var(--brand-text)]" />
                   <span className="text-[13px] font-semibold text-[var(--text-primary)]">Main Database</span>
                 </div>
                 <StatusDot online={status?.main?.status === 'ONLINE'} />
               </div>
-              <p className="mt-2 text-[12px] text-[#7B8BA4]">
+              <p className="mt-2 text-[12px] text-[var(--text-faint)]">
                 {status?.main?.status === 'ONLINE' ? '● Online' : '● Offline'}
               </p>
             </CardContent>
@@ -163,12 +163,12 @@ export default function DatabaseSyncPage() {
             <CardContent className="pt-5">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <RefreshCw className="h-4 w-4 text-[#15803D]" />
+                  <RefreshCw className="h-4 w-4 text-[var(--success-text)]" />
                   <span className="text-[13px] font-semibold text-[var(--text-primary)]">Secondary Database</span>
                 </div>
                 <StatusDot online={status?.secondary?.status === 'ONLINE'} />
               </div>
-              <p className="mt-2 text-[12px] text-[#7B8BA4]">
+              <p className="mt-2 text-[12px] text-[var(--text-faint)]">
                 {status?.secondary?.status === 'ONLINE' ? '● Online' : '● Offline'}
               </p>
               <p className="mt-1 text-[12px] font-medium text-[var(--text-primary)]">
@@ -192,15 +192,15 @@ export default function DatabaseSyncPage() {
             <CardContent className="pt-5">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Clock className="h-4 w-4 text-[#CC3D47]" />
+                  <Clock className="h-4 w-4 text-[var(--danger-text)]" />
                   <span className="text-[13px] font-semibold text-[var(--text-primary)]">Local Database</span>
                 </div>
                 <StatusDot online={status?.local?.status === 'ONLINE'} />
               </div>
-              <p className="mt-2 text-[12px] text-[#7B8BA4]">
+              <p className="mt-2 text-[12px] text-[var(--text-faint)]">
                 {status?.local?.status === 'ONLINE' ? '● Online' : '● Offline'}
               </p>
-              <p className="mt-1 text-[12px] text-[#7B8BA4]">
+              <p className="mt-1 text-[12px] text-[var(--text-faint)]">
                 Last synced: {formatDate(status?.local?.last_sync)}
               </p>
               <Button
@@ -235,14 +235,14 @@ export default function DatabaseSyncPage() {
           <CardContent className="pt-4">
             <div className="flex items-center gap-2 mb-4">
               {syncLocal.data.status === 'SUCCESS' ? (
-                <Check className="h-4 w-4 text-[#15803D]" />
+                <Check className="h-4 w-4 text-[var(--success-text)]" />
               ) : (
-                <TriangleAlert className="h-4 w-4 text-[#CC3D47]" />
+                <TriangleAlert className="h-4 w-4 text-[var(--danger-text)]" />
               )}
               <span className="text-[13px] font-semibold text-[var(--text-primary)]">
                 {syncLocal.data.status === 'SUCCESS' ? '✓ Local database synchronized' : '⚠ Synchronization completed with errors'}
               </span>
-              <span className="text-[12px] text-[#7B8BA4]">
+              <span className="text-[12px] text-[var(--text-faint)]">
                 ({syncLocal.data.duration_seconds}s)
               </span>
             </div>
@@ -255,8 +255,8 @@ export default function DatabaseSyncPage() {
                 { label: 'Unchanged', value: syncLocal.data.stats.records_unchanged },
                 { label: 'Errors', value: syncLocal.data.stats.errors },
               ].map((item) => (
-                <div key={item.label} className="rounded-lg border border-[var(--border)] bg-[#FAFAFA] p-3">
-                  <p className="text-[11px] text-[#7B8BA4]">{item.label}</p>
+                <div key={item.label} className="rounded-lg border border-[var(--border)] bg-[var(--surface-2)] p-3">
+                  <p className="text-[11px] text-[var(--text-faint)]">{item.label}</p>
                   <p className="text-[16px] font-bold text-[var(--text-primary)]">{item.value}</p>
                 </div>
               ))}

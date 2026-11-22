@@ -11,7 +11,7 @@ import { toast } from 'sonner'
 import * as XLSX from 'xlsx'
 import { useAuth } from '../../../context/AuthContext'
 
-const COLORS = ['#C1121F', '#3A5277', '#3F9760', '#CC3D47', '#0F2C59', '#CC3D47', '#15803D', '#CC3D47']
+const COLORS = ['var(--danger-text)', 'var(--brand-text)', 'var(--success-text)', 'var(--danger-text)', 'var(--brand-text)', 'var(--danger-text)', 'var(--success-text)', 'var(--danger-text)']
 const LIST_LIMIT = 500
 
 function PayrollBreakdown({ rows = [] }: { rows?: any[] }) {
@@ -295,8 +295,8 @@ export default function ManagementReports() {
   } : null
   const receivingIncomeByDay = dailyIncomeSeries(masterReportData)
   const expenseMix = [
-    { name: 'Salary', value: Number(masterReportData?.salary_expense_total || 0), color: '#C1121F' },
-    { name: 'Other expenses', value: Number(masterReportData?.other_expense_total || 0), color: '#CC3D47' },
+    { name: 'Salary', value: Number(masterReportData?.salary_expense_total || 0), color: 'var(--danger-text)' },
+    { name: 'Other expenses', value: Number(masterReportData?.other_expense_total || 0), color: 'var(--danger-text)' },
   ].filter(row => row.value > 0)
   const reportHotels = operationsData?.hotel_options || []
   const selectedHotelData = operationsData?.hotel_summary?.find((hotel: any) => normalizeClientName(hotel.client_name) === normalizeClientName(selectedHotel))
@@ -520,7 +520,7 @@ export default function ManagementReports() {
                   <XAxis type="number" />
                   <YAxis type="category" dataKey="name" width={120} />
                   <Tooltip formatter={(v: number) => `LKR ${v.toLocaleString()}`} />
-                  <Bar dataKey="value" fill="#3F9760" />
+                  <Bar dataKey="value" fill="var(--success-text)" />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -733,7 +733,7 @@ export default function ManagementReports() {
                       <XAxis dataKey="date" minTickGap={24} tick={{ fontSize: 11 }} />
                       <YAxis tickFormatter={value => Number(value).toLocaleString()} tick={{ fontSize: 11 }} width={72} />
                       <Tooltip formatter={(value: number) => [fmtMoney(value), 'Receiving income']} />
-                      <Bar dataKey="income" name="Receiving income" fill="#15803D" radius={[3, 3, 0, 0]} maxBarSize={28} />
+                      <Bar dataKey="income" name="Receiving income" fill="var(--success-text)" radius={[3, 3, 0, 0]} maxBarSize={28} />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>

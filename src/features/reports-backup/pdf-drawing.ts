@@ -1,18 +1,20 @@
 import type { DailyReportSnapshot, MonthlyReportSnapshot } from './types'
 
-// ── Brand palette ─────────────────────────────────────────────────────────────
-export const RED = '#CC3D47'
-export const DARK = '#0A1D3A'
+// ── Print palette ─────────────────────────────────────────────────────────────
+// pdfmake renders in JS and cannot resolve CSS variables, so these are literal
+// values. Bases are the five approved colours; greys are neutral tints of black.
+export const RED = '#FF0000'
+export const DARK = '#000000'
 export const GRAY = '#767676'
-export const LIGHT = '#E7EAEE'
-export const BORDER = '#BCC4D1'
-export const GREEN = '#15803D'
-export const AMBER = '#7D0C14'
-export const BLUE = '#0F2C59'
-export const INDIGO = '#3A5277'
-export const TEAL = '#15803D'
-export const SKY = '#0A1D3A'
-export const FADED = '#BCC4D1'
+export const LIGHT = '#E6E6E6'
+export const BORDER = '#BFBFBF'
+export const GREEN = '#008000'
+export const AMBER = '#FF0000'
+export const BLUE = '#00008B'
+export const INDIGO = '#00008B'
+export const TEAL = '#008000'
+export const SKY = '#00008B'
+export const FADED = '#BFBFBF'
 
 const TONES: Record<string, string> = {
   red: RED,
@@ -267,7 +269,7 @@ export function groupedBars(opts: BarChartOpts): unknown[] {
   const impact = 4
   for (let g = 1; g < impact; g++) {
     const y = bottom - (plotHeight * g) / impact
-    draw.push({ type: 'line', x1: PAD_X, y1: y, x2: PAD_X + plotW, y2: y, lineColor: '#E7EAEE', lineWidth: 0.5 })
+    draw.push({ type: 'line', x1: PAD_X, y1: y, x2: PAD_X + plotW, y2: y, lineColor: '#E6E6E6', lineWidth: 0.5 })
   }
 
   const groupW = plotW / n
@@ -343,7 +345,7 @@ export function segmentedBar(segments: Segment[], labelBefore?: string) {
     ...segments.map((s, i) => ({
       stack: [
         { text: count(s.value), bold: true, fontSize: 8, color: '#FFFFFF', alignment: 'center' as const },
-        { text: `${Math.round((widths[i] / Math.max(totalW, 1)) * 10000) / 100}%`, fontSize: 6.5, color: 'rgba(255, 255, 255, 0.9)', alignment: 'center' as const },
+        { text: `${Math.round((widths[i] / Math.max(totalW, 1)) * 10000) / 100}%`, fontSize: 6.5, color: '#FFFFFF', alignment: 'center' as const },
       ],
       fillColor: s.color,
       margin: [4, 4, 4, 4],
@@ -373,7 +375,7 @@ export function segmentedBar(segments: Segment[], labelBefore?: string) {
       columns: segments.map(s => ({
         text: `${s.name} ${count(s.value)} · ${pct(s.value, total)}`,
         fontSize: 6.8,
-        color: tone(colorOf(s.color)),
+        color: s.color,
         alignment: 'center' as const,
         margin: [0, 1, 0, 0],
       })),
@@ -382,22 +384,6 @@ export function segmentedBar(segments: Segment[], labelBefore?: string) {
   ]
 }
 
-function colorOf(color: string): string {
-  // Several old hexes now share a hue, so each allowed colour maps to one tone.
-  const map: Record<string, string> = {
-    '#CC3D47': 'red',
-    '#7D0C14': 'amber',
-    '#15803D': 'green',
-    '#0F2C59': 'blue',
-    '#3A5277': 'indigo',
-    '#0A1D3A': 'dark',
-    '#767676': 'gray',
-    '#BCC4D1': 'faded',
-    '#E7EAEE': 'light',
-    '#FFFFFF': 'white',
-  }
-  return map[color] ?? color
-}
 
 // ── Horizontal breakdown bars ─────────────────────────────────────────────────
 export interface BreakdownItem {

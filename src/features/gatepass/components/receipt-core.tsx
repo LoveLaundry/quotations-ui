@@ -13,8 +13,8 @@ import type {
    ───────────────────────────────────────────────────────────── */
 
 export const RECEIPT_PRINT_STYLE = `
-  .gp-cell-input:focus { border-bottom-color: #C1121F !important; }
-  .gp-cell-input::placeholder { color: #7B8BA4; }
+  .gp-cell-input:focus { border-bottom-color: var(--danger-deep) !important; }
+  .gp-cell-input::placeholder { color: var(--brand-text); }
   @media print {
     @page { size: A4; margin: 7mm; }
     @page :first { size: A4; margin: 7mm; }
@@ -68,7 +68,7 @@ export function EditableCell({ value, onChange, width, align = 'center', placeho
         fontSize,
         lineHeight: '1.2',
         fontWeight: bold ? 700 : 400,
-        color: '#0A1D3A',
+        color: 'var(--text-primary)',
         fontFamily: 'inherit',
         minWidth: 0,
         ...style,
@@ -81,7 +81,7 @@ export function EditableCell({ value, onChange, width, align = 'center', placeho
    full-bleed with an @page margin when printed. */
 export function ReceiptSheet({ children }: { children: ReactNode }) {
   return (
-    <div className="gp-page-bg" style={{ minHeight: '100vh', background: '#BCC4D1', padding: '28px 12px 44px', boxSizing: 'border-box' }}>
+    <div className="gp-page-bg" style={{ minHeight: '100vh', background: 'var(--text-faint)', padding: '28px 12px 44px', boxSizing: 'border-box' }}>
       <div
         className="gp-sheet"
         style={{
@@ -90,10 +90,10 @@ export function ReceiptSheet({ children }: { children: ReactNode }) {
           minHeight: '280mm',
           margin: '0 auto',
           padding: '8mm 7mm',
-          background: '#FFFFFF',
-          boxShadow: '0 2px 18px rgba(10, 29, 58, 0.18)',
+          background: 'var(--ll-white)',
+          boxShadow: '0 2px 18px rgba(0, 0, 139, 0.18)',
           boxSizing: 'border-box',
-          color: '#0A1D3A',
+          color: 'var(--text-primary)',
         }}
       >
         {children}
@@ -118,7 +118,7 @@ export function ReceiptHeader({ title, subtitle, receiptNo, onReceiptNo, date, o
         display: 'flex',
         alignItems: 'flex-start',
         gap: 12,
-        borderBottom: '2px solid #C1121F',
+        borderBottom: '2px solid #FF0000',
         paddingBottom: 8,
         marginBottom: 12,
       }}
@@ -129,7 +129,7 @@ export function ReceiptHeader({ title, subtitle, receiptNo, onReceiptNo, date, o
       </div>
       <div style={{ flex: 1, textAlign: 'center', minWidth: 0 }}>
         <div style={{ fontSize: 17, fontWeight: 800, letterSpacing: 1, lineHeight: 1.2 }}>{title}</div>
-        <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 0.6, color: '#C1121F', marginTop: 2 }}>{subtitle}</div>
+        <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 0.6, color: 'var(--danger-text)', marginTop: 2 }}>{subtitle}</div>
       </div>
       <div style={{ whiteSpace: 'nowrap', paddingTop: 2 }}>
         <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: 0.4 }}>DATE: </span>
@@ -201,7 +201,7 @@ export function SectionTable({ section, sectionIndex, cells, setCell, nameWidth 
                   letterSpacing: 0.8,
                   textTransform: 'uppercase',
                   textAlign: 'left',
-                  background: '#FFFFFF',
+                  background: 'var(--ll-white)',
                 }}
               >
                 {section.heading}
@@ -217,7 +217,7 @@ export function SectionTable({ section, sectionIndex, cells, setCell, nameWidth 
                 fontWeight: 800,
                 letterSpacing: 0.4,
                 textAlign: 'center',
-                background: '#FFFFFF',
+                background: 'var(--ll-white)',
               }}
             >
               {columns[0].label}
@@ -232,7 +232,7 @@ export function SectionTable({ section, sectionIndex, cells, setCell, nameWidth 
                   fontWeight: 800,
                   letterSpacing: 0.4,
                   textAlign: 'center',
-                  background: '#FFFFFF',
+                  background: 'var(--ll-white)',
                 }}
               >
                 {c.label}
@@ -346,7 +346,7 @@ export const thStyle: CSSProperties = {
   fontWeight: 800,
   letterSpacing: 0.4,
   textAlign: 'center' as const,
-  background: '#FFFFFF',
+  background: 'var(--ll-white)',
 }
 
 export const tdStyle: CSSProperties = {

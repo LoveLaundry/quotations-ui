@@ -17,11 +17,11 @@ import { toISODateTime } from '../../../lib/time'
 import { Portal } from '../../../components/ui/portal'
 
 const STATUS_STYLE: Record<DispatchStatus, string> = {
-  SCHEDULED: 'bg-[#E7EAEE] text-[#3A5277] border-[#BCC4D1]',
-  ASSIGNED: 'bg-[var(--border)] text-[#0A1D3A] border-[var(--border)]',
-  EN_ROUTE: 'bg-[#F9E7E9] text-[#7D0C14] border-[#EEBDC0]',
-  COMPLETED: 'bg-[#E8F2EC] text-[#0E5328] border-[#BDDBC9]',
-  CANCELLED: 'bg-[#F9E7E9] text-[#7D0C14] border-[#EEBDC0]',
+  SCHEDULED: 'bg-[var(--surface-2)] text-[var(--brand-text)] border-[var(--border)]',
+  ASSIGNED: 'bg-[var(--border)] text-[var(--text-primary)] border-[var(--border)]',
+  EN_ROUTE: 'bg-[var(--danger-soft)] text-[var(--danger-text)] border-[var(--danger-border)]',
+  COMPLETED: 'bg-[var(--success-soft)] text-[var(--success-text)] border-[var(--success-border)]',
+  CANCELLED: 'bg-[var(--danger-soft)] text-[var(--danger-text)] border-[var(--danger-border)]',
 }
 
 const NEXT_STATUS: Partial<Record<DispatchStatus, DispatchStatus>> = {
@@ -63,10 +63,10 @@ export default function DispatchPage() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="flex items-center gap-2 text-[20px] font-bold text-[var(--text-primary)]">
-            <Truck className="h-5 w-5 text-[#C1121F]" />
+            <Truck className="h-5 w-5 text-[var(--danger-text)]" />
             Dispatch &amp; Pickups
           </h1>
-          <p className="text-[13px] text-[#3A5277]">
+          <p className="text-[13px] text-[var(--brand-text)]">
             Schedule customer pickups and deliveries, assign drivers and track each job.
           </p>
         </div>
@@ -87,8 +87,8 @@ export default function DispatchPage() {
             onClick={() => setTypeFilter(t)}
             className={`rounded-full border px-3 py-1.5 text-[12px] font-semibold ${
               typeFilter === t
-                ? 'border-[#C1121F] bg-[#F9E7E9] text-[#C1121F]'
-                : 'border-[#E5E5E5] text-[#0A1D3A]'
+                ? 'border-[var(--danger)] bg-[var(--danger-soft)] text-[var(--danger-text)]'
+                : 'border-[var(--border)] text-[var(--text-primary)]'
             }`}
           >
             {t === '' ? 'All types' : t === 'pickup' ? 'Pickups' : 'Deliveries'}
@@ -101,8 +101,8 @@ export default function DispatchPage() {
               onClick={() => setStatusFilter(s)}
               className={`rounded-full border px-3 py-1.5 text-[12px] font-semibold ${
                 statusFilter === s
-                  ? 'border-[#C1121F] bg-[#F9E7E9] text-[#C1121F]'
-                  : 'border-[#E5E5E5] text-[#0A1D3A]'
+                  ? 'border-[var(--danger)] bg-[var(--danger-soft)] text-[var(--danger-text)]'
+                  : 'border-[var(--border)] text-[var(--text-primary)]'
               }`}
             >
               {s === '' ? 'All statuses' : STATUS_LABEL[s]}
@@ -112,7 +112,7 @@ export default function DispatchPage() {
       </div>
 
       {isLoading ? (
-        <p className="text-[13px] text-[#7B8BA4]">Loading jobs…</p>
+        <p className="text-[13px] text-[var(--text-faint)]">Loading jobs…</p>
       ) : jobs.length === 0 ? (
         <EmptyState
           title="No dispatch jobs"
@@ -186,7 +186,7 @@ function JobCard({
         <div className="flex items-start justify-between gap-2">
           <div>
             <p className="text-[14px] font-semibold text-[var(--text-primary)]">{job.client_name}</p>
-            <span className="text-[11px] font-semibold uppercase tracking-wide text-[#7B8BA4]">
+            <span className="text-[11px] font-semibold uppercase tracking-wide text-[var(--text-faint)]">
               {job.job_type === 'pickup' ? 'Pickup' : 'Delivery'}
             </span>
           </div>
@@ -200,20 +200,20 @@ function JobCard({
         </div>
 
         {job.address && (
-          <p className="flex items-start gap-1.5 text-[12px] text-[#0A1D3A]">
-            <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[#7B8BA4]" />
+          <p className="flex items-start gap-1.5 text-[12px] text-[var(--text-primary)]">
+            <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[var(--text-faint)]" />
             {job.address}
           </p>
         )}
         {job.scheduled_at && (
-          <p className="flex items-center gap-1.5 text-[12px] text-[#0A1D3A]">
-            <CalendarDays className="h-3.5 w-3.5 text-[#7B8BA4]" />
+          <p className="flex items-center gap-1.5 text-[12px] text-[var(--text-primary)]">
+            <CalendarDays className="h-3.5 w-3.5 text-[var(--text-faint)]" />
             {formatDate(job.scheduled_at)}
           </p>
         )}
         {job.contact_name && (
-          <p className="flex items-center gap-1.5 text-[12px] text-[#0A1D3A]">
-            <User className="h-3.5 w-3.5 text-[#7B8BA4]" />
+          <p className="flex items-center gap-1.5 text-[12px] text-[var(--text-primary)]">
+            <User className="h-3.5 w-3.5 text-[var(--text-faint)]" />
             {job.contact_name}
             {job.contact_phone ? ` · ${job.contact_phone}` : ''}
           </p>
@@ -224,7 +224,7 @@ function JobCard({
             value={driver}
             onChange={(e) => setDriver(e.target.value)}
             placeholder="Assign driver"
-            className="flex-1 rounded-lg border border-[#E5E5E5] px-2.5 py-1.5 text-[12px] outline-none focus:border-[#C1121F]"
+            className="flex-1 rounded-lg border border-[var(--border)] px-2.5 py-1.5 text-[12px] outline-none focus:border-[var(--danger)]"
           />
           <Button size="sm" variant="outline" onClick={() => onAssign(driver)}>
             Assign
@@ -245,7 +245,7 @@ function JobCard({
           <Button
             size="sm"
             variant="ghost"
-            className="text-[#7D0C14]"
+            className="text-[var(--danger-text)]"
             onClick={() => setShowDeleteConfirm(true)}
           >
             Delete
@@ -303,9 +303,9 @@ function NewJobModal({
   return (
     <Portal><div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
       <div className="w-full max-w-md rounded-2xl bg-white shadow-xl">
-        <div className="flex items-center justify-between border-b border-[#F2F2F2] px-5 py-4">
+        <div className="flex items-center justify-between border-b border-[var(--border)] px-5 py-4">
           <h3 className="text-[15px] font-semibold text-[var(--text-primary)]">New Dispatch Job</h3>
-          <button onClick={onClose} aria-label="Close" className="rounded-lg p-1.5 hover:bg-[#F5F5F5]">
+          <button onClick={onClose} aria-label="Close" className="rounded-lg p-1.5 hover:bg-[var(--surface-2)]">
             <X className="h-4 w-4" />
           </button>
         </div>
@@ -317,8 +317,8 @@ function NewJobModal({
                 onClick={() => set('job_type', t)}
                 className={`flex-1 rounded-lg border px-3 py-2 text-[12px] font-semibold capitalize ${
                   form.job_type === t
-                    ? 'border-[#C1121F] bg-[#F9E7E9] text-[#C1121F]'
-                    : 'border-[#E5E5E5] text-[#0A1D3A]'
+                    ? 'border-[var(--danger)] bg-[var(--danger-soft)] text-[var(--danger-text)]'
+                    : 'border-[var(--border)] text-[var(--text-primary)]'
                 }`}
               >
                 {t}
@@ -329,14 +329,14 @@ function NewJobModal({
             <input
               value={form.client_name}
               onChange={(e) => set('client_name', e.target.value)}
-              className="w-full rounded-lg border border-[#E5E5E5] px-3 py-2 text-[13px] outline-none focus:border-[#C1121F]"
+              className="w-full rounded-lg border border-[var(--border)] px-3 py-2 text-[13px] outline-none focus:border-[var(--danger)]"
             />
           </Field>
           <Field label="Address">
             <input
               value={form.address}
               onChange={(e) => set('address', e.target.value)}
-              className="w-full rounded-lg border border-[#E5E5E5] px-3 py-2 text-[13px] outline-none focus:border-[#C1121F]"
+              className="w-full rounded-lg border border-[var(--border)] px-3 py-2 text-[13px] outline-none focus:border-[var(--danger)]"
             />
           </Field>
           <div className="grid grid-cols-2 gap-3">
@@ -344,14 +344,14 @@ function NewJobModal({
               <input
                 value={form.contact_name}
                 onChange={(e) => set('contact_name', e.target.value)}
-                className="w-full rounded-lg border border-[#E5E5E5] px-3 py-2 text-[13px] outline-none focus:border-[#C1121F]"
+                className="w-full rounded-lg border border-[var(--border)] px-3 py-2 text-[13px] outline-none focus:border-[var(--danger)]"
               />
             </Field>
             <Field label="Contact phone">
               <input
                 value={form.contact_phone}
                 onChange={(e) => set('contact_phone', e.target.value)}
-                className="w-full rounded-lg border border-[#E5E5E5] px-3 py-2 text-[13px] outline-none focus:border-[#C1121F]"
+                className="w-full rounded-lg border border-[var(--border)] px-3 py-2 text-[13px] outline-none focus:border-[var(--danger)]"
               />
             </Field>
           </div>
@@ -360,14 +360,14 @@ function NewJobModal({
               type="datetime-local"
               value={form.scheduled_at}
               onChange={(e) => set('scheduled_at', e.target.value)}
-              className="w-full rounded-lg border border-[#E5E5E5] px-3 py-2 text-[13px] outline-none focus:border-[#C1121F]"
+              className="w-full rounded-lg border border-[var(--border)] px-3 py-2 text-[13px] outline-none focus:border-[var(--danger)]"
             />
           </Field>
           <Field label="Assign driver">
             <input
               value={form.assigned_to}
               onChange={(e) => set('assigned_to', e.target.value)}
-              className="w-full rounded-lg border border-[#E5E5E5] px-3 py-2 text-[13px] outline-none focus:border-[#C1121F]"
+              className="w-full rounded-lg border border-[var(--border)] px-3 py-2 text-[13px] outline-none focus:border-[var(--danger)]"
             />
           </Field>
           <div className="grid grid-cols-2 gap-3">
@@ -377,7 +377,7 @@ function NewJobModal({
                 step="any"
                 value={form.latitude}
                 onChange={(e) => set('latitude', e.target.value)}
-                className="w-full rounded-lg border border-[#E5E5E5] px-3 py-2 text-[13px] outline-none focus:border-[#C1121F]"
+                className="w-full rounded-lg border border-[var(--border)] px-3 py-2 text-[13px] outline-none focus:border-[var(--danger)]"
               />
             </Field>
             <Field label="Longitude (optional)">
@@ -386,7 +386,7 @@ function NewJobModal({
                 step="any"
                 value={form.longitude}
                 onChange={(e) => set('longitude', e.target.value)}
-                className="w-full rounded-lg border border-[#E5E5E5] px-3 py-2 text-[13px] outline-none focus:border-[#C1121F]"
+                className="w-full rounded-lg border border-[var(--border)] px-3 py-2 text-[13px] outline-none focus:border-[var(--danger)]"
               />
             </Field>
           </div>
@@ -395,11 +395,11 @@ function NewJobModal({
               value={form.notes}
               onChange={(e) => set('notes', e.target.value)}
               rows={2}
-              className="w-full rounded-lg border border-[#E5E5E5] px-3 py-2 text-[13px] outline-none focus:border-[#C1121F]"
+              className="w-full rounded-lg border border-[var(--border)] px-3 py-2 text-[13px] outline-none focus:border-[var(--danger)]"
             />
           </Field>
         </div>
-        <div className="flex justify-end gap-2 border-t border-[#F2F2F2] px-5 py-4">
+        <div className="flex justify-end gap-2 border-t border-[var(--border)] px-5 py-4">
           <Button variant="outline" onClick={onClose}>
             Cancel
           </Button>
@@ -441,9 +441,9 @@ function RoutePlannerModal({
   return (
     <Portal><div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
       <div className="w-full max-w-md rounded-2xl bg-white shadow-xl">
-        <div className="flex items-center justify-between border-b border-[#F2F2F2] px-5 py-4">
+        <div className="flex items-center justify-between border-b border-[var(--border)] px-5 py-4">
           <h3 className="text-[15px] font-semibold text-[var(--text-primary)]">Plan Driver Route</h3>
-          <button onClick={onClose} aria-label="Close" className="rounded-lg p-1.5 hover:bg-[#F5F5F5]">
+          <button onClick={onClose} aria-label="Close" className="rounded-lg p-1.5 hover:bg-[var(--surface-2)]">
             <X className="h-4 w-4" />
           </button>
         </div>
@@ -453,7 +453,7 @@ function RoutePlannerModal({
               value={driver}
               onChange={(e) => setDriver(e.target.value)}
               placeholder="Driver name"
-              className="w-full rounded-lg border border-[#E5E5E5] px-3 py-2 text-[13px] outline-none focus:border-[#C1121F]"
+              className="w-full rounded-lg border border-[var(--border)] px-3 py-2 text-[13px] outline-none focus:border-[var(--danger)]"
             />
           </Field>
           <Field label="Date (optional)">
@@ -461,22 +461,22 @@ function RoutePlannerModal({
               type="date"
               value={date}
               onChange={(e) => setDate(e.target.value)}
-              className="w-full rounded-lg border border-[#E5E5E5] px-3 py-2 text-[13px] outline-none focus:border-[#C1121F]"
+              className="w-full rounded-lg border border-[var(--border)] px-3 py-2 text-[13px] outline-none focus:border-[var(--danger)]"
             />
           </Field>
 
           {plan && plan.stops.length > 0 && (
-            <ol className="space-y-2 rounded-xl border border-[#E7EAEE] p-3">
+            <ol className="space-y-2 rounded-xl border border-[var(--border)] p-3">
               {plan.stops.map((stop, i) => (
                 <li key={stop.id} className="flex items-start gap-3">
-                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#C1121F] text-[11px] font-bold text-white">
+                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[var(--danger)] text-[11px] font-bold text-white">
                     {i + 1}
                   </span>
                   <div>
                     <p className="text-[13px] font-semibold text-[var(--text-primary)]">
                       {stop.client_name}
                     </p>
-                    <p className="text-[11px] text-[#3A5277]">
+                    <p className="text-[11px] text-[var(--brand-text)]">
                       {stop.job_type === 'pickup' ? 'Pickup' : 'Delivery'}
                       {stop.address ? ` · ${stop.address}` : ''}
                     </p>
@@ -486,12 +486,12 @@ function RoutePlannerModal({
             </ol>
           )}
           {plan && plan.stops.length === 0 && (
-            <p className="text-[12px] text-[#7B8BA4]">
+            <p className="text-[12px] text-[var(--text-faint)]">
               No active jobs found for this driver{date ? ` on ${date}` : ''}.
             </p>
           )}
         </div>
-        <div className="flex justify-end gap-2 border-t border-[#F2F2F2] px-5 py-4">
+        <div className="flex justify-end gap-2 border-t border-[var(--border)] px-5 py-4">
           <Button variant="outline" onClick={onClose}>
             Close
           </Button>
@@ -510,7 +510,7 @@ function RoutePlannerModal({
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label className="block">
-      <span className="mb-1 block text-[12px] font-medium text-[#0A1D3A]">{label}</span>
+      <span className="mb-1 block text-[12px] font-medium text-[var(--text-primary)]">{label}</span>
       {children}
     </label>
   )

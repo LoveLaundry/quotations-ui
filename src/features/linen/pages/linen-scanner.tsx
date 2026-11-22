@@ -163,7 +163,7 @@ export default function LinenScanner() {
       { docId: linen.id, payload: { action } },
       {
         onSuccess: () => {
-          setLastAction({ label, color: sa?.color ?? '#C1121F' })
+          setLastAction({ label, color: sa?.color ?? 'var(--danger-text)' })
           toast.success(`${label} — ${linen.linen_id}`)
           setTimeout(() => refetch(), 300)
         },
@@ -171,7 +171,7 @@ export default function LinenScanner() {
     )
   }
 
-  const stCfg = linen ? (LINEN_STATUS_CONFIG[linen.status as LinenStatus] ?? { label: linen.status, color: '#767676', bg: 'var(--surface-3)' }) : null
+  const stCfg = linen ? (LINEN_STATUS_CONFIG[linen.status as LinenStatus] ?? { label: linen.status, color: 'var(--text-muted)', bg: 'var(--surface-3)' }) : null
 
   return (
     <div className="space-y-5">
@@ -264,7 +264,7 @@ export default function LinenScanner() {
                   onKeyDown={e => e.key === 'Enter' && handleLookup()}
                   placeholder="Enter linen ID (e.g. LL-7K4P92)"
                   autoFocus
-                  className="w-full pl-10 pr-4 py-3 text-lg font-mono border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[#C1121F]/20 focus:border-[#C1121F] transition-colors"
+                  className="w-full pl-10 pr-4 py-3 text-lg font-mono border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--danger)]/20 focus:border-[var(--danger)] transition-colors"
                 />
               </div>
               <Button onClick={handleLookup} disabled={!code.trim() || isFetching} className="px-6">
@@ -337,7 +337,7 @@ export default function LinenScanner() {
                     </div>
                   ))}
                 </div>
-                <Link to={`/linen/${linen.id}`} className="inline-block mt-4 text-xs text-[#C1121F] hover:underline font-semibold">
+                <Link to={`/linen/${linen.id}`} className="inline-block mt-4 text-xs text-[var(--danger-text)] hover:underline font-semibold">
                   View Full Profile →
                 </Link>
               </CardContent>
@@ -352,7 +352,7 @@ export default function LinenScanner() {
                       key={sa.value}
                       variant="outline"
                       size="sm"
-                      className="w-full justify-start text-xs h-8 focus:ring-2 focus:ring-[#C1121F]/20"
+                      className="w-full justify-start text-xs h-8 focus:ring-2 focus:ring-[var(--danger)]/20"
                       style={{ borderColor: sa.color + '30', color: sa.color }}
                       onClick={() => handleQuickAction(sa.value)}
                       disabled={scanMutation.isPending}

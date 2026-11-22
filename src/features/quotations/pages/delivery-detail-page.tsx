@@ -59,7 +59,7 @@ export default function DeliveryDetailPage() {
     return (
         <div className="space-y-5 pb-10">
             <div className="flex items-start gap-3">
-                <Link to="/deliveries" className="mt-1 text-[#7B8BA4] hover:text-[#0A1D3A] transition-colors">
+                <Link to="/deliveries" className="mt-1 text-[var(--text-faint)] hover:text-[var(--text-primary)] transition-colors">
                     <ArrowLeft className="h-4 w-4" />
                 </Link>
                 <div>
@@ -71,7 +71,7 @@ export default function DeliveryDetailPage() {
                         ]}
                     />
                     <h1 className="text-dashboard-title mt-1">{delivery.client_name}</h1>
-                    <p className="text-[13px] text-[#7B8BA4] mt-0.5">
+                    <p className="text-[13px] text-[var(--text-faint)] mt-0.5">
                         Gate Pass: <span className="font-mono">{delivery.gate_pass_id}</span>
                     </p>
                 </div>
@@ -83,13 +83,13 @@ export default function DeliveryDetailPage() {
                 <Card className="p-3">
                     <div className="flex items-center justify-between mb-1">
                         <div className="flex items-center gap-2">
-                            <Calendar className="h-3.5 w-3.5 text-[#7B8BA4]" />
-                            <p className="text-[11px] text-[#7B8BA4] font-medium uppercase tracking-wide">Delivery Date</p>
+                            <Calendar className="h-3.5 w-3.5 text-[var(--text-faint)]" />
+                            <p className="text-[11px] text-[var(--text-faint)] font-medium uppercase tracking-wide">Delivery Date</p>
                         </div>
                         {!editingDate && (
                             <button
                                 onClick={startEditDate}
-                                className="text-[#767676] hover:text-[#0F2C59] transition"
+                                className="text-[var(--text-muted)] hover:text-[var(--brand-text)] transition"
                                 title="Correct delivery date"
                                 aria-label="Correct delivery date"
                             >
@@ -103,12 +103,12 @@ export default function DeliveryDetailPage() {
                                 type="date"
                                 value={dateValue}
                                 onChange={e => setDateValue(e.target.value)}
-                                className="h-9 w-full rounded-lg border border-[#BCC4D1] bg-white px-3 text-[13px] outline-none focus:border-[#0F2C59]"
+                                className="h-9 w-full rounded-lg border border-[var(--border)] bg-white px-3 text-[13px] outline-none focus:border-[var(--brand)]"
                             />
                             <select
                                 value={dateReason}
                                 onChange={e => setDateReason(e.target.value)}
-                                className="h-9 w-full cursor-pointer rounded-lg border border-[#BCC4D1] bg-white px-3 text-[12px] outline-none focus:border-[#0F2C59]"
+                                className="h-9 w-full cursor-pointer rounded-lg border border-[var(--border)] bg-white px-3 text-[12px] outline-none focus:border-[var(--brand)]"
                             >
                                 <option value="">Reason required…</option>
                                 {DATE_CORRECTION_REASONS.map(r => (
@@ -120,7 +120,7 @@ export default function DeliveryDetailPage() {
                                     size="sm"
                                     onClick={submitDate}
                                     disabled={!dateValue || !dateReason || updateDeliveryDate.isPending}
-                                    className="bg-[#0F2C59] hover:bg-[#0F2C59] text-white"
+                                    className="bg-[var(--brand)] hover:bg-[var(--brand)] text-white"
                                 >
                                     <Check className="h-3.5 w-3.5" /> Save
                                 </Button>
@@ -141,8 +141,8 @@ export default function DeliveryDetailPage() {
                 ].map(({ icon: Icon, label, value }) => (
                     <Card key={label} className="p-3">
                         <div className="flex items-center gap-2 mb-1">
-                            <Icon className="h-3.5 w-3.5 text-[#7B8BA4]" />
-                            <p className="text-[11px] text-[#7B8BA4] font-medium uppercase tracking-wide">{label}</p>
+                            <Icon className="h-3.5 w-3.5 text-[var(--text-faint)]" />
+                            <p className="text-[11px] text-[var(--text-faint)] font-medium uppercase tracking-wide">{label}</p>
                         </div>
                         <p className="text-[13px] font-semibold text-[var(--text-primary)]">{value}</p>
                     </Card>
@@ -151,8 +151,8 @@ export default function DeliveryDetailPage() {
 
             {delivery.notes && (
                 <Card className="p-4">
-                    <p className="text-[11px] font-semibold uppercase tracking-wide text-[#7B8BA4] mb-1">Notes</p>
-                    <p className="text-[13px] text-[#0A1D3A]">{delivery.notes}</p>
+                    <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--text-faint)] mb-1">Notes</p>
+                    <p className="text-[13px] text-[var(--text-primary)]">{delivery.notes}</p>
                 </Card>
             )}
 
@@ -160,8 +160,8 @@ export default function DeliveryDetailPage() {
             <Card>
                 <CardHeader className="border-b border-[var(--border)] pb-3">
                     <div className="flex items-center gap-2">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#E8F2EC] border border-[#BDDBC9]">
-                            <Truck className="h-4 w-4 text-[#15803D]" />
+                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--success-soft)] border border-[var(--success-border)]">
+                            <Truck className="h-4 w-4 text-[var(--success-text)]" />
                         </div>
                         <CardTitle>Delivered Items</CardTitle>
                     </div>
@@ -171,13 +171,13 @@ export default function DeliveryDetailPage() {
                         {items.map((item: any, i: number) => (
                             <div key={i} className="flex items-center justify-between gap-3 py-3.5">
                                 <div className="flex items-center gap-3">
-                                    <div className="h-8 w-8 flex items-center justify-center rounded-lg bg-[#E8F2EC] border border-[#BDDBC9] text-[#15803D] font-bold text-[12px]">
+                                    <div className="h-8 w-8 flex items-center justify-center rounded-lg bg-[var(--success-soft)] border border-[var(--success-border)] text-[var(--success-text)] font-bold text-[12px]">
                                         {item.item_name.charAt(0).toUpperCase()}
                                     </div>
                                     <p className="text-[13px] font-medium text-[var(--text-primary)]">
                                         {item.item_name}
                                         {item.specification && (
-                                            <span className="ml-2 inline-flex items-center rounded bg-[#F9E7E9] border border-[#EEBDC0] px-1.5 py-0.5 text-[10px] font-semibold text-[#CC3D47]">
+                                            <span className="ml-2 inline-flex items-center rounded bg-[var(--danger-soft)] border border-[var(--danger-border)] px-1.5 py-0.5 text-[10px] font-semibold text-[var(--danger-text)]">
                                                 {item.specification}
                                             </span>
                                         )}
@@ -188,21 +188,21 @@ export default function DeliveryDetailPage() {
                         ))}
                     </div>
                     <div className="border-t border-[var(--border)] pt-3 mt-2 flex items-center justify-between">
-                        <span className="text-[13px] text-[#767676]">Total</span>
+                        <span className="text-[13px] text-[var(--text-muted)]">Total</span>
                         <span className="text-[15px] font-bold text-[var(--text-primary)]">{totalPieces} pieces</span>
                     </div>
                 </CardContent>
             </Card>
 
             {/* Link to Gate Pass */}
-            <Card className="p-4 border-[#BCC4D1] bg-[#E7EAEE]">
+            <Card className="p-4 border-[var(--border)] bg-[var(--surface-2)]">
                 <div className="flex items-center justify-between gap-3">
                     <div>
-                        <p className="text-[12px] font-semibold text-[#0F2C59] uppercase tracking-wide mb-0.5">Associated Gate Pass</p>
-                        <p className="text-[13px] font-mono text-[#0A1D3A]">{delivery.gate_pass_id}</p>
+                        <p className="text-[12px] font-semibold text-[var(--brand-text)] uppercase tracking-wide mb-0.5">Associated Gate Pass</p>
+                        <p className="text-[13px] font-mono text-[var(--text-primary)]">{delivery.gate_pass_id}</p>
                     </div>
                     <Link to={`/gate-passes/${delivery.gate_pass_id}`}>
-                        <button className="text-[13px] font-medium text-[#0F2C59] hover:text-[#0F2C59] transition cursor-pointer">
+                        <button className="text-[13px] font-medium text-[var(--brand-text)] hover:text-[var(--brand-text)] transition cursor-pointer">
                             View →
                         </button>
                     </Link>

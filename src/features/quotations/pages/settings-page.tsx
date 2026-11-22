@@ -3,14 +3,8 @@ import {
   Settings2,
   Type,
   Sun,
-  Contrast,
   Moon,
   Palette,
-  Droplet,
-  Leaf,
-  Frame,
-  Cloud,
-  Eye,
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card'
 import { Breadcrumb } from '../../../components/ui/breadcrumb'
@@ -40,61 +34,17 @@ interface ThemePresetOption {
 }
 
 const THEME_OPTIONS: ThemePresetOption[] = [
-  // Light themes
   {
-    value: 'light', label: 'Light', desc: 'The classic clean look',
-    icon: <Sun className="h-4 w-4 text-[#CC3D47]" />,
+    value: 'light', label: 'Light', desc: 'Clean white surfaces, dark blue actions',
+    icon: <Sun className="h-4 w-4 text-[var(--brand)]" />,
     group: 'light',
-    swatchBg: 'var(--surface-2)', swatchSurface: '#FFFFFF', swatchBorder: 'var(--border)', swatchText: '#0A1D3A', swatchMuted: '#767676',
+    swatchBg: 'var(--surface-2)', swatchSurface: 'var(--surface)', swatchBorder: 'var(--border)', swatchText: 'var(--text-primary)', swatchMuted: 'var(--text-muted)',
   },
   {
-    value: 'contrast', label: 'High Contrast', desc: 'Stronger borders, darker text',
-    icon: <Contrast className="h-4 w-4 text-[#0F2C59]" />,
-    group: 'light',
-    swatchBg: 'var(--surface-3)', swatchSurface: '#FFFFFF', swatchBorder: '#7B8BA4', swatchText: '#0A1D3A', swatchMuted: '#0A1D3A',
-  },
-  {
-    value: 'ocean', label: 'Ocean Blue', desc: 'Cool blue-tinted professional',
-    icon: <Droplet className="h-4 w-4 text-[#0F2C59]" />,
-    group: 'light',
-    swatchBg: '#E7EAEE', swatchSurface: '#FFFFFF', swatchBorder: '#BCC4D1', swatchText: '#0A1D3A', swatchMuted: '#0A1D3A',
-  },
-  {
-    value: 'forest', label: 'Forest Green', desc: 'Natural green-tinted warmth',
-    icon: <Leaf className="h-4 w-4 text-[#15803D]" />,
-    group: 'light',
-    swatchBg: '#E8F2EC', swatchSurface: '#FFFFFF', swatchBorder: '#BDDBC9', swatchText: '#0E5328', swatchMuted: '#0E5328',
-  },
-  {
-    value: 'sepia', label: 'Warm Sepia', desc: 'Cream newspaper tone',
-    icon: <Frame className="h-4 w-4 text-[#CC3D47]" />,
-    group: 'light',
-    swatchBg: '#F9E7E9', swatchSurface: '#F9E7E9', swatchBorder: '#EEBDC0', swatchText: '#7D0C14', swatchMuted: '#7D0C14',
-  },
-  {
-    value: 'slate', label: 'Slate', desc: 'Balanced medium-grey professional',
-    icon: <Cloud className="h-4 w-4 text-[#0A1D3A]" />,
-    group: 'light',
-    swatchBg: '#E7EAEE', swatchSurface: '#FFFFFF', swatchBorder: '#7B8BA4', swatchText: '#0A1D3A', swatchMuted: '#0A1D3A',
-  },
-  // Dark themes
-  {
-    value: 'dark', label: 'Midnight', desc: 'Professional dark mode',
-    icon: <Moon className="h-4 w-4 text-[#3A5277]" />,
+    value: 'dark', label: 'Dark', desc: 'Black surfaces, white typography, blue selection',
+    icon: <Moon className="h-4 w-4 text-[var(--brand)]" />,
     group: 'dark',
-    swatchBg: '#0A1D3A', swatchSurface: '#0A1D3A', swatchBorder: '#0A1D3A', swatchText: '#E7EAEE', swatchMuted: '#7B8BA4',
-  },
-  {
-    value: 'nightblue', label: 'Night Blue', desc: 'Deep blue-tinted dark',
-    icon: <Moon className="h-4 w-4 text-[#7B8BA4]" />,
-    group: 'dark',
-    swatchBg: '#0A1D3A', swatchSurface: '#0A1D3A', swatchBorder: '#0A1D3A', swatchText: '#E7EAEE', swatchMuted: '#7B8BA4',
-  },
-  {
-    value: 'contrast-dark', label: 'Contrast Dark', desc: 'Maximum contrast dark mode',
-    icon: <Eye className="h-4 w-4 text-[#DD7D84]" />,
-    group: 'dark',
-    swatchBg: '#000000', swatchSurface: '#0D0D0D', swatchBorder: '#3A3A3A', swatchText: '#FFFFFF', swatchMuted: '#AAAAAA',
+    swatchBg: 'var(--bg)', swatchSurface: 'var(--surface)', swatchBorder: 'var(--border-2)', swatchText: 'var(--text-primary)', swatchMuted: 'var(--text-muted)',
   },
 ]
 
@@ -147,13 +97,13 @@ export default function SettingsPage() {
       <Card>
         <CardHeader className="border-b pb-4" style={{ borderColor: 'var(--border)' }}>
           <div className="flex items-center gap-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#E7EAEE] border border-[#BCC4D1]">
-              <Palette className="h-4 w-4 text-[#0F2C59]" />
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg border" style={{ background: 'var(--surface-2)', borderColor: 'var(--border)' }}>
+              <Palette className="h-4 w-4" style={{ color: 'var(--brand)' }} />
             </div>
             <div>
-              <CardTitle>Light Themes</CardTitle>
+              <CardTitle>Appearance</CardTitle>
               <p className="text-[12px] mt-0.5" style={{ color: 'var(--text-tertiary)' }}>
-                Clean, bright themes for daytime use
+                One design language, two appearance modes
               </p>
             </div>
           </div>
@@ -184,13 +134,13 @@ export default function SettingsPage() {
       <Card>
         <CardHeader className="border-b pb-4" style={{ borderColor: 'var(--border)' }}>
           <div className="flex items-center gap-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#0A1D3A] border border-[#3A5277]">
-              <Moon className="h-4 w-4 text-[#BCC4D1]" />
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg border" style={{ background: 'var(--sidebar-bg)', borderColor: 'var(--border-2)' }}>
+              <Moon className="h-4 w-4" style={{ color: 'var(--sidebar-active)' }} />
             </div>
             <div>
-              <CardTitle>Dark Themes</CardTitle>
+              <CardTitle>Dark Mode</CardTitle>
               <p className="text-[12px] mt-0.5" style={{ color: 'var(--text-tertiary)' }}>
-                Easy on the eyes for nighttime and low-light use
+                Black surfaces, white typography, balanced blue selection
               </p>
             </div>
           </div>
@@ -221,8 +171,8 @@ export default function SettingsPage() {
       <Card>
         <CardHeader className="border-b pb-4" style={{ borderColor: 'var(--border)' }}>
           <div className="flex items-center gap-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#E8F2EC] border border-[#BDDBC9]">
-              <Type className="h-4 w-4 text-[#15803D]" />
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--success-soft)] border border-[var(--success-border)]">
+              <Type className="h-4 w-4 text-[var(--success-text)]" />
             </div>
             <div>
               <CardTitle>Font Size</CardTitle>
@@ -249,8 +199,8 @@ export default function SettingsPage() {
       <Card>
         <CardHeader className="border-b pb-4" style={{ borderColor: 'var(--border)' }}>
           <div className="flex items-center gap-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#F9E7E9] border border-[#EEBDC0]">
-              <Palette className="h-4 w-4 text-[#CC3D47]" />
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--danger-soft)] border border-[var(--danger-border)]">
+              <Palette className="h-4 w-4 text-[var(--danger-text)]" />
             </div>
             <div>
               <CardTitle>Live Preview</CardTitle>
@@ -282,7 +232,7 @@ export default function SettingsPage() {
               </div>
               <div className="rounded-lg border px-3 py-2" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
                 <p className="text-[10px] font-semibold uppercase tracking-wide" style={{ color: 'var(--text-tertiary)' }}>Status</p>
-                <p className="font-semibold text-[#15803D]" style={{ fontSize: 'var(--body-font-size)' }}>Paid</p>
+                <p className="font-semibold text-[var(--success-text)]" style={{ fontSize: 'var(--body-font-size)' }}>Paid</p>
               </div>
             </div>
           </div>

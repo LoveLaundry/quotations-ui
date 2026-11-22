@@ -122,14 +122,14 @@ const defaultValues = createDefaults()
 
 function Label({ children, className = '' }: { children: ReactNode; className?: string }) {
   return (
-    <label className={`block text-[12px] font-medium text-[#0A1D3A] mb-1 ${className}`}>
+    <label className={`block text-[12px] font-medium text-[var(--text-primary)] mb-1 ${className}`}>
       {children}
     </label>
   )
 }
 
 function FieldErr({ msg }: { msg?: string }) {
-  return msg ? <p className="mt-1 text-[11px] text-[#C1121F]">{msg}</p> : null
+  return msg ? <p className="mt-1 text-[11px] text-[var(--danger-text)]">{msg}</p> : null
 }
 
 function SpecFields({
@@ -161,14 +161,14 @@ function SpecFields({
           variant="ghost"
           size="sm"
           onClick={() => append({ specification: '', unit_price: '' })}
-          className="text-[#0F2C59] hover:bg-[#E7EAEE]"
+          className="text-[var(--brand-text)] hover:bg-[var(--surface-2)]"
         >
           <Plus className="h-3.5 w-3.5" /> Add Specification
         </Button>
       </div>
 
       {fields.length === 0 ? (
-        <p className="text-[11px] text-[#7B8BA4]">
+        <p className="text-[11px] text-[var(--text-faint)]">
           No variants for this item — it uses the unit price above. Add a colour / size with its own
           price if needed.
         </p>
@@ -185,7 +185,7 @@ function SpecFields({
                 <FieldErr msg={specErrors?.[sIdx]?.specification?.message} />
               </div>
               <div className="relative w-28">
-                <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[11px] text-[#A6A6A6]">
+                <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[11px] text-[var(--text-faint)]">
                   LKR
                 </span>
                 <Input
@@ -205,7 +205,7 @@ function SpecFields({
                 size="icon"
                 onClick={() => remove(sIdx)}
                 aria-label={`Remove specification ${sIdx + 1} from item ${index + 1}`}
-                className="text-[#C1121F] hover:bg-[#F9E7E9] shrink-0"
+                className="text-[var(--danger-text)] hover:bg-[var(--danger-soft)] shrink-0"
               >
                 <X className="h-3.5 w-3.5" />
               </Button>
@@ -488,7 +488,7 @@ export default function QuotationFormPage() {
             <h1 className="text-dashboard-title">
               {isEdit ? 'Edit Quotation' : 'New Quotation'}
             </h1>
-            <p className="text-[13px] text-[#7B8BA4] mt-0.5">
+            <p className="text-[13px] text-[var(--text-faint)] mt-0.5">
               {isEdit
                 ? 'Update pricing for this hotel'
                 : 'Create a price list for a hotel or client'}
@@ -520,7 +520,7 @@ export default function QuotationFormPage() {
       )}
 
       {isLoading && isEdit ? (
-        <div className="rounded-xl border border-[var(--border)] bg-[#FAFAFA] p-10 text-[13px] text-[#7B8BA4] text-center">
+        <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-2)] p-10 text-[13px] text-[var(--text-faint)] text-center">
           Loading quotation…
         </div>
       ) : (
@@ -531,7 +531,7 @@ export default function QuotationFormPage() {
             <CardHeader className="border-b border-[var(--border)] pb-4">
               <div>
                 <CardTitle>Client / Hotel Details</CardTitle>
-                <p className="text-[12px] text-[#7B8BA4] mt-0.5">
+                <p className="text-[12px] text-[var(--text-faint)] mt-0.5">
                   Name of the hotel or client this quotation is for
                 </p>
               </div>
@@ -570,12 +570,12 @@ export default function QuotationFormPage() {
                     {...regTag}
                     ref={mergeRefs(regTag.ref, tagRef)}
                     aria-label="Quotation type"
-                    className="flex h-10 w-full rounded-lg border border-[#BCC4D1] bg-white px-3 py-2 text-[14px] ring-offset-white focus:outline-none focus:ring-2 focus:ring-[#15803D] focus:ring-offset-0 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="flex h-10 w-full rounded-lg border border-[var(--border)] bg-white px-3 py-2 text-[14px] ring-offset-white focus:outline-none focus:ring-2 focus:ring-[var(--success)] focus:ring-offset-0 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     <option value="shop">Shop (Public)</option>
                     <option value="hotel">Hotel (Private)</option>
                   </select>
-                  <p className="mt-1 text-[11px] text-[#3A5277]">Shop quotations are visible to guests</p>
+                  <p className="mt-1 text-[11px] text-[var(--brand-text)]">Shop quotations are visible to guests</p>
                 </div>
               </div>
             </CardContent>
@@ -586,16 +586,16 @@ export default function QuotationFormPage() {
               <div>
                 <CardTitle>
                   Line Items
-                  <span className="ml-2 text-[#7B8BA4] font-normal text-[12px]">
+                  <span className="ml-2 text-[var(--text-faint)] font-normal text-[12px]">
                     ({fields.length} items)
                   </span>
                 </CardTitle>
-                <p className="text-[12px] text-[#7B8BA4] mt-0.5">
+                <p className="text-[12px] text-[var(--text-faint)] mt-0.5">
                   Each row = one item with its unit price in LKR
                 </p>
               </div>
               <Button type="button" variant="secondary" size="sm" onClick={() => append(newItem())}>
-                <Plus className="h-3.5 w-3.5 text-[#C1121F]" /> Add Item
+                <Plus className="h-3.5 w-3.5 text-[var(--danger-text)]" /> Add Item
               </Button>
             </CardHeader>
 
@@ -605,7 +605,7 @@ export default function QuotationFormPage() {
                   (h, i) => (
                     <p
                       key={i}
-                      className="text-[11px] font-semibold uppercase tracking-wider text-[#7B8BA4]"
+                      className="text-[11px] font-semibold uppercase tracking-wider text-[var(--text-faint)]"
                     >
                       {h}
                     </p>
@@ -620,7 +620,7 @@ export default function QuotationFormPage() {
                       key={item}
                       type="button"
                       onClick={() => append({ ...newItem(), item_name: item })}
-                      className="rounded-md border border-[var(--border)] bg-white px-2 py-0.5 text-[11px] font-medium text-[#0A1D3A] hover:border-[#EEBDC0] hover:bg-[#F9E7E9] hover:text-[#C1121F] transition-all cursor-pointer"
+                      className="rounded-md border border-[var(--border)] bg-white px-2 py-0.5 text-[11px] font-medium text-[var(--text-primary)] hover:border-[var(--danger-border)] hover:bg-[var(--danger-soft)] hover:text-[var(--danger-text)] transition-all cursor-pointer"
                     >
                       + {item}
                     </button>
@@ -649,17 +649,17 @@ export default function QuotationFormPage() {
                   return (
                     <div
                       key={field.id}
-                      className={`rounded-lg border bg-white p-3 hover:border-[#BCC4D1] transition-colors ${
+                      className={`rounded-lg border bg-white p-3 hover:border-[var(--border)] transition-colors ${
                         isDuplicate ? 'border-[var(--warning-border)]' : 'border-[var(--border)]'
                       }`}
                     >
                       <div className="grid gap-2 grid-cols-1 sm:grid-cols-[28px_1fr_180px_120px_120px_36px] items-center">
-                        <div className="hidden sm:flex items-center justify-center text-[#BCC4D1]">
+                        <div className="hidden sm:flex items-center justify-center text-[var(--text-faint)]">
                           <GripVertical className="h-4 w-4" />
                         </div>
 
                         <div>
-                          <p className="text-[11px] text-[#7B8BA4] mb-1 sm:hidden">Item Name</p>
+                          <p className="text-[11px] text-[var(--text-faint)] mb-1 sm:hidden">Item Name</p>
                           <Input
                             {...regItem}
                             ref={mergeRefs(regItem.ref, grid.registerCell(idx, 0))}
@@ -671,7 +671,7 @@ export default function QuotationFormPage() {
                         </div>
 
                         <div>
-                          <p className="text-[11px] text-[#7B8BA4] mb-1 sm:hidden">Category</p>
+                          <p className="text-[11px] text-[var(--text-faint)] mb-1 sm:hidden">Category</p>
                           <Input
                             {...regCat}
                             ref={mergeRefs(regCat.ref, grid.registerCell(idx, 1))}
@@ -682,11 +682,11 @@ export default function QuotationFormPage() {
                         </div>
 
                         <div>
-                          <p className="text-[11px] text-[#7B8BA4] mb-1 sm:hidden">
+                          <p className="text-[11px] text-[var(--text-faint)] mb-1 sm:hidden">
                             Unit Price (LKR)
                           </p>
                           <div className="relative">
-                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[12px] font-medium text-[#A6A6A6]">
+                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[12px] font-medium text-[var(--text-faint)]">
                               LKR
                             </span>
                             <Input
@@ -704,7 +704,7 @@ export default function QuotationFormPage() {
                         </div>
 
                         <div>
-                          <p className="text-[11px] text-[#7B8BA4] mb-1 sm:hidden">Notes</p>
+                          <p className="text-[11px] text-[var(--text-faint)] mb-1 sm:hidden">Notes</p>
                           <Input
                             {...regNotes}
                             ref={mergeRefs(regNotes.ref, grid.registerCell(idx, 3))}
@@ -720,7 +720,7 @@ export default function QuotationFormPage() {
                           onClick={() => remove(idx)}
                           disabled={fields.length === 1}
                           aria-label={`Remove item ${idx + 1}`}
-                          className="text-[#C1121F] hover:bg-[#F9E7E9] disabled:opacity-20 justify-self-end sm:justify-self-auto"
+                          className="text-[var(--danger-text)] hover:bg-[var(--danger-soft)] disabled:opacity-20 justify-self-end sm:justify-self-auto"
                         >
                           <Trash2 className="h-3.5 w-3.5" />
                         </Button>
@@ -740,7 +740,7 @@ export default function QuotationFormPage() {
               <button
                 type="button"
                 onClick={() => append(newItem())}
-                className="mt-3 w-full rounded-lg border border-dashed border-[var(--border)] py-2.5 text-[12px] font-medium text-[#767676] hover:border-[#EEBDC0] hover:text-[#C1121F] hover:bg-[#F9E7E9] transition-all cursor-pointer"
+                className="mt-3 w-full rounded-lg border border-dashed border-[var(--border)] py-2.5 text-[12px] font-medium text-[var(--text-muted)] hover:border-[var(--danger-border)] hover:text-[var(--danger-text)] hover:bg-[var(--danger-soft)] transition-all cursor-pointer"
               >
                 + Add another item
               </button>
@@ -755,8 +755,8 @@ export default function QuotationFormPage() {
               <DuplicateWarning names={duplicateNames} />
 
               {fields.length > 0 && (
-                <div className="mt-4 rounded-lg border border-[var(--border)] bg-[#FAFAFA] px-4 py-3 flex items-center justify-between">
-                  <span className="text-[12px] font-medium text-[#767676]">
+                <div className="mt-4 rounded-lg border border-[var(--border)] bg-[var(--surface-2)] px-4 py-3 flex items-center justify-between">
+                  <span className="text-[12px] font-medium text-[var(--text-muted)]">
                     {fields.length} items in this quotation
                   </span>
                   <span className="text-[11px] text-[var(--text-faint)]">

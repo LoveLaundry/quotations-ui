@@ -34,7 +34,7 @@ export default function QuotationPrintPage() {
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        background: '#FFFFFF',
+        background: 'var(--ll-white)',
         fontFamily: '"Spectral", Georgia, serif',
         padding: '20px',
       }}>
@@ -52,13 +52,13 @@ export default function QuotationPrintPage() {
         <h1 style={{
           fontSize: '24px',
           fontWeight: 700,
-          color: '#C1121F',
+          color: 'var(--danger-text)',
           margin: '0 0 10px 0',
           textAlign: 'center',
         }}>Quotation Not Found</h1>
         <p style={{
           fontSize: '14px',
-          color: '#666666',
+          color: 'var(--text-secondary)',
           textAlign: 'center',
           maxWidth: '400px',
         }}>This quotation may have been deleted or the link is invalid.</p>
@@ -67,8 +67,8 @@ export default function QuotationPrintPage() {
           style={{
             marginTop: '24px',
             padding: '10px 20px',
-            background: '#000000',
-            color: '#FFFFFF',
+            background: 'var(--ll-black)',
+            color: 'var(--ll-white)',
             border: 'none',
             borderRadius: '0',
             cursor: 'pointer',
@@ -85,7 +85,7 @@ export default function QuotationPrintPage() {
   return (
     <div className="quotation-print-page" style={{
       minHeight: '100vh',
-      background: '#F5F5F5',
+      background: 'var(--surface-2)',
       padding: '40px 20px',
       fontFamily: '"Spectral", Georgia, serif',
     }}>
@@ -100,8 +100,8 @@ export default function QuotationPrintPage() {
         <button
           onClick={() => window.print()}
           style={{
-            background: '#000000',
-            color: '#FFFFFF',
+            background: 'var(--ll-black)',
+            color: 'var(--ll-white)',
             border: 'none',
             padding: '12px 24px',
             fontSize: '14px',
@@ -114,8 +114,8 @@ export default function QuotationPrintPage() {
             fontFamily: '"Spectral", Georgia, serif',
             boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)',
           }}
-          onMouseOver={(e) => e.currentTarget.style.background = '#C1121F'}
-          onMouseOut={(e) => e.currentTarget.style.background = '#000000'}
+          onMouseOver={(e) => e.currentTarget.style.background = 'var(--danger-text)'}
+          onMouseOut={(e) => e.currentTarget.style.background = 'var(--ll-black)'}
         >
           <Printer size={18} /> Print / Save as PDF
         </button>

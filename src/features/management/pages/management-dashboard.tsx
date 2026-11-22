@@ -93,8 +93,8 @@ export default function ManagementDashboard() {
               <YAxis />
               <Tooltip formatter={(v: number) => `LKR ${v.toLocaleString()}`} />
               <Legend />
-              <Bar dataKey="revenue" fill="#3F9760" name="Revenue" />
-              <Bar dataKey="expenses" fill="#C1121F" name="Expenses" />
+              <Bar dataKey="revenue" fill="var(--success-text)" name="Revenue" />
+              <Bar dataKey="expenses" fill="var(--danger-text)" name="Expenses" />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -107,7 +107,7 @@ export default function ManagementDashboard() {
               <XAxis dataKey="month" />
               <YAxis />
               <Tooltip formatter={(v: number) => `LKR ${v.toLocaleString()}`} />
-              <Line type="monotone" dataKey="profit" stroke="#0F2C59" strokeWidth={2} />
+              <Line type="monotone" dataKey="profit" stroke="var(--brand-text)" strokeWidth={2} />
             </LineChart>
           </ResponsiveContainer>
         </div>

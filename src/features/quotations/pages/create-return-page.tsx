@@ -223,7 +223,7 @@ export default function CreateReturnPage() {
           ]}
         />
         <h1 className="text-dashboard-title mt-1">Record Return</h1>
-        <p className="text-[13px] text-[#7B8BA4] mt-0.5">
+        <p className="text-[13px] text-[var(--text-faint)] mt-0.5">
           Record garments returned by a client
         </p>
       </div>
@@ -242,7 +242,7 @@ export default function CreateReturnPage() {
               value={gpSearch}
               onChange={(e) => setGpSearch(e.target.value)}
               placeholder="Search gate pass number or client…"
-              className="h-9 w-full rounded-lg border border-[var(--border)] bg-white px-3 text-[13px] outline-none focus:border-[#CC3D47] mb-2"
+              className="h-9 w-full rounded-lg border border-[var(--border)] bg-white px-3 text-[13px] outline-none focus:border-[var(--danger)] mb-2"
             />
             <div className="max-h-48 overflow-y-auto border border-[var(--border)] rounded-lg">
               {gatePasses
@@ -277,10 +277,10 @@ export default function CreateReturnPage() {
                     }`}
                   >
                     <div className="flex justify-between items-center">
-                      <span className="font-mono text-[#767676]">{gp.gate_pass_number}</span>
+                      <span className="font-mono text-[var(--text-muted)]">{gp.gate_pass_number}</span>
                       <span className="text-[var(--text-primary)]">{gp.client_name}</span>
                     </div>
-                    <div className="text-[11px] text-[#7B8BA4] mt-0.5">
+                    <div className="text-[11px] text-[var(--text-faint)] mt-0.5">
                       {(gp.items ?? []).length} item types · {(gp.items ?? []).reduce((s, i) => s + i.received_qty, 0)} pcs
                     </div>
                   </button>
@@ -290,7 +290,7 @@ export default function CreateReturnPage() {
                 const q = gpSearch.toLowerCase()
                 return gp.gate_pass_number.toLowerCase().includes(q) || gp.client_name.toLowerCase().includes(q)
               }).length === 0 && (
-                <div className="px-3 py-4 text-center text-[13px] text-[#7B8BA4]">No gate passes found</div>
+                <div className="px-3 py-4 text-center text-[13px] text-[var(--text-faint)]">No gate passes found</div>
               )}
             </div>
           </>
@@ -300,11 +300,11 @@ export default function CreateReturnPage() {
           <div className="mt-3 p-3 rounded-lg bg-red-50 border border-red-200">
             <div className="flex items-center justify-between">
               <div>
-                <span className="text-[12px] text-[#7B8BA4]">Selected: </span>
+                <span className="text-[12px] text-[var(--text-faint)]">Selected: </span>
                 <span className="text-[13px] font-semibold text-[var(--text-primary)]">{selectedGP.gate_pass_number}</span>
-                <span className="text-[12px] text-[#7B8BA4]"> — {selectedGP.client_name}</span>
+                <span className="text-[12px] text-[var(--text-faint)]"> — {selectedGP.client_name}</span>
               </div>
-              <button onClick={() => { setSelectedGP(null); setClientName(''); setGpSelections({}); setDeliveries([]); setSelectedDeliveryId('') }} className="text-[12px] text-[#C1121F] hover:underline cursor-pointer">Clear</button>
+              <button onClick={() => { setSelectedGP(null); setClientName(''); setGpSelections({}); setDeliveries([]); setSelectedDeliveryId('') }} className="text-[12px] text-[var(--danger-text)] hover:underline cursor-pointer">Clear</button>
             </div>
           </div>
         )}
@@ -314,10 +314,10 @@ export default function CreateReturnPage() {
       {selectedGP && deliveries.length > 0 && (
         <Card className="p-5">
           <div className="flex items-center gap-2 mb-3">
-            <Truck className="h-4 w-4 text-[#767676]" />
+            <Truck className="h-4 w-4 text-[var(--text-muted)]" />
             <h3 className="text-[14px] font-semibold text-[var(--text-primary)]">Link Delivery (Optional)</h3>
           </div>
-          <p className="text-[12px] text-[#7B8BA4] mb-2">Link this return to a specific delivery if applicable.</p>
+          <p className="text-[12px] text-[var(--text-faint)] mb-2">Link this return to a specific delivery if applicable.</p>
           <div className="space-y-1.5 max-h-40 overflow-y-auto">
             <button
               type="button"
@@ -338,7 +338,7 @@ export default function CreateReturnPage() {
                 }`}
               >
                 <div className="flex justify-between items-center">
-                  <span className="text-[#767676] font-mono text-[11px]">{dl.id.slice(-8).toUpperCase()}</span>
+                  <span className="text-[var(--text-muted)] font-mono text-[11px]">{dl.id.slice(-8).toUpperCase()}</span>
                   <span className="text-[var(--text-primary)]">{dl.delivered_by} · {(dl.items ?? []).length} items</span>
                 </div>
               </button>
@@ -359,7 +359,7 @@ export default function CreateReturnPage() {
         {/* Gate Pass Items (selectable) */}
         {selectedGP && (selectedGP.items ?? []).length > 0 && (
           <div className="mb-4">
-            <p className="text-[12px] font-semibold text-[#767676] mb-2">From Gate Pass — tick items being returned:</p>
+            <p className="text-[12px] font-semibold text-[var(--text-muted)] mb-2">From Gate Pass — tick items being returned:</p>
             <div className="space-y-2" onKeyDown={gpGrid.handleKeyDown}>
               {selectedGPItems.map(({ it: gpItem, gi }, rIdx) => {
                 const isSelected = gi in gpSelections
@@ -388,7 +388,7 @@ export default function CreateReturnPage() {
                             </span>
                           )}
                         </div>
-                        <span className="text-[11px] text-[#7B8BA4]">
+                        <span className="text-[11px] text-[var(--text-faint)]">
                           Received: {gpItem.received_qty} · Client: {gpItem.client_qty}
                         </span>
                       </div>
@@ -397,7 +397,7 @@ export default function CreateReturnPage() {
                     {isSelected && sel && (
                       <div className="mt-3 pt-3 border-t border-red-200 grid grid-cols-2 sm:grid-cols-4 gap-2">
                         <div>
-                          <label className="text-[10px] text-[#7B8BA4] mb-0.5 block">Qty</label>
+                          <label className="text-[10px] text-[var(--text-faint)] mb-0.5 block">Qty</label>
                           <input
                             ref={gpGrid.registerCell(rIdx, 0)}
                             type="number"
@@ -405,16 +405,16 @@ export default function CreateReturnPage() {
                             max={gpItem.received_qty}
                             value={sel.returned_qty}
                             onChange={(e) => updateGPItem(gi, 'returned_qty', parseInt(e.target.value) || 1)}
-                            className="h-8 w-full rounded border border-[var(--border)] bg-white px-2 text-[12px] outline-none focus:border-[#CC3D47]"
+                            className="h-8 w-full rounded border border-[var(--border)] bg-white px-2 text-[12px] outline-none focus:border-[var(--danger)]"
                           />
                         </div>
                         <div>
-                          <label className="text-[10px] text-[#7B8BA4] mb-0.5 block">Reason</label>
+                          <label className="text-[10px] text-[var(--text-faint)] mb-0.5 block">Reason</label>
                           <select
                             ref={gpGrid.registerCell(rIdx, 1)}
                             value={sel.reason}
                             onChange={(e) => updateGPItem(gi, 'reason', e.target.value)}
-                            className="h-8 w-full rounded border border-[var(--border)] bg-white px-2 text-[12px] outline-none focus:border-[#CC3D47]"
+                            className="h-8 w-full rounded border border-[var(--border)] bg-white px-2 text-[12px] outline-none focus:border-[var(--danger)]"
                           >
                             {REASONS.map((r) => (
                               <option key={r.value} value={r.value}>{r.label}</option>
@@ -422,12 +422,12 @@ export default function CreateReturnPage() {
                           </select>
                         </div>
                         <div>
-                          <label className="text-[10px] text-[#7B8BA4] mb-0.5 block">Condition</label>
+                          <label className="text-[10px] text-[var(--text-faint)] mb-0.5 block">Condition</label>
                           <select
                             ref={gpGrid.registerCell(rIdx, 2)}
                             value={sel.condition}
                             onChange={(e) => updateGPItem(gi, 'condition', e.target.value)}
-                            className="h-8 w-full rounded border border-[var(--border)] bg-white px-2 text-[12px] outline-none focus:border-[#CC3D47]"
+                            className="h-8 w-full rounded border border-[var(--border)] bg-white px-2 text-[12px] outline-none focus:border-[var(--danger)]"
                           >
                             {CONDITIONS.map((c) => (
                               <option key={c.value} value={c.value}>{c.label}</option>
@@ -435,12 +435,12 @@ export default function CreateReturnPage() {
                           </select>
                         </div>
                         <div>
-                          <label className="text-[10px] text-[#7B8BA4] mb-0.5 block">Action</label>
+                          <label className="text-[10px] text-[var(--text-faint)] mb-0.5 block">Action</label>
                           <select
                             ref={gpGrid.registerCell(rIdx, 3)}
                             value={sel.action}
                             onChange={(e) => updateGPItem(gi, 'action', e.target.value)}
-                            className="h-8 w-full rounded border border-[var(--border)] bg-white px-2 text-[12px] outline-none focus:border-[#CC3D47]"
+                            className="h-8 w-full rounded border border-[var(--border)] bg-white px-2 text-[12px] outline-none focus:border-[var(--danger)]"
                           >
                             {ACTIONS.map((a) => (
                               <option key={a.value} value={a.value}>{a.label}</option>
@@ -459,57 +459,57 @@ export default function CreateReturnPage() {
         {/* Custom items */}
         {customItems.length > 0 && (
           <div>
-            <p className="text-[12px] font-semibold text-[#767676] mb-2">Custom items:</p>
+            <p className="text-[12px] font-semibold text-[var(--text-muted)] mb-2">Custom items:</p>
             <div className="space-y-3" onKeyDown={customGrid.handleKeyDown}>
               {customItems.map((item, idx) => (
                 <div key={idx} className="rounded-lg border border-[var(--border)] p-4 space-y-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-[12px] font-semibold text-[#767676]">Custom Item</span>
-                    <button onClick={() => removeCustomItem(idx)} className="text-[#7B8BA4] hover:text-[#C1121F] cursor-pointer">
+                    <span className="text-[12px] font-semibold text-[var(--text-muted)]">Custom Item</span>
+                    <button onClick={() => removeCustomItem(idx)} className="text-[var(--text-faint)] hover:text-[var(--danger-text)] cursor-pointer">
                       <Trash2 className="h-4 w-4" />
                     </button>
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="text-[11px] text-[#7B8BA4] mb-1 block">Item Name</label>
+                      <label className="text-[11px] text-[var(--text-faint)] mb-1 block">Item Name</label>
                       <input
                         ref={customGrid.registerCell(idx, 0)}
                         type="text"
                         value={item.item_name}
                         onChange={(e) => updateCustomItem(idx, 'item_name', e.target.value)}
                         placeholder="e.g. Towel, Bed Sheet"
-                        className="h-9 w-full rounded-lg border border-[var(--border)] bg-white px-3 text-[13px] outline-none focus:border-[#CC3D47]"
+                        className="h-9 w-full rounded-lg border border-[var(--border)] bg-white px-3 text-[13px] outline-none focus:border-[var(--danger)]"
                       />
                     </div>
                     <div>
-                      <label className="text-[11px] text-[#7B8BA4] mb-1 block">Specification</label>
+                      <label className="text-[11px] text-[var(--text-faint)] mb-1 block">Specification</label>
                       <input
                         ref={customGrid.registerCell(idx, 1)}
                         type="text"
                         value={item.specification || ''}
                         onChange={(e) => updateCustomItem(idx, 'specification', e.target.value || undefined)}
                         placeholder="e.g. White, King"
-                        className="h-9 w-full rounded-lg border border-[var(--border)] bg-white px-3 text-[13px] outline-none focus:border-[#CC3D47]"
+                        className="h-9 w-full rounded-lg border border-[var(--border)] bg-white px-3 text-[13px] outline-none focus:border-[var(--danger)]"
                       />
                     </div>
                     <div>
-                      <label className="text-[11px] text-[#7B8BA4] mb-1 block">Qty</label>
+                      <label className="text-[11px] text-[var(--text-faint)] mb-1 block">Qty</label>
                       <input
                         ref={customGrid.registerCell(idx, 2)}
                         type="number"
                         min={1}
                         value={item.returned_qty}
                         onChange={(e) => updateCustomItem(idx, 'returned_qty', parseInt(e.target.value) || 1)}
-                        className="h-9 w-full rounded-lg border border-[var(--border)] bg-white px-3 text-[13px] outline-none focus:border-[#CC3D47]"
+                        className="h-9 w-full rounded-lg border border-[var(--border)] bg-white px-3 text-[13px] outline-none focus:border-[var(--danger)]"
                       />
                     </div>
                     <div>
-                      <label className="text-[11px] text-[#7B8BA4] mb-1 block">Reason</label>
+                      <label className="text-[11px] text-[var(--text-faint)] mb-1 block">Reason</label>
                       <select
                         ref={customGrid.registerCell(idx, 3)}
                         value={item.reason}
                         onChange={(e) => updateCustomItem(idx, 'reason', e.target.value)}
-                        className="h-9 w-full rounded-lg border border-[var(--border)] bg-white px-3 text-[13px] outline-none focus:border-[#CC3D47]"
+                        className="h-9 w-full rounded-lg border border-[var(--border)] bg-white px-3 text-[13px] outline-none focus:border-[var(--danger)]"
                       >
                         {REASONS.map((r) => (
                           <option key={r.value} value={r.value}>{r.label}</option>
@@ -517,12 +517,12 @@ export default function CreateReturnPage() {
                       </select>
                     </div>
                     <div>
-                      <label className="text-[11px] text-[#7B8BA4] mb-1 block">Condition</label>
+                      <label className="text-[11px] text-[var(--text-faint)] mb-1 block">Condition</label>
                       <select
                         ref={customGrid.registerCell(idx, 4)}
                         value={item.condition}
                         onChange={(e) => updateCustomItem(idx, 'condition', e.target.value)}
-                        className="h-9 w-full rounded-lg border border-[var(--border)] bg-white px-3 text-[13px] outline-none focus:border-[#CC3D47]"
+                        className="h-9 w-full rounded-lg border border-[var(--border)] bg-white px-3 text-[13px] outline-none focus:border-[var(--danger)]"
                       >
                         {CONDITIONS.map((c) => (
                           <option key={c.value} value={c.value}>{c.label}</option>
@@ -530,12 +530,12 @@ export default function CreateReturnPage() {
                       </select>
                     </div>
                     <div>
-                      <label className="text-[11px] text-[#7B8BA4] mb-1 block">Action</label>
+                      <label className="text-[11px] text-[var(--text-faint)] mb-1 block">Action</label>
                       <select
                         ref={customGrid.registerCell(idx, 5)}
                         value={item.action}
                         onChange={(e) => updateCustomItem(idx, 'action', e.target.value)}
-                        className="h-9 w-full rounded-lg border border-[var(--border)] bg-white px-3 text-[13px] outline-none focus:border-[#CC3D47]"
+                        className="h-9 w-full rounded-lg border border-[var(--border)] bg-white px-3 text-[13px] outline-none focus:border-[var(--danger)]"
                       >
                         {ACTIONS.map((a) => (
                           <option key={a.value} value={a.value}>{a.label}</option>
@@ -544,14 +544,14 @@ export default function CreateReturnPage() {
                     </div>
                   </div>
                   <div>
-                    <label className="text-[11px] text-[#7B8BA4] mb-1 block">Notes</label>
+                    <label className="text-[11px] text-[var(--text-faint)] mb-1 block">Notes</label>
                     <input
                       ref={customGrid.registerCell(idx, 6)}
                       type="text"
                       value={item.notes || ''}
                       onChange={(e) => updateCustomItem(idx, 'notes', e.target.value || undefined)}
                       placeholder="Optional notes"
-                      className="h-9 w-full rounded-lg border border-[var(--border)] bg-white px-3 text-[13px] outline-none focus:border-[#CC3D47]"
+                      className="h-9 w-full rounded-lg border border-[var(--border)] bg-white px-3 text-[13px] outline-none focus:border-[var(--danger)]"
                     />
                   </div>
                 </div>
@@ -561,12 +561,12 @@ export default function CreateReturnPage() {
         )}
 
         {selectedGP && customItems.length === 0 && selectedGPIndices.length === 0 && (
-          <p className="text-[13px] text-[#7B8BA4] text-center py-4">
+          <p className="text-[13px] text-[var(--text-faint)] text-center py-4">
             Tick items above or add a custom item
           </p>
         )}
         {!selectedGP && customItems.length === 0 && (
-          <p className="text-[13px] text-[#7B8BA4] text-center py-4">
+          <p className="text-[13px] text-[var(--text-faint)] text-center py-4">
             Select a gate pass first, or add custom items
           </p>
         )}
@@ -577,11 +577,11 @@ export default function CreateReturnPage() {
         <h3 className="text-[14px] font-semibold text-[var(--text-primary)] mb-3">Bill Adjustment (Optional)</h3>
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="text-[11px] text-[#7B8BA4] mb-1 block">Adjustment Type</label>
+            <label className="text-[11px] text-[var(--text-faint)] mb-1 block">Adjustment Type</label>
             <select
               value={adjustment.adjustment_type}
               onChange={(e) => setAdjustment({ ...adjustment, adjustment_type: e.target.value as any })}
-              className="h-10 w-full rounded-lg border border-[var(--border)] bg-white px-3 text-[13px] outline-none focus:border-[#CC3D47]"
+              className="h-10 w-full rounded-lg border border-[var(--border)] bg-white px-3 text-[13px] outline-none focus:border-[var(--danger)]"
             >
               {ADJ_TYPES.map((a) => (
                 <option key={a.value} value={a.value}>{a.label}</option>
@@ -590,26 +590,26 @@ export default function CreateReturnPage() {
           </div>
           {adjustment.adjustment_type !== 'NONE' && (
             <div>
-              <label className="text-[11px] text-[#7B8BA4] mb-1 block">Amount (LKR)</label>
+              <label className="text-[11px] text-[var(--text-faint)] mb-1 block">Amount (LKR)</label>
               <input
                 type="number"
                 min={0}
                 value={adjustment.amount}
                 onChange={(e) => setAdjustment({ ...adjustment, amount: parseFloat(e.target.value) || 0 })}
-                className="h-10 w-full rounded-lg border border-[var(--border)] bg-white px-3 text-[13px] outline-none focus:border-[#CC3D47]"
+                className="h-10 w-full rounded-lg border border-[var(--border)] bg-white px-3 text-[13px] outline-none focus:border-[var(--danger)]"
               />
             </div>
           )}
         </div>
         {adjustment.adjustment_type !== 'NONE' && (
           <div className="mt-3">
-            <label className="text-[11px] text-[#7B8BA4] mb-1 block">Adjustment Notes</label>
+            <label className="text-[11px] text-[var(--text-faint)] mb-1 block">Adjustment Notes</label>
             <input
               type="text"
               value={adjustment.notes || ''}
               onChange={(e) => setAdjustment({ ...adjustment, notes: e.target.value })}
               placeholder="Reason for adjustment"
-              className="h-9 w-full rounded-lg border border-[var(--border)] bg-white px-3 text-[13px] outline-none focus:border-[#CC3D47]"
+              className="h-9 w-full rounded-lg border border-[var(--border)] bg-white px-3 text-[13px] outline-none focus:border-[var(--danger)]"
             />
           </div>
         )}
@@ -623,7 +623,7 @@ export default function CreateReturnPage() {
           onChange={(e) => setNotes(e.target.value)}
           placeholder="Optional notes about this return…"
           rows={3}
-          className="w-full rounded-lg border border-[var(--border)] bg-white px-3 py-2 text-[13px] outline-none focus:border-[#CC3D47] resize-none"
+          className="w-full rounded-lg border border-[var(--border)] bg-white px-3 py-2 text-[13px] outline-none focus:border-[var(--danger)] resize-none"
         />
       </Card>
 
@@ -644,7 +644,7 @@ export default function CreateReturnPage() {
         <Button
           onClick={handleSubmit}
           disabled={saving}
-          className="bg-[#CC3D47] hover:bg-[#7D0C14] text-white"
+          className="bg-[var(--danger)] hover:bg-[var(--danger)] text-white"
         >
           {saving ? 'Saving…' : 'Record Return'}
         </Button>

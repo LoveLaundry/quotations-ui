@@ -49,7 +49,7 @@ const billPrintStyles = `
     width: 80px;
     height: 80px;
     object-fit: contain;
-    border: 2px solid #C1121F;
+    border: 2px solid #FF0000;
     border-radius: 50%;
     padding: 4px;
   }
@@ -164,7 +164,7 @@ const billPrintStyles = `
     margin-top: 4px;
     margin-bottom: 8px;
   }
-  .bp-red { color: #C1121F; }
+  .bp-red { color: var(--danger-deep); }
   .bp-conditions {
     font-size: 10px;
     font-weight: 700;

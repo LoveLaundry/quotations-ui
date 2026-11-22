@@ -12,9 +12,12 @@ import {
   Send as PaperPlaneTilt,
   FileText,
   ShieldCheck,
+  Moon,
+  Sun,
 } from 'lucide-react'
 import { cn } from '../../lib/utils'
 import { useAuth } from '../../context/AuthContext'
+import { useTheme } from '../../context/ThemeContext'
 import { PLATFORM_LANDING } from '../../lib/session-scope'
 import { useNotifications } from '../../features/quotations/hooks/useNotifications'
 import { NotificationDetailDialog } from '../../features/quotations/components/notification-detail-dialog'
@@ -43,6 +46,24 @@ interface TopBarProps {
 
 const iconBtn =
   'pressable inline-flex size-8 items-center justify-center rounded border border-transparent text-[var(--text-muted)] transition-colors duration-100 hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]'
+
+/** Quick light/dark switch using the app's existing persisted theme context. */
+function AppearanceToggle() {
+  const { theme, setTheme } = useTheme()
+  const dark = theme === 'dark' || theme === 'nightblue' || theme === 'contrast-dark'
+  return (
+    <button
+      type="button"
+      onClick={() => setTheme(dark ? 'light' : 'dark')}
+      aria-label={dark ? 'Switch to light mode' : 'Switch to dark mode'}
+      aria-pressed={dark}
+      title={dark ? 'Light mode' : 'Dark mode'}
+      className={iconBtn}
+    >
+      {dark ? <Sun size={16} aria-hidden /> : <Moon size={16} aria-hidden />}
+    </button>
+  )
+}
 
 /**
  * Tenant notifications are mounted only when a laundry scope exists. Keeping
@@ -417,6 +438,7 @@ export function TopBar({
           <QueuedActionsBadge />
 
           {/* Accessibility and discoverability controls stay in one cluster. */}
+          <AppearanceToggle />
           <HighContrastToggle />
           <LargeTextToggle pressed={largeText} onToggle={toggleLargeText} />
           <FeatureLauncherButton onClick={() => setPanelOpen(true)} />

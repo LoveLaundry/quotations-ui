@@ -112,7 +112,7 @@ export default function ProfilePage() {
         <Breadcrumb items={[{ label: 'Dashboard', href: '/' }, { label: 'Profile' }]} />
         <div className="flex items-center gap-3 mt-1">
           <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[var(--surface-3)] border border-[var(--border)]">
-            <UserRound className="h-4 w-4 text-[#0A1D3A]" />
+            <UserRound className="h-4 w-4 text-[var(--text-primary)]" />
           </div>
           <div>
             <h1 className="text-dashboard-title">My Profile</h1>
@@ -140,7 +140,7 @@ export default function ProfilePage() {
                   {avatarUrl ? (
                     <img src={avatarUrl} alt={user?.user_name} className="h-full w-full object-cover" />
                   ) : (
-                    <div className="h-full w-full bg-gradient-to-br from-[#15803D] to-[#15803D] flex items-center justify-center text-white text-4xl font-bold">
+                    <div className="h-full w-full bg-gradient-to-br from-[var(--success)] to-[var(--success)] flex items-center justify-center text-white text-4xl font-bold">
                       {initials}
                     </div>
                   )}
@@ -160,7 +160,7 @@ export default function ProfilePage() {
               </div>
 
               <h2 className="text-xl font-bold text-[var(--text-primary)] mt-4">{user?.user_name}</h2>
-              <p className="text-[13px] mt-1 px-3 py-1 rounded-full bg-[var(--surface-3)] text-[#0A1D3A] font-medium capitalize">
+              <p className="text-[13px] mt-1 px-3 py-1 rounded-full bg-[var(--surface-3)] text-[var(--text-primary)] font-medium capitalize">
                 {user?.role_id?.toLowerCase()}
               </p>
 
@@ -183,7 +183,7 @@ export default function ProfilePage() {
                     type="button"
                     onClick={handleCancel}
                     disabled={isSaving}
-                    className="flex-1 px-4 py-2 rounded-lg border border-[var(--border)] text-[#0A1D3A] hover:bg-[var(--surface-2)] transition-colors text-[13px] font-medium"
+                    className="flex-1 px-4 py-2 rounded-lg border border-[var(--border)] text-[var(--text-primary)] hover:bg-[var(--surface-2)] transition-colors text-[13px] font-medium"
                   >
                     Cancel
                   </button>
@@ -191,7 +191,7 @@ export default function ProfilePage() {
                     type="button"
                     onClick={handleSave}
                     disabled={isSaving}
-                    className="flex-1 px-4 py-2 rounded-lg bg-[#15803D] text-white hover:bg-[#15803D] transition-colors text-[13px] font-medium flex items-center justify-center gap-2"
+                    className="flex-1 px-4 py-2 rounded-lg bg-[var(--success)] text-white hover:bg-[var(--success)] transition-colors text-[13px] font-medium flex items-center justify-center gap-2"
                   >
                     {isSaving ? (
                       <>
@@ -210,7 +210,7 @@ export default function ProfilePage() {
                 <button
                   type="button"
                   onClick={() => setIsEditing(true)}
-                  className="w-full mt-6 px-4 py-2 rounded-lg border-2 border-[#15803D] text-[#15803D] hover:bg-[#E8F2EC] transition-colors text-[13px] font-semibold"
+                  className="w-full mt-6 px-4 py-2 rounded-lg border-2 border-[var(--success)] text-[var(--success-text)] hover:bg-[var(--success-soft)] transition-colors text-[13px] font-semibold"
                 >
                   Edit Profile
                 </button>
@@ -228,7 +228,7 @@ export default function ProfilePage() {
             <div className="space-y-5">
               {/* Full Name */}
               <div>
-                <label className="block text-[13px] font-semibold text-[#0A1D3A] mb-2">
+                <label className="block text-[13px] font-semibold text-[var(--text-primary)] mb-2">
                   Full Name *
                 </label>
                 <input
@@ -236,14 +236,14 @@ export default function ProfilePage() {
                   value={form.user_name}
                   onChange={(e) => setForm({ ...form, user_name: e.target.value })}
                   disabled={!isEditing}
-                  className="w-full px-4 py-2.5 rounded-lg border border-[#BCC4D1] bg-white text-[14px] focus:outline-none focus:ring-2 focus:ring-[#15803D] focus:border-transparent disabled:bg-[var(--surface-2)] disabled:text-[#3A5277] transition-all"
+                  className="w-full px-4 py-2.5 rounded-lg border border-[var(--border)] bg-white text-[14px] focus:outline-none focus:ring-2 focus:ring-[var(--success)] focus:border-transparent disabled:bg-[var(--surface-2)] disabled:text-[var(--brand-text)] transition-all"
                   placeholder="Enter your full name"
                 />
               </div>
 
               {/* Bio */}
               <div>
-                <label className="block text-[13px] font-semibold text-[#0A1D3A] mb-2">
+                <label className="block text-[13px] font-semibold text-[var(--text-primary)] mb-2">
                   Bio / About
                 </label>
                 <textarea
@@ -251,14 +251,14 @@ export default function ProfilePage() {
                   onChange={(e) => setForm({ ...form, bio_data: e.target.value })}
                   disabled={!isEditing}
                   rows={3}
-                  className="w-full px-4 py-2.5 rounded-lg border border-[#BCC4D1] bg-white text-[14px] focus:outline-none focus:ring-2 focus:ring-[#15803D] focus:border-transparent disabled:bg-[var(--surface-2)] disabled:text-[#3A5277] transition-all resize-none"
+                  className="w-full px-4 py-2.5 rounded-lg border border-[var(--border)] bg-white text-[14px] focus:outline-none focus:ring-2 focus:ring-[var(--success)] focus:border-transparent disabled:bg-[var(--surface-2)] disabled:text-[var(--brand-text)] transition-all resize-none"
                   placeholder="Tell us about yourself"
                 />
               </div>
 
               {/* Email */}
               <div>
-                <label className="block text-[13px] font-semibold text-[#0A1D3A] mb-2 flex items-center gap-2">
+                <label className="block text-[13px] font-semibold text-[var(--text-primary)] mb-2 flex items-center gap-2">
                   <Mail className="h-4 w-4" />
                   Email Address
                 </label>
@@ -267,14 +267,14 @@ export default function ProfilePage() {
                   value={form.email}
                   onChange={(e) => setForm({ ...form, email: e.target.value })}
                   disabled={!isEditing}
-                  className="w-full px-4 py-2.5 rounded-lg border border-[#BCC4D1] bg-white text-[14px] focus:outline-none focus:ring-2 focus:ring-[#15803D] focus:border-transparent disabled:bg-[var(--surface-2)] disabled:text-[#3A5277] transition-all"
+                  className="w-full px-4 py-2.5 rounded-lg border border-[var(--border)] bg-white text-[14px] focus:outline-none focus:ring-2 focus:ring-[var(--success)] focus:border-transparent disabled:bg-[var(--surface-2)] disabled:text-[var(--brand-text)] transition-all"
                   placeholder="your.email@example.com"
                 />
               </div>
 
               {/* Mobile */}
               <div>
-                <label className="block text-[13px] font-semibold text-[#0A1D3A] mb-2 flex items-center gap-2">
+                <label className="block text-[13px] font-semibold text-[var(--text-primary)] mb-2 flex items-center gap-2">
                   <Phone className="h-4 w-4" />
                   Mobile Number
                 </label>
@@ -283,15 +283,15 @@ export default function ProfilePage() {
                   value={form.mobile_number}
                   onChange={(e) => setForm({ ...form, mobile_number: e.target.value })}
                   disabled={!isEditing}
-                  className="w-full px-4 py-2.5 rounded-lg border border-[#BCC4D1] bg-white text-[14px] focus:outline-none focus:ring-2 focus:ring-[#15803D] focus:border-transparent disabled:bg-[var(--surface-2)] disabled:text-[#3A5277] transition-all"
+                  className="w-full px-4 py-2.5 rounded-lg border border-[var(--border)] bg-white text-[14px] focus:outline-none focus:ring-2 focus:ring-[var(--success)] focus:border-transparent disabled:bg-[var(--surface-2)] disabled:text-[var(--brand-text)] transition-all"
                   placeholder="+94 XX XXX XXXX"
                 />
               </div>
             </div>
 
             {isEditing && (
-              <div className="mt-6 p-4 rounded-lg bg-[#E8F2EC] border border-[#BDDBC9]">
-                <p className="text-[12px] text-[#15803D]">
+              <div className="mt-6 p-4 rounded-lg bg-[var(--success-soft)] border border-[var(--success-border)]">
+                <p className="text-[12px] text-[var(--success-text)]">
                   <strong>Note:</strong> Changes will be saved to your account and reflected across all services.
                 </p>
               </div>

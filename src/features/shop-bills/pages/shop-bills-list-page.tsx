@@ -29,7 +29,7 @@ const PAYMENT_COLORS: Record<string, string> = {
   CANCELLED: 'bg-gray-100 text-gray-500 border border-gray-200',
 }
 
-const inputClass = 'h-10 w-full rounded-lg border border-[var(--border)] bg-white px-3 text-[13px] text-[var(--text-primary)] outline-none focus:border-[#C1121F] focus:ring-2 focus:ring-[#C1121F]/10 transition'
+const inputClass = 'h-10 w-full rounded-lg border border-[var(--border)] bg-white px-3 text-[13px] text-[var(--text-primary)] outline-none focus:border-[var(--danger)] focus:ring-2 focus:ring-[var(--danger)]/10 transition'
 
 export default function ShopBillsListPage() {
   const navigate = useNavigate()
@@ -124,23 +124,23 @@ export default function ShopBillsListPage() {
         <div className="min-w-0 flex-1">
           <Breadcrumb items={[{ label: 'Dashboard', href: '/' }, { label: 'Shop Bills' }]} />
           <h1 className="text-dashboard-title mt-1">Shop Bills</h1>
-          <p className="text-[13px] text-[#7B8BA4] mt-0.5">{data ? `${data.total} bill${data.total === 1 ? '' : 's'}` : 'Shop bills'}</p>
+          <p className="text-[13px] text-[var(--text-faint)] mt-0.5">{data ? `${data.total} bill${data.total === 1 ? '' : 's'}` : 'Shop bills'}</p>
           <OfflineChangesChip service="bills" resource="shop-bills" className="mt-2" />
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Button variant="outline" size="sm" onClick={() => setShowTemplates(true)} className="gap-1.5 cursor-pointer"><LayoutTemplate size={14} /> Templates</Button>
           <Button variant="outline" size="sm" onClick={() => setShowQuickBill(true)} className="gap-1.5 cursor-pointer"><Zap size={14} /> Quick Bill</Button>
-          <Link to="/shop-bills/new"><Button className="bg-[#C1121F] hover:bg-[#C1121F] text-white gap-2 cursor-pointer"><Plus size={16} /> New Bill</Button></Link>
+          <Link to="/shop-bills/new"><Button className="bg-[var(--danger)] hover:bg-[var(--danger)] text-white gap-2 cursor-pointer"><Plus size={16} /> New Bill</Button></Link>
         </div>
       </div>
 
       <div className="flex flex-wrap gap-3 items-center">
         <div className="relative flex-1 min-w-[200px]">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#7B8BA4]" />
-          <input type="text" value={searchInput} onChange={e => setSearchInput(e.target.value)} placeholder="Search by bill number or client…" className="h-10 w-full rounded-lg border border-[var(--border)] bg-white pl-10 pr-9 text-[13px] text-[var(--text-primary)] outline-none focus:border-[#C1121F] focus:ring-2 focus:ring-[#C1121F]/10 transition" />
-          {search && <button type="button" onClick={() => setSearchInput('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#7B8BA4] hover:text-[#0A1D3A] cursor-pointer" aria-label="Clear search"><X className="h-4 w-4" /></button>}
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--text-faint)]" />
+          <input type="text" value={searchInput} onChange={e => setSearchInput(e.target.value)} placeholder="Search by bill number or client…" className="h-10 w-full rounded-lg border border-[var(--border)] bg-white pl-10 pr-9 text-[13px] text-[var(--text-primary)] outline-none focus:border-[var(--danger)] focus:ring-2 focus:ring-[var(--danger)]/10 transition" />
+          {search && <button type="button" onClick={() => setSearchInput('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--text-faint)] hover:text-[var(--text-primary)] cursor-pointer" aria-label="Clear search"><X className="h-4 w-4" /></button>}
         </div>
-        <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} aria-label="Filter by status" className="h-10 rounded-lg border border-[var(--border)] bg-white px-3 text-[13px] text-[var(--text-primary)] outline-none focus:border-[#C1121F] transition">
+        <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} aria-label="Filter by status" className="h-10 rounded-lg border border-[var(--border)] bg-white px-3 text-[13px] text-[var(--text-primary)] outline-none focus:border-[var(--danger)] transition">
           <option value="">All Status</option>
           <option value="PENDING">Pending</option>
           <option value="PROCESSING">Processing</option>
@@ -148,7 +148,7 @@ export default function ShopBillsListPage() {
           <option value="COMPLETED">Completed</option>
           <option value="CANCELLED">Cancelled</option>
         </select>
-        <select value={paymentFilter} onChange={e => setPaymentFilter(e.target.value)} aria-label="Filter by payment status" className="h-10 rounded-lg border border-[var(--border)] bg-white px-3 text-[13px] text-[var(--text-primary)] outline-none focus:border-[#C1121F] transition">
+        <select value={paymentFilter} onChange={e => setPaymentFilter(e.target.value)} aria-label="Filter by payment status" className="h-10 rounded-lg border border-[var(--border)] bg-white px-3 text-[13px] text-[var(--text-primary)] outline-none focus:border-[var(--danger)] transition">
           <option value="">All Payments</option>
           <option value="DRAFT">Draft</option>
           <option value="PENDING">Pending</option>
@@ -158,12 +158,12 @@ export default function ShopBillsListPage() {
         <button onClick={() => toggleSort('grand_total')} className="flex items-center gap-1 h-10 px-3 rounded-lg border border-[var(--border)] bg-white text-[13px] text-[var(--text-primary)] hover:bg-gray-50 cursor-pointer">
           <ArrowUpDown size={14} /> Amount {sortBy === 'grand_total' && (sortOrder === 'asc' ? '↑' : '↓')}
         </button>
-        {hasFilters && <button onClick={clearFilters} className="text-[12px] text-[#C1121F] hover:text-[#C1121F] underline cursor-pointer">Clear filters</button>}
+        {hasFilters && <button onClick={clearFilters} className="text-[12px] text-[var(--danger-text)] hover:text-[var(--danger-text)] underline cursor-pointer">Clear filters</button>}
       </div>
 
       {selectedIds.size > 0 && (
-        <div className="flex items-center gap-3 p-3 rounded-lg bg-[#E7EAEE] border border-[#BCC4D1]">
-          <span className="text-[13px] font-medium text-[#3A5277]">{selectedIds.size} selected</span>
+        <div className="flex items-center gap-3 p-3 rounded-lg bg-[var(--surface-2)] border border-[var(--border)]">
+          <span className="text-[13px] font-medium text-[var(--brand-text)]">{selectedIds.size} selected</span>
           <div className="flex gap-2 ml-auto">
             {['PENDING', 'PROCESSING', 'DELIVERED', 'COMPLETED', 'CANCELLED'].map(s => (
               <Button key={s} size="sm" variant="outline" onClick={() => handleBulkStatus(s)} disabled={bulkUpdate.isPending} className="text-[11px] cursor-pointer">{s}</Button>
@@ -179,15 +179,15 @@ export default function ShopBillsListPage() {
         <ErrorState description={error instanceof Error ? error.message : 'Unable to load shop bills'} />
       ) : bills.length === 0 ? (
         <EmptyState title="No shop bills found" description={hasFilters ? 'Try adjusting your filters.' : 'Create your first shop bill to get started.'}
-          action={!hasFilters ? <Link to="/shop-bills/new"><Button className="bg-[#C1121F] hover:bg-[#C1121F] text-white gap-2"><Plus size={16} /> New Shop Bill</Button></Link> : undefined} />
+          action={!hasFilters ? <Link to="/shop-bills/new"><Button className="bg-[var(--danger)] hover:bg-[var(--danger)] text-white gap-2"><Plus size={16} /> New Shop Bill</Button></Link> : undefined} />
       ) : (
         <div className="space-y-2">
           {bills.map((bill: any) => (
             <div key={bill.id} className="flex items-center gap-2">
-              <input type="checkbox" checked={selectedIds.has(bill.id)} onChange={() => toggleSelect(bill.id)} aria-label={`Select bill ${bill.bill_number}`} className="h-4 w-4 rounded border-[var(--border)] accent-[#C1121F] cursor-pointer shrink-0" />
+              <input type="checkbox" checked={selectedIds.has(bill.id)} onChange={() => toggleSelect(bill.id)} aria-label={`Select bill ${bill.bill_number}`} className="h-4 w-4 rounded border-[var(--border)] accent-[var(--danger-deep)] cursor-pointer shrink-0" />
               <Link to={`/shop-bills/${bill.id}`} className="flex-1">
-                <Card className="flex items-center gap-4 p-4 hover:border-[#C1121F]/40 transition cursor-pointer">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#F9E7E9] text-[#C1121F] border border-[#EEBDC0]">
+                <Card className="flex items-center gap-4 p-4 hover:border-[var(--danger)]/40 transition cursor-pointer">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[var(--danger-soft)] text-[var(--danger-text)] border border-[var(--danger-border)]">
                     <Receipt className="h-5 w-5" />
                   </div>
                   <div className="flex-1 min-w-0">
@@ -199,11 +199,11 @@ export default function ShopBillsListPage() {
                       <span className={`inline-flex items-center rounded-md px-2 py-0.5 text-[11px] font-medium ${PAYMENT_COLORS[bill.payment_status] ?? 'bg-gray-100 text-gray-500'}`}>{bill.payment_status.replaceAll('_', ' ')}</span>
                         <PendingSyncBadge service="bills" entityId={bill.id} />
                     </div>
-                    <p className="text-[12px] text-[#767676] mt-0.5 truncate">{bill.client_name} &middot; {bill.items.length} item{bill.items.length === 1 ? '' : 's'}</p>
+                    <p className="text-[12px] text-[var(--text-muted)] mt-0.5 truncate">{bill.client_name} &middot; {bill.items.length} item{bill.items.length === 1 ? '' : 's'}</p>
                   </div>
                   <div className="text-right shrink-0">
                     <p className="text-[14px] font-semibold text-[var(--text-primary)]">{formatCurrency(bill.grand_total)}</p>
-                    {bill.outstanding_amount > 0 && <p className="text-[11px] text-[#C1121F]">{formatCurrency(bill.outstanding_amount)} due</p>}
+                    {bill.outstanding_amount > 0 && <p className="text-[11px] text-[var(--danger-text)]">{formatCurrency(bill.outstanding_amount)} due</p>}
                   </div>
                 </Card>
               </Link>
@@ -220,20 +220,20 @@ export default function ShopBillsListPage() {
             <div className="space-y-3">
               <div className="flex gap-2">
                 <input type="text" value={templateName} onChange={e => setTemplateName(e.target.value)} placeholder="Template name" className={inputClass} />
-                <Button size="sm" onClick={handleCreateTemplate} disabled={!templateName.trim() || createTemplate.isPending || bills.length === 0} className="bg-[#C1121F] text-white shrink-0 cursor-pointer">Save Latest</Button>
+                <Button size="sm" onClick={handleCreateTemplate} disabled={!templateName.trim() || createTemplate.isPending || bills.length === 0} className="bg-[var(--danger)] text-white shrink-0 cursor-pointer">Save Latest</Button>
               </div>
               {templates.length === 0 ? (
-                <p className="text-[13px] text-[#7B8BA4] text-center py-4">No templates yet. Create one from an existing bill.</p>
+                <p className="text-[13px] text-[var(--text-faint)] text-center py-4">No templates yet. Create one from an existing bill.</p>
               ) : (
                 <div className="space-y-2 max-h-60 overflow-y-auto">
                   {templates.map((t: any) => (
                     <div key={t.id} className="flex items-center gap-3 p-3 rounded-lg border border-[var(--border)] hover:bg-gray-50">
-                      <LayoutTemplate size={16} className="text-[#767676] shrink-0" />
+                      <LayoutTemplate size={16} className="text-[var(--text-muted)] shrink-0" />
                       <div className="flex-1 min-w-0">
                         <p className="text-[13px] font-medium text-[var(--text-primary)]">{t.name}</p>
-                        <p className="text-[11px] text-[#767676]">{t.items.length} items &middot; Used {t.use_count}x</p>
+                        <p className="text-[11px] text-[var(--text-muted)]">{t.items.length} items &middot; Used {t.use_count}x</p>
                       </div>
-                      <button onClick={() => setTemplateDeleteId(t.id)} className="p-1 text-[#7B8BA4] hover:text-[#C1121F] cursor-pointer" aria-label={`Delete template ${t.name}`}><Trash2 size={14} /></button>
+                      <button onClick={() => setTemplateDeleteId(t.id)} className="p-1 text-[var(--text-faint)] hover:text-[var(--danger-text)] cursor-pointer" aria-label={`Delete template ${t.name}`}><Trash2 size={14} /></button>
                     </div>
                   ))}
                 </div>
@@ -247,17 +247,17 @@ export default function ShopBillsListPage() {
       <Dialog open={showQuickBill} onOpenChange={setShowQuickBill}>
         <DialogContent>
           <DialogHeader>
-            <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-[#EEBDC0] border border-[#DD7D84]"><Zap className="h-5 w-5 text-[#CC3D47]" /></div>
+            <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-[var(--danger-border)] border border-[var(--danger-border)]"><Zap className="h-5 w-5 text-[var(--danger-text)]" /></div>
             <DialogTitle>Quick Bill</DialogTitle><DialogDescription>Create a bill instantly from a client's last order.</DialogDescription>
           </DialogHeader>
           <DialogBody>
             <div>
-              <label className="block text-[11px] font-semibold uppercase tracking-wide text-[#767676] mb-1.5">Client Name *</label>
+              <label className="block text-[11px] font-semibold uppercase tracking-wide text-[var(--text-muted)] mb-1.5">Client Name *</label>
               <input type="text" value={quickClientName} onChange={e => setQuickClientName(e.target.value)} placeholder="Enter client name" className={inputClass} autoFocus />
             </div>
           </DialogBody>
           <DialogFooter>
-            <Button onClick={handleQuickBill} disabled={!quickClientName.trim() || quickBill.isPending} className="w-full bg-[#CC3D47] hover:bg-[#7D0C14] text-white cursor-pointer">{quickBill.isPending ? 'Creating…' : 'Create Quick Bill'}</Button>
+            <Button onClick={handleQuickBill} disabled={!quickClientName.trim() || quickBill.isPending} className="w-full bg-[var(--danger)] hover:bg-[var(--danger)] text-white cursor-pointer">{quickBill.isPending ? 'Creating…' : 'Create Quick Bill'}</Button>
             <Button variant="secondary" onClick={() => setShowQuickBill(false)} className="w-full cursor-pointer">Cancel</Button>
           </DialogFooter>
         </DialogContent>

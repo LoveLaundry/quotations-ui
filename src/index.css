@@ -119,11 +119,11 @@
 
   /* Softer, more diffuse depth. Shadows stay low-opacity and wide so surfaces
      lift without the hard edge that read as "boxy". */
-  --shadow-xs: 0 1px 2px 0 rgba(10, 29, 58, 0.04);
-  --shadow-sm: 0 1px 3px 0 rgba(10, 29, 58, 0.06), 0 1px 2px -1px rgba(10, 29, 58, 0.05);
-  --shadow-md: 0 6px 16px -6px rgba(10, 29, 58, 0.10), 0 2px 6px -2px rgba(10, 29, 58, 0.05);
-  --shadow-lg: 0 18px 32px -12px rgba(10, 29, 58, 0.14), 0 6px 12px -6px rgba(10, 29, 58, 0.06);
-  --shadow-pop: 0 16px 40px -10px rgba(10, 29, 58, 0.20), 0 4px 10px -3px rgba(10, 29, 58, 0.08);
+  --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.07), 0 1px 2px -1px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 6px 16px -6px rgba(0, 0, 0, 0.12), 0 2px 6px -2px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 18px 34px -12px rgba(0, 0, 0, 0.18), 0 6px 12px -6px rgba(0, 0, 0, 0.08);
+  --shadow-pop: 0 16px 42px -10px rgba(0, 0, 0, 0.24), 0 4px 10px -3px rgba(0, 0, 0, 0.10);
 
   --animate-fade-in: fade-in 120ms ease-out;
   --animate-slide-up: slide-up 160ms cubic-bezier(0.16, 1, 0.3, 1);
@@ -265,695 +265,171 @@
 }
 
 /* ───────────────────────────────────────────────────────────────────────────
-   3 · THEME PRESETS
-   Every preset satisfies the same contract:
-     bg · surface · surface-2/3 · surface-hover · surface-sunken
-     border · border-2 · border-strong
-     text-primary/secondary/tertiary/muted/faint/placeholder
-     brand family · success / warning / danger / info family
-     sidebar family · shadow family · skeleton family
+   3 · THEME PRESETS — STRICT FIVE-COLOUR SYSTEM
+   ───────────────────────────────────────────────────────────────────────────
+   Exactly two appearance modes. Legacy preset names remain as aliases so the
+   existing ThemeContext/settings API keeps working, but every alias resolves
+   to either the light or the dark contract below. Every value derives from
+   black, white, red, green or dark blue (or an alpha/tint of those five).
 ─────────────────────────────────────────────────────────────────────────── */
 :root,
-[data-theme='light'] {
-  color-scheme: light;
-
-  --bg: #E7EAEE;
-  --surface: #FFFFFF;
-  --surface-2: #E7EAEE;
-  --surface-3: #E7EAEE;
-  --surface-hover: #E7EAEE;
-  --surface-sunken: #E7EAEE;
-
-  --border: #BCC4D1;
-  --border-2: #BCC4D1;
-  --border-strong: #7B8BA4;
-
-  --text-primary: #0A1D3A;
-  --text-secondary: #0A1D3A;
-  --text-tertiary: #0A1D3A;
-  --text-muted: #0A1D3A;
-  --text-faint: #3A5277;
-  --text-placeholder: #7B8BA4;
-
-  --brand: #C1121F;
-  --brand-hover: #7D0C14;
-  --brand-active: #7D0C14;
-  --brand-soft: #F9E7E9;
-  --brand-border: #EEBDC0;
-  --brand-text: #7D0C14;
-
-  --success-text: #0E5328;
-  --success-soft: #E8F2EC;
-  --success-border: #7EB994;
-  --warning-text: #7D0C14;
-  --warning-soft: #F9E7E9;
-  --warning-border: #DD7D84;
-  --danger-text: #7D0C14;
-  --danger-soft: #F9E7E9;
-  --danger-border: #EEBDC0;
-  --info-text: #3A5277;
-  --info-soft: #E7EAEE;
-  --info-border: #BCC4D1;
-  --accent-text: #3A5277;
-  --accent-soft: #E7EAEE;
-  --accent-border: #BCC4D1;
-
-  --ring: #0F2C59;
-  --ring-offset: #FFFFFF;
-
-  --body-font-size: 14px;
-
-  --sidebar-bg: #0A1D3A;
-  --sidebar-border: #0A1D3A;
-  --sidebar-text: #BCC4D1;
-  --sidebar-label: #3A5277;
-  --sidebar-active: #FFFFFF;
-  --sidebar-hover-bg: #0A1D3A;
-  --sidebar-hover-text: #FFFFFF;
-  --sidebar-indicator: #C1121F;
-  --sidebar-active-bg: #0A1D3A;
-  --sidebar-active-border: #0A1D3A;
-
-  --skeleton-from: #E7EAEE;
-  --skeleton-via: #BCC4D1;
-  --skeleton-to: #E7EAEE;
-
-  /* Light inherits the soft depth scale from @theme — no per-theme override. */
-
-  /* Legacy aliases — pre-token code still references these names. */
-  --red-50: #F9E7E9;
-  --red-100: #F9E7E9;
-  --red-500: #C1121F;
-  --red-600: #C1121F;
-  --red-700: #7D0C14;
-}
-
-/* High-contrast light: stronger borders, darker text. */
-[data-theme='contrast'] {
-  color-scheme: light;
-
-  --bg: #E7EAEE;
-  --surface: #FFFFFF;
-  --surface-2: #E7EAEE;
-  --surface-3: #E7EAEE;
-  --surface-hover: #BCC4D1;
-  --surface-sunken: #E7EAEE;
-
-  --border: #BCC4D1;
-  --border-2: #7B8BA4;
-  --border-strong: #3A5277;
-
-  --text-primary: #0A1D3A;
-  --text-secondary: #0A1D3A;
-  --text-tertiary: #0A1D3A;
-  --text-muted: #0A1D3A;
-  --text-faint: #0A1D3A;
-  --text-placeholder: #3A5277;
-
-  --brand: #C1121F;
-  --brand-hover: #7D0C14;
-  --brand-active: #7D0C14;
-  --brand-soft: #F9E7E9;
-  --brand-border: #EEBDC0;
-  --brand-text: #7D0C14;
-
-  --success-text: #0E5328;
-  --success-soft: #E8F2EC;
-  --success-border: #7EB994;
-  --warning-text: #7D0C14;
-  --warning-soft: #F9E7E9;
-  --warning-border: #DD7D84;
-  --danger-text: #7D0C14;
-  --danger-soft: #F9E7E9;
-  --danger-border: #EEBDC0;
-  --info-text: #0A1D3A;
-  --info-soft: #E7EAEE;
-  --info-border: #7B8BA4;
-  --accent-text: #3A5277;
-  --accent-soft: #E7EAEE;
-  --accent-border: #BCC4D1;
-
-  --ring: #0A1D3A;
-  --ring-offset: #FFFFFF;
-
-  --sidebar-bg: #0A1D3A;
-  --sidebar-border: #0A1D3A;
-  --sidebar-text: #BCC4D1;
-  --sidebar-label: #3A5277;
-  --sidebar-active: #FFFFFF;
-  --sidebar-hover-bg: #0A1D3A;
-  --sidebar-hover-text: #FFFFFF;
-  --sidebar-indicator: #C1121F;
-  --sidebar-active-bg: #0A1D3A;
-  --sidebar-active-border: #0A1D3A;
-
-  --skeleton-from: #BCC4D1;
-  --skeleton-via: #BCC4D1;
-  --skeleton-to: #BCC4D1;
-
-  --shadow-xs: 0 1px 2px 0 rgba(10, 29, 58, 0.07);
-  --shadow-sm: 0 1px 3px 0 rgba(10, 29, 58, 0.10), 0 1px 2px -1px rgba(10, 29, 58, 0.07);
-  --shadow-md: 0 6px 16px -6px rgba(10, 29, 58, 0.14), 0 2px 6px -2px rgba(10, 29, 58, 0.08);
-  --shadow-lg: 0 18px 32px -12px rgba(10, 29, 58, 0.18), 0 6px 12px -6px rgba(10, 29, 58, 0.10);
-  --shadow-pop: 0 16px 40px -10px rgba(10, 29, 58, 0.22), 0 4px 10px -3px rgba(10, 29, 58, 0.10);
-
-  --red-50: #F9E7E9;
-  --red-100: #EEBDC0;
-  --red-500: #C1121F;
-  --red-600: #7D0C14;
-  --red-700: #7D0C14;
-}
-
-/* Ocean: cool blue-tinted light, for operators who prefer a cooler canvas. */
-[data-theme='ocean'] {
-  color-scheme: light;
-
-  --bg: #E7EAEE;
-  --surface: #FFFFFF;
-  --surface-2: #E7EAEE;
-  --surface-3: #E7EAEE;
-  --surface-hover: #E7EAEE;
-  --surface-sunken: #E7EAEE;
-
-  --border: #BCC4D1;
-  --border-2: #BCC4D1;
-  --border-strong: #7B8BA4;
-
-  --text-primary: #0A1D3A;
-  --text-secondary: #0A1D3A;
-  --text-tertiary: #0A1D3A;
-  --text-muted: #0A1D3A;
-  --text-faint: #3A5277;
-  --text-placeholder: #7B8BA4;
-
-  --brand: #0F2C59;
-  --brand-hover: #0A1D3A;
-  --brand-active: #0A1D3A;
-  --brand-soft: #E7EAEE;
-  --brand-border: #BCC4D1;
-  --brand-text: #0F2C59;
-
-  --success-text: #0E5328;
-  --success-soft: #E8F2EC;
-  --success-border: #7EB994;
-  --warning-text: #7D0C14;
-  --warning-soft: #F9E7E9;
-  --warning-border: #DD7D84;
-  --danger-text: #7D0C14;
-  --danger-soft: #F9E7E9;
-  --danger-border: #EEBDC0;
-  --info-text: #0A1D3A;
-  --info-soft: #E7EAEE;
-  --info-border: #BCC4D1;
-  --accent-text: #0A1D3A;
-  --accent-soft: #E7EAEE;
-  --accent-border: #BCC4D1;
-
-  --ring: #0F2C59;
-  --ring-offset: #FFFFFF;
-
-  --sidebar-bg: #0A1D3A;
-  --sidebar-border: #0A1D3A;
-  --sidebar-text: #7B8BA4;
-  --sidebar-label: #3A5277;
-  --sidebar-active: #FFFFFF;
-  --sidebar-hover-bg: #0A1D3A;
-  --sidebar-hover-text: #FFFFFF;
-  --sidebar-indicator: #7B8BA4;
-  --sidebar-active-bg: #0A1D3A;
-  --sidebar-active-border: #0A1D3A;
-
-  --skeleton-from: #E7EAEE;
-  --skeleton-via: #BCC4D1;
-  --skeleton-to: #E7EAEE;
-
-  --shadow-xs: 0 1px 2px 0 rgba(10, 29, 58, 0.05);
-  --shadow-sm: 0 1px 3px 0 rgba(10, 29, 58, 0.08), 0 1px 2px -1px rgba(10, 29, 58, 0.05);
-  --shadow-md: 0 6px 16px -6px rgba(10, 29, 58, 0.11), 0 2px 6px -2px rgba(10, 29, 58, 0.06);
-  --shadow-lg: 0 18px 32px -12px rgba(10, 29, 58, 0.15), 0 6px 12px -6px rgba(10, 29, 58, 0.07);
-  --shadow-pop: 0 16px 40px -10px rgba(10, 29, 58, 0.22), 0 4px 10px -3px rgba(10, 29, 58, 0.09);
-
-  --red-50: #E7EAEE;
-  --red-100: #E7EAEE;
-  --red-500: #3A5277;
-  --red-600: #0F2C59;
-  --red-700: #0A1D3A;
-}
-
-/* Forest: green-tinted light. */
-[data-theme='forest'] {
-  color-scheme: light;
-
-  --bg: #E8F2EC;
-  --surface: #FFFFFF;
-  --surface-2: #E8F2EC;
-  --surface-3: #E8F2EC;
-  --surface-hover: #E8F2EC;
-  --surface-sunken: #E8F2EC;
-
-  --border: #BDDBC9;
-  --border-2: #7EB994;
-  --border-strong: #7EB994;
-
-  --text-primary: #0E5328;
-  --text-secondary: #0E5328;
-  --text-tertiary: #0E5328;
-  --text-muted: #0E5328;
-  --text-faint: #3F9760;
-  --text-placeholder: #3F9760;
-
-  --brand: #15803D;
-  --brand-hover: #0E5328;
-  --brand-active: #0E5328;
-  --brand-soft: #E8F2EC;
-  --brand-border: #BDDBC9;
-  --brand-text: #15803D;
-
-  --success-text: #15803D;
-  --success-soft: #E8F2EC;
-  --success-border: #BDDBC9;
-  --warning-text: #7D0C14;
-  --warning-soft: #F9E7E9;
-  --warning-border: #DD7D84;
-  --danger-text: #7D0C14;
-  --danger-soft: #F9E7E9;
-  --danger-border: #EEBDC0;
-  --info-text: #0A1D3A;
-  --info-soft: #E7EAEE;
-  --info-border: #BCC4D1;
-  --accent-text: #0A1D3A;
-  --accent-soft: #E7EAEE;
-  --accent-border: #BCC4D1;
-
-  --ring: #15803D;
-  --ring-offset: #FFFFFF;
-
-  --sidebar-bg: #0E5328;
-  --sidebar-border: #0E5328;
-  --sidebar-text: #7EB994;
-  --sidebar-label: #3F9760;
-  --sidebar-active: #FFFFFF;
-  --sidebar-hover-bg: #0E5328;
-  --sidebar-hover-text: #FFFFFF;
-  --sidebar-indicator: #3F9760;
-  --sidebar-active-bg: #0E5328;
-  --sidebar-active-border: #0E5328;
-
-  --skeleton-from: #E8F2EC;
-  --skeleton-via: #BDDBC9;
-  --skeleton-to: #E8F2EC;
-
-  --shadow-xs: 0 1px 2px 0 rgba(14, 83, 40, 0.05);
-  --shadow-sm: 0 1px 3px 0 rgba(14, 83, 40, 0.08), 0 1px 2px -1px rgba(14, 83, 40, 0.05);
-  --shadow-md: 0 6px 16px -6px rgba(14, 83, 40, 0.11), 0 2px 6px -2px rgba(14, 83, 40, 0.06);
-  --shadow-lg: 0 18px 32px -12px rgba(14, 83, 40, 0.15), 0 6px 12px -6px rgba(14, 83, 40, 0.07);
-  --shadow-pop: 0 16px 40px -10px rgba(14, 83, 40, 0.22), 0 4px 10px -3px rgba(14, 83, 40, 0.09);
-
-  --red-50: #E8F2EC;
-  --red-100: #E8F2EC;
-  --red-500: #3F9760;
-  --red-600: #15803D;
-  --red-700: #0E5328;
-}
-
-/* Sepia: warm paper tone. */
-[data-theme='sepia'] {
-  color-scheme: light;
-
-  --bg: #F9E7E9;
-  --surface: #F9E7E9;
-  --surface-2: #F9E7E9;
-  --surface-3: #EEBDC0;
-  --surface-hover: #EEBDC0;
-  --surface-sunken: #F9E7E9;
-
-  --border: #EEBDC0;
-  --border-2: #DD7D84;
-  --border-strong: #CC3D47;
-
-  --text-primary: #7D0C14;
-  --text-secondary: #7D0C14;
-  --text-tertiary: #7D0C14;
-  --text-muted: #7D0C14;
-  --text-faint: #CC3D47;
-  --text-placeholder: #CC3D47;
-
-  --brand: #7D0C14;
-  --brand-hover: #7D0C14;
-  --brand-active: #7D0C14;
-  --brand-soft: #F9E7E9;
-  --brand-border: #EEBDC0;
-  --brand-text: #7D0C14;
-
-  --success-text: #0E5328;
-  --success-soft: #E8F2EC;
-  --success-border: #7EB994;
-  --warning-text: #7D0C14;
-  --warning-soft: #F9E7E9;
-  --warning-border: #DD7D84;
-  --danger-text: #7D0C14;
-  --danger-soft: #F9E7E9;
-  --danger-border: #EEBDC0;
-  --info-text: #0A1D3A;
-  --info-soft: #E7EAEE;
-  --info-border: #BCC4D1;
-  --accent-text: #0A1D3A;
-  --accent-soft: #E7EAEE;
-  --accent-border: #BCC4D1;
-
-  --ring: #7D0C14;
-  --ring-offset: #F9E7E9;
-
-  --sidebar-bg: #7D0C14;
-  --sidebar-border: #7D0C14;
-  --sidebar-text: #DD7D84;
-  --sidebar-label: #CC3D47;
-  --sidebar-active: #F9E7E9;
-  --sidebar-hover-bg: #7D0C14;
-  --sidebar-hover-text: #F9E7E9;
-  --sidebar-indicator: #CC3D47;
-  --sidebar-active-bg: #7D0C14;
-  --sidebar-active-border: #7D0C14;
-
-  --skeleton-from: #EEBDC0;
-  --skeleton-via: #EEBDC0;
-  --skeleton-to: #EEBDC0;
-
-  --shadow-xs: 0 1px 2px 0 rgba(125, 12, 20, 0.05);
-  --shadow-sm: 0 1px 3px 0 rgba(125, 12, 20, 0.08), 0 1px 2px -1px rgba(125, 12, 20, 0.05);
-  --shadow-md: 0 6px 16px -6px rgba(125, 12, 20, 0.11), 0 2px 6px -2px rgba(125, 12, 20, 0.06);
-  --shadow-lg: 0 18px 32px -12px rgba(125, 12, 20, 0.15), 0 6px 12px -6px rgba(125, 12, 20, 0.07);
-  --shadow-pop: 0 16px 40px -10px rgba(125, 12, 20, 0.22), 0 4px 10px -3px rgba(125, 12, 20, 0.09);
-
-  --red-50: #F9E7E9;
-  --red-100: #EEBDC0;
-  --red-500: #CC3D47;
-  --red-600: #7D0C14;
-  --red-700: #7D0C14;
-}
-
-/* Slate: balanced grey. */
+[data-theme='light'],
+[data-theme='contrast'],
+[data-theme='ocean'],
+[data-theme='forest'],
+[data-theme='sepia'],
 [data-theme='slate'] {
   color-scheme: light;
 
-  --bg: #E7EAEE;
-  --surface: #FFFFFF;
-  --surface-2: #E7EAEE;
-  --surface-3: #BCC4D1;
-  --surface-hover: #E7EAEE;
-  --surface-sunken: #E7EAEE;
+  --bg: color-mix(in srgb, var(--ll-black) 4%, var(--ll-white));
+  --surface: var(--ll-white);
+  --surface-2: color-mix(in srgb, var(--ll-black) 6%, var(--ll-white));
+  --surface-3: color-mix(in srgb, var(--ll-black) 11%, var(--ll-white));
+  --surface-hover: color-mix(in srgb, var(--ll-blue) 6%, var(--ll-white));
+  --surface-sunken: color-mix(in srgb, var(--ll-black) 2%, var(--ll-white));
 
-  --border: #BCC4D1;
-  --border-2: #7B8BA4;
-  --border-strong: #3A5277;
+  --border: color-mix(in srgb, var(--ll-black) 14%, var(--ll-white));
+  --border-2: color-mix(in srgb, var(--ll-black) 24%, var(--ll-white));
+  --border-strong: color-mix(in srgb, var(--ll-black) 42%, var(--ll-white));
 
-  --text-primary: #0A1D3A;
-  --text-secondary: #0A1D3A;
-  --text-tertiary: #0A1D3A;
-  --text-muted: #0A1D3A;
-  --text-faint: #3A5277;
-  --text-placeholder: #3A5277;
+  --text-primary: var(--ll-black);
+  --text-secondary: color-mix(in srgb, var(--ll-black) 78%, var(--ll-white));
+  --text-tertiary: color-mix(in srgb, var(--ll-black) 62%, var(--ll-white));
+  --text-muted: color-mix(in srgb, var(--ll-black) 55%, var(--ll-white));
+  --text-faint: color-mix(in srgb, var(--ll-black) 40%, var(--ll-white));
+  --text-placeholder: color-mix(in srgb, var(--ll-black) 38%, var(--ll-white));
 
-  --brand: #C1121F;
-  --brand-hover: #7D0C14;
-  --brand-active: #7D0C14;
-  --brand-soft: #F9E7E9;
-  --brand-border: #EEBDC0;
-  --brand-text: #7D0C14;
+  --brand: var(--ll-blue);
+  --brand-hover: color-mix(in srgb, var(--ll-blue) 72%, var(--ll-black));
+  --brand-active: color-mix(in srgb, var(--ll-blue) 55%, var(--ll-black));
+  --brand-soft: color-mix(in srgb, var(--ll-blue) 8%, var(--ll-white));
+  --brand-border: color-mix(in srgb, var(--ll-blue) 24%, var(--ll-white));
+  --brand-text: var(--ll-blue);
 
-  --success-text: #0E5328;
-  --success-soft: #E8F2EC;
-  --success-border: #7EB994;
-  --warning-text: #7D0C14;
-  --warning-soft: #F9E7E9;
-  --warning-border: #DD7D84;
-  --danger-text: #7D0C14;
-  --danger-soft: #F9E7E9;
-  --danger-border: #EEBDC0;
-  --info-text: #0F2C59;
-  --info-soft: #E7EAEE;
-  --info-border: #BCC4D1;
-  --accent-text: #0F2C59;
-  --accent-soft: #E7EAEE;
-  --accent-border: #BCC4D1;
+  --success-text: var(--ll-green);
+  --success-soft: color-mix(in srgb, var(--ll-green) 9%, var(--ll-white));
+  --success-border: color-mix(in srgb, var(--ll-green) 26%, var(--ll-white));
+  --warning-text: var(--ll-red);
+  --warning-soft: color-mix(in srgb, var(--ll-red) 8%, var(--ll-white));
+  --warning-border: color-mix(in srgb, var(--ll-red) 26%, var(--ll-white));
+  --danger-text: var(--ll-red);
+  --danger-soft: color-mix(in srgb, var(--ll-red) 8%, var(--ll-white));
+  --danger-border: color-mix(in srgb, var(--ll-red) 26%, var(--ll-white));
+  --info-text: var(--ll-blue);
+  --info-soft: color-mix(in srgb, var(--ll-blue) 8%, var(--ll-white));
+  --info-border: color-mix(in srgb, var(--ll-blue) 24%, var(--ll-white));
+  --accent-text: var(--ll-red);
+  --accent-soft: color-mix(in srgb, var(--ll-red) 8%, var(--ll-white));
+  --accent-border: color-mix(in srgb, var(--ll-red) 26%, var(--ll-white));
 
-  --ring: #0F2C59;
-  --ring-offset: #FFFFFF;
+  --ring: var(--ll-blue);
+  --ring-offset: var(--ll-white);
+  --body-font-size: 14px;
 
-  --sidebar-bg: #0A1D3A;
-  --sidebar-border: #0A1D3A;
-  --sidebar-text: #7B8BA4;
-  --sidebar-label: #3A5277;
-  --sidebar-active: #FFFFFF;
-  --sidebar-hover-bg: #0A1D3A;
-  --sidebar-hover-text: #FFFFFF;
-  --sidebar-indicator: #C1121F;
-  --sidebar-active-bg: #0A1D3A;
-  --sidebar-active-border: #0A1D3A;
+  --sidebar-bg: var(--ll-blue);
+  --sidebar-border: var(--ll-blue);
+  --sidebar-text: color-mix(in srgb, var(--ll-white) 78%, transparent);
+  --sidebar-label: color-mix(in srgb, var(--ll-white) 58%, transparent);
+  --sidebar-active: var(--ll-white);
+  --sidebar-hover-bg: color-mix(in srgb, var(--ll-white) 9%, var(--ll-blue));
+  --sidebar-hover-text: var(--ll-white);
+  --sidebar-indicator: var(--ll-red);
+  --sidebar-active-bg: color-mix(in srgb, var(--ll-white) 14%, var(--ll-blue));
+  --sidebar-active-border: var(--ll-white);
 
-  --skeleton-from: #BCC4D1;
-  --skeleton-via: #BCC4D1;
-  --skeleton-to: #BCC4D1;
+  --skeleton-from: color-mix(in srgb, var(--ll-black) 6%, var(--ll-white));
+  --skeleton-via: color-mix(in srgb, var(--ll-black) 12%, var(--ll-white));
+  --skeleton-to: color-mix(in srgb, var(--ll-black) 6%, var(--ll-white));
 
-  --shadow-xs: 0 1px 2px 0 rgba(10, 29, 58, 0.06);
-  --shadow-sm: 0 1px 3px 0 rgba(10, 29, 58, 0.09), 0 1px 2px -1px rgba(10, 29, 58, 0.05);
-  --shadow-md: 0 6px 16px -6px rgba(10, 29, 58, 0.12), 0 2px 6px -2px rgba(10, 29, 58, 0.07);
-  --shadow-lg: 0 18px 32px -12px rgba(10, 29, 58, 0.16), 0 6px 12px -6px rgba(10, 29, 58, 0.08);
-  --shadow-pop: 0 16px 40px -10px rgba(10, 29, 58, 0.22), 0 4px 10px -3px rgba(10, 29, 58, 0.09);
+  --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.07), 0 1px 2px -1px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 6px 16px -6px rgba(0, 0, 0, 0.12), 0 2px 6px -2px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 18px 34px -12px rgba(0, 0, 0, 0.18), 0 6px 12px -6px rgba(0, 0, 0, 0.08);
+  --shadow-pop: 0 16px 42px -10px rgba(0, 0, 0, 0.24), 0 4px 10px -3px rgba(0, 0, 0, 0.10);
 
-  --red-50: #F9E7E9;
-  --red-100: #EEBDC0;
-  --red-500: #C1121F;
-  --red-600: #C1121F;
-  --red-700: #7D0C14;
+  --red-50: var(--danger-soft);
+  --red-100: var(--danger-soft);
+  --red-500: var(--ll-red);
+  --red-600: var(--ll-red);
+  --red-700: color-mix(in srgb, var(--ll-red) 72%, var(--ll-black));
 }
 
-/* Night Blue: deep blue dark. */
-[data-theme='nightblue'] {
-  color-scheme: dark;
-
-  --bg: #0A1D3A;
-  --surface: #0A1D3A;
-  --surface-2: #0A1D3A;
-  --surface-3: #0A1D3A;
-  --surface-hover: #0A1D3A;
-  --surface-sunken: #0A1D3A;
-
-  --border: #0A1D3A;
-  --border-2: #0A1D3A;
-  --border-strong: #0A1D3A;
-
-  --text-primary: #E7EAEE;
-  --text-secondary: #BCC4D1;
-  --text-tertiary: #7B8BA4;
-  --text-muted: #3A5277;
-  --text-faint: #3A5277;
-  --text-placeholder: #0A1D3A;
-
-  --brand: #DD7D84;
-  --brand-hover: #EEBDC0;
-  --brand-active: #EEBDC0;
-  --brand-soft: #7D0C14;
-  --brand-border: #7D0C14;
-  --brand-text: #EEBDC0;
-
-  --success-text: #7EB994;
-  --success-soft: #0E5328;
-  --success-border: #0E5328;
-  --warning-text: #CC3D47;
-  --warning-soft: #7D0C14;
-  --warning-border: #7D0C14;
-  --danger-text: #DD7D84;
-  --danger-soft: #7D0C14;
-  --danger-border: #7D0C14;
-  --info-text: #7B8BA4;
-  --info-soft: #0A1D3A;
-  --info-border: #0A1D3A;
-  --accent-text: #BCC4D1;
-  --accent-soft: #0A1D3A;
-  --accent-border: #0A1D3A;
-
-  --ring: #7B8BA4;
-  --ring-offset: #0A1D3A;
-
-  --sidebar-bg: #0A1D3A;
-  --sidebar-border: #0A1D3A;
-  --sidebar-text: #7B8BA4;
-  --sidebar-label: #3A5277;
-  --sidebar-active: #FFFFFF;
-  --sidebar-hover-bg: #0A1D3A;
-  --sidebar-hover-text: #FFFFFF;
-  --sidebar-indicator: #DD7D84;
-  --sidebar-active-bg: #0A1D3A;
-  --sidebar-active-border: #0A1D3A;
-
-  --skeleton-from: #0A1D3A;
-  --skeleton-via: #0A1D3A;
-  --skeleton-to: #0A1D3A;
-
-  --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.35);
-  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.45), 0 1px 2px -1px rgba(0, 0, 0, 0.35);
-  --shadow-md: 0 6px 16px -6px rgba(0, 0, 0, 0.55), 0 2px 6px -2px rgba(0, 0, 0, 0.4);
-  --shadow-lg: 0 18px 32px -12px rgba(0, 0, 0, 0.6), 0 6px 12px -6px rgba(0, 0, 0, 0.45);
-  --shadow-pop: 0 16px 40px -10px rgba(0, 0, 0, 0.7), 0 4px 10px -3px rgba(0, 0, 0, 0.5);
-
-  --red-50: #7D0C14;
-  --red-100: #7D0C14;
-  --red-500: #DD7D84;
-  --red-600: #EEBDC0;
-  --red-700: #EEBDC0;
-}
-
-/* Midnight: neutral dark. */
-[data-theme='dark'] {
-  color-scheme: dark;
-
-  --bg: #0A1D3A;
-  --surface: #0A1D3A;
-  --surface-2: #0A1D3A;
-  --surface-3: #0A1D3A;
-  --surface-hover: #0A1D3A;
-  --surface-sunken: #0A1D3A;
-
-  --border: #0A1D3A;
-  --border-2: #0A1D3A;
-  --border-strong: #0A1D3A;
-
-  --text-primary: #E7EAEE;
-  --text-secondary: #BCC4D1;
-  --text-tertiary: #7B8BA4;
-  --text-muted: #3A5277;
-  --text-faint: #7E7E7E;
-  --text-placeholder: #0A1D3A;
-
-  --brand: #C1121F;
-  --brand-hover: #DD7D84;
-  --brand-active: #EEBDC0;
-  --brand-soft: #7D0C14;
-  --brand-border: #7D0C14;
-  --brand-text: #DD7D84;
-
-  --success-text: #7EB994;
-  --success-soft: #0E5328;
-  --success-border: #0E5328;
-  --warning-text: #CC3D47;
-  --warning-soft: #7D0C14;
-  --warning-border: #7D0C14;
-  --danger-text: #DD7D84;
-  --danger-soft: #7D0C14;
-  --danger-border: #7D0C14;
-  --info-text: #7B8BA4;
-  --info-soft: #0A1D3A;
-  --info-border: #0A1D3A;
-  --accent-text: #BCC4D1;
-  --accent-soft: #0A1D3A;
-  --accent-border: #0A1D3A;
-
-  --ring: #7B8BA4;
-  --ring-offset: #0A1D3A;
-
-  --sidebar-bg: #0A1D3A;
-  --sidebar-border: #0A1D3A;
-  --sidebar-text: #7B8BA4;
-  --sidebar-label: #7E7E7E;
-  --sidebar-active: #FFFFFF;
-  --sidebar-hover-bg: #0A1D3A;
-  --sidebar-hover-text: #FFFFFF;
-  --sidebar-indicator: #C1121F;
-  --sidebar-active-bg: #0A1D3A;
-  --sidebar-active-border: #0A1D3A;
-
-  --skeleton-from: #0A1D3A;
-  --skeleton-via: #0A1D3A;
-  --skeleton-to: #0A1D3A;
-
-  --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.35);
-  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.45), 0 1px 2px -1px rgba(0, 0, 0, 0.35);
-  --shadow-md: 0 6px 16px -6px rgba(0, 0, 0, 0.55), 0 2px 6px -2px rgba(0, 0, 0, 0.4);
-  --shadow-lg: 0 18px 32px -12px rgba(0, 0, 0, 0.6), 0 6px 12px -6px rgba(0, 0, 0, 0.45);
-  --shadow-pop: 0 16px 40px -10px rgba(0, 0, 0, 0.7), 0 4px 10px -3px rgba(0, 0, 0, 0.5);
-
-  --red-50: #7D0C14;
-  --red-100: #7D0C14;
-  --red-500: #C1121F;
-  --red-600: #DD7D84;
-  --red-700: #EEBDC0;
-}
-
-/* High Contrast Dark. */
+[data-theme='dark'],
+[data-theme='nightblue'],
 [data-theme='contrast-dark'] {
   color-scheme: dark;
 
-  --bg: #000000;
-  --surface: #0C0C0C;
-  --surface-2: #131313;
-  --surface-3: #1C1C1C;
-  --surface-hover: #1A1A1A;
-  --surface-sunken: #070707;
+  --bg: var(--ll-black);
+  --surface: color-mix(in srgb, var(--ll-white) 5%, var(--ll-black));
+  --surface-2: color-mix(in srgb, var(--ll-blue) 12%, var(--ll-black));
+  --surface-3: color-mix(in srgb, var(--ll-blue) 20%, var(--ll-black));
+  --surface-hover: color-mix(in srgb, var(--ll-blue) 18%, var(--ll-black));
+  --surface-sunken: var(--ll-black);
 
-  --border: #3D3D3D;
-  --border-2: #5C5C5C;
-  --border-strong: #7A7A7A;
+  --border: color-mix(in srgb, var(--ll-white) 16%, transparent);
+  --border-2: color-mix(in srgb, var(--ll-white) 28%, transparent);
+  --border-strong: color-mix(in srgb, var(--ll-white) 45%, transparent);
 
-  --text-primary: #FFFFFF;
-  --text-secondary: #EDEDED;
-  --text-tertiary: #D0D0D0;
-  --text-muted: #B0B0B0;
-  --text-faint: #8C8C8C;
-  --text-placeholder: #767676;
+  --text-primary: var(--ll-white);
+  --text-secondary: color-mix(in srgb, var(--ll-white) 84%, transparent);
+  --text-tertiary: color-mix(in srgb, var(--ll-white) 68%, transparent);
+  --text-muted: color-mix(in srgb, var(--ll-white) 62%, transparent);
+  --text-faint: color-mix(in srgb, var(--ll-white) 46%, transparent);
+  --text-placeholder: color-mix(in srgb, var(--ll-white) 42%, transparent);
 
-  --brand: #DD7D84;
-  --brand-hover: #DD7D84;
-  --brand-active: #EEBDC0;
-  --brand-soft: #7D0C14;
-  --brand-border: #7D0C14;
-  --brand-text: #DD7D84;
+  --brand: color-mix(in srgb, var(--ll-blue) 58%, var(--ll-white));
+  --brand-hover: var(--ll-blue);
+  --brand-active: color-mix(in srgb, var(--ll-blue) 42%, var(--ll-white));
+  --brand-soft: color-mix(in srgb, var(--ll-blue) 26%, var(--ll-black));
+  --brand-border: color-mix(in srgb, var(--ll-blue) 52%, var(--ll-white));
+  --brand-text: color-mix(in srgb, var(--ll-blue) 62%, var(--ll-white));
 
-  --success-text: #7EB994;
-  --success-soft: #0E5328;
-  --success-border: #0E5328;
-  --warning-text: #DD7D84;
-  --warning-soft: #7D0C14;
-  --warning-border: #7D0C14;
-  --danger-text: #DD7D84;
-  --danger-soft: #7D0C14;
-  --danger-border: #7D0C14;
-  --info-text: #7B8BA4;
-  --info-soft: #0A1D3A;
-  --info-border: #0A1D3A;
-  --accent-text: #BCC4D1;
-  --accent-soft: #0A1D3A;
-  --accent-border: #3A5277;
+  --success-text: color-mix(in srgb, var(--ll-green) 72%, var(--ll-white));
+  --success-soft: color-mix(in srgb, var(--ll-green) 16%, var(--ll-black));
+  --success-border: color-mix(in srgb, var(--ll-green) 46%, var(--ll-white));
+  --warning-text: color-mix(in srgb, var(--ll-red) 72%, var(--ll-white));
+  --warning-soft: color-mix(in srgb, var(--ll-red) 16%, var(--ll-black));
+  --warning-border: color-mix(in srgb, var(--ll-red) 46%, var(--ll-white));
+  --danger-text: color-mix(in srgb, var(--ll-red) 72%, var(--ll-white));
+  --danger-soft: color-mix(in srgb, var(--ll-red) 16%, var(--ll-black));
+  --danger-border: color-mix(in srgb, var(--ll-red) 46%, var(--ll-white));
+  --info-text: color-mix(in srgb, var(--ll-blue) 62%, var(--ll-white));
+  --info-soft: color-mix(in srgb, var(--ll-blue) 26%, var(--ll-black));
+  --info-border: color-mix(in srgb, var(--ll-blue) 52%, var(--ll-white));
+  --accent-text: color-mix(in srgb, var(--ll-red) 72%, var(--ll-white));
+  --accent-soft: color-mix(in srgb, var(--ll-red) 16%, var(--ll-black));
+  --accent-border: color-mix(in srgb, var(--ll-red) 46%, var(--ll-white));
 
-  --ring: #7B8BA4;
-  --ring-offset: #000000;
+  --ring: color-mix(in srgb, var(--ll-blue) 58%, var(--ll-white));
+  --ring-offset: var(--ll-black);
+  --body-font-size: 14px;
 
-  --sidebar-bg: #000000;
-  --sidebar-border: #2F2F2F;
-  --sidebar-text: #D0D0D0;
-  --sidebar-label: #969696;
-  --sidebar-active: #FFFFFF;
-  --sidebar-hover-bg: #1A1A1A;
-  --sidebar-hover-text: #FFFFFF;
-  --sidebar-indicator: #DD7D84;
-  --sidebar-active-bg: #1F1F1F;
-  --sidebar-active-border: #383838;
+  --sidebar-bg: var(--ll-blue);
+  --sidebar-border: color-mix(in srgb, var(--ll-white) 12%, var(--ll-blue));
+  --sidebar-text: color-mix(in srgb, var(--ll-white) 82%, transparent);
+  --sidebar-label: color-mix(in srgb, var(--ll-white) 55%, transparent);
+  --sidebar-active: var(--ll-white);
+  --sidebar-hover-bg: color-mix(in srgb, var(--ll-white) 11%, var(--ll-blue));
+  --sidebar-hover-text: var(--ll-white);
+  --sidebar-indicator: var(--ll-red);
+  --sidebar-active-bg: color-mix(in srgb, var(--ll-white) 18%, var(--ll-blue));
+  --sidebar-active-border: var(--ll-white);
 
-  --skeleton-from: #131313;
-  --skeleton-via: #2B2B2B;
-  --skeleton-to: #131313;
+  --skeleton-from: color-mix(in srgb, var(--ll-white) 6%, var(--ll-black));
+  --skeleton-via: color-mix(in srgb, var(--ll-white) 13%, var(--ll-black));
+  --skeleton-to: color-mix(in srgb, var(--ll-white) 6%, var(--ll-black));
 
-  --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.7);
-  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.85), 0 1px 2px -1px rgba(0, 0, 0, 0.7);
-  --shadow-md: 0 6px 16px -6px rgba(0, 0, 0, 0.9), 0 2px 6px -2px rgba(0, 0, 0, 0.75);
-  --shadow-lg: 0 18px 32px -12px rgba(0, 0, 0, 0.95), 0 6px 12px -6px rgba(0, 0, 0, 0.8);
-  --shadow-pop: 0 16px 40px -10px rgba(0, 0, 0, 0.95), 0 4px 10px -3px rgba(0, 0, 0, 0.85);
+  --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.40);
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.50);
+  --shadow-md: 0 6px 18px -6px rgba(0, 0, 0, 0.65);
+  --shadow-lg: 0 18px 36px -12px rgba(0, 0, 0, 0.72);
+  --shadow-pop: 0 16px 44px -10px rgba(0, 0, 0, 0.78);
 
-  --red-50: #7D0C14;
-  --red-100: #7D0C14;
-  --red-500: #DD7D84;
-  --red-600: #DD7D84;
-  --red-700: #EEBDC0;
+  --red-50: var(--danger-soft);
+  --red-100: var(--danger-soft);
+  --red-500: var(--danger-text);
+  --red-600: var(--danger-text);
+  --red-700: var(--danger-text);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -997,8 +473,8 @@
   background-color: var(--surface-2);
 }
 
-:root .bg-\[\#BCC4D1\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
-:root .bg-\[\#BCC4D1\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)) {
+:root .bg-\[\#BFBFBF\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
+:root .bg-\[\#BFBFBF\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)) {
   background-color: var(--surface-3);
 }
 
@@ -1032,8 +508,8 @@
 }
 
 /* ── Borders ───────────────────────────────────────────────────────────────── */
-:root .border-\[\#BCC4D1\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
-:root .border-\[\#BCC4D1\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
+:root .border-\[\#BFBFBF\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
+:root .border-\[\#BFBFBF\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
 :root .border-\[\#E7EAEE\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
 :root .border-\[\#E7EAEE\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
 :root .border-\[\#E7EAEE\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
@@ -1042,106 +518,106 @@
   border-color: var(--border);
 }
 
-:root .border-\[\#BCC4D1\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
-:root .border-\[\#BCC4D1\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
-:root .border-\[\#BCC4D1\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)) {
+:root .border-\[\#BFBFBF\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
+:root .border-\[\#BFBFBF\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
+:root .border-\[\#BFBFBF\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)) {
   border-color: var(--border-2);
 }
 
 :root .divide-\[\#E7EAEE\] > :not([hidden]) ~ :not([hidden]),
-:root .divide-\[\#BCC4D1\] > :not([hidden]) ~ :not([hidden]),
+:root .divide-\[\#BFBFBF\] > :not([hidden]) ~ :not([hidden]),
 :root .divide-gray-100 > :not([hidden]) ~ :not([hidden]) {
   border-color: var(--border);
 }
 
-:root .ring-\[\#BCC4D1\]:not(:is(.quotation-print-page *, #printable-receipt *)),
-:root .ring-\[\#BCC4D1\]:not(:is(.quotation-print-page *, #printable-receipt *)) {
+:root .ring-\[\#BFBFBF\]:not(:is(.quotation-print-page *, #printable-receipt *)),
+:root .ring-\[\#BFBFBF\]:not(:is(.quotation-print-page *, #printable-receipt *)) {
   --tw-ring-color: var(--border);
 }
 
-:root .focus-within\:border-\[\#C1121F\]:focus-within,
-:root .focus-within\:ring-\[\#F9E7E9\]:focus-within {
+:root .focus-within\:border-\[\#FF0000\]:focus-within,
+:root .focus-within\:ring-\[\rgba(255, 0, 0, 0.12)\]:focus-within {
   --tw-ring-color: var(--brand-border);
 }
 
 /* ── Text ──────────────────────────────────────────────────────────────────── */
-:root .text-\[\#0A1D3A\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
-:root .text-\[\#0A1D3A\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
-:root .text-\[\#0A1D3A\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
+:root .text-\[\#00008B\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
+:root .text-\[\#00008B\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
+:root .text-\[\#00008B\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
 :root .text-gray-900:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)) {
   color: var(--text-primary);
 }
 
-:root .text-\[\#0A1D3A\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
-:root .text-\[\#0A1D3A\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
-:root .text-\[\#0A1D3A\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
+:root .text-\[\#00008B\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
+:root .text-\[\#00008B\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
+:root .text-\[\#00008B\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
 :root .text-gray-800:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)) {
   color: var(--text-secondary);
 }
 
-:root .text-\[\#0A1D3A\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
-:root .text-\[\#0A1D3A\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
+:root .text-\[\#00008B\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
+:root .text-\[\#00008B\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
 :root .text-gray-600:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)) {
   color: var(--text-tertiary);
 }
 
 :root .text-\[\#3A5277\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
 :root .text-\[\#767676\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
-/* gray-400 / #7B8BA4 / #A6A6A6 / slate-500 land on --text-muted, not on
+/* gray-400 / #767676 / #A6A6A6 / slate-500 land on --text-muted, not on
    --text-faint. These ~115 call sites are readable copy — form labels, helper
    text, table metadata — not decoration. --text-faint measures 3.16:1 on a
    white surface, which fails WCAG AA (4.5:1) for body text; --text-muted
    measures 5.67:1. A deliberate one-step loss of granularity between gray-400
    and gray-500 is the price for making all of that text legible. */
-:root .text-\[\#7B8BA4\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
+:root .text-\[\#767676\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
 :root .text-\[\#A6A6A6\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
 :root .text-gray-400:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
 :root .text-gray-500:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)) {
   color: var(--text-muted);
 }
 
-:root .placeholder\:text-\[\#7B8BA4\]::placeholder,
+:root .placeholder\:text-\[\#767676\]::placeholder,
 :root .placeholder\:text-\[\#A6A6A6\]::placeholder,
 :root .placeholder\:text-gray-400::placeholder {
   color: var(--text-placeholder);
 }
 
-:root .hover\:text-\[\#0A1D3A\]:hover:not(:is(.quotation-print-page *, #printable-receipt *)),
-:root .hover\:text-\[\#0A1D3A\]:hover:not(:is(.quotation-print-page *, #printable-receipt *)) {
+:root .hover\:text-\[\#00008B\]:hover:not(:is(.quotation-print-page *, #printable-receipt *)),
+:root .hover\:text-\[\#00008B\]:hover:not(:is(.quotation-print-page *, #printable-receipt *)) {
   color: var(--text-primary);
 }
-:root .hover\:text-\[\#0A1D3A\]:hover:not(:is(.quotation-print-page *, #printable-receipt *)) {
+:root .hover\:text-\[\#00008B\]:hover:not(:is(.quotation-print-page *, #printable-receipt *)) {
   color: var(--text-primary);
 }
 
 /* ── Brand ─────────────────────────────────────────────────────────────────── */
-:root .text-\[\#C1121F\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
-:root .text-\[\#C1121F\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
+:root .text-\[\#FF0000\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
+:root .text-\[\#FF0000\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
 :root .text-red-600:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)) {
   color: var(--brand-text);
 }
 
-:root .bg-\[\#C1121F\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
-:root .bg-\[\#C1121F\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
+:root .bg-\[\#FF0000\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
+:root .bg-\[\#FF0000\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
 :root .bg-red-600:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)) {
   background-color: var(--brand);
 }
 
-:root .bg-\[\#F9E7E9\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
-:root .bg-\[\#F9E7E9\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
+:root .bg-\[\rgba(255, 0, 0, 0.12)\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
+:root .bg-\[\rgba(255, 0, 0, 0.12)\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
 :root .bg-red-50:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)) {
   background-color: var(--brand-soft);
 }
 
-:root .border-\[\#EEBDC0\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
-:root .border-\[\#F9E7E9\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
+:root .border-\[\rgba(255, 0, 0, 0.25)\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
+:root .border-\[\rgba(255, 0, 0, 0.12)\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
 :root .border-red-200:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)) {
   border-color: var(--brand-border);
 }
 
-:root .hover\:bg-\[\#C1121F\]:hover,
+:root .hover\:bg-\[\#FF0000\]:hover,
 :root .hover\:bg-red-700:hover { background-color: var(--brand-hover); }
-:root .hover\:text-\[\#C1121F\]:hover { color: var(--brand-hover); }
+:root .hover\:text-\[\#FF0000\]:hover { color: var(--brand-hover); }
 
 /* ── Status · success ──────────────────────────────────────────────────────── */
 :root .text-\[\#15803D\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
@@ -1182,15 +658,15 @@
 :root .text-red-700:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)) {
   color: var(--warning-text);
 }
-:root .bg-\[\#EEBDC0\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
-:root .bg-\[\#F9E7E9\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
-:root .bg-\[\#F9E7E9\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
+:root .bg-\[\rgba(255, 0, 0, 0.25)\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
+:root .bg-\[\rgba(255, 0, 0, 0.12)\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
+:root .bg-\[\rgba(255, 0, 0, 0.12)\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
 :root .bg-red-50:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
 :root .bg-red-50:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)) {
   background-color: var(--warning-soft);
 }
 :root .border-\[\#DD7D84\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
-:root .border-\[\#EEBDC0\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
+:root .border-\[\rgba(255, 0, 0, 0.25)\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
 :root .border-red-200:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
 :root .border-red-300:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
 :root .border-red-200:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)) {
@@ -1213,7 +689,7 @@
 :root .bg-blue-50:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)) {
   background-color: var(--info-soft);
 }
-:root .border-\[\#BCC4D1\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
+:root .border-\[\#BFBFBF\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
 :root .border-blue-200:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)) {
   border-color: var(--info-border);
 }
@@ -1235,7 +711,7 @@
   color: var(--accent-text);
 }
 :root .text-\[\#0F2C59\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
-:root .text-\[\#7B8BA4\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
+:root .text-\[\#767676\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
 :root .text-blue-700:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)) {
   color: var(--accent-text);
 }
@@ -1583,7 +1059,7 @@ body:has(.overlay-backdrop),
 body:has(.fixed.inset-0) { overflow: hidden; }
 
 /* An overlay backdrop dims; it does not frosted-glass the page behind it. */
-.overlay-backdrop { background: rgba(10, 29, 58, 0.45); }
+.overlay-backdrop { background: rgba(0, 0, 0, 0.45); }
 
 /* ═══════════════════════════════════════════════════════════════════════════
    7 · PRINT
@@ -3070,18 +2546,18 @@ button:not(:disabled):active,
   /* Colour identity is shared by a group panel and its cards. */
   .scan-group[data-custody='hotel'],
   .scan-card[data-custody='hotel'] {
-    --scan-accent: #0F2C59;
-    --scan-accent-2: #3A5277;
+    --scan-accent: var(--ll-blue);
+    --scan-accent-2: var(--brand-text);
   }
   .scan-group[data-custody='laundry'],
   .scan-card[data-custody='laundry'] {
-    --scan-accent: #15803D;
-    --scan-accent-2: #55A87B;
+    --scan-accent: var(--ll-green);
+    --scan-accent-2: var(--success-text);
   }
   .scan-group[data-custody='exception'],
   .scan-card[data-custody='exception'] {
-    --scan-accent: #C1121F;
-    --scan-accent-2: #DD7D84;
+    --scan-accent: var(--ll-red);
+    --scan-accent-2: var(--danger-text);
   }
 
   /* ── Select hero ─────────────────────────────────────────────────────── */
@@ -3123,7 +2599,7 @@ button:not(:disabled):active,
     right: -40px;
     width: 230px;
     height: 230px;
-    background: rgba(58, 82, 119, 0.42);
+    background: rgba(0, 0, 139, 0.42);
     animation: scan-orb-two 14s ease-in-out infinite;
   }
   .scan-hero-orb--three {
@@ -3131,7 +2607,7 @@ button:not(:disabled):active,
     left: 36%;
     width: 290px;
     height: 210px;
-    background: rgba(204, 61, 71, 0.34);
+    background: rgba(255, 0, 0, 0.34);
     animation: scan-orb-three 19s ease-in-out infinite;
   }
   @keyframes scan-orb-one {
@@ -3184,8 +2660,8 @@ button:not(:disabled):active,
     font-weight: 600;
     white-space: nowrap;
   }
-  .scan-flow-chip[data-flow='hotel'] svg { color: #0F2C59; }
-  .scan-flow-chip[data-flow='laundry'] svg { color: #15803D; }
+  .scan-flow-chip[data-flow='hotel'] svg { color: var(--brand-deep); }
+  .scan-flow-chip[data-flow='laundry'] svg { color: var(--success-text); }
   .scan-flow-chip[data-flow='return'] svg { color: var(--brand); }
   .scan-hero-note {
     display: inline-flex;
@@ -3374,11 +2850,11 @@ button:not(:disabled):active,
 
   /* ── Colour-coded stat tiles, shared by scan + summary ─────────────── */
   .scan-stat[data-tone='brand'] { --stat-accent: var(--brand); --stat-accent-2: var(--accent-text); }
-  .scan-stat[data-tone='blue'] { --stat-accent: #3A5277; --stat-accent-2: #7B8BA4; }
-  .scan-stat[data-tone='violet'] { --stat-accent: #7B8BA4; --stat-accent-2: #CC3D47; }
-  .scan-stat[data-tone='green'] { --stat-accent: #3F9760; --stat-accent-2: #0E5328; }
-  .scan-stat[data-tone='amber'] { --stat-accent: #CC3D47; --stat-accent-2: #CC3D47; }
-  .scan-stat[data-tone='rose'] { --stat-accent: #DD7D84; --stat-accent-2: #CC3D47; }
+  .scan-stat[data-tone='blue'] { --stat-accent: var(--brand-deep); --stat-accent-2: var(--brand-text); }
+  .scan-stat[data-tone='violet'] { --stat-accent: var(--brand-text); --stat-accent-2: var(--danger-text); }
+  .scan-stat[data-tone='green'] { --stat-accent: var(--success-text); --stat-accent-2: var(--success-deep); }
+  .scan-stat[data-tone='amber'] { --stat-accent: var(--danger-text); --stat-accent-2: var(--danger-text); }
+  .scan-stat[data-tone='rose'] { --stat-accent: var(--danger-text); --stat-accent-2: var(--danger-text); }
   .scan-stat {
     background: linear-gradient(145deg, color-mix(in srgb, var(--stat-accent) 11%, var(--surface)), var(--surface));
     transition: transform 200ms var(--ease-travel), border-color 200ms var(--ease-travel), box-shadow 200ms var(--ease-travel);

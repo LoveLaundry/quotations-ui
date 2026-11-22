@@ -64,16 +64,16 @@ export const ORDER_STATUS_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
 }
 
 export const ORDER_STATUS_STYLE: Record<OrderStatus, string> = {
-  draft: 'bg-[var(--border)] text-[#0A1D3A] border-[var(--border)]',
-  received: 'bg-[#E7EAEE] text-[#3A5277] border-[#BCC4D1]',
-  washing: 'bg-[#E7EAEE] text-[#3A5277] border-[#BCC4D1]',
-  pressing: 'bg-[#F9E7E9] text-[#7D0C14] border-[#EEBDC0]',
-  folding: 'bg-[#F9E7E9] text-[#7D0C14] border-[#EEBDC0]',
-  packing: 'bg-[#F9E7E9] text-[#7D0C14] border-[#EEBDC0]',
-  ready: 'bg-[#E8F2EC] text-[#0E5328] border-[#BDDBC9]',
-  out_for_delivery: 'bg-[#E8F2EC] text-[#0E5328] border-[#BDDBC9]',
-  delivered: 'bg-[#E8F2EC] text-[#0E5328] border-[#BDDBC9]',
-  cancelled: 'bg-[#F9E7E9] text-[#7D0C14] border-[#EEBDC0]',
+  draft: 'bg-[var(--border)] text-[var(--text-primary)] border-[var(--border)]',
+  received: 'bg-[var(--surface-2)] text-[var(--brand-text)] border-[var(--border)]',
+  washing: 'bg-[var(--surface-2)] text-[var(--brand-text)] border-[var(--border)]',
+  pressing: 'bg-[var(--danger-soft)] text-[var(--danger-text)] border-[var(--danger-border)]',
+  folding: 'bg-[var(--danger-soft)] text-[var(--danger-text)] border-[var(--danger-border)]',
+  packing: 'bg-[var(--danger-soft)] text-[var(--danger-text)] border-[var(--danger-border)]',
+  ready: 'bg-[var(--success-soft)] text-[var(--success-text)] border-[var(--success-border)]',
+  out_for_delivery: 'bg-[var(--success-soft)] text-[var(--success-text)] border-[var(--success-border)]',
+  delivered: 'bg-[var(--success-soft)] text-[var(--success-text)] border-[var(--success-border)]',
+  cancelled: 'bg-[var(--danger-soft)] text-[var(--danger-text)] border-[var(--danger-border)]',
 }
 
 export interface StatusHistoryEntry {

@@ -26,7 +26,7 @@ interface LineItem {
 
 let nextKey = 1
 
-const inputClass = 'h-10 w-full rounded-lg border border-[var(--border)] bg-white px-3 text-[13px] text-[var(--text-primary)] outline-none focus:border-[#C1121F] focus:ring-2 focus:ring-[#C1121F]/10 transition'
+const inputClass = 'h-10 w-full rounded-lg border border-[var(--border)] bg-white px-3 text-[13px] text-[var(--text-primary)] outline-none focus:border-[var(--danger)] focus:ring-2 focus:ring-[var(--danger)]/10 transition'
 
 export default function CreateShopBillPage() {
   const navigate = useNavigate()
@@ -183,11 +183,11 @@ export default function CreateShopBillPage() {
         <Breadcrumb items={[{ label: 'Dashboard', href: '/' }, { label: 'Shop Bills', href: '/shop-bills' }, { label: 'New Bill' }]} />
         <div className="flex items-center gap-3 mt-1">
           <button onClick={() => navigate('/shop-bills')} className="p-1 rounded hover:bg-gray-100 transition cursor-pointer">
-            <ArrowLeft className="h-5 w-5 text-[#767676]" />
+            <ArrowLeft className="h-5 w-5 text-[var(--text-muted)]" />
           </button>
           <div className="flex-1">
             <h1 className="text-dashboard-title">New Shop Bill</h1>
-            <p className="text-[13px] text-[#7B8BA4] mt-0.5">
+            <p className="text-[13px] text-[var(--text-faint)] mt-0.5">
               {selectedQuotation ? `Creating bill from "${selectedQuotation.quotation_title ?? selectedQuotation.client_name}"` : 'Enter bill details manually or load from template/quotation'}
             </p>
           </div>
@@ -205,35 +205,35 @@ export default function CreateShopBillPage() {
             <div ref={flow.ref} onKeyDown={flow.handleKeyDown} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-[11px] font-semibold uppercase tracking-wide text-[#767676] mb-1.5">Bill Number (auto-generated if empty)</label>
+                <label className="block text-[11px] font-semibold uppercase tracking-wide text-[var(--text-muted)] mb-1.5">Bill Number (auto-generated if empty)</label>
                 <input type="text" value={billNumber} onChange={e => setBillNumber(e.target.value)} placeholder="e.g. SB-12345678" className={inputClass} />
               </div>
               <div>
-                <label className="block text-[11px] font-semibold uppercase tracking-wide text-[#767676] mb-1.5">Client Name *</label>
+                <label className="block text-[11px] font-semibold uppercase tracking-wide text-[var(--text-muted)] mb-1.5">Client Name *</label>
                 <input type="text" required autoFocus value={clientName} onChange={e => setClientName(e.target.value)} placeholder="Shop / client name" className={inputClass} />
               </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-[11px] font-semibold uppercase tracking-wide text-[#767676] mb-1.5">Delivery Date</label>
+                <label className="block text-[11px] font-semibold uppercase tracking-wide text-[var(--text-muted)] mb-1.5">Delivery Date</label>
                 <input type="date" value={deliveryDate} onChange={e => setDeliveryDate(e.target.value)} className={inputClass} />
               </div>
               <div>
-                <label className="block text-[11px] font-semibold uppercase tracking-wide text-[#767676] mb-1.5">Quotation (optional)</label>
+                <label className="block text-[11px] font-semibold uppercase tracking-wide text-[var(--text-muted)] mb-1.5">Quotation (optional)</label>
                 {selectedQuotation ? (
                   <div className="flex items-center gap-2">
                     <span className="flex-1 text-[13px] text-[var(--text-primary)] bg-[var(--surface-2)] rounded-lg px-3 py-2 border border-[var(--border)]">
                       {selectedQuotation.quotation_title ?? selectedQuotation.client_name}
                     </span>
                     <button type="button" onClick={() => { setSelectedQuotation(null); setQuotationSearch('') }} className="p-1 rounded hover:bg-gray-100 cursor-pointer">
-                      <X className="h-4 w-4 text-[#767676]" />
+                      <X className="h-4 w-4 text-[var(--text-muted)]" />
                     </button>
                   </div>
                 ) : (
                   <>
                     <button type="button" onClick={() => setShowQuotationPicker(!showQuotationPicker)} className={`${inputClass} text-left flex items-center gap-2 cursor-pointer`}>
-                      <FileText className="h-4 w-4 text-[#7B8BA4]" />
-                      <span className="text-[#7B8BA4]">Link a quotation…</span>
+                      <FileText className="h-4 w-4 text-[var(--text-faint)]" />
+                      <span className="text-[var(--text-faint)]">Link a quotation…</span>
                     </button>
                     {showQuotationPicker && (
                       <div className="mt-1 border border-[var(--border)] rounded-lg bg-white shadow-lg max-h-48 overflow-y-auto">
@@ -241,11 +241,11 @@ export default function CreateShopBillPage() {
                           <input type="text" value={quotationSearch} onChange={e => setQuotationSearch(e.target.value)} placeholder="Search…" className="h-8 w-full rounded border border-[var(--border)] px-2 text-[12px] outline-none" />
                         </div>
                         {filteredQuotations.length === 0 ? (
-                          <div className="p-3 text-[12px] text-[#7B8BA4] text-center">No quotations found</div>
+                          <div className="p-3 text-[12px] text-[var(--text-faint)] text-center">No quotations found</div>
                         ) : filteredQuotations.map(quo => (
-                          <button key={quo.id} type="button" onClick={() => loadFromQuotation(quo)} className="w-full text-left px-3 py-2 hover:bg-[#F9E7E9] transition text-[12px] cursor-pointer">
+                          <button key={quo.id} type="button" onClick={() => loadFromQuotation(quo)} className="w-full text-left px-3 py-2 hover:bg-[var(--danger-soft)] transition text-[12px] cursor-pointer">
                             <p className="font-medium text-[var(--text-primary)]">{quo.client_name}</p>
-                            <p className="text-[#767676]">{quo.quotation_title ?? 'Untitled'}</p>
+                            <p className="text-[var(--text-muted)]">{quo.quotation_title ?? 'Untitled'}</p>
                           </button>
                         ))}
                       </div>
@@ -255,7 +255,7 @@ export default function CreateShopBillPage() {
               </div>
             </div>
             <div>
-              <label className="block text-[11px] font-semibold uppercase tracking-wide text-[#767676] mb-1.5">Notes</label>
+              <label className="block text-[11px] font-semibold uppercase tracking-wide text-[var(--text-muted)] mb-1.5">Notes</label>
               <textarea value={notes} onChange={e => setNotes(e.target.value)} rows={2} placeholder="Optional notes…" className={`${inputClass} h-auto py-2 resize-none`} />
             </div>
             </div>
@@ -267,7 +267,7 @@ export default function CreateShopBillPage() {
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle className="text-[15px]">Items</CardTitle>
-              <button type="button" onClick={addItem} className="flex items-center gap-1.5 text-[12px] font-medium text-[#C1121F] hover:text-[#C1121F] cursor-pointer">
+              <button type="button" onClick={addItem} className="flex items-center gap-1.5 text-[12px] font-medium text-[var(--danger-text)] hover:text-[var(--danger-text)] cursor-pointer">
                 <Plus size={14} /> Add Item
               </button>
             </div>
@@ -276,43 +276,43 @@ export default function CreateShopBillPage() {
             {items.map((item, idx) => (
               <div key={item.key} className="grid grid-cols-12 gap-2 items-end">
                 <div className="col-span-12 md:col-span-2">
-                  {idx === 0 && <label className="block text-[10px] font-semibold uppercase text-[#7B8BA4] mb-1">Item Name *</label>}
+                  {idx === 0 && <label className="block text-[10px] font-semibold uppercase text-[var(--text-faint)] mb-1">Item Name *</label>}
                   <input type="text" value={item.item_name} onChange={e => updateItem(item.key, 'item_name', e.target.value)} placeholder="Item name" className={inputClass} ref={grid.registerCell(idx, 0)} />
                 </div>
                 <div className="col-span-3 md:col-span-1">
-                  {idx === 0 && <label className="block text-[10px] font-semibold uppercase text-[#7B8BA4] mb-1">Qty *</label>}
+                  {idx === 0 && <label className="block text-[10px] font-semibold uppercase text-[var(--text-faint)] mb-1">Qty *</label>}
                   <input type="number" min={1} value={item.quantity} onChange={e => updateItem(item.key, 'quantity', e.target.value ? Number(e.target.value) : 1)} className={inputClass} ref={grid.registerCell(idx, 1)} />
                 </div>
                 <div className="col-span-4 md:col-span-1">
-                  {idx === 0 && <label className="block text-[10px] font-semibold uppercase text-[#7B8BA4] mb-1">Price *</label>}
+                  {idx === 0 && <label className="block text-[10px] font-semibold uppercase text-[var(--text-faint)] mb-1">Price *</label>}
                   <input type="number" min={0} step="0.01" value={item.unit_price || ''} onChange={e => updateItem(item.key, 'unit_price', e.target.value ? Number(e.target.value) : 0)} placeholder="0.00" className={inputClass} ref={grid.registerCell(idx, 2)} />
                 </div>
                 <div className="col-span-3 md:col-span-1">
-                  {idx === 0 && <label className="block text-[10px] font-semibold uppercase text-[#7B8BA4] mb-1">Disc</label>}
+                  {idx === 0 && <label className="block text-[10px] font-semibold uppercase text-[var(--text-faint)] mb-1">Disc</label>}
                   <input type="number" min={0} step="0.01" value={item.discount || ''} onChange={e => updateItem(item.key, 'discount', e.target.value ? Number(e.target.value) : 0)} placeholder="0" className={inputClass} ref={grid.registerCell(idx, 3)} />
                 </div>
                 <div className="col-span-3 md:col-span-1">
-                  {idx === 0 && <label className="block text-[10px] font-semibold uppercase text-[#7B8BA4] mb-1">Type</label>}
+                  {idx === 0 && <label className="block text-[10px] font-semibold uppercase text-[var(--text-faint)] mb-1">Type</label>}
                   <select value={item.discount_type} onChange={e => updateItem(item.key, 'discount_type', e.target.value)} className={inputClass} ref={grid.registerCell(idx, 4)}>
                     <option value="FIXED">Fixed</option>
                     <option value="PERCENT">%</option>
                   </select>
                 </div>
                 <div className="col-span-6 md:col-span-2">
-                  {idx === 0 && <label className="block text-[10px] font-semibold uppercase text-[#7B8BA4] mb-1">Spec</label>}
+                  {idx === 0 && <label className="block text-[10px] font-semibold uppercase text-[var(--text-faint)] mb-1">Spec</label>}
                   <input type="text" value={item.specification} onChange={e => updateItem(item.key, 'specification', e.target.value)} placeholder="Size / color" className={inputClass} />
                 </div>
                 <div className="col-span-6 md:col-span-1">
-                  {idx === 0 && <label className="block text-[10px] font-semibold uppercase text-[#7B8BA4] mb-1">Category</label>}
+                  {idx === 0 && <label className="block text-[10px] font-semibold uppercase text-[var(--text-faint)] mb-1">Category</label>}
                   <input type="text" value={item.category} onChange={e => updateItem(item.key, 'category', e.target.value)} placeholder="Cat" className={inputClass} />
                 </div>
                 <div className="col-span-2 md:col-span-1 text-right">
                   {idx === 0 && <label className="block text-[10px] font-transparent mb-1">&nbsp;</label>}
-                  <span className="text-[12px] text-[#767676] font-medium">{fmt(Math.max(0, calcItemTotal(item)))}</span>
+                  <span className="text-[12px] text-[var(--text-muted)] font-medium">{fmt(Math.max(0, calcItemTotal(item)))}</span>
                 </div>
                 <div className="col-span-1">
                   {idx === 0 && <label className="block text-[10px] font-transparent mb-1">&nbsp;</label>}
-                  <button type="button" onClick={() => removeItem(item.key)} disabled={items.length <= 1} className="p-1 rounded text-[#7B8BA4] hover:text-[#C1121F] hover:bg-red-50 disabled:opacity-30 cursor-pointer">
+                  <button type="button" onClick={() => removeItem(item.key)} disabled={items.length <= 1} className="p-1 rounded text-[var(--text-faint)] hover:text-[var(--danger-text)] hover:bg-red-50 disabled:opacity-30 cursor-pointer">
                     <Trash2 size={14} />
                   </button>
                 </div>
@@ -327,46 +327,46 @@ export default function CreateShopBillPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-3">
                 <div>
-                  <label className="block text-[11px] font-semibold uppercase tracking-wide text-[#767676] mb-1.5">Bill Discount (LKR)</label>
+                  <label className="block text-[11px] font-semibold uppercase tracking-wide text-[var(--text-muted)] mb-1.5">Bill Discount (LKR)</label>
                   <input type="number" min={0} step="0.01" value={discounts || ''} onChange={e => setDiscounts(e.target.value ? Number(e.target.value) : 0)} placeholder="0.00" className={inputClass} />
                 </div>
                 <div>
-                  <label className="block text-[11px] font-semibold uppercase tracking-wide text-[#767676] mb-1.5">Transport Fee (LKR)</label>
+                  <label className="block text-[11px] font-semibold uppercase tracking-wide text-[var(--text-muted)] mb-1.5">Transport Fee (LKR)</label>
                   <input type="number" min={0} step="0.01" value={transportFee || ''} onChange={e => setTransportFee(e.target.value ? Number(e.target.value) : 0)} placeholder="0.00" className={inputClass} />
                 </div>
                 <div>
-                  <label className="block text-[11px] font-semibold uppercase tracking-wide text-[#767676] mb-1.5">Taxes (LKR)</label>
+                  <label className="block text-[11px] font-semibold uppercase tracking-wide text-[var(--text-muted)] mb-1.5">Taxes (LKR)</label>
                   <input type="number" min={0} step="0.01" value={taxes || ''} onChange={e => setTaxes(e.target.value ? Number(e.target.value) : 0)} placeholder="0.00" className={inputClass} />
                 </div>
               </div>
               <div className="flex flex-col justify-center space-y-2 text-right">
                 <div className="flex justify-between md:justify-end md:gap-8">
-                  <span className="text-[13px] text-[#767676]">Subtotal</span>
+                  <span className="text-[13px] text-[var(--text-muted)]">Subtotal</span>
                   <span className="text-[13px] font-medium text-[var(--text-primary)]">{fmt(totals.totalAmount)}</span>
                 </div>
                 {discounts > 0 && (
                   <div className="flex justify-between md:justify-end md:gap-8">
-                    <span className="text-[13px] text-[#767676]">Discounts</span>
-                    <span className="text-[13px] font-medium text-[#C1121F]">-{fmt(discounts)}</span>
+                    <span className="text-[13px] text-[var(--text-muted)]">Discounts</span>
+                    <span className="text-[13px] font-medium text-[var(--danger-text)]">-{fmt(discounts)}</span>
                   </div>
                 )}
                 {transportFee > 0 && (
                   <div className="flex justify-between md:justify-end md:gap-8">
-                    <span className="text-[13px] text-[#767676]">Transport</span>
+                    <span className="text-[13px] text-[var(--text-muted)]">Transport</span>
                     <span className="text-[13px] font-medium text-[var(--text-primary)]">+{fmt(transportFee)}</span>
                   </div>
                 )}
                 {taxes > 0 && (
                   <div className="flex justify-between md:justify-end md:gap-8">
-                    <span className="text-[13px] text-[#767676]">Taxes</span>
+                    <span className="text-[13px] text-[var(--text-muted)]">Taxes</span>
                     <span className="text-[13px] font-medium text-[var(--text-primary)]">+{fmt(taxes)}</span>
                   </div>
                 )}
                 <div className="border-t border-[var(--border)] pt-2 flex justify-between md:justify-end md:gap-8">
                   <span className="text-[14px] font-semibold text-[var(--text-primary)]">Grand Total</span>
-                  <span className="text-[18px] font-bold text-[#C1121F]">{fmt(totals.grandTotal)}</span>
+                  <span className="text-[18px] font-bold text-[var(--danger-text)]">{fmt(totals.grandTotal)}</span>
                 </div>
-                <p className="text-[11px] text-[#7B8BA4]">{totals.totalQuantity} item{totals.totalQuantity === 1 ? '' : 's'}</p>
+                <p className="text-[11px] text-[var(--text-faint)]">{totals.totalQuantity} item{totals.totalQuantity === 1 ? '' : 's'}</p>
               </div>
             </div>
           </CardContent>
@@ -377,7 +377,7 @@ export default function CreateShopBillPage() {
           <CardHeader><CardTitle className="text-[15px]">Options</CardTitle></CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center gap-3">
-              <input type="checkbox" id="recurring" checked={isRecurring} onChange={e => setIsRecurring(e.target.checked)} className="h-4 w-4 accent-[#C1121F] cursor-pointer" />
+              <input type="checkbox" id="recurring" checked={isRecurring} onChange={e => setIsRecurring(e.target.checked)} className="h-4 w-4 accent-[var(--danger-deep)] cursor-pointer" />
               <label htmlFor="recurring" className="text-[13px] text-[var(--text-primary)] cursor-pointer flex items-center gap-1.5">
                 <Repeat size={14} /> Make this a recurring bill
               </label>
@@ -385,7 +385,7 @@ export default function CreateShopBillPage() {
             {isRecurring && (
               <div className="grid grid-cols-2 gap-3 ml-7">
                 <div>
-                  <label className="block text-[11px] font-semibold uppercase text-[#767676] mb-1.5">Interval</label>
+                  <label className="block text-[11px] font-semibold uppercase text-[var(--text-muted)] mb-1.5">Interval</label>
                   <select value={recurringInterval} onChange={e => setRecurringInterval(e.target.value)} className={inputClass}>
                     <option value="DAILY">Daily</option>
                     <option value="WEEKLY">Weekly</option>
@@ -394,13 +394,13 @@ export default function CreateShopBillPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-[11px] font-semibold uppercase text-[#767676] mb-1.5">End Date (optional)</label>
+                  <label className="block text-[11px] font-semibold uppercase text-[var(--text-muted)] mb-1.5">End Date (optional)</label>
                   <input type="date" value={recurringEndDate} onChange={e => setRecurringEndDate(e.target.value)} className={inputClass} />
                 </div>
               </div>
             )}
             <div className="flex items-center gap-3">
-              <input type="checkbox" id="locked" checked={locked} onChange={e => setLocked(e.target.checked)} className="h-4 w-4 accent-[#767676] cursor-pointer" />
+              <input type="checkbox" id="locked" checked={locked} onChange={e => setLocked(e.target.checked)} className="h-4 w-4 accent-[var(--text-secondary)] cursor-pointer" />
               <label htmlFor="locked" className="text-[13px] text-[var(--text-primary)] cursor-pointer">Lock this bill (prevent edits after creation)</label>
             </div>
           </CardContent>
@@ -409,7 +409,7 @@ export default function CreateShopBillPage() {
         {/* Actions */}
         <div className="flex justify-end gap-3">
           <Button type="button" variant="outline" onClick={() => navigate('/shop-bills')} className="cursor-pointer">Cancel</Button>
-          <Button type="submit" disabled={!isValid || createBill.isPending} className="bg-[#C1121F] hover:bg-[#C1121F] text-white cursor-pointer">
+          <Button type="submit" disabled={!isValid || createBill.isPending} className="bg-[var(--danger)] hover:bg-[var(--danger)] text-white cursor-pointer">
             {createBill.isPending ? 'Creating…' : 'Create Shop Bill'}
           </Button>
         </div>
@@ -423,13 +423,13 @@ export default function CreateShopBillPage() {
           </DialogHeader>
           <DialogBody>
             {templates.length === 0 ? (
-              <p className="text-[13px] text-[#7B8BA4] text-center py-4">No templates available. Create one from the Templates button on the list page.</p>
+              <p className="text-[13px] text-[var(--text-faint)] text-center py-4">No templates available. Create one from the Templates button on the list page.</p>
             ) : (
               <div className="space-y-2 max-h-60 overflow-y-auto">
                 {templates.map((t: BillTemplate) => (
-                  <button key={t.id} type="button" onClick={() => loadFromTemplate(t.id)} className="w-full text-left p-3 rounded-lg border border-[var(--border)] hover:bg-[#F9E7E9] transition cursor-pointer">
+                  <button key={t.id} type="button" onClick={() => loadFromTemplate(t.id)} className="w-full text-left p-3 rounded-lg border border-[var(--border)] hover:bg-[var(--danger-soft)] transition cursor-pointer">
                     <p className="text-[13px] font-medium text-[var(--text-primary)]">{t.name}</p>
-                    <p className="text-[11px] text-[#767676]">{t.items.length} items &middot; Used {t.use_count}x</p>
+                    <p className="text-[11px] text-[var(--text-muted)]">{t.items.length} items &middot; Used {t.use_count}x</p>
                   </button>
                 ))}
               </div>

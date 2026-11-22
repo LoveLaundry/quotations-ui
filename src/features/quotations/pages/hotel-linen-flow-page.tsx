@@ -33,10 +33,10 @@ const MAX_LEAVES = 56
 const MAX_GPS = 25
 
 const PALETTES: Array<[string, string]> = [
-  ['#E7EAEE', '#E8F2EC'],
-  ['#E7EAEE', '#E7EAEE'],
-  ['#F9E7E9', '#E8F2EC'],
-  ['#E7EAEE', '#F9E7E9'],
+  ['var(--surface-2)', 'var(--success-text)'],
+  ['var(--surface-2)', 'var(--surface-2)'],
+  ['var(--danger-text)', 'var(--success-text)'],
+  ['var(--surface-2)', 'var(--danger-text)'],
 ]
 
 function hotelPalette(name: string): [string, string] {
@@ -113,31 +113,31 @@ interface HoverState {
 function statusColors(status?: string) {
   switch (status) {
     case 'DELIVERED':
-      return { back: '#BDDBC9', mid: '#7EB994', deep: '#15803D', dark: '#15803D' }
+      return { back: 'var(--success-text)', mid: 'var(--success-text)', deep: 'var(--success-text)', dark: 'var(--success-text)' }
     case 'PARTIALLY_DELIVERED':
-      return { back: '#DD7D84', mid: '#DD7D84', deep: '#CC3D47', dark: '#7D0C14' }
+      return { back: 'var(--danger-text)', mid: 'var(--danger-text)', deep: 'var(--danger-text)', dark: 'var(--danger-text)' }
     case 'READY_FOR_DELIVERY':
-      return { back: '#BDDBC9', mid: '#BDDBC9', deep: '#0E5328', dark: '#15803D' }
+      return { back: 'var(--success-text)', mid: 'var(--success-text)', deep: 'var(--success-text)', dark: 'var(--success-text)' }
     case 'PROCESSING':
-      return { back: '#EEBDC0', mid: '#DD7D84', deep: '#CC3D47', dark: '#7D0C14' }
+      return { back: 'var(--danger-text)', mid: 'var(--danger-text)', deep: 'var(--danger-text)', dark: 'var(--danger-text)' }
     case 'CANCELLED':
-      return { back: '#BCC4D1', mid: '#BCC4D1', deep: '#A6A6A6', dark: '#767676' }
+      return { back: 'var(--text-faint)', mid: 'var(--text-faint)', deep: 'var(--text-faint)', dark: 'var(--text-muted)' }
     default:
-      return { back: '#BCC4D1', mid: '#7B8BA4', deep: '#3A5277', dark: '#0F2C59' }
+      return { back: 'var(--text-faint)', mid: 'var(--text-faint)', deep: 'var(--brand-text)', dark: 'var(--brand-text)' }
   }
 }
 
 const TONE_TEXT: Record<HoverState['tone'], string> = {
-  blue: 'text-[#0F2C59]',
-  green: 'text-[#15803D]',
-  amber: 'text-[#CC3D47]',
-  gray: 'text-[#767676]',
+  blue: 'text-[var(--brand-text)]',
+  green: 'text-[var(--success-text)]',
+  amber: 'text-[var(--danger-text)]',
+  gray: 'text-[var(--text-muted)]',
 }
 
 const TONE_BG: Record<HoverState['tone'], string> = {
-  blue: 'border-[#BCC4D1]',
-  green: 'border-[#BDDBC9]',
-  amber: 'border-[#DD7D84]',
+  blue: 'border-[var(--border)]',
+  green: 'border-[var(--success-border)]',
+  amber: 'border-[var(--danger-border)]',
   gray: 'border-[var(--border)]',
 }
 
@@ -265,7 +265,7 @@ export default function HotelLinenFlowPage() {
         <div>
           <Breadcrumb items={[{ label: 'Dashboard', href: '/' }, { label: 'Hotel Linen Flow' }]} />
           <h1 className="text-dashboard-title mt-1">Hotel Linen Flow</h1>
-          <p className="text-[13px] text-[#7B8BA4] mt-0.5">
+          <p className="text-[13px] text-[var(--text-faint)] mt-0.5">
             {isLoading
               ? 'Loading…'
               : `${filteredHotels.length} hotel${filteredHotels.length !== 1 ? 's' : ''} · ${totals.gatePassCount} gate passes visible`}
@@ -273,28 +273,28 @@ export default function HotelLinenFlowPage() {
           <SyncStatusBar queryKey={['gatepasses']} label="Gate passes" className="mt-2" />
         </div>
         <div className="hidden md:flex flex-col gap-1 rounded-xl border border-[var(--border)] bg-white px-4 py-3 shadow-sm">
-          <p className="text-[10px] font-semibold uppercase tracking-wide text-[#7B8BA4]">How to read</p>
-          <ul className="text-[11.5px] text-[#0A1D3A] space-y-1">
-            <li><span className="text-[#0F2C59] font-semibold">● Blue clusters</span> are gate passes (items received)</li>
-            <li><span className="text-[#15803D] font-semibold">● Green fruits</span> are deliveries (items out)</li>
-            <li><span className="text-[#CC3D47] font-semibold">● Red fruit</span> = pieces still pending</li>
+          <p className="text-[10px] font-semibold uppercase tracking-wide text-[var(--text-faint)]">How to read</p>
+          <ul className="text-[11.5px] text-[var(--text-primary)] space-y-1">
+            <li><span className="text-[var(--brand-text)] font-semibold">● Blue clusters</span> are gate passes (items received)</li>
+            <li><span className="text-[var(--success-text)] font-semibold">● Green fruits</span> are deliveries (items out)</li>
+            <li><span className="text-[var(--danger-text)] font-semibold">● Red fruit</span> = pieces still pending</li>
           </ul>
         </div>
       </div>
 
       <div className="grid gap-3 grid-cols-2 md:grid-cols-4">
         {[
-          { label: 'Hotels', value: filteredHotels.length, color: '#0F2C59', bg: '#E7EAEE' },
-          { label: 'Gate Passes', value: totals.gatePassCount, color: '#0F2C59', bg: '#E7EAEE' },
-          { label: 'Pcs Received', value: totals.received, color: '#15803D', bg: '#E8F2EC' },
-          { label: 'Pcs Remaining', value: Math.max(totals.pending, 0), color: totals.pending > 0 ? '#CC3D47' : '#15803D', bg: totals.pending > 0 ? '#F9E7E9' : '#E8F2EC' },
+          { label: 'Hotels', value: filteredHotels.length, color: 'var(--brand-text)', bg: 'var(--surface-2)' },
+          { label: 'Gate Passes', value: totals.gatePassCount, color: 'var(--brand-text)', bg: 'var(--surface-2)' },
+          { label: 'Pcs Received', value: totals.received, color: 'var(--success-text)', bg: 'var(--success-text)' },
+          { label: 'Pcs Remaining', value: Math.max(totals.pending, 0), color: totals.pending > 0 ? 'var(--danger-text)' : 'var(--success-text)', bg: totals.pending > 0 ? 'var(--danger-text)' : 'var(--success-text)' },
         ].map(stat => (
           <Card key={stat.label} className="p-4">
             <div className="flex items-center gap-3">
               <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-[13px] font-bold" style={{ background: stat.bg, color: stat.color }}>
                 {stat.value}
               </div>
-              <p className="text-[12px] font-medium text-[#3A5277]">{stat.label}</p>
+              <p className="text-[12px] font-medium text-[var(--brand-text)]">{stat.label}</p>
             </div>
           </Card>
         ))}
@@ -302,7 +302,7 @@ export default function HotelLinenFlowPage() {
 
       <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center">
         <div className="relative flex-1">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#7B8BA4]" />
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--text-faint)]" />
           <input
             type="text"
             value={searchInput}
@@ -311,13 +311,13 @@ export default function HotelLinenFlowPage() {
               if (e.key === 'Enter') setHotelSearch(searchInput.trim())
             }}
             placeholder="Search hotel…"
-            className="h-10 w-full rounded-lg border border-[var(--border)] bg-white pl-9 pr-8 text-[13px] text-[var(--text-primary)] outline-none focus:border-[#0F2C59] focus:ring-2 focus:ring-[#0F2C59]/10 shadow-sm"
+            className="h-10 w-full rounded-lg border border-[var(--border)] bg-white pl-9 pr-8 text-[13px] text-[var(--text-primary)] outline-none focus:border-[var(--brand)] focus:ring-2 focus:ring-[var(--brand)]/10 shadow-sm"
           />
           {searchInput && (
             <button
               type="button"
               onClick={() => { setSearchInput(''); setHotelSearch('') }}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#7B8BA4] hover:text-[#0A1D3A] cursor-pointer"
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[var(--text-faint)] hover:text-[var(--text-primary)] cursor-pointer"
             >
               <X className="h-3.5 w-3.5" />
             </button>
@@ -326,7 +326,7 @@ export default function HotelLinenFlowPage() {
         <select
           value={period}
           onChange={e => setPeriod(e.target.value as Period)}
-          className="h-10 appearance-none rounded-lg border border-[var(--border)] bg-white px-3 text-[13px] text-[var(--text-primary)] outline-none focus:border-[#0F2C59] focus:ring-2 focus:ring-[#0F2C59]/10 shadow-sm cursor-pointer"
+          className="h-10 appearance-none rounded-lg border border-[var(--border)] bg-white px-3 text-[13px] text-[var(--text-primary)] outline-none focus:border-[var(--brand)] focus:ring-2 focus:ring-[var(--brand)]/10 shadow-sm cursor-pointer"
         >
           <option value="all">All time</option>
           <option value="month">This month</option>
@@ -350,7 +350,7 @@ export default function HotelLinenFlowPage() {
           action={
             !query && (
               <Link to="/gate-passes/new">
-                <Button className="bg-[#0F2C59] hover:bg-[#0F2C59] text-white">
+                <Button className="bg-[var(--brand)] hover:bg-[var(--brand)] text-white">
                   <ClipboardList className="h-4 w-4" /> New Gate Pass
                 </Button>
               </Link>
@@ -386,9 +386,9 @@ const CSS = `
   .llf-sway { transform-box: fill-box; transform-origin: 50% 100%; animation: llf-sway 4.5s ease-in-out infinite }
   .llf-pulsey { transform-box: fill-box; transform-origin: center center; animation: llf-pulse 2s ease-in-out infinite }
   .llf-floaty { transform-box: fill-box; transform-origin: center center; animation: llf-float 5s ease-in-out infinite }
-  .llf-branch { stroke: #7D0C14; stroke-linecap: round; fill: none; stroke-dasharray: 1; stroke-dashoffset: 1; animation: llf-draw .55s ease forwards }
-  .llf-branch-main { stroke: #7D0C14; stroke-width: 3.5 }
-  .llf-branch-twig { stroke: #7D0C14; stroke-width: 2 }
+  .llf-branch { stroke: var(--danger-deep); stroke-linecap: round; fill: none; stroke-dasharray: 1; stroke-dashoffset: 1; animation: llf-draw .55s ease forwards }
+  .llf-branch-main { stroke: var(--danger-deep); stroke-width: 3.5 }
+  .llf-branch-twig { stroke: var(--danger-deep); stroke-width: 2 }
   .llf-fo { pointer-events: none }
 `
 
@@ -509,12 +509,12 @@ function HotelTreeCard({ hotel }: { hotel: HotelNode }) {
     return (
       <Card className="p-4">
         <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#E7EAEE] text-[#0F2C59] border border-[#BCC4D1]">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[var(--surface-2)] text-[var(--brand-text)] border border-[var(--border)]">
             <Building2 className="h-4 w-4" />
           </div>
           <div className="min-w-0">
             <p className="text-[13px] font-semibold text-[var(--text-primary)] truncate">{hotel.name}</p>
-            <p className="text-[11px] text-[#7B8BA4]">No gate passes in this period.</p>
+            <p className="text-[11px] text-[var(--text-faint)]">No gate passes in this period.</p>
           </div>
         </div>
       </Card>
@@ -542,17 +542,17 @@ function HotelTreeCard({ hotel }: { hotel: HotelNode }) {
     <Card className="overflow-hidden p-0">
       {/* Header */}
       <div className="flex items-center gap-3 px-4 py-3 border-b border-[var(--border)]">
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#E7EAEE] text-[#0F2C59] border border-[#BCC4D1]">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[var(--surface-2)] text-[var(--brand-text)] border border-[var(--border)]">
           <Building2 className="h-4 w-4" />
         </div>
         <div className="min-w-0 flex-1">
           <p className="text-[13px] font-semibold text-[var(--text-primary)] truncate">{hotel.name}</p>
-          <p className="text-[11px] text-[#7B8BA4]">
+          <p className="text-[11px] text-[var(--text-faint)]">
             {hotel.gatePasses.length} gate pass{hotel.gatePasses.length !== 1 ? 'es' : ''}
             {' · '}{hotel.received} in · {hotel.delivered} out
           </p>
         </div>
-        <span className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${pending > 0 ? 'bg-[#F9E7E9] text-[#CC3D47]' : 'bg-[#E8F2EC] text-[#15803D]'}`}>
+        <span className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${pending > 0 ? 'bg-[var(--danger-soft)] text-[var(--danger-text)]' : 'bg-[var(--success-soft)] text-[var(--success-text)]'}`}>
           {Math.max(pending, 0)} remaining
         </span>
       </div>
@@ -567,41 +567,41 @@ function HotelTreeCard({ hotel }: { hotel: HotelNode }) {
           <style>{CSS}</style>
           <defs>
             <linearGradient id="trunkGrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#7D0C14" />
-              <stop offset="100%" stopColor="#7D0C14" />
+              <stop offset="0%" stopColor="var(--danger-text)" />
+              <stop offset="100%" stopColor="var(--danger-text)" />
             </linearGradient>
             <radialGradient id="sunGrad">
-              <stop offset="0%" stopColor="#EEBDC0" />
-              <stop offset="100%" stopColor="#DD7D84" />
+              <stop offset="0%" stopColor="var(--danger-text)" />
+              <stop offset="100%" stopColor="var(--danger-text)" />
             </radialGradient>
           </defs>
 
           {/* Sun + clouds */}
           <g className="llf-floaty" style={{ animationDelay: '0.4s' }}>
             <circle cx={880} cy={96} r={34} fill="url(#sunGrad)" opacity={0.9} />
-            <circle cx={880} cy={96} r={46} fill="#EEBDC0" opacity={0.28} />
-            <Sun x={880 - 9} y={96 - 9} width={18} height={18} color="#CC3D47" opacity={0.85} />
+            <circle cx={880} cy={96} r={46} fill="var(--danger-text)" opacity={0.28} />
+            <Sun x={880 - 9} y={96 - 9} width={18} height={18} color="var(--danger-text)" opacity={0.85} />
           </g>
           <g className="llf-floaty" style={{ animationDelay: '0.9s' }}>
-            <ellipse cx={180} cy={92} rx={46} ry={13} fill="#FFFFFF" opacity={0.85} />
-            <ellipse cx={204} cy={84} rx={26} ry={11} fill="#FFFFFF" opacity={0.9} />
-            <ellipse cx={620} cy={62} rx={38} ry={11} fill="#FFFFFF" opacity={0.8} />
-            <ellipse cx={644} cy={55} rx={22} ry={9} fill="#FFFFFF" opacity={0.85} />
+            <ellipse cx={180} cy={92} rx={46} ry={13} fill="var(--ll-white)" opacity={0.85} />
+            <ellipse cx={204} cy={84} rx={26} ry={11} fill="var(--ll-white)" opacity={0.9} />
+            <ellipse cx={620} cy={62} rx={38} ry={11} fill="var(--ll-white)" opacity={0.8} />
+            <ellipse cx={644} cy={55} rx={22} ry={9} fill="var(--ll-white)" opacity={0.85} />
           </g>
 
           {/* Ground */}
-          <ellipse cx={W / 2} cy={604} rx={560} ry={30} fill="#BDDBC9" opacity={0.9} />
-          <ellipse cx={W / 2} cy={604} rx={470} ry={20} fill="#BDDBC9" opacity={0.7} />
-          <g opacity={0.8} fill="#7EB994">
+          <ellipse cx={W / 2} cy={604} rx={560} ry={30} fill="var(--success-text)" opacity={0.9} />
+          <ellipse cx={W / 2} cy={604} rx={470} ry={20} fill="var(--success-text)" opacity={0.7} />
+          <g opacity={0.8} fill="var(--success-text)">
             <path d="M140 604 q3 -10 6 0 q-3 -4 -6 0" />
             <path d="M156 608 q2 -8 5 0 q-2 -3 -5 0" />
             <path d="M820 598 q3 -11 7 0 q-3 -4 -7 0" />
             <path d="M398 616 q2 -9 5 0 q-2 -3 -5 0" />
             <path d="M700 612 q3 -10 6 0 q-3 -4 -6 0" />
           </g>
-          <circle cx={208} cy={602} r={3.5} fill="#DD7D84" />
-          <circle cx={826} cy={596} r={3} fill="#DD7D84" />
-          <circle cx={420} cy={616} r={3} fill="#DD7D84" />
+          <circle cx={208} cy={602} r={3.5} fill="var(--danger-text)" />
+          <circle cx={826} cy={596} r={3} fill="var(--danger-text)" />
+          <circle cx={420} cy={616} r={3} fill="var(--danger-text)" />
 
           {/* Trunk */}
           <path
@@ -612,7 +612,7 @@ function HotelTreeCard({ hotel }: { hotel: HotelNode }) {
           <path
             d={`M ${rootX - 18} 600 L ${rootX - 10} ${Y_ROOT + 22} Q ${rootX} ${Y_ROOT + 14} ${rootX + 10} ${Y_ROOT + 22} L ${rootX + 18} 600 Q ${rootX} 608 ${rootX - 18} 600 Z`}
             fill="none"
-            stroke="#7D0C14"
+            stroke="var(--danger-text)"
             strokeOpacity={0.4}
           />
 
@@ -634,7 +634,7 @@ function HotelTreeCard({ hotel }: { hotel: HotelNode }) {
             onMouseLeave={() => setHover(null)}
           >
             <g className="llf-growy" style={{ animationDelay: '0.05s' }}>
-              <circle cx={rootX} cy={Y_ROOT} r={25} fill="url(#trunkGrad)" stroke="#EEBDC0" strokeWidth={3} />
+              <circle cx={rootX} cy={Y_ROOT} r={25} fill="url(#trunkGrad)" stroke="var(--danger-text)" strokeWidth={3} />
             </g>
             <foreignObject x={rootX - 12} y={Y_ROOT - 12} width={24} height={24} className="llf-fo">
               <div className="flex h-full w-full items-center justify-center text-white">
@@ -657,7 +657,7 @@ function HotelTreeCard({ hotel }: { hotel: HotelNode }) {
                   title: g.gp.gate_pass_number || 'Gate pass',
                   sub: `${formatDate(g.gp.receiving_date)} · ${g.received} pcs received · ${g.delivered} delivered`,
                   chips: (g.gp.items ?? []).filter(i => (i.received_qty ?? 0) > 0).map(i => `${i.item_name} ×${i.received_qty}`),
-                  tone: c.dark === '#15803D' ? 'green' : c.dark === '#7D0C14' ? 'amber' : 'blue',
+                  tone: c.dark === 'var(--success-text)' ? 'green' : c.dark === 'var(--danger-text)' ? 'amber' : 'blue',
                 })}
                 onMouseLeave={() => setHover(null)}
               >
@@ -673,7 +673,7 @@ function HotelTreeCard({ hotel }: { hotel: HotelNode }) {
                     <ClipboardList size={13} />
                   </div>
                 </foreignObject>
-                <text x={g.x} y={g.y + 36} textAnchor="middle" fontSize={9.5} fontWeight={600} fill="#0A1D3A">
+                <text x={g.x} y={g.y + 36} textAnchor="middle" fontSize={9.5} fontWeight={600} fill="var(--text-primary)">
                   {g.gp.gate_pass_number || 'GP'}
                 </text>
               </g>
@@ -685,9 +685,9 @@ function HotelTreeCard({ hotel }: { hotel: HotelNode }) {
             const del = f.kind === 'delivery'
             const pend = f.kind === 'pending'
             const unl = f.kind === 'unlinked'
-            const fill = pend ? '#CC3D47' : unl ? '#A6A6A6' : '#15803D'
-            const stroke = pend ? '#CC3D47' : unl ? '#767676' : '#15803D'
-            const glow = pend ? '#DD7D84' : unl ? '#BCC4D1' : '#BDDBC9'
+            const fill = pend ? 'var(--danger-text)' : unl ? 'var(--text-faint)' : 'var(--success-text)'
+            const stroke = pend ? 'var(--danger-text)' : unl ? 'var(--text-muted)' : 'var(--success-text)'
+            const glow = pend ? 'var(--danger-text)' : unl ? 'var(--text-faint)' : 'var(--success-text)'
             const Icon = pend ? Clock : del ? Truck : Truck
             return (
               <g
@@ -707,7 +707,7 @@ function HotelTreeCard({ hotel }: { hotel: HotelNode }) {
                   <g className={pend ? 'llf-pulsey' : 'llf-sway'} style={{ animationDelay: `${fi * 0.5}s`, transformOrigin: 'center center' }}>
                     <circle cx={f.x} cy={f.y} r={12} fill={glow} opacity={0.7} />
                     <circle cx={f.x} cy={f.y} r={9.5} fill={fill} stroke={stroke} strokeWidth={1.5} />
-                    <circle cx={f.x - 3} cy={f.y - 3.5} r={2} fill="#FFFFFF" opacity={0.55} />
+                    <circle cx={f.x - 3} cy={f.y - 3.5} r={2} fill="var(--ll-white)" opacity={0.55} />
                   </g>
                 </g>
                 <foreignObject x={f.x - 7} y={f.y - 11} width={14} height={14} className="llf-fo">
@@ -715,7 +715,7 @@ function HotelTreeCard({ hotel }: { hotel: HotelNode }) {
                     <Icon size={10} />
                   </div>
                 </foreignObject>
-                <text x={f.x} y={f.y + 25} textAnchor="middle" fontSize={9} fontWeight={600} fill={pend ? '#7D0C14' : unl ? '#767676' : '#15803D'}>
+                <text x={f.x} y={f.y + 25} textAnchor="middle" fontSize={9} fontWeight={600} fill={pend ? 'var(--danger-text)' : unl ? 'var(--text-muted)' : 'var(--success-text)'}>
                   {f.label}
                 </text>
               </g>
@@ -734,16 +734,16 @@ function HotelTreeCard({ hotel }: { hotel: HotelNode }) {
             }}
           >
             <p className={`text-[12px] font-bold ${TONE_TEXT[hover.tone]} truncate`}>{hover.title}</p>
-            <p className="text-[10.5px] text-[#7B8BA4] mt-0.5">{hover.sub}</p>
+            <p className="text-[10.5px] text-[var(--text-faint)] mt-0.5">{hover.sub}</p>
             {hover.chips.length > 0 && (
               <div className="mt-2 flex flex-wrap gap-1">
                 {hover.chips.slice(0, 8).map((chip, ci) => (
-                  <span key={ci} className="rounded-md border border-[var(--border)] bg-[var(--surface-2)] px-1.5 py-0.5 text-[10px] text-[#0A1D3A]">
+                  <span key={ci} className="rounded-md border border-[var(--border)] bg-[var(--surface-2)] px-1.5 py-0.5 text-[10px] text-[var(--text-primary)]">
                     {chip}
                   </span>
                 ))}
                 {hover.chips.length > 8 && (
-                  <span className="rounded-md border border-[var(--border)] bg-[var(--surface-2)] px-1.5 py-0.5 text-[10px] text-[#7B8BA4]">
+                  <span className="rounded-md border border-[var(--border)] bg-[var(--surface-2)] px-1.5 py-0.5 text-[10px] text-[var(--text-faint)]">
                     +{hover.chips.length - 8} more
                   </span>
                 )}
@@ -753,7 +753,7 @@ function HotelTreeCard({ hotel }: { hotel: HotelNode }) {
         )}
 
         {excess > 0 && (
-          <div className="absolute right-2 top-2 rounded-full bg-white/80 px-2 py-1 text-[10px] font-semibold text-[#7B8BA4] backdrop-blur">
+          <div className="absolute right-2 top-2 rounded-full bg-white/80 px-2 py-1 text-[10px] font-semibold text-[var(--text-faint)] backdrop-blur">
             +{excess} older gate pass{excess > 1 ? 'es' : ''} hidden · {totalLeaves} nodes
           </div>
         )}

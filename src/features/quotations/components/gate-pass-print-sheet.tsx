@@ -38,7 +38,7 @@ const gatePassPrintStyles = `
     width: 80px;
     height: 80px;
     object-fit: contain;
-    border: 2px solid #C1121F;
+    border: 2px solid #FF0000;
     border-radius: 50%;
     padding: 4px;
   }
@@ -134,7 +134,7 @@ const gatePassPrintStyles = `
   }
   .gps-items-table th {
     text-align: left;
-    background: #F5F5F5;
+    background: var(--surface);
   }
   .gps-items-table td {
     height: 22px;
@@ -153,7 +153,7 @@ const gatePassPrintStyles = `
   .gps-mismatch {
     font-size: 11px;
     font-weight: 700;
-    color: #C1121F;
+    color: var(--danger-deep);
     margin-bottom: 10px;
   }
   .gps-signatures {
@@ -291,7 +291,7 @@ export const GatePassPrintSheet = React.forwardRef<
                     )}
 
                     {rewashedItems.length > 0 && (
-                        <div className="gps-mismatch" style={{ color: '#000000' }}>
+                        <div className="gps-mismatch" style={{ color: 'var(--ll-black)' }}>
                             Note: {rewashedItems.length} item{rewashedItems.length !== 1 ? 's' : ''} tagged as free
                             re-wash — not billable.
                         </div>

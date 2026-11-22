@@ -28,12 +28,12 @@ export default function ErrorPage() {
     }
 
     const icon = status === 404
-        ? <Unplug className="h-7 w-7 text-[#0F2C59]" />
-        : <AlertTriangle className="h-7 w-7 text-[#C1121F]" />
+        ? <Unplug className="h-7 w-7 text-[var(--brand-text)]" />
+        : <AlertTriangle className="h-7 w-7 text-[var(--danger-text)]" />
 
     const iconBg = status === 404
-        ? 'bg-[#E7EAEE] border-[#BCC4D1]'
-        : 'bg-[#F9E7E9] border-[#EEBDC0]'
+        ? 'bg-[var(--surface-2)] border-[var(--border)]'
+        : 'bg-[var(--danger-soft)] border-[var(--danger-border)]'
 
     return (
         <div className="min-h-screen bg-[var(--surface-2)] flex items-center justify-center p-4">
@@ -42,31 +42,31 @@ export default function ErrorPage() {
                     {icon}
                 </div>
 
-                <p className="text-[12px] font-bold uppercase tracking-widest text-[#7B8BA4] mb-2">
+                <p className="text-[12px] font-bold uppercase tracking-widest text-[var(--text-faint)] mb-2">
                     Error {status}
                 </p>
                 <h1 className="text-[20px] font-bold text-[var(--text-primary)] mb-2">{title}</h1>
-                <p className="text-[13px] text-[#767676] mb-6 leading-relaxed">{description}</p>
+                <p className="text-[13px] text-[var(--text-muted)] mb-6 leading-relaxed">{description}</p>
 
                 {/* Which page blew up is the single most useful thing to know and
                     it was the one thing missing. Without it a report is just the
                     message, which is not enough to locate the failing render. */}
                 <div className="mb-6 rounded-lg border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2 text-left">
-                    <p className="text-[10px] font-semibold uppercase tracking-wider text-[#7B8BA4]">Page</p>
-                    <code className="block break-all text-[12px] text-[#0A1D3A]">{location.pathname}</code>
+                    <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--text-faint)]">Page</p>
+                    <code className="block break-all text-[12px] text-[var(--text-primary)]">{location.pathname}</code>
                 </div>
 
                 <div className="flex gap-3 justify-center">
                     <Link
                         to="/"
-                        className="flex items-center gap-2 rounded-xl border border-[var(--border)] bg-white px-4 py-2.5 text-[13px] font-semibold text-[#0A1D3A] hover:bg-[var(--surface-2)] hover:border-[#BCC4D1] transition"
+                        className="flex items-center gap-2 rounded-xl border border-[var(--border)] bg-white px-4 py-2.5 text-[13px] font-semibold text-[var(--text-primary)] hover:bg-[var(--surface-2)] hover:border-[var(--border)] transition"
                     >
                         <Home className="h-4 w-4" />
                         Dashboard
                     </Link>
                     <button
                         onClick={() => window.location.reload()}
-                        className="flex items-center gap-2 rounded-xl bg-[var(--text-primary)] px-4 py-2.5 text-[13px] font-semibold text-white hover:bg-[#0A1D3A] transition cursor-pointer"
+                        className="flex items-center gap-2 rounded-xl bg-[var(--text-primary)] px-4 py-2.5 text-[13px] font-semibold text-white hover:bg-[var(--brand)] transition cursor-pointer"
                     >
                         <RefreshCw className="h-4 w-4" />
                         Reload
