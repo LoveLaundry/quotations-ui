@@ -30,15 +30,15 @@ import { addDaysISO, todayISO } from '../../../lib/time'
 import { Portal } from '../../../components/ui/portal'
 
 const taskTypes = [
-  { value: 'WASHING', label: 'Washing', icon: ArrowsClockwise, color: 'bg-blue-50 text-blue-800' },
+  { value: 'WASHING', label: 'Washing', icon: ArrowsClockwise, color: 'bg-zinc-50 text-zinc-800' },
   { value: 'PRESSING', label: 'Pressing', icon: HandPalm, color: 'bg-red-50 text-red-600' },
-  { value: 'FOLDING', label: 'Folding', icon: Cube, color: 'bg-blue-50 text-blue-800' },
+  { value: 'FOLDING', label: 'Folding', icon: Cube, color: 'bg-zinc-50 text-zinc-800' },
   { value: 'PACKING', label: 'Packing', icon: Package, color: 'bg-green-50 text-green-600' },
   { value: 'STAIN_TREATMENT', label: 'Stain Removal', icon: TShirt, color: 'bg-red-50 text-red-600' },
   { value: 'DRY_CLEANING', label: 'Dry Cleaning', icon: Tag, color: 'bg-green-50 text-green-600' },
-  { value: 'MACHINE_CLEANING', label: 'Machine Clean', icon: ArrowsClockwise, color: 'bg-blue-50 text-blue-800' },
+  { value: 'MACHINE_CLEANING', label: 'Machine Clean', icon: ArrowsClockwise, color: 'bg-zinc-50 text-zinc-800' },
   { value: 'SORTING_TAGGING', label: 'Sorting', icon: Tag, color: 'bg-red-50 text-red-600' },
-  { value: 'DELIVERY_SUPPORT', label: 'Delivery', icon: Package, color: 'bg-blue-50 text-blue-800' },
+  { value: 'DELIVERY_SUPPORT', label: 'Delivery', icon: Package, color: 'bg-zinc-50 text-zinc-800' },
   { value: 'MAINTENANCE', label: 'Maintenance', icon: Cube, color: 'bg-gray-50 text-gray-600' },
   { value: 'OTHER', label: 'Other', icon: Tag, color: 'bg-gray-50 text-gray-600' },
 ]

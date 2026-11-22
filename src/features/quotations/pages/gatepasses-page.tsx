@@ -228,7 +228,7 @@ export default function GatePassesPage() {
                     </div>
                 </div>
                 <Link to="/gate-passes/new" className="shrink-0">
-                    <Button className="bg-[var(--brand)] hover:bg-[var(--brand)] text-white shadow-lg shadow-blue-800/20">
+                    <Button className="bg-[var(--brand)] hover:bg-[var(--brand)] text-white shadow-lg shadow-zinc-800/20">
                         <Plus className="h-4 w-4" /> Create Gate Pass
                     </Button>
                 </Link>

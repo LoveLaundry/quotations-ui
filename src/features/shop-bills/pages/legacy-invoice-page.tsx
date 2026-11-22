@@ -73,8 +73,8 @@ const legacyPrintStyles = `
   .li-footer { display: flex; justify-content: space-between; align-items: flex-end; padding: 8px 20px 12px; }
   .li-sig { width: 150px; text-align: center; font-size: 11px; color: var(--brand-deep); font-weight: 600; }
   .li-sig-img { display: block; height: 30px; max-width: 140px; margin: 0 auto; object-fit: contain; mix-blend-mode: multiply; }
-  .li-sig-line { border-top: 1px solid #00008B; padding-top: 4px; }
-  .li-fill-line { border-bottom: 1px solid #00008B; padding-bottom: 2px; margin-bottom: 4px; font-weight: 700; color: var(--text-primary); }
+  .li-sig-line { border-top: 1px solid #000000; padding-top: 4px; }
+  .li-fill-line { border-bottom: 1px solid #000000; padding-bottom: 2px; margin-bottom: 4px; font-weight: 700; color: var(--text-primary); }
 `
 
 function makeRow(): InvoiceRow {

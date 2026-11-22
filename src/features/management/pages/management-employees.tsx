@@ -278,9 +278,9 @@ export default function ManagementEmployees() {
                     <span className="w-full text-gray-400 text-[10px] uppercase tracking-wide">Attendance · {now.toLocaleString('default', { month: 'long' })}</span>
                     <span className="text-green-600 font-bold">{attSummary[emp.id]?.worked_days ?? 0} P</span>
                     <span className="text-red-600 font-bold">{attSummary[emp.id]?.half_days ?? 0} H</span>
-                    <span className="text-blue-800 font-bold">{attSummary[emp.id]?.paid_leave_days ?? 0} L</span>
+                    <span className="text-zinc-800 font-bold">{attSummary[emp.id]?.paid_leave_days ?? 0} L</span>
                     <span className="text-red-600 font-bold">{attSummary[emp.id]?.unpaid_days ?? 0} A</span>
-                    <span className="text-blue-800 font-bold">{attSummary[emp.id]?.overtime_hours ?? 0} OT</span>
+                    <span className="text-zinc-800 font-bold">{attSummary[emp.id]?.overtime_hours ?? 0} OT</span>
                   </div>
                 ) : (
                   <p className="text-[11px] text-gray-400">Attendance not tracked (fixed arrangement)</p>

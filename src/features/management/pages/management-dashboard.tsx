@@ -18,10 +18,10 @@ const QUICK_ACTIONS = [
   { to: '/management/employees', label: 'Employees', icon: UserCircle, color: 'bg-red-500' },
   { to: '/management/attendance-log', label: 'Log Attendance', icon: CalendarPlus, color: 'bg-green-500' },
   { to: '/management/salary-slip', label: 'Generate Slip', icon: Banknote, color: 'bg-green-500' },
-  { to: '/management/salary-history', label: 'Salary History', icon: ListChecks, color: 'bg-blue-700' },
+  { to: '/management/salary-history', label: 'Salary History', icon: ListChecks, color: 'bg-zinc-700' },
   { to: '/management/advances', label: 'Advances', icon: Wallet, color: 'bg-red-500' },
   { to: '/management/holidays', label: 'Holidays', icon: Sun, color: 'bg-red-500' },
-  { to: '/management/extra-work', label: 'Extra Work', icon: Zap, color: 'bg-blue-700' },
+  { to: '/management/extra-work', label: 'Extra Work', icon: Zap, color: 'bg-zinc-700' },
   { to: '/management/company-settings', label: 'Company Settings', icon: Settings, color: 'bg-gray-600' },
 ]
 

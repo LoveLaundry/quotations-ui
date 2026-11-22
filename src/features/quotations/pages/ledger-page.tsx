@@ -314,7 +314,7 @@ export default function LedgerPage() {
         e.kind === 'INCOME' ? (
           <span className="inline-flex items-center gap-1 text-xs font-medium text-[var(--warning-text)]"><ArrowUpCircle size={13} /> Income</span>
         ) : e.kind === 'BILL' ? (
-          <span className="inline-flex items-center gap-1 text-xs font-medium text-blue-900"><FileText size={13} /> Bill</span>
+          <span className="inline-flex items-center gap-1 text-xs font-medium text-zinc-900"><FileText size={13} /> Bill</span>
         ) : (
           <span className="inline-flex items-center gap-1 text-xs font-medium text-[var(--success-text)]"><ArrowDownCircle size={13} /> Received</span>
         ),

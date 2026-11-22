@@ -270,7 +270,7 @@
    Exactly two appearance modes. Legacy preset names remain as aliases so the
    existing ThemeContext/settings API keeps working, but every alias resolves
    to either the light or the dark contract below. Every value derives from
-   black, white, red, green or dark blue (or an alpha/tint of those five).
+   black, white, red or green (or an alpha/tint of those four).
 ─────────────────────────────────────────────────────────────────────────── */
 :root,
 [data-theme='light'],
@@ -541,22 +541,22 @@
 }
 
 /* ── Text ──────────────────────────────────────────────────────────────────── */
-:root .text-\[\#00008B\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
-:root .text-\[\#00008B\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
-:root .text-\[\#00008B\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
+:root .text-\[\#000000\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
+:root .text-\[\#000000\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
+:root .text-\[\#000000\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
 :root .text-gray-900:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)) {
   color: var(--text-primary);
 }
 
-:root .text-\[\#00008B\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
-:root .text-\[\#00008B\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
-:root .text-\[\#00008B\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
+:root .text-\[\#000000\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
+:root .text-\[\#000000\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
+:root .text-\[\#000000\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
 :root .text-gray-800:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)) {
   color: var(--text-secondary);
 }
 
-:root .text-\[\#00008B\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
-:root .text-\[\#00008B\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
+:root .text-\[\#000000\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
+:root .text-\[\#000000\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
 :root .text-gray-600:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)) {
   color: var(--text-tertiary);
 }
@@ -582,11 +582,11 @@
   color: var(--text-placeholder);
 }
 
-:root .hover\:text-\[\#00008B\]:hover:not(:is(.quotation-print-page *, #printable-receipt *)),
-:root .hover\:text-\[\#00008B\]:hover:not(:is(.quotation-print-page *, #printable-receipt *)) {
+:root .hover\:text-\[\#000000\]:hover:not(:is(.quotation-print-page *, #printable-receipt *)),
+:root .hover\:text-\[\#000000\]:hover:not(:is(.quotation-print-page *, #printable-receipt *)) {
   color: var(--text-primary);
 }
-:root .hover\:text-\[\#00008B\]:hover:not(:is(.quotation-print-page *, #printable-receipt *)) {
+:root .hover\:text-\[\#000000\]:hover:not(:is(.quotation-print-page *, #printable-receipt *)) {
   color: var(--text-primary);
 }
 
@@ -678,19 +678,19 @@
 
 /* ── Status · info ─────────────────────────────────────────────────────────── */
 :root .text-\[\#0F2C59\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
-:root .text-blue-800:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)) {
+:root .text-zinc-800:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)) {
   color: var(--info-text);
 }
 :root .text-\[\#0F2C59\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
-:root .text-blue-900:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)) {
+:root .text-zinc-900:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)) {
   color: var(--info-text);
 }
 :root .bg-\[\#E7EAEE\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
-:root .bg-blue-50:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)) {
+:root .bg-zinc-50:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)) {
   background-color: var(--info-soft);
 }
 :root .border-\[\#BFBFBF\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
-:root .border-blue-200:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)) {
+:root .border-zinc-200:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)) {
   border-color: var(--info-border);
 }
 
@@ -706,31 +706,31 @@
 :root .text-\[\#0F2C59\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
 :root .text-\[\#0F2C59\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
 :root .text-\[\#3A5277\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
-:root .text-blue-800:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
-:root .text-blue-900:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)) {
+:root .text-zinc-800:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
+:root .text-zinc-900:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)) {
   color: var(--accent-text);
 }
 :root .text-\[\#0F2C59\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
 :root .text-\[\#767676\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
-:root .text-blue-700:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)) {
+:root .text-zinc-700:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)) {
   color: var(--accent-text);
 }
 :root .bg-\[\#E7EAEE\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
 :root .bg-\[\#E7EAEE\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
-:root .bg-blue-50:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
-:root .bg-blue-50:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)) {
+:root .bg-zinc-50:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
+:root .bg-zinc-50:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)) {
   background-color: var(--accent-soft);
 }
-:root .bg-blue-950\/20:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
-:root .bg-blue-950\/20:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)) {
+:root .bg-zinc-950\/20:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
+:root .bg-zinc-950\/20:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)) {
   background-color: var(--accent-soft);
 }
-:root .border-blue-200:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
-:root .border-blue-200:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)) {
+:root .border-zinc-200:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
+:root .border-zinc-200:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)) {
   border-color: var(--accent-border);
 }
-:root .bg-blue-700:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
-:root .bg-blue-700:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)) {
+:root .bg-zinc-700:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
+:root .bg-zinc-700:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)) {
   background-color: var(--accent-text);
 }
 
@@ -2599,7 +2599,7 @@ button:not(:disabled):active,
     right: -40px;
     width: 230px;
     height: 230px;
-    background: rgba(0, 0, 139, 0.42);
+    background: rgba(0, 0, 0, 0.42);
     animation: scan-orb-two 14s ease-in-out infinite;
   }
   .scan-hero-orb--three {

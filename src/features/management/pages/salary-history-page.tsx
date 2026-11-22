@@ -31,7 +31,7 @@ const PACKAGE_KEYS: (keyof any)[] = ['basic_salary', 'daily_rate', 'weekly_rate'
 const STATUS_COLORS: Record<string, string> = {
   DRAFT: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',
   FINALIZED: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
-  PAID: 'bg-blue-100 text-blue-900 dark:bg-blue-950/30 dark:text-blue-600',
+  PAID: 'bg-zinc-100 text-zinc-900 dark:bg-zinc-950/30 dark:text-zinc-600',
   CANCELLED: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',
   DELETED: 'bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-300',
 }
@@ -269,7 +269,7 @@ export default function SalaryHistoryPage() {
             </select>
           </div>
           <button onClick={loadPreview} disabled={previewLoading || payrollLoading}
-            className="px-4 py-2 bg-blue-800 text-white rounded-lg text-sm font-medium hover:bg-blue-900 disabled:opacity-50">
+            className="px-4 py-2 bg-zinc-800 text-white rounded-lg text-sm font-medium hover:bg-zinc-900 disabled:opacity-50">
             {previewLoading ? 'Previewing...' : 'Preview Month'}
           </button>
           <button onClick={runPayroll} disabled={payrollLoading}
@@ -288,12 +288,12 @@ export default function SalaryHistoryPage() {
               <div className="text-xs text-gray-400">Missing slips will be created on Run Payroll. Existing slips are skipped.</div>
             </div>
 
-            <div className="rounded-xl border border-blue-200 bg-blue-50/60 dark:border-blue-900/60 dark:bg-blue-950/10 p-3">
-              <div className="text-xs font-semibold text-blue-800 dark:text-blue-300 mb-2">Projection — if every employee attends all remaining working days</div>
+            <div className="rounded-xl border border-zinc-200 bg-zinc-50/60 dark:border-zinc-900/60 dark:bg-zinc-950/10 p-3">
+              <div className="text-xs font-semibold text-zinc-800 dark:text-zinc-300 mb-2">Projection — if every employee attends all remaining working days</div>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-                <div><div className="text-xl font-bold text-blue-900 dark:text-blue-200">LKR {formatNumber(preview.projected_total_gross)}</div><div className="text-xs text-gray-400">Gross Total</div></div>
-                <div><div className="text-xl font-bold text-blue-900 dark:text-blue-200">LKR {formatNumber(preview.projected_total_deductions)}</div><div className="text-xs text-gray-400">Deductions</div></div>
-                <div><div className="text-xl font-bold text-blue-900 dark:text-blue-200">LKR {formatNumber(preview.projected_total_net)}</div><div className="text-xs text-gray-400">Net Payroll</div></div>
+                <div><div className="text-xl font-bold text-zinc-900 dark:text-zinc-200">LKR {formatNumber(preview.projected_total_gross)}</div><div className="text-xs text-gray-400">Gross Total</div></div>
+                <div><div className="text-xl font-bold text-zinc-900 dark:text-zinc-200">LKR {formatNumber(preview.projected_total_deductions)}</div><div className="text-xs text-gray-400">Deductions</div></div>
+                <div><div className="text-xl font-bold text-zinc-900 dark:text-zinc-200">LKR {formatNumber(preview.projected_total_net)}</div><div className="text-xs text-gray-400">Net Payroll</div></div>
                 <div><div className="text-xl font-bold text-green-700 dark:text-green-300">+ LKR {formatNumber(preview.projected_total_net_variance)}</div><div className="text-xs text-gray-400">Additional if all attend</div></div>
               </div>
             </div>
@@ -329,7 +329,7 @@ export default function SalaryHistoryPage() {
                           const extra = f.projected - (row.net_salary || 0)
                           return (
                             <>
-                              <span className="font-semibold text-blue-900 dark:text-blue-300 tabular-nums">LKR {formatNumber(f.projected)}</span>
+                              <span className="font-semibold text-zinc-900 dark:text-zinc-300 tabular-nums">LKR {formatNumber(f.projected)}</span>
                               {extra > 0 && (
                                 <span className="block text-[10px] text-green-600 dark:text-green-400">+ LKR {formatNumber(extra)} if all attend</span>
                               )}
@@ -434,7 +434,7 @@ export default function SalaryHistoryPage() {
               <div className="text-xs text-gray-400">Total Net Salary</div>
             </div>
             <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 p-3">
-              <div className="text-xl font-bold text-blue-800">LKR {formatNumber(selTotPaid)}</div>
+              <div className="text-xl font-bold text-zinc-800">LKR {formatNumber(selTotPaid)}</div>
               <div className="text-xs text-gray-400">Total Paid{selTotNet > selTotPaid ? ` · ${formatNumber(selTotNet - selTotPaid)} outstanding` : ''}</div>
             </div>
           </div>
@@ -469,7 +469,7 @@ export default function SalaryHistoryPage() {
                     <td className="px-3 py-2 text-right">LKR {formatNumber(row.earnings)}</td>
                     <td className="px-3 py-2 text-right text-red-600">LKR {formatNumber(row.deductions)}</td>
                     <td className="px-3 py-2 text-right font-semibold">LKR {formatNumber(row.net)}</td>
-                    <td className="px-3 py-2 text-right text-blue-800">LKR {formatNumber(row.paid)}</td>
+                    <td className="px-3 py-2 text-right text-zinc-800">LKR {formatNumber(row.paid)}</td>
                   </tr>
                 ))}
                 <tr className="bg-gray-50 dark:bg-gray-800">
@@ -478,7 +478,7 @@ export default function SalaryHistoryPage() {
                   <td className="px-3 py-2 text-right font-bold">LKR {formatNumber(selTotGross)}</td>
                   <td className="px-3 py-2 text-right font-bold text-red-600">LKR {formatNumber(selTotDed)}</td>
                   <td className="px-3 py-2 text-right font-bold text-green-600">LKR {formatNumber(selTotNet)}</td>
-                  <td className="px-3 py-2 text-right font-bold text-blue-800">LKR {formatNumber(selTotPaid)}</td>
+                  <td className="px-3 py-2 text-right font-bold text-zinc-800">LKR {formatNumber(selTotPaid)}</td>
                 </tr>
               </tbody>
             </table>
@@ -568,7 +568,7 @@ export default function SalaryHistoryPage() {
                           </button>
                         )}
                         {slip.status === 'FINALIZED' && !slip.paid && (
-                          <button onClick={() => handleMarkPaid(slip)} className="p-1.5 hover:bg-blue-100 text-blue-800 rounded" title="Mark Paid" disabled={payMut.isPending}>
+                          <button onClick={() => handleMarkPaid(slip)} className="p-1.5 hover:bg-zinc-100 text-zinc-800 rounded" title="Mark Paid" disabled={payMut.isPending}>
                             <Wallet size={14} />
                           </button>
                         )}
@@ -722,7 +722,7 @@ export default function SalaryHistoryPage() {
                     </button>
                   </div>
                 )}
-                <button onClick={() => handlePrint()} className="px-3 py-1.5 bg-blue-800 text-white rounded-lg text-sm flex items-center gap-1">
+                <button onClick={() => handlePrint()} className="px-3 py-1.5 bg-zinc-800 text-white rounded-lg text-sm flex items-center gap-1">
                   <Printer size={14} /> Print
                 </button>
                 <button onClick={() => setViewSlip(null)} className="p-1.5 hover:bg-gray-100 rounded">
@@ -756,7 +756,7 @@ export default function SalaryHistoryPage() {
                         {viewSlip.attendance_required !== false && (
                           <>
                             <div className="flex justify-between"><span className="text-gray-500">Worked Days</span><span className="font-medium text-green-600">{viewSlip.worked_days ?? '-'}</span></div>
-                            <div className="flex justify-between"><span className="text-gray-500">Leave Days</span><span className="font-medium text-blue-800">{viewSlip.leave_days ?? '-'}</span></div>
+                            <div className="flex justify-between"><span className="text-gray-500">Leave Days</span><span className="font-medium text-zinc-800">{viewSlip.leave_days ?? '-'}</span></div>
                             <div className="flex justify-between"><span className="text-gray-500">Absent Days</span><span className="font-medium text-red-600">{viewSlip.absent_days ?? '-'}</span></div>
                             <div className="flex justify-between"><span className="text-gray-500">Calendar / Working Days</span><span className="font-medium">{viewSlip.calendar_days ?? '-'} / {viewSlip.working_days ?? '-'}</span></div>
                           </>

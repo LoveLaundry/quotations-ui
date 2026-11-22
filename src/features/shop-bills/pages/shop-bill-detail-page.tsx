@@ -16,8 +16,8 @@ import { todayISO } from '../../../lib/time'
 
 const STATUS_COLORS: Record<string, string> = {
   PENDING: 'bg-red-50 text-red-700 border border-red-200',
-  PROCESSING: 'bg-blue-50 text-blue-900 border border-blue-200',
-  DELIVERED: 'bg-blue-50 text-blue-900 border border-blue-200',
+  PROCESSING: 'bg-zinc-50 text-zinc-900 border border-zinc-200',
+  DELIVERED: 'bg-zinc-50 text-zinc-900 border border-zinc-200',
   COMPLETED: 'bg-green-50 text-green-700 border border-green-200',
   CANCELLED: 'bg-gray-100 text-gray-500 border border-gray-200',
 }

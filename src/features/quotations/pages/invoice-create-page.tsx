@@ -16,6 +16,7 @@ import { Skeleton } from '../../../components/ui/skeleton'
 import { Breadcrumb } from '../../../components/ui/breadcrumb'
 import { Notice } from '../../../components/ui/notice'
 import { formatDate } from '../../../lib/utils'
+import { listConsolidatedInvoices, recordFromBills, saveConsolidatedInvoice } from '../../../lib/consolidated-invoices'
 import { ConsolidatedInvoiceTemplate } from '../components/consolidated-invoice-template'
 import type { Bill } from '../../../types/bill'
 import { startOfMonthISO, todayISO } from '../../../lib/time'
@@ -76,8 +77,9 @@ export default function InvoiceCreatePage() {
   })
 
   const unpaid = useMemo(() => (data?.items ?? []).filter(isUnpaid), [data])
+  const [savedCount] = useState(() => listConsolidatedInvoices().length)
   const nowStr = todayISO().replace(/-/g, '')
-  const invoiceNo = `INV-${nowStr}-${String(unpaid.length + 1).padStart(4, '0')}`
+  const invoiceNo = `INV-${nowStr}-${String(savedCount + 1).padStart(4, '0')}`
 
   // Default all unpaid bills as selected whenever the list changes
   useEffect(() => {
@@ -162,6 +164,16 @@ export default function InvoiceCreatePage() {
     void choosePrefix().then((choice: boolean | null) => {
       if (choice === null) return
       setIncludePrefix(choice)
+      saveConsolidatedInvoice(recordFromBills({
+        dateFrom,
+        dateTo,
+        invoiceNo,
+        bills: chosen,
+        clientAddress,
+        managerSignature: signatures.manager,
+        includePrefix: choice,
+        bankDetails: details,
+      }))
       window.setTimeout(() => handlePrint(), 180)
     })
   }
@@ -173,8 +185,8 @@ export default function InvoiceCreatePage() {
           <Breadcrumb
             items={[
               { label: 'Dashboard', href: '/' },
-              { label: 'Bills', href: '/bills' },
-              { label: 'Consolidated Invoice' },
+              { label: 'Invoices', href: '/invoices' },
+              { label: 'New Consolidated Invoice' },
             ]}
           />
           <h1 className="text-dashboard-title mt-1">Consolidated Invoice</h1>

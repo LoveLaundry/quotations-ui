@@ -187,7 +187,7 @@ export function SalarySlipPrint({ slip, lang = 'EN' }: SalarySlipProps) {
         .net-salary .label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--danger-deep); }
         .net-salary .amount { font-size: 24px; font-weight: 800; color: var(--danger-deep); }
         .slip-footer { display: flex; justify-content: space-between; align-items: flex-end; padding: 6px 20px 0; margin-top: 2px; font-size: 11px; }
-        .sig-line { border-top: 1px solid #00008B; width: 30%; text-align: center; padding-top: 4px; }
+        .sig-line { border-top: 1px solid #000000; width: 30%; text-align: center; padding-top: 4px; }
         .slip-number { font-size: 10px; color: var(--text-faint); }
         .status-badge { display: inline-block; padding: 1px 8px; border-radius: 4px; font-size: 10px; font-weight: 700; text-transform: uppercase; }
         .status-DRAFT { background: var(--danger-border); color: var(--danger-deep); }

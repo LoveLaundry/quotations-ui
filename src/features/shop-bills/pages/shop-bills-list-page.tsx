@@ -15,8 +15,8 @@ import { formatCurrency } from '../../../lib/utils'
 
 const STATUS_COLORS: Record<string, string> = {
   PENDING: 'bg-red-50 text-red-700 border border-red-200',
-  PROCESSING: 'bg-blue-50 text-blue-900 border border-blue-200',
-  DELIVERED: 'bg-blue-50 text-blue-900 border border-blue-200',
+  PROCESSING: 'bg-zinc-50 text-zinc-900 border border-zinc-200',
+  DELIVERED: 'bg-zinc-50 text-zinc-900 border border-zinc-200',
   COMPLETED: 'bg-green-50 text-green-700 border border-green-200',
   CANCELLED: 'bg-gray-100 text-gray-500 border border-gray-200',
 }
@@ -194,7 +194,7 @@ export default function ShopBillsListPage() {
                     <div className="flex items-center gap-2">
                       <p className="text-[13px] font-semibold text-[var(--text-primary)]">{bill.bill_number}</p>
                       {bill.locked && <span className="text-[10px] bg-gray-200 text-gray-600 px-1.5 py-0.5 rounded">LOCKED</span>}
-                      {bill.is_recurring && <span className="text-[10px] bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded">RECURRING</span>}
+                      {bill.is_recurring && <span className="text-[10px] bg-zinc-100 text-zinc-800 px-1.5 py-0.5 rounded">RECURRING</span>}
                       <span className={`inline-flex items-center rounded-md px-2 py-0.5 text-[11px] font-medium ${STATUS_COLORS[bill.status] ?? 'bg-gray-100 text-gray-500'}`}>{bill.status}</span>
                       <span className={`inline-flex items-center rounded-md px-2 py-0.5 text-[11px] font-medium ${PAYMENT_COLORS[bill.payment_status] ?? 'bg-gray-100 text-gray-500'}`}>{bill.payment_status.replaceAll('_', ' ')}</span>
                         <PendingSyncBadge service="bills" entityId={bill.id} />

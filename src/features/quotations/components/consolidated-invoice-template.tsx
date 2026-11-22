@@ -18,6 +18,8 @@ interface ConsolidatedInvoiceTemplateProps {
     accountName: string
     accountNumber: string
   }
+  /** Saved invoices keep their original generation date on reprint. */
+  generatedAt?: string
 }
 
 interface InvoiceColumn {
@@ -47,7 +49,7 @@ const printStyles = `
   .inv-footer { position: absolute; bottom: 0; left: 0; right: 0; border-top: 2px solid #FF0000; padding-top: 8px; text-align: center; font-size: 9px; }
   .inv-sign { display: flex; justify-content: space-between; gap: 30px; margin-top: 28px; text-align: center; font-size: 10px; font-weight: 700; }
   .inv-sign-block { display: flex; width: 42%; flex-direction: column; justify-content: flex-end; }
-  .inv-sign-line { display: block; border-top: 1px solid #00008B; padding-top: 5px; }
+  .inv-sign-line { display: block; border-top: 1px solid #000000; padding-top: 5px; }
   .inv-sign-image { display: block; max-width: 140px; height: 38px; margin: 0 auto 4px; object-fit: contain; }
   .inv-terms-page { margin-top: 24px; border-top: 1px dashed #767676; padding-top: 24px; }
   @media print {
@@ -115,7 +117,7 @@ function quantityFor(bill: Bill, column: InvoiceColumn): number {
 }
 
 export const ConsolidatedInvoiceTemplate = React.forwardRef<HTMLDivElement, ConsolidatedInvoiceTemplateProps>(
-  ({ bills, dateFrom, dateTo, invoiceNo, clientAddress, managerSignature, includePrefix = true, bankDetails }, ref) => {
+  ({ bills, dateFrom, dateTo, invoiceNo, clientAddress, managerSignature, includePrefix = true, bankDetails, generatedAt }, ref) => {
     const invoiceBills = bills.filter((bill) => bill.payment_status !== 'CANCELLED')
     const itemColumns = buildItemColumns(invoiceBills)
     const clientNames = [...new Set(invoiceBills.map((bill) => bill.client_name))]
@@ -127,7 +129,7 @@ export const ConsolidatedInvoiceTemplate = React.forwardRef<HTMLDivElement, Cons
       0,
     )
     const money = (amount: number) => `LKR ${amount.toFixed(2)}`
-    const generatedOn = formatInvoiceDate(new Date().toISOString())
+    const generatedOn = formatInvoiceDate(generatedAt ?? new Date().toISOString())
 
     return (
       <div ref={ref} className="inv-root" style={{ fontFamily: '"Spectral", Georgia, serif' }}>

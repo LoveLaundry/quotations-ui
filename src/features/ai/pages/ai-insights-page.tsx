@@ -96,7 +96,7 @@ export default function AiInsightsPage() {
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <div className="p-2.5 rounded-xl bg-gradient-to-br from-blue-700 to-blue-700 text-white">
+          <div className="p-2.5 rounded-xl bg-gradient-to-br from-zinc-700 to-zinc-700 text-white">
             <BrainCircuit size={22} />
           </div>
           <div>
@@ -141,7 +141,7 @@ export default function AiInsightsPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <StatCard title="Total Revenue" value={fmtShort(d.total_revenue)} sub={`${d.period?.start} → ${d.period?.end}`} icon={Banknote} color="bg-green-500" trend={(d.revenue?.forecast?.growth_pct ?? 0) >= 0 ? 'up' : 'down'} />
             <StatCard title="Total Expenses" value={fmtShort(d.total_expenses)} sub="Last N months" icon={Receipt} color="bg-red-500" trend={(d.expenses?.forecast?.growth_pct ?? 0) >= 0 ? 'up' : 'down'} />
-            <StatCard title="Total Payroll" value={fmtShort(d.total_payroll)} sub="Net paid" icon={Banknote} color="bg-blue-700" />
+            <StatCard title="Total Payroll" value={fmtShort(d.total_payroll)} sub="Net paid" icon={Banknote} color="bg-zinc-700" />
             <StatCard title="Avg Monthly Net" value={fmtShort(d.avg_monthly_net)} sub="Revenue − Expenses" icon={Wallet} color={`${d.avg_monthly_net >= 0 ? 'bg-green-500' : 'bg-red-500'}`} />
           </div>
 
@@ -154,7 +154,7 @@ export default function AiInsightsPage() {
             <ForecastChart title="Payroll Forecast" series={d.payroll?.series || []} forecast={d.payroll?.forecast || {}} color="var(--brand-text)" />
             <ForecastChart title="Net Profit View" series={(d.net_profit?.history || []).map((v: number, i: number) => ({ month: d.revenue?.series?.[i]?.month ?? `M${i + 1}`, value: v }))} forecast={{}} color="var(--success-text)" />
             <div className="bg-white dark:bg-gray-800 rounded-xl border p-5">
-              <h3 className="font-semibold mb-4 flex items-center gap-2"><Sparkles size={16} className="text-blue-700" /> Payroll Risk</h3>
+              <h3 className="font-semibold mb-4 flex items-center gap-2"><Sparkles size={16} className="text-zinc-700" /> Payroll Risk</h3>
               <div className="space-y-3">
                 {(risk.data?.employees_at_risk || []).map((e: any, i: number) => (
                   <div key={i} className="flex justify-between items-center gap-2">
@@ -203,7 +203,7 @@ export default function AiInsightsPage() {
             </div>
 
             <div className="bg-white dark:bg-gray-800 rounded-xl border p-5">
-              <h3 className="font-semibold mb-4 flex items-center gap-2"><Banknote size={16} className="text-blue-700" /> Top Employees by Payroll</h3>
+              <h3 className="font-semibold mb-4 flex items-center gap-2"><Banknote size={16} className="text-zinc-700" /> Top Employees by Payroll</h3>
               <div className="space-y-3">
                 {(salary.data?.top_employees || []).map((e: any, i: number) => (
                   <div key={i} className="flex justify-between items-center gap-2">

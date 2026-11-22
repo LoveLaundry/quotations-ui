@@ -22,16 +22,16 @@ const STATUS_LABEL: Record<string, string> = {
 const STATUS_STYLE: Record<string, string> = {
   PRESENT: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300',
   HALF_DAY: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300',
-  PAID_LEAVE: 'bg-blue-100 text-blue-900 dark:bg-blue-950/30 dark:text-blue-300',
-  ON_LEAVE: 'bg-blue-100 text-blue-900 dark:bg-blue-950/30 dark:text-blue-300',
+  PAID_LEAVE: 'bg-zinc-100 text-zinc-900 dark:bg-zinc-950/30 dark:text-zinc-300',
+  ON_LEAVE: 'bg-zinc-100 text-zinc-900 dark:bg-zinc-950/30 dark:text-zinc-300',
   UNPAID_LEAVE: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300',
   ABSENT: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300',
 }
 const CELL_STYLE: Record<string, string> = {
   PRESENT: 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300',
   HALF_DAY: 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300',
-  PAID_LEAVE: 'bg-blue-100 text-blue-900 dark:bg-blue-950/40 dark:text-blue-300',
-  ON_LEAVE: 'bg-blue-100 text-blue-900 dark:bg-blue-950/40 dark:text-blue-300',
+  PAID_LEAVE: 'bg-zinc-100 text-zinc-900 dark:bg-zinc-950/40 dark:text-zinc-300',
+  ON_LEAVE: 'bg-zinc-100 text-zinc-900 dark:bg-zinc-950/40 dark:text-zinc-300',
   UNPAID_LEAVE: 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300',
   ABSENT: 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300',
 }
@@ -244,10 +244,10 @@ export default function AttendancePage() {
             {[
               { label: 'Worked', value: summary.worked_days, color: 'text-green-600' },
               { label: 'Half Days', value: summary.half_days, color: 'text-red-600' },
-              { label: 'Paid Leave', value: summary.paid_leave_days, color: 'text-blue-800' },
+              { label: 'Paid Leave', value: summary.paid_leave_days, color: 'text-zinc-800' },
               { label: 'Unpaid', value: summary.unpaid_leave_days + summary.absent_days, color: 'text-red-600' },
-              { label: 'OT (hrs)', value: summary.overtime_hours, color: 'text-blue-800' },
-              { label: 'Holidays', value: summary.holiday_count, color: 'text-blue-800' },
+              { label: 'OT (hrs)', value: summary.overtime_hours, color: 'text-zinc-800' },
+              { label: 'Holidays', value: summary.holiday_count, color: 'text-zinc-800' },
             ].map(({ label, value, color }) => (
               <div key={label}>
                 <div className={`text-xl font-bold ${color}`}>{value}</div>
@@ -267,12 +267,12 @@ export default function AttendancePage() {
             <div className="flex items-center gap-1 border rounded-lg p-0.5">
               <button
                 onClick={() => setViewMode('single')}
-                className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${viewMode === 'single' ? 'bg-blue-800 text-white' : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700'}`}>
+                className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${viewMode === 'single' ? 'bg-zinc-800 text-white' : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700'}`}>
                 Single
               </button>
               <button
                 onClick={() => setViewMode('all')}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${viewMode === 'all' ? 'bg-blue-800 text-white' : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700'}`}>
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${viewMode === 'all' ? 'bg-zinc-800 text-white' : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700'}`}>
                 <Table2 size={14} /> All Staff
               </button>
             </div>
@@ -336,16 +336,16 @@ export default function AttendancePage() {
               const isWeekend = dow === 0 || dow === 6
               const isToday = d === todayStr
               const cellBg = isHoliday
-                ? 'bg-blue-50 dark:bg-blue-950/20' : isWeekend
+                ? 'bg-zinc-50 dark:bg-zinc-950/20' : isWeekend
                 ? 'bg-gray-50 dark:bg-gray-800/50' : 'bg-white dark:bg-gray-800'
               return (
                 <div key={d} onClick={() => togglePick(d)}
                   ref={grid.registerCell(Math.floor(i / 7), i % 7)} tabIndex={0}
-                  className={`${cellBg} min-h-20 p-1.5 cursor-pointer flex flex-col gap-1 ${picked ? 'ring-2 ring-blue-700' : ''} ${isToday ? 'ring-2 ring-red-400' : ''}`}>
+                  className={`${cellBg} min-h-20 p-1.5 cursor-pointer flex flex-col gap-1 ${picked ? 'ring-2 ring-zinc-700' : ''} ${isToday ? 'ring-2 ring-red-400' : ''}`}>
                   <div className="flex items-center justify-between text-xs">
                     <span className={`font-medium ${isToday ? 'bg-red-600 text-white rounded-full px-1.5 py-px' : ''}`}>{Number(d.slice(8))}</span>
                     <div className="flex items-center gap-1">
-                      {isHoliday && <span className="text-[9px] text-blue-700 font-medium">H</span>}
+                      {isHoliday && <span className="text-[9px] text-zinc-700 font-medium">H</span>}
                       {rec ? (
                         <button
                           onClick={e => { e.stopPropagation(); openEdit(d, rec) }}
@@ -355,7 +355,7 @@ export default function AttendancePage() {
                       ) : (
                         <button
                           onClick={e => { e.stopPropagation(); setQuickDate(d); setQuickOt(0) }}
-                          className="text-[10px] px-1.5 py-0.5 rounded-full bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-300 hover:bg-blue-100 hover:text-blue-800 dark:hover:bg-blue-950/40 dark:hover:text-blue-300 font-medium"
+                          className="text-[10px] px-1.5 py-0.5 rounded-full bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-300 hover:bg-zinc-100 hover:text-zinc-800 dark:hover:bg-zinc-950/40 dark:hover:text-zinc-300 font-medium"
                           title="Quick save status">
                           <Plus size={10} className="inline mr-0.5 -mt-px" /> Add
                         </button>
@@ -363,9 +363,9 @@ export default function AttendancePage() {
                     </div>
                   </div>
                   {rec?.overtime_hours > 0 && (
-                    <span className="text-[10px] text-blue-800 dark:text-blue-600">OT {rec.overtime_hours}h</span>
+                    <span className="text-[10px] text-zinc-800 dark:text-zinc-600">OT {rec.overtime_hours}h</span>
                   )}
-                  {picked && <span className="text-[10px] text-blue-800 flex items-center gap-1"><Check size={10} /> Selected</span>}
+                  {picked && <span className="text-[10px] text-zinc-800 flex items-center gap-1"><Check size={10} /> Selected</span>}
                 </div>
               )
             })}
@@ -393,7 +393,7 @@ export default function AttendancePage() {
           </div>
           <button onClick={() => bulkMut.mutate()}
             disabled={!selectedEmp || pickedDates.size === 0 || bulkMut.isPending}
-            className="px-4 py-2 bg-blue-800 text-white rounded-lg hover:bg-blue-900 disabled:opacity-50 text-sm font-medium">
+            className="px-4 py-2 bg-zinc-800 text-white rounded-lg hover:bg-zinc-900 disabled:opacity-50 text-sm font-medium">
             Apply to {pickedDates.size} selected day(s)
           </button>
           {pickedDates.size > 0 && (
@@ -403,7 +403,7 @@ export default function AttendancePage() {
         </div>
 
         <div className="flex flex-wrap gap-x-5 gap-y-1 text-[11px] text-gray-400 pt-2 border-t">
-          <span className="text-blue-800 font-medium">H</span> = Holiday
+          <span className="text-zinc-800 font-medium">H</span> = Holiday
           <span className="text-gray-500">■</span> = Weekend
           {STATUSES.map((s, i) => (
             <span key={i} className={`px-1.5 py-0.5 rounded ${STATUS_STYLE[s]}`}>{STATUS_LABEL[s]}</span>
@@ -446,9 +446,9 @@ export default function AttendancePage() {
                           </td>
                           <td className="px-3 py-2 text-center font-semibold text-green-700 dark:text-green-400">{s.worked_days}</td>
                           <td className="px-3 py-2 text-center text-red-700 dark:text-red-400">{s.half_days}</td>
-                          <td className="px-3 py-2 text-center text-blue-900 dark:text-blue-600">{s.paid_leave_days}</td>
+                          <td className="px-3 py-2 text-center text-zinc-900 dark:text-zinc-600">{s.paid_leave_days}</td>
                           <td className="px-3 py-2 text-center text-red-700 dark:text-red-400">{s.unpaid_days}</td>
-                          <td className="px-3 py-2 text-center text-blue-900 dark:text-blue-600">{s.overtime_hours || 0}</td>
+                          <td className="px-3 py-2 text-center text-zinc-900 dark:text-zinc-600">{s.overtime_hours || 0}</td>
                           <td className="px-3 py-2 text-center">
                             <span className="font-bold tabular-nums">LKR {forecast.projected.toLocaleString()}</span>
                             <span className="block text-[10px] text-gray-400" title={`Base ${forecast.base.toLocaleString()} + allowance ${forecast.allowance.toLocaleString()} + OT ${forecast.overtime.toLocaleString()} − EPF ${forecast.epf.toLocaleString()} (${forecast.method})`}>
@@ -473,7 +473,7 @@ export default function AttendancePage() {
                       const isWeekend = dow === 0 || dow === 6
                       const isToday = d === todayStr
                       return (
-                        <div key={d} className={`border-b border-r text-center text-[11px] font-medium py-1.5 ${isToday ? 'bg-red-50 text-red-600 font-bold dark:bg-red-900/20' : isHoliday ? 'bg-blue-50 text-blue-800 dark:bg-blue-950/20' : isWeekend ? 'bg-gray-50 text-gray-400 dark:bg-gray-800/50' : 'bg-gray-50 text-gray-500 dark:bg-gray-800'}`}>
+                        <div key={d} className={`border-b border-r text-center text-[11px] font-medium py-1.5 ${isToday ? 'bg-red-50 text-red-600 font-bold dark:bg-red-900/20' : isHoliday ? 'bg-zinc-50 text-zinc-800 dark:bg-zinc-950/20' : isWeekend ? 'bg-gray-50 text-gray-400 dark:bg-gray-800/50' : 'bg-gray-50 text-gray-500 dark:bg-gray-800'}`}>
                           {Number(d.slice(8))}{isHoliday ? '·H' : ''}
                         </div>
                       )
@@ -491,13 +491,13 @@ export default function AttendancePage() {
                           const dow = weekdayOfISO(d)
                           const isHoliday = holidaySet.has(d)
                           const isWeekend = dow === 0 || dow === 6
-                          const bg = isHoliday ? 'bg-blue-50 dark:bg-blue-950/10' : isWeekend ? 'bg-gray-50 dark:bg-gray-800/40' : ''
+                          const bg = isHoliday ? 'bg-zinc-50 dark:bg-zinc-950/10' : isWeekend ? 'bg-gray-50 dark:bg-gray-800/40' : ''
                           return (
                             <div key={d} title={rec ? `${e.name} · ${d} · ${STATUS_LABEL[rec.status] || rec.status}${rec.overtime_hours > 0 ? ` · OT ${rec.overtime_hours}h` : ''}` : `${e.name} · ${d}`}
                               className={`relative border-b border-r flex items-center justify-center text-[11px] font-bold py-1 ${rec ? (CELL_STYLE[rec.status] || '') : bg}`}>
                               {rec ? (<>
                                 {CELL_CODE[rec.status] || rec.status}
-                                {rec.overtime_hours > 0 && <span className="absolute bottom-0 left-1/2 -translate-x-1/2 h-1 w-1 rounded-full bg-blue-700" />}
+                                {rec.overtime_hours > 0 && <span className="absolute bottom-0 left-1/2 -translate-x-1/2 h-1 w-1 rounded-full bg-zinc-700" />}
                               </>) : <span className="text-gray-300 dark:text-gray-600">·</span>}
                             </div>
                           )
@@ -513,9 +513,9 @@ export default function AttendancePage() {
                       {STATUS_LABEL[s]}
                     </span>
                   ))}
-                  <span className="text-blue-700">H</span> = Holiday
+                  <span className="text-zinc-700">H</span> = Holiday
                   <span className="text-gray-400">■</span> = Weekend
-                  <span className="text-blue-700">●</span> = OT
+                  <span className="text-zinc-700">●</span> = OT
                 </div>
               </div>
             </>
@@ -631,7 +631,7 @@ export default function AttendancePage() {
                 className="w-20 px-2 py-1 border rounded-lg text-sm" />
               <button
                 onClick={() => { setEditDate(quickDate); setEditForm({ status: 'PRESENT', overtime_hours: quickOt || 0, check_in_time: '', check_out_time: '', notes: '' }); setQuickDate(null) }}
-                className="ml-auto text-xs text-blue-800 hover:underline">
+                className="ml-auto text-xs text-zinc-800 hover:underline">
                 Detailed…
               </button>
             </div>
