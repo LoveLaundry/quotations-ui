@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import { toast } from 'sonner'
+import { motion } from 'framer-motion'
 import {
   AlertTriangle,
   ArrowRight,
@@ -33,6 +34,8 @@ import {
 } from '../hooks/useLinen'
 import { useLinenCamera } from '../hooks/useLinenCamera'
 import { useLinenLiveFeed, type LinenFeedStatus } from '../hooks/useLinenLiveFeed'
+import { useReducedMotion } from '../../feature-pack/hooks'
+import { CustodyGroupPanel, ScanSelectHero, ScanStatCard } from '../components/scan-step-cards'
 import { parseLinenCode } from '../lib/linen-code'
 import {
   CATEGORY_LABEL,
@@ -114,6 +117,7 @@ function timeOfDay(ms?: number): string {
 
 export default function LinenSession() {
   const { user } = useAuth()
+  const reduceMotion = useReducedMotion()
   const operator = user?.user_name ?? 'unknown'
   const { data: catalogue, isLoading: catalogueLoading, error: catalogueError, refetch: refetchCatalogue } = useLinenTransitions()
   const bulkMutation = useBulkScan()
@@ -315,20 +319,13 @@ export default function LinenSession() {
     return (
       <div className="space-y-5">
         <Breadcrumb items={[{ label: 'Linen' }, { label: 'Scan Session' }]} />
-        <div>
-          <h1 className="text-2xl font-bold text-[var(--text-primary)]" style={{ fontFamily: '"Spectral", Georgia, serif' }}>
-            Scan Session
-          </h1>
-          <p className="text-sm text-[var(--text-muted)] mt-1">
-            Choose a state, scan continuously, then press OK once to update every linen in the batch.
-          </p>
-        </div>
 
-        <Card className="border border-[var(--brand-border)] bg-[var(--brand-soft)] shadow-sm">
-          <CardContent className="p-3.5 text-xs text-[var(--brand-text)]">
-            Nothing is written to linen while you scan. All valid tags are held in this session until you press OK.
-          </CardContent>
-        </Card>
+        <ScanSelectHero
+          title="Scan Session"
+          description="Choose a state, scan continuously, then press OK once to update every linen in the batch."
+          note="Nothing is written to linen while you scan — valid tags are held until you press OK."
+          groups={catalogue?.groups ?? []}
+        />
 
         {catalogueLoading && (
           <Card className="border border-[var(--border)] shadow-sm">
@@ -359,33 +356,13 @@ export default function LinenSession() {
           </Card>
         )}
 
-        {catalogue?.groups.map(group => (
-          <section key={group.custody} className="space-y-2">
-            <div>
-              <h2 className="text-[11px] font-semibold uppercase tracking-wide text-[var(--text-muted)]">{group.label}</h2>
-              <p className="text-xs text-[var(--text-muted)]">{group.description}</p>
-            </div>
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-              {group.transitions.map(transition => (
-                <button
-                  key={transition.action}
-                  type="button"
-                  onClick={() => beginSession(transition)}
-                  className="flex aspect-square flex-col justify-between rounded-md border border-[var(--border)] bg-[var(--surface)] p-3 text-left shadow-[var(--shadow-xs)] transition-colors hover:border-[var(--brand)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
-                >
-                  <span className="inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wide text-[var(--text-muted)]">
-                    {transition.custody === 'exception' ? <AlertTriangle size={11} /> : <ScanLine size={11} />}
-                    {transition.to_status_label}
-                  </span>
-                  <span className="text-base font-bold leading-tight text-[var(--text-primary)]">{transition.label}</span>
-                  <span className="flex items-center justify-between gap-2">
-                    <span className="font-[family-name:var(--font-mono)] text-[10px] text-[var(--text-muted)]">{transition.to_status}</span>
-                    {transition.terminal && <Badge size="xs" tone="warning">Final</Badge>}
-                  </span>
-                </button>
-              ))}
-            </div>
-          </section>
+        {catalogue?.groups.map((group, index) => (
+          <CustodyGroupPanel
+            key={group.custody}
+            group={group}
+            index={index}
+            onSelect={beginSession}
+          />
         ))}
       </div>
     )
@@ -441,17 +418,19 @@ export default function LinenSession() {
 
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           {[
-            ['Scans', summary.attempts],
-            ['Linen updated', summary.successful],
-            ['Not updated', unresolved],
-            ['Duplicates', summary.duplicates],
-          ].map(([label, value]) => (
-            <Card key={String(label)} className="border border-[var(--border)] shadow-sm">
-              <CardContent className="p-3">
-                <p className="text-[10px] uppercase text-[var(--text-muted)]">{label}</p>
-                <p className="text-xl font-bold tabular-nums text-[var(--text-primary)]">{value}</p>
-              </CardContent>
-            </Card>
+            { label: 'Scans', value: summary.attempts, tone: 'blue' as const, icon: <ScanLine size={12} /> },
+            { label: 'Linen updated', value: summary.successful, tone: 'green' as const, icon: <CheckCircle2 size={12} /> },
+            { label: 'Not updated', value: unresolved, tone: 'rose' as const, icon: <AlertTriangle size={12} /> },
+            { label: 'Duplicates', value: summary.duplicates, tone: 'amber' as const, icon: <Layers3 size={12} /> },
+          ].map((stat, index) => (
+            <ScanStatCard
+              key={stat.label}
+              label={stat.label}
+              value={stat.value}
+              tone={stat.tone}
+              icon={stat.icon}
+              index={index}
+            />
           ))}
         </div>
 
@@ -478,7 +457,7 @@ export default function LinenSession() {
                 ) : (
                   <ul className="max-h-64 space-y-1 overflow-y-auto">
                     {apiResult.processed.map(row => (
-                      <li key={row.linen_id} className="flex items-center gap-2 rounded border border-[var(--border)] bg-[var(--surface-2)] px-2 py-1.5 text-xs">
+                      <li key={row.linen_id} className="scan-soft-row flex items-center gap-2 rounded border border-[var(--border)] bg-[var(--surface-2)] px-2 py-1.5 text-xs">
                         <CheckCircle2 size={13} className="flex-shrink-0 text-[var(--success-text)]" />
                         <span className="font-[family-name:var(--font-mono)] font-semibold text-[var(--text-primary)]">{row.linen_id}</span>
                         <span className="ml-auto flex items-center gap-1 text-[10px] text-[var(--text-muted)]">
@@ -502,7 +481,7 @@ export default function LinenSession() {
                 ) : (
                   <ul className="max-h-64 space-y-1 overflow-y-auto">
                     {apiResult.errors.map(row => (
-                      <li key={row.linen_id} className="flex items-start gap-2 rounded border border-[var(--danger-border)] bg-[var(--danger-soft)] px-2 py-1.5 text-xs">
+                      <li key={row.linen_id} className="scan-soft-row flex items-start gap-2 rounded border border-[var(--danger-border)] bg-[var(--danger-soft)] px-2 py-1.5 text-xs">
                         <AlertTriangle size={13} className="mt-0.5 flex-shrink-0 text-[var(--danger-text)]" />
                         <div className="min-w-0">
                           <p className="font-[family-name:var(--font-mono)] font-semibold text-[var(--text-primary)]">{row.linen_id}</p>
@@ -534,10 +513,15 @@ export default function LinenSession() {
     <div className="space-y-4">
       <Breadcrumb items={[{ label: 'Linen' }, { label: 'Scan Session' }]} />
 
-      <div className="flex flex-wrap items-start justify-between gap-3">
+      <motion.div
+        initial={reduceMotion ? false : { opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+        className="flex flex-wrap items-start justify-between gap-3"
+      >
         <div className="min-w-0">
           <h1 className="text-2xl font-bold text-[var(--text-primary)]" style={{ fontFamily: '"Spectral", Georgia, serif' }}>
-            {target.label} <span className="text-[var(--text-muted)]">→</span> {statusLabel(session.toStatus)}
+            {target.label} <span className="text-[var(--brand)]">→</span> {statusLabel(session.toStatus)}
           </h1>
           <p className="text-sm text-[var(--text-muted)] mt-1">
             Keep passing tags. Each valid tag is queued once; Press OK when the batch is complete.
@@ -561,7 +545,7 @@ export default function LinenSession() {
             <CheckCircle2 size={14} /> OK — Update {queuedCount} {queuedCount === 1 ? 'Item' : 'Items'}
           </Button>
         </div>
-      </div>
+      </motion.div>
 
       <div className="flex flex-wrap items-center gap-x-5 gap-y-1 text-[11px] text-[var(--text-muted)]">
         <span className="inline-flex items-center gap-1">
@@ -607,7 +591,7 @@ export default function LinenSession() {
         )}
       </div>
 
-      <Card className="border border-[var(--brand-border)] bg-[var(--brand-soft)] shadow-sm">
+      <Card className="scan-input-card border border-[var(--brand-border)] bg-[var(--brand-soft)] shadow-sm">
         <CardContent className="p-4">
           <div className="flex gap-3">
             <div className="relative flex-1">
@@ -651,15 +635,20 @@ export default function LinenSession() {
         <div className="space-y-3">
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
             {[
-              ['Scans', summary.attempts],
-              ['Ready for OK', summary.queued],
-              ['Duplicates', summary.duplicates],
-              ['Needs attention', failedTotal(summary)],
-            ].map(([label, value]) => (
-              <div key={String(label)} className="rounded-md border border-[var(--border)] bg-[var(--surface)] px-2 py-2 text-center shadow-[var(--shadow-xs)]">
-                <p className="text-[10px] uppercase text-[var(--text-muted)]">{label}</p>
-                <p className="text-lg font-bold tabular-nums text-[var(--text-primary)]">{value}</p>
-              </div>
+              { label: 'Scans', value: summary.attempts, tone: 'blue' as const, icon: <ScanLine size={12} /> },
+              { label: 'Ready for OK', value: summary.queued, tone: 'green' as const, icon: <CheckCircle2 size={12} /> },
+              { label: 'Duplicates', value: summary.duplicates, tone: 'amber' as const, icon: <Layers3 size={12} /> },
+              { label: 'Needs attention', value: failedTotal(summary), tone: 'rose' as const, icon: <AlertTriangle size={12} /> },
+            ].map((stat, index) => (
+              <ScanStatCard
+                key={stat.label}
+                label={stat.label}
+                value={stat.value}
+                tone={stat.tone}
+                icon={stat.icon}
+                index={index}
+                compact
+              />
             ))}
           </div>
           <DistinctSummaryCards summary={summary} compact />
@@ -707,19 +696,27 @@ function TransitionGuide({
   violationMode?: 'block' | 'warn'
   onOpenSettings: boolean
 }) {
+  const reduceMotion = useReducedMotion()
   const rules = catalogue?.transition_rules || []
   const sources = rules
     .filter(rule => rule.to_statuses.includes(toStatus))
     .map(rule => rule.from_status)
 
   return (
-    <Card className="border border-[var(--brand-border)] bg-gradient-to-br from-[var(--brand-soft)] to-[var(--surface)] shadow-sm">
+    <Card className="scan-guide border border-[var(--brand-border)] bg-gradient-to-br from-[var(--brand-soft)] to-[var(--surface)] shadow-sm">
       <CardContent className="p-4">
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-          <span className="inline-flex items-center gap-2 rounded-full bg-[var(--brand)] px-3 py-1.5 text-xs font-semibold text-white">
+        <div className="relative z-10 flex flex-wrap items-center gap-x-3 gap-y-2">
+          <span className="scan-guide-pill inline-flex items-center gap-2 rounded-full bg-[var(--brand)] px-3 py-1.5 text-xs font-semibold text-white">
             <ScanLine size={13} /> {actionLabel}
           </span>
-          <ArrowRight size={14} className="text-[var(--text-muted)]" />
+          <motion.span
+            aria-hidden="true"
+            animate={reduceMotion ? undefined : { x: [0, 3, 0] }}
+            transition={{ duration: 2.4, repeat: Infinity, ease: 'easeInOut' }}
+            className="text-[var(--brand)]"
+          >
+            <ArrowRight size={14} />
+          </motion.span>
           <span className="text-sm font-semibold text-[var(--text-primary)]">{statusLabel(toStatus)}</span>
           <span className="ml-auto text-[11px] text-[var(--text-muted)]">
             {rules.length === 0
@@ -730,7 +727,7 @@ function TransitionGuide({
           </span>
         </div>
         {rules.length > 0 && (
-          <div className="mt-3 border-t border-[var(--brand-border)] pt-3">
+          <div className="relative z-10 mt-3 border-t border-[var(--brand-border)] pt-3">
             <p className="text-[11px] font-medium text-[var(--text-muted)]">
               {sources.length
                 ? `Allowed from: ${sources.map(s => statusLabel(s)).join(', ')}`
@@ -753,12 +750,12 @@ function TransitionGuide({
 
 function DistinctSummaryCards({ summary, compact }: { summary: ScanSummary; compact?: boolean }) {
   const cards = [
-    { label: 'Distinct linen', value: summary.distinctLinens, icon: <Layers3 size={12} /> },
-    { label: 'Bath towels', value: summary.categories.bathTowels, icon: <Bath size={12} /> },
-    { label: 'Pool towels', value: summary.categories.poolTowels, icon: <Waves size={12} /> },
-    { label: 'Single bedsheets', value: summary.categories.singleBedsheets, icon: <BedSingle size={12} /> },
-    { label: 'Double bedsheets', value: summary.categories.doubleBedsheets, icon: <BedDouble size={12} /> },
-    { label: 'Verified tags', value: summary.verifiedLinens, icon: <ShieldCheck size={12} /> },
+    { label: 'Distinct linen', value: summary.distinctLinens, tone: 'brand' as const, icon: <Layers3 size={12} /> },
+    { label: 'Bath towels', value: summary.categories.bathTowels, tone: 'amber' as const, icon: <Bath size={12} /> },
+    { label: 'Pool towels', value: summary.categories.poolTowels, tone: 'blue' as const, icon: <Waves size={12} /> },
+    { label: 'Single bedsheets', value: summary.categories.singleBedsheets, tone: 'violet' as const, icon: <BedSingle size={12} /> },
+    { label: 'Double bedsheets', value: summary.categories.doubleBedsheets, tone: 'green' as const, icon: <BedDouble size={12} /> },
+    { label: 'Verified tags', value: summary.verifiedLinens, tone: 'green' as const, icon: <ShieldCheck size={12} /> },
   ]
 
   return (
@@ -772,17 +769,15 @@ function DistinctSummaryCards({ summary, compact }: { summary: ScanSummary; comp
         </p>
       </div>
       <div className={`grid gap-2 ${compact ? 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-6' : 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-6'}`}>
-        {cards.map(card => (
-          <div
+        {cards.map((card, index) => (
+          <ScanStatCard
             key={card.label}
-            className="min-w-0 rounded-md border border-[var(--border)] bg-[var(--surface)] p-2.5 shadow-[var(--shadow-xs)]"
-          >
-            <p className="flex items-center gap-1.5 text-[10px] uppercase leading-tight text-[var(--text-muted)]">
-              {card.icon}
-              <span className="break-words">{card.label}</span>
-            </p>
-            <p className="mt-1 text-lg font-bold tabular-nums text-[var(--text-primary)]">{card.value}</p>
-          </div>
+            label={card.label}
+            value={card.value}
+            tone={card.tone}
+            icon={card.icon}
+            index={index}
+          />
         ))}
       </div>
       {summary.categories.other > 0 && (
@@ -854,7 +849,7 @@ function MissingInCyclePanel({
                 size: linen.size,
               })
               return (
-                <li key={linen.id} className="min-w-0 rounded-md border border-[var(--border)] bg-[var(--surface-2)] p-2.5">
+                <li key={linen.id} className="scan-soft-row min-w-0 rounded-md border border-[var(--border)] bg-[var(--surface-2)] p-2.5">
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="break-all font-[family-name:var(--font-mono)] text-xs font-semibold text-[var(--text-primary)]">
                       {linen.linen_id}
@@ -944,7 +939,7 @@ function SessionHistory({ records, total, filter, setFilter, compact }: SessionH
               return (
                 <li
                   key={`${record.code}-${record.attemptedAt}-${index}`}
-                  className="min-w-0 rounded-md border border-[var(--border)] bg-[var(--surface)] p-2.5"
+                  className="scan-soft-row min-w-0 rounded-md border border-[var(--border)] bg-[var(--surface)] p-2.5"
                 >
                   <div className="flex flex-wrap items-start justify-between gap-2">
                     <div className="min-w-0 flex-1">
