@@ -23,7 +23,12 @@ interface HotelContextValue {
 
 const HotelContext = createContext<HotelContextValue | null>(null)
 
-export function HotelProvider({ children }: { children: ReactNode }) {
+/**
+ * Data-owning half of the provider. Mounted only for signed-in users so the
+ * gate-pass / delivery / bill / quotation lists are never fetched on the login
+ * or guest screens (those requests are protected and just fail with CORS/401).
+ */
+function HotelDataProvider({ children }: { children: ReactNode }) {
     const { user } = useAuth()
     const _role = user?.role_id?.toUpperCase()
     const isAdmin = _role === 'ADMIN' || _role === 'PLATFORM_ADMIN'
@@ -104,6 +109,25 @@ export function HotelProvider({ children }: { children: ReactNode }) {
     )
 
     return <HotelContext.Provider value={value}>{children}</HotelContext.Provider>
+}
+
+const EMPTY_HOTEL_SCOPE: HotelContextValue = {
+    hotels: [],
+    selectedHotel: '',
+    setSelectedHotel: () => {},
+    isAdmin: false,
+    showAllHotels: false,
+}
+
+/**
+ * Public entry point. An unauthenticated visitor gets an inert scope instead
+ * of a data-fetching provider — the login page must not call protected APIs.
+ */
+export function HotelProvider({ children }: { children: ReactNode }) {
+    const { isAuthenticated } = useAuth()
+    return isAuthenticated
+        ? <HotelDataProvider>{children}</HotelDataProvider>
+        : <HotelContext.Provider value={EMPTY_HOTEL_SCOPE}>{children}</HotelContext.Provider>
 }
 
 export function useHotel() {
