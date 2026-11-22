@@ -10,6 +10,7 @@ import type {
   LinenTagGenerate,
   LinenTransitionList,
   LinenBulkScanResult,
+  LinenMissingInCycleResponse,
 } from '../../../types/linen'
 
 async function listLinens(params: LinenListParams = {}): Promise<LinenListResponse> {
@@ -24,6 +25,19 @@ async function getLinen(docId: string): Promise<Linen> {
 
 async function getLinenByCode(code: string): Promise<Linen> {
   const response = await billsApi.get<Linen>(`/linens/by-code/${code}`)
+  return response.data
+}
+
+/** Non-mutating proof that a QR belongs to the signed-in laundry. */
+async function verifyLinenCode(code: string): Promise<Linen> {
+  const response = await billsApi.get<Linen>(`/linens/verify/${encodeURIComponent(code)}`)
+  return response.data
+}
+
+async function getMissingInCycle(days: number, limit = 200): Promise<LinenMissingInCycleResponse> {
+  const response = await billsApi.get<LinenMissingInCycleResponse>('/linens/missing-in-cycle', {
+    params: { days, limit },
+  })
   return response.data
 }
 
@@ -70,6 +84,8 @@ export const linenService = {
   listLinens,
   getLinen,
   getLinenByCode,
+  verifyLinenCode,
+  getMissingInCycle,
   createLinenBulk,
   generateTags,
   scanLinen,

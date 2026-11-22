@@ -2,7 +2,7 @@ import { Fragment, useEffect, useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { companySettingsApi } from '../api/management-api'
 import { toast } from 'sonner'
-import { Activity, AlertCircle, Minus, Pencil, Plus, Save, Settings, Trash2, TrendingDown, TrendingUp, X, Zap } from 'lucide-react'
+import { Activity, AlertCircle, Minus, Pencil, Plus, Save, ScanLine, Settings, Trash2, TrendingDown, TrendingUp, X, Zap } from 'lucide-react'
 import {
   Bar,
   BarChart,
@@ -226,6 +226,7 @@ export default function CompanySettingsPage() {
       setForm({
         company_name: settings.company_name || 'Love Laundry',
         salary_basis_days: settings.salary_basis_days ?? 30,
+        linen_missing_after_days: settings.linen_missing_after_days ?? 7,
         working_days_per_week: settings.working_days_per_week ?? 6,
         working_days_pattern: (settings.working_days_pattern || [0, 1, 2, 3, 4, 5]).map(pyToJs),
         default_overtime_rate: settings.default_overtime_rate ?? 0,
@@ -423,12 +424,21 @@ export default function CompanySettingsPage() {
   const handleSave = () => {
     const slabs = isAdmin ? normalizeSlabsForSave() : []
     if (isAdmin && !slabs) return
+    if (isAdmin) {
+      const days = Number(form.linen_missing_after_days)
+      if (!Number.isInteger(days) || days < 1 || days > 365) {
+        toast.error('Missing-in-cycle window must be between 1 and 365 days')
+        return
+      }
+    }
     const data = {
       ...form,
+      linen_missing_after_days: isAdmin ? Number(form.linen_missing_after_days) : undefined,
       working_days_pattern: (form.working_days_pattern || []).map(jsToPy),
       electricity_unit_slabs: slabs,
     }
     if (!isAdmin) {
+      delete data.linen_missing_after_days
       delete data.electricity_meter_1_name
       delete data.electricity_meter_2_name
       delete data.electricity_unit_slabs
@@ -1332,6 +1342,32 @@ export default function CompanySettingsPage() {
           </>
         )}
       </section>
+
+      {isAdmin && (
+        <section className="bg-white dark:bg-gray-800 rounded-xl border p-6 space-y-4">
+          <h2 className="text-lg font-semibold flex items-center gap-2">
+            <ScanLine size={20} /> Linen Cycle Configuration
+          </h2>
+          <div className="max-w-sm">
+            <label className="text-sm font-medium text-gray-600 dark:text-gray-400" htmlFor="linen-missing-days">
+              Missing in cycle after (days)
+            </label>
+            <input
+              id="linen-missing-days"
+              type="number"
+              min="1"
+              max="365"
+              value={form.linen_missing_after_days}
+              onChange={e => setForm({ ...form, linen_missing_after_days: e.target.value === '' ? '' : Number(e.target.value) })}
+              className="w-full mt-1 px-3 py-2 border rounded-lg text-sm"
+            />
+            <p className="text-xs text-gray-400 mt-1">
+              A linen that has not been scanned within this window appears in the scanner’s
+              “Missing in cycle” list. Items already marked missing appear immediately.
+            </p>
+          </div>
+        </section>
+      )}
 
       <div className="bg-white dark:bg-gray-800 rounded-xl border p-6 space-y-6">
         <h2 className="text-lg font-semibold flex items-center gap-2">

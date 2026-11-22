@@ -160,6 +160,14 @@ export interface LinenBulkScanResult {
   total_errors: number
 }
 
+/** Tenant-scoped result of `GET /linens/missing-in-cycle`. */
+export interface LinenMissingInCycleResponse {
+  items: Linen[]
+  total: number
+  days: number
+  cutoff: string
+}
+
 export const LINEN_STATUS_CONFIG: Record<LinenStatus, { label: string; color: string; bg: string }> = {
   IN_STOCK:    { label: 'In Stock',    color: '#16A34A', bg: '#DCFCE7' },
   AT_CLIENT:   { label: 'At Client',   color: '#2563EB', bg: '#DBEAFE' },

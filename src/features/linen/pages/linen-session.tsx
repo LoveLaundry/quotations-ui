@@ -1,27 +1,49 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import { toast } from 'sonner'
 import {
   AlertTriangle,
   ArrowRight,
+  Bath,
+  BedDouble,
+  BedSingle,
   Camera,
   CameraOff,
   CheckCircle2,
   Clock,
+  Layers3,
+  Radio,
   RefreshCw,
   ScanLine,
   Search,
+  ShieldAlert,
+  ShieldCheck,
   UserRound,
+  Waves,
 } from 'lucide-react'
+import { companySettingsApi } from '../../management/api/management-api'
 import { useAuth } from '../../../context/AuthContext'
-import { useBulkScan, useLinenTransitions } from '../hooks/useLinen'
+import {
+  linenKeys,
+  useBulkScan,
+  useLinenTransitions,
+  useLinenVerifications,
+  useMissingInCycle,
+} from '../hooks/useLinen'
 import { useLinenCamera } from '../hooks/useLinenCamera'
+import { useLinenLiveFeed, type LinenFeedStatus } from '../hooks/useLinenLiveFeed'
 import { parseLinenCode } from '../lib/linen-code'
 import {
+  CATEGORY_LABEL,
   OUTCOME_LABEL,
   OUTCOME_TONE,
   applyBulkResult,
+  applyLinenLiveEvent,
+  applyLinenVerification,
+  classifyLinen,
   createSession,
+  daysSince,
   endSession,
   failQueued,
   failedTotal,
@@ -29,12 +51,18 @@ import {
   queuedCodes,
   recordScan,
   requeueUnresolved,
+  scannedCodes,
   summarise,
+  type LinenLiveUpdate,
+  type LinenRealtimeEvent,
   type ScanRecord,
   type ScanSession,
+  type ScanSummary,
+  type VerificationState,
 } from '../lib/scan-session'
 import {
   LINEN_STATUS_CONFIG,
+  type Linen,
   type LinenBulkScanResult,
   type LinenStatus,
   type LinenTransition,
@@ -53,6 +81,24 @@ const TONE_BADGE = {
   blue: 'info',
   neutral: 'neutral',
 } as const
+
+/** Used only when the management service has not answered yet. The real value
+ * is admin-defined in Company Settings and persisted server-side. */
+const DEFAULT_MISSING_AFTER_DAYS = 7
+
+const FEED_LABEL: Record<LinenFeedStatus, string> = {
+  live: 'Live',
+  connecting: 'Connecting',
+  reconnecting: 'Reconnecting',
+  offline: 'Offline',
+}
+
+const FEED_TONE: Record<LinenFeedStatus, 'success' | 'warning' | 'neutral'> = {
+  live: 'success',
+  connecting: 'warning',
+  reconnecting: 'warning',
+  offline: 'neutral',
+}
 
 function statusLabel(status?: string): string {
   if (!status) return '—'
@@ -78,6 +124,29 @@ export default function LinenSession() {
   const [codeInput, setCodeInput] = useState('')
   const [filter, setFilter] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
+  const verificationStampRef = useRef(new Map<string, string>())
+  const qc = useQueryClient()
+
+  // Read-only for operators; the value itself is written by an admin in
+  // Company Settings. A failed settings call falls back to the same default as
+  // the management backend so the scanner still behaves predictably.
+  const { data: companySettings } = useQuery({
+    queryKey: ['company-settings'],
+    queryFn: () => companySettingsApi.get().then(response => response.data),
+    staleTime: 5 * 60_000,
+  })
+  const missingAfterDays = useMemo(() => {
+    const value = Number(companySettings?.linen_missing_after_days)
+    return Number.isFinite(value) && value >= 1 && value <= 365
+      ? Math.round(value)
+      : DEFAULT_MISSING_AFTER_DAYS
+  }, [companySettings])
+
+  const { data: missingLinens, isLoading: missingLoading } = useMissingInCycle(
+    missingAfterDays,
+    phase !== 'select'
+  )
+  const isAdmin = ['ADMIN', 'PLATFORM_ADMIN'].includes(String(user?.role_id ?? '').toUpperCase())
 
   const focusScanner = useCallback(() => {
     requestAnimationFrame(() => inputRef.current?.focus())
@@ -86,6 +155,47 @@ export default function LinenSession() {
   useEffect(() => {
     if (phase === 'scanning') focusScanner()
   }, [phase, focusScanner])
+
+  const handleLiveEvent = useCallback((event: LinenRealtimeEvent) => {
+    setSession(current => (current ? applyLinenLiveEvent(current, event) : current))
+    qc.invalidateQueries({ queryKey: linenKeys.missing() })
+  }, [qc])
+  const liveFeed = useLinenLiveFeed(handleLiveEvent, phase !== 'select')
+
+  const verificationCodes = useMemo(
+    () => (session ? scannedCodes(session.records) : []),
+    [session]
+  )
+  const verifications = useLinenVerifications(verificationCodes, phase !== 'select')
+
+  // React Query hands back a fresh array each render. The stamp map makes the
+  // patch idempotent so verified/unverified tags never trigger a render loop.
+  useEffect(() => {
+    const pending = verifications.filter(result => {
+      const stamp = `${session?.id ?? ''}:${result.state}:${result.dataUpdatedAt}:${result.errorUpdatedAt}`
+      return verificationStampRef.current.get(result.code) !== stamp
+    })
+    if (!pending.length) return
+    for (const result of pending) {
+      verificationStampRef.current.set(
+        result.code,
+        `${session?.id ?? ''}:${result.state}:${result.dataUpdatedAt}:${result.errorUpdatedAt}`
+      )
+    }
+    setSession(current => {
+      if (!current) return current
+      let next = current
+      for (const result of pending) {
+        if (result.state === 'success' && result.linen) {
+          next = applyLinenVerification(next, result.code, result.linen, Date.now())
+        } else if (result.state === 'error') {
+          // 404 is the meaningful case: this QR is not a registered linen here.
+          next = applyLinenVerification(next, result.code, null, Date.now())
+        }
+      }
+      return next
+    })
+  }, [verifications, session?.id])
 
   const processScan = useCallback((raw: string) => {
     if (phase !== 'scanning' || bulkMutation.isPending) return
@@ -334,6 +444,16 @@ export default function LinenSession() {
           ))}
         </div>
 
+        <DistinctSummaryCards summary={summary} />
+
+        <MissingInCyclePanel
+          items={missingLinens?.items ?? []}
+          total={missingLinens?.total ?? 0}
+          days={missingAfterDays}
+          loading={missingLoading}
+          isAdmin={isAdmin}
+        />
+
         {apiResult && (
           <div className="grid gap-4 lg:grid-cols-2">
             <Card className="border border-[var(--border)] shadow-sm">
@@ -439,6 +559,9 @@ export default function LinenSession() {
         <span className="inline-flex items-center gap-1"><UserRound size={11} /> {session.operator}</span>
         <span className="inline-flex items-center gap-1"><Clock size={11} /> started {timeOfDay(session.startedAt)}</span>
         <Badge tone="info" size="xs" dot>Scanning</Badge>
+        <Badge tone={FEED_TONE[liveFeed.status]} size="xs" dot title="Live linen updates over websocket">
+          <Radio size={10} /> {FEED_LABEL[liveFeed.status]}
+        </Badge>
         <span className="text-[var(--text-tertiary)]">Nothing written to linen until OK</span>
       </div>
 
@@ -506,20 +629,32 @@ export default function LinenSession() {
       </Card>
 
       {summary && (
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-          {[
-            ['Scans', summary.attempts],
-            ['Ready for OK', summary.queued],
-            ['Duplicates', summary.duplicates],
-            ['Needs attention', failedTotal(summary)],
-          ].map(([label, value]) => (
-            <div key={String(label)} className="rounded-md border border-[var(--border)] bg-[var(--surface)] px-2 py-2 text-center shadow-[var(--shadow-xs)]">
-              <p className="text-[10px] uppercase text-[var(--text-muted)]">{label}</p>
-              <p className="text-lg font-bold tabular-nums text-[var(--text-primary)]">{value}</p>
-            </div>
-          ))}
+        <div className="space-y-3">
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+            {[
+              ['Scans', summary.attempts],
+              ['Ready for OK', summary.queued],
+              ['Duplicates', summary.duplicates],
+              ['Needs attention', failedTotal(summary)],
+            ].map(([label, value]) => (
+              <div key={String(label)} className="rounded-md border border-[var(--border)] bg-[var(--surface)] px-2 py-2 text-center shadow-[var(--shadow-xs)]">
+                <p className="text-[10px] uppercase text-[var(--text-muted)]">{label}</p>
+                <p className="text-lg font-bold tabular-nums text-[var(--text-primary)]">{value}</p>
+              </div>
+            ))}
+          </div>
+          <DistinctSummaryCards summary={summary} compact />
         </div>
       )}
+
+      <MissingInCyclePanel
+        items={missingLinens?.items ?? []}
+        total={missingLinens?.total ?? 0}
+        days={missingAfterDays}
+        loading={missingLoading}
+        isAdmin={isAdmin}
+        compact
+      />
 
       <SessionHistory
         records={visibleRecords}
@@ -538,6 +673,162 @@ export default function LinenSession() {
   )
 }
 
+function DistinctSummaryCards({ summary, compact }: { summary: ScanSummary; compact?: boolean }) {
+  const cards = [
+    { label: 'Distinct linen', value: summary.distinctLinens, icon: <Layers3 size={12} /> },
+    { label: 'Bath towels', value: summary.categories.bathTowels, icon: <Bath size={12} /> },
+    { label: 'Pool towels', value: summary.categories.poolTowels, icon: <Waves size={12} /> },
+    { label: 'Single bedsheets', value: summary.categories.singleBedsheets, icon: <BedSingle size={12} /> },
+    { label: 'Double bedsheets', value: summary.categories.doubleBedsheets, icon: <BedDouble size={12} /> },
+    { label: 'Verified tags', value: summary.verifiedLinens, icon: <ShieldCheck size={12} /> },
+  ]
+
+  return (
+    <section className="space-y-2">
+      <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
+        <h2 className="text-[11px] font-semibold uppercase tracking-wide text-[var(--text-muted)]">
+          Distinct linen summary
+        </h2>
+        <p className="text-[11px] text-[var(--text-muted)]">
+          {summary.verifiedLinens} verified · {summary.unverifiedLinens} unregistered/fake
+        </p>
+      </div>
+      <div className={`grid gap-2 ${compact ? 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-6' : 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-6'}`}>
+        {cards.map(card => (
+          <div
+            key={card.label}
+            className="min-w-0 rounded-md border border-[var(--border)] bg-[var(--surface)] p-2.5 shadow-[var(--shadow-xs)]"
+          >
+            <p className="flex items-center gap-1.5 text-[10px] uppercase leading-tight text-[var(--text-muted)]">
+              {card.icon}
+              <span className="break-words">{card.label}</span>
+            </p>
+            <p className="mt-1 text-lg font-bold tabular-nums text-[var(--text-primary)]">{card.value}</p>
+          </div>
+        ))}
+      </div>
+      {summary.categories.other > 0 && (
+        <p className="text-[11px] text-[var(--text-muted)]">
+          {summary.categories.other} other/unclassified {summary.categories.other === 1 ? 'item' : 'items'} —
+          their category is not on the tag yet.
+        </p>
+      )}
+    </section>
+  )
+}
+
+function MissingInCyclePanel({
+  items,
+  total,
+  days,
+  loading,
+  isAdmin,
+  compact,
+}: {
+  items: Linen[]
+  total: number
+  days: number
+  loading: boolean
+  isAdmin: boolean
+  compact?: boolean
+}) {
+  const shown = items.slice(0, compact ? 5 : 8)
+
+  return (
+    <Card className="border border-[var(--warning-border)] shadow-sm">
+      <CardContent className={compact ? 'p-3' : 'p-4'}>
+        <div className="flex flex-wrap items-start justify-between gap-2">
+          <div className="min-w-0">
+            <h2 className="text-[11px] font-semibold uppercase tracking-wide text-[var(--text-muted)]">
+              Missing in cycle
+            </h2>
+            <p className="mt-0.5 text-[11px] text-[var(--text-muted)]">
+              Admin window: <span className="font-semibold text-[var(--text-primary)]">{days} days</span>
+              {' '}without a scan · flagged items appear immediately
+              {isAdmin && (
+                <>
+                  {' · '}
+                  <Link to="/management/company-settings" className="underline underline-offset-2">
+                    Change window
+                  </Link>
+                </>
+              )}
+            </p>
+          </div>
+          <Badge tone={total ? 'warning' : 'success'} size="xs" dot>{total}</Badge>
+        </div>
+
+        {loading ? (
+          <p className="py-4 text-center text-xs text-[var(--text-muted)]">Checking linen cycle…</p>
+        ) : total === 0 ? (
+          <p className="py-4 text-center text-xs text-[var(--text-muted)]">
+            No linen has passed the {days}-day window.
+          </p>
+        ) : (
+          <ul className="mt-3 grid gap-2 sm:grid-cols-2">
+            {shown.map(linen => {
+              const elapsed = daysSince(linen.last_scanned_date)
+              const category = classifyLinen({
+                linen_id: linen.linen_id,
+                category: linen.category,
+                item_type: linen.item_type,
+                description: linen.description,
+                size: linen.size,
+              })
+              return (
+                <li key={linen.id} className="min-w-0 rounded-md border border-[var(--border)] bg-[var(--surface-2)] p-2.5">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="break-all font-[family-name:var(--font-mono)] text-xs font-semibold text-[var(--text-primary)]">
+                      {linen.linen_id}
+                    </span>
+                    <Badge tone="warning" size="xs">{statusLabel(linen.status)}</Badge>
+                  </div>
+                  <p className="mt-1 break-words text-[11px] text-[var(--text-secondary)]">
+                    {CATEGORY_LABEL[category]}
+                    {linen.client_name ? ` · ${linen.client_name}` : ''}
+                  </p>
+                  <p className="mt-0.5 break-words text-[11px] tabular-nums text-[var(--text-muted)]">
+                    Last scan: {elapsed === null ? 'never' : elapsed === 0 ? 'today' : `${elapsed} day${elapsed === 1 ? '' : 's'} ago`}
+                  </p>
+                </li>
+              )
+            })}
+          </ul>
+        )}
+        {total > shown.length && (
+          <p className="mt-2 text-[11px] text-[var(--text-muted)]">
+            + {total - shown.length} more in the linen inventory.
+          </p>
+        )}
+      </CardContent>
+    </Card>
+  )
+}
+
+function VerificationBadge({ state }: { state?: VerificationState }) {
+  if (state === 'verified') {
+    return <Badge tone="success" size="xs" dot><ShieldCheck size={10} /> Verified</Badge>
+  }
+  if (state === 'unverified') {
+    return <Badge tone="danger" size="xs" dot title="This code is not registered in this laundry"><ShieldAlert size={10} /> Fake QR</Badge>
+  }
+  return <Badge tone="neutral" size="xs" dot>Checking</Badge>
+}
+
+function LiveBadge({ live }: { live?: LinenLiveUpdate }) {
+  if (!live) return null
+  return (
+    <Badge
+      tone="info"
+      size="xs"
+      dot
+      title={`${live.event}${live.status ? ` · ${statusLabel(live.status)}` : ''} · ${timeOfDay(live.at)}`}
+    >
+      <Radio size={10} /> Live
+    </Badge>
+  )
+}
+
 interface SessionHistoryProps {
   records: ScanRecord[]
   total: number
@@ -550,15 +841,16 @@ function SessionHistory({ records, total, filter, setFilter, compact }: SessionH
   return (
     <Card className="border border-[var(--border)] shadow-sm">
       <CardContent className={compact ? 'p-3' : 'p-4'}>
-        <div className="mb-2 flex items-center justify-between gap-3">
+        <div className="mb-2 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <h2 className="text-[11px] font-semibold uppercase tracking-wide text-[var(--text-muted)]">
             Scan history {filter ? `(${records.length} of ${total})` : `(${total})`}
           </h2>
           <input
             value={filter}
             onChange={event => setFilter(event.target.value)}
-            placeholder="Filter…"
-            className="w-40 rounded-md border border-[var(--border)] bg-[var(--surface)] px-2 py-1 text-xs text-[var(--text-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--ring)]"
+            placeholder="Filter by code, category, status or result…"
+            aria-label="Filter scan history"
+            className="w-full rounded-md border border-[var(--border)] bg-[var(--surface)] px-2 py-1.5 text-xs text-[var(--text-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--ring)] sm:w-56"
           />
         </div>
 
@@ -567,27 +859,52 @@ function SessionHistory({ records, total, filter, setFilter, compact }: SessionH
             {total ? 'No scan matches that filter.' : 'Nothing scanned yet — pass the first tag.'}
           </p>
         ) : (
-          <ul className="max-h-[22rem] divide-y divide-[var(--border)] overflow-y-auto">
+          <ul className="max-h-[26rem] space-y-2 overflow-y-auto pr-0.5">
             {records.map((record, index) => {
               const tone = TONE_BADGE[OUTCOME_TONE[record.outcome]]
+              const category = record.identity ? CATEGORY_LABEL[classifyLinen(record.identity)] : null
               return (
-                <li key={`${record.code}-${record.attemptedAt}-${index}`} className="flex items-center gap-3 py-2 text-sm">
-                  <span className="min-w-[7.5rem] truncate font-[family-name:var(--font-mono)] text-xs font-semibold text-[var(--text-primary)]">
-                    {record.code}
-                  </span>
-                  <span className="hidden flex-1 truncate text-[11px] text-[var(--text-muted)] md:block">
-                    {record.message ?? statusLabel(record.fromStatus)}
-                  </span>
-                  <span className="hidden items-center gap-1 text-[11px] tabular-nums text-[var(--text-muted)] lg:flex">
-                    {statusLabel(record.fromStatus)} <ArrowRight size={10} /> {statusLabel(record.toStatus)}
-                  </span>
-                  <Badge tone={tone} size="xs">
-                    {record.outcome === 'success' && <CheckCircle2 size={10} />}
-                    {OUTCOME_LABEL[record.outcome]}
-                  </Badge>
-                  <span className="w-[5.5rem] text-right text-[11px] tabular-nums text-[var(--text-muted)]">
-                    {timeOfDay(record.attemptedAt)}
-                  </span>
+                <li
+                  key={`${record.code}-${record.attemptedAt}-${index}`}
+                  className="min-w-0 rounded-md border border-[var(--border)] bg-[var(--surface)] p-2.5"
+                >
+                  <div className="flex flex-wrap items-start justify-between gap-2">
+                    <div className="min-w-0 flex-1">
+                      <p className="break-all font-[family-name:var(--font-mono)] text-xs font-semibold text-[var(--text-primary)]">
+                        {record.code}
+                      </p>
+                      <p className="mt-0.5 break-words text-[11px] text-[var(--text-muted)]">
+                        {category ?? 'Category pending'}
+                        {record.identity?.client_name ? ` · ${record.identity.client_name}` : ''}
+                      </p>
+                    </div>
+                    <div className="flex flex-wrap items-center justify-end gap-1">
+                      {record.outcome === 'unreadable' ? (
+                        <Badge tone="warning" size="xs">Invalid read</Badge>
+                      ) : (
+                        <VerificationBadge state={record.verification} />
+                      )}
+                      <LiveBadge live={record.live} />
+                      <Badge tone={tone} size="xs">
+                        {record.outcome === 'success' && <CheckCircle2 size={10} />}
+                        {OUTCOME_LABEL[record.outcome]}
+                      </Badge>
+                    </div>
+                  </div>
+                  <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-[var(--text-muted)]">
+                    <span className="break-words">
+                      {record.message ?? (record.outcome === 'queued' ? 'Held locally until OK' : '—')}
+                    </span>
+                    <span className="inline-flex break-words items-center gap-1 tabular-nums">
+                      {statusLabel(record.fromStatus)} <ArrowRight size={10} /> {statusLabel(record.toStatus)}
+                    </span>
+                    {record.live && (
+                      <span className="break-words text-[var(--info-text)]">
+                        Live: {record.live.status ? statusLabel(record.live.status) : record.live.event} · {timeOfDay(record.live.at)}
+                      </span>
+                    )}
+                    <span className="tabular-nums sm:ml-auto">{timeOfDay(record.attemptedAt)}</span>
+                  </div>
                 </li>
               )
             })}

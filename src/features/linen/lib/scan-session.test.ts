@@ -1,15 +1,22 @@
 import { describe, expect, it } from 'vitest'
 import {
   applyBulkResult,
+  applyLinenLiveEvent,
+  applyLinenVerification,
+  classifyLinen,
   createSession,
+  daysSince,
   endSession,
   failQueued,
   failedTotal,
   filterRecords,
+  isMissingInCycle,
   queuedCodes,
   recordScan,
   requeueUnresolved,
+  scannedCodes,
   summarise,
+  summariseCategories,
   type ScanSession,
 } from './scan-session'
 import type { LinenBulkScanResult } from '../../../types/linen'
@@ -165,5 +172,94 @@ describe('linen scan session queue', () => {
 
     expect(queuedCodes(session)).toHaveLength(1000)
     expect(summarise(session).queued).toBe(1000)
+  })
+
+  it('counts distinct linens once and buckets the four requested categories', () => {
+    let session = openSession()
+    for (const code of ['LL-BATH001', 'LL-POOL001', 'LL-SNGL001', 'LL-DBLE001', 'LL-OTHER1']) {
+      session = recordScan(session, code, T0 + 1)
+    }
+    session = recordScan(session, 'LL-BATH001', T0 + 2) // duplicate read
+
+    session = applyLinenVerification(session, 'LL-BATH001', {
+      linen_id: 'LL-BATH001', category: 'TOWEL', item_type: 'BATH TOWEL',
+    }, T0 + 3)
+    session = applyLinenVerification(session, 'LL-POOL001', {
+      linen_id: 'LL-POOL001', category: 'TOWEL', item_type: 'POOL TOWEL',
+    }, T0 + 3)
+    session = applyLinenVerification(session, 'LL-SNGL001', {
+      linen_id: 'LL-SNGL001', category: 'BEDSHEET', size: 'SINGLE',
+    }, T0 + 3)
+    session = applyLinenVerification(session, 'LL-DBLE001', {
+      linen_id: 'LL-DBLE001', category: 'BEDSHEET', item_type: 'DOUBLE',
+    }, T0 + 3)
+    session = applyLinenVerification(session, 'LL-OTHER1', null, T0 + 3)
+
+    const summary = summarise(session)
+    expect(scannedCodes(session.records)).toHaveLength(5)
+    expect(summary.distinctLinens).toBe(5)
+    expect(summary.verifiedLinens).toBe(4)
+    expect(summary.unverifiedLinens).toBe(1)
+    expect(summary.categories).toMatchObject({
+      bathTowels: 1,
+      poolTowels: 1,
+      singleBedsheets: 1,
+      doubleBedsheets: 1,
+      other: 1,
+    })
+
+    // The duplicate read inherits its proof from the first bath-towel read.
+    const duplicate = session.records.find(record => record.outcome === 'duplicate')
+    expect(duplicate).toMatchObject({ verification: 'verified', identity: { linen_id: 'LL-BATH001' } })
+  })
+
+  it('keeps category metadata when a live websocket event patches a tag', () => {
+    let session = recordScan(openSession(), 'LL-LIVE001', T0 + 1)
+    session = applyLinenVerification(session, 'LL-LIVE001', {
+      linen_id: 'LL-LIVE001', category: 'TOWEL', item_type: 'POOL TOWEL', size: 'LARGE',
+    }, T0 + 2)
+
+    session = applyLinenLiveEvent(session, {
+      type: 'linen.event',
+      event: 'scan',
+      action: 'collect',
+      at: new Date(T0 + 3).toISOString(),
+      linen: { linen_id: 'LL-LIVE001', status: 'COLLECTED', previous_status: 'READY' },
+    }, T0 + 4)
+
+    const record = session.records[0]
+    expect(record.live).toMatchObject({ status: 'COLLECTED', previousStatus: 'READY', action: 'collect' })
+    expect(record.verification).toBe('verified')
+    expect(record.identity).toMatchObject({ item_type: 'POOL TOWEL', size: 'LARGE' })
+    expect(classifyLinen(record.identity)).toBe('pool_towel')
+  })
+
+  it('marks a tag from a bulk linen_ids event live even without a snapshot', () => {
+    let session = recordScan(openSession(), 'LL-BULK001', T0 + 1)
+    session = applyLinenLiveEvent(session, {
+      event: 'bulk_scan', linen_ids: ['ll-bulk001', 'LL-OTHER1'],
+    }, T0 + 2)
+
+    expect(session.records[0].live).toMatchObject({ event: 'bulk_scan', at: T0 + 2 })
+    expect(session.records[0].verification).toBe('checking')
+  })
+
+  it('uses one admin-defined window for overdue linen', () => {
+    expect(daysSince(new Date(T0 - 3 * 86_400_000).toISOString(), T0)).toBe(3)
+    expect(daysSince(undefined, T0)).toBeNull()
+
+    const base = { status: 'AT_CLIENT' as const, last_scanned_date: new Date(T0 - 6 * 86_400_000).toISOString() }
+    expect(isMissingInCycle(base, 7, T0)).toBe(false)
+    expect(isMissingInCycle(base, 5, T0)).toBe(true)
+    expect(isMissingInCycle({ status: 'MISSING', last_scanned_date: new Date(T0).toISOString() }, 7, T0)).toBe(true)
+    expect(isMissingInCycle({ status: 'RETIRED', last_scanned_date: undefined }, 7, T0)).toBe(false)
+    expect(isMissingInCycle({ status: 'READY', last_scanned_date: undefined }, 7, T0)).toBe(true)
+  })
+
+  it('classifies bedsheets by size and never mistakes a bath mat for a towel', () => {
+    expect(classifyLinen({ linen_id: 'A', category: 'BEDSHEET', size: 'DOUBLE' })).toBe('double_bedsheet')
+    expect(classifyLinen({ linen_id: 'B', item_type: 'Single bed sheet' })).toBe('single_bedsheet')
+    expect(classifyLinen({ linen_id: 'C', category: 'BATH_MAT', item_type: 'Bath mat' })).toBe('other')
+    expect(summariseCategories([]).distinct).toBe(0)
   })
 })
