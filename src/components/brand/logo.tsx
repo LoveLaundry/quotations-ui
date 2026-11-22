@@ -10,7 +10,8 @@ interface LogoProps {
 
 const ICON_PX = { sm: 28, md: 34, lg: 44 } as const
 const WORD = { sm: 14, md: 16, lg: 20 } as const
-const TAG = { sm: 10, md: 10.5, lg: 11 } as const
+// Secondary brand copy still has to be readable on a 375px screen.
+const TAG = { sm: 12, md: 12, lg: 12 } as const
 
 /**
  * Brand mark. A wordmark in the interface sans at a tight tracking — a script
@@ -77,7 +78,7 @@ export function LogoOnDark({ collapsed = false, tagline }: { collapsed?: boolean
         <p className="truncate text-[13.5px] font-semibold tracking-[-0.01em] text-[var(--sidebar-active)]">
           Love Laundry
         </p>
-        <p className="mt-0.5 truncate text-[10.5px] text-[var(--sidebar-label)]">
+        <p className="mt-0.5 truncate text-[12px] text-[var(--sidebar-label)]">
           {tagline ?? 'Manager'}
         </p>
       </div>

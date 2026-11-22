@@ -2822,3 +2822,237 @@ button:not(:disabled):active,
     }
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   10 · RESPONSIVE + READABILITY HARDENING (375px audit)
+   ───────────────────────────────────────────────────────────────────────────
+   LAST LAYER ON PURPOSE. Everything above describes the visual language; this
+   block only guarantees that the language survives a 375px phone:
+
+   · no visible text below 12px (body/label copy lands on 13px, titles on 14px);
+   · text flex children can shrink and wrap instead of collapsing to an
+     ellipsis, including long client / laundry names, codes and IDs;
+   · toolbars, filters and form grids stack; tables scroll horizontally inside
+     their own container with a visible scrollbar;
+   · dialogs / drawers / panels fit `100vw - 1.5rem`, use `dvh` height and keep
+     their own internal scroll;
+   · a final <=375px pass tightens gutters and caps fixed widths.
+
+   Paper output (`.quotation-print-page`, `.bill-print-page`, `.dls-page`,
+   `.gp-page-bg`, `.gps-page`, `.slip-container`, `#printable-receipt`,
+   `.page-sheet`) and `.sr-only` text are deliberately excluded — printed
+   documents keep their own type scale and screen readers keep their labels.
+   No colours, fonts, tokens or motion values are changed here.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@media screen {
+  /* 10.1 · Type floor. Small legacy utilities (8–11.5px, 0.6–0.7rem,
+     `text-xs`, `text-micro`) are lifted to a readable 13px. Headings that were
+     given a small utility are lifted to 14px so the hierarchy still reads. */
+  :root body :is(p, span, a, button, label, li, dd, dt, td, th, kbd, code, small,
+                   strong, em, summary, figcaption, blockquote, div)
+    :where(
+      .text-\[7px\], .text-\[8px\], .text-\[9px\], .text-\[9\.5px\],
+      .text-\[10px\], .text-\[10\.5px\], .text-\[11px\], .text-\[11\.5px\],
+      .text-\[0\.6rem\], .text-\[0\.625rem\], .text-\[0\.65rem\],
+      .text-\[0\.6875rem\], .text-\[0\.7rem\],
+      .text-xs, .text-micro
+    ):not(.sr-only):not(.sr-only *) {
+    font-size: 13px !important;
+  }
+
+  :root body :is(h1, h2, h3, h4, h5, h6)
+    :where(
+      .text-\[7px\], .text-\[8px\], .text-\[9px\], .text-\[9\.5px\],
+      .text-\[10px\], .text-\[10\.5px\], .text-\[11px\], .text-\[11\.5px\],
+      .text-\[0\.6rem\], .text-\[0\.625rem\], .text-\[0\.65rem\],
+      .text-\[0\.6875rem\], .text-\[0\.7rem\],
+      .text-xs, .text-micro
+    ):not(.sr-only):not(.sr-only *) {
+    font-size: 14px !important;
+  }
+
+  /* Shared CSS classes that carried their own sub-12px size. */
+  :root body :where(.section-label, .platform-hero-kicker, .platform-footnote,
+                    .sync-summary-label, .text-table-header):not(.sr-only):not(.sr-only *) {
+    font-size: 13px;
+  }
+  :root body .ledger thead th { font-size: 13px; }
+  :root .text-table-header { font-size: 13px !important; }
+
+  /* A few legacy inline styles still hard-code 9–11px. Screen UI only. */
+  :root body :where([style*='font-size: 8px'], [style*='font-size:8px'],
+                    [style*='font-size: 9px'], [style*='font-size:9px'],
+                    [style*='font-size: 10px'], [style*='font-size:10px'],
+                    [style*='font-size: 11px'], [style*='font-size:11px'])
+    :not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *,
+             .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *,
+             .page-sheet *)):not(.sr-only):not(.sr-only *) {
+    font-size: 12px !important;
+  }
+
+  /* 10.2 · Shell header. The page title is a text flex child: it must be able
+     to shrink and wrap, never to disappear behind an ellipsis. */
+  .app-topbar h1 {
+    min-width: 0;
+    max-width: 100%;
+    overflow: visible;
+    text-overflow: clip;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+  .app-topbar :is(.min-w-0, h1, [class*='truncate']) { min-width: 0; }
+
+  /* Long identifiers / names wrap everywhere in the shell, not only in tables. */
+  :root body :where(td, th, dd, dt, p, span, div, a, code, kbd, h1, h2, h3, h4)
+    :not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *,
+             .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *,
+             .page-sheet *)):not(.sr-only):not(.sr-only *) {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+}
+
+/* 10.3 · <=640px: stack, wrap, scroll, and fit every overlay. */
+@media (max-width: 640px) {
+  /* Ellipsis/clamping is a desktop density tool. On a phone the same copy is
+     allowed to take another line. Table cells are left alone: their table is a
+     horizontal scroll region, so wrapping there would widen the ledger. */
+  :root body :where(.truncate, .text-truncate):not(:is(td, th)):not(.sr-only):not(.sr-only *) {
+    overflow: visible !important;
+    text-overflow: clip !important;
+    white-space: normal !important;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+  }
+  :root body :where(.line-clamp-1, .line-clamp-2, .line-clamp-3, .line-clamp-4)
+    :not(:is(td, th)):not(.sr-only):not(.sr-only *) {
+    display: block;
+    overflow: visible;
+    -webkit-line-clamp: unset;
+    line-clamp: unset;
+  }
+
+  /* Toolbars / filters / form grids become one column per control group. */
+  :root body :where(.toolbar, .filter-bar, .registry-toolbar,
+                    .platform-hero-actions, .app-pagination):not(.sr-only) {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  :root body :where(.grid-cols-2, .grid-cols-3, .grid-cols-4, .grid-cols-5,
+                    .grid-cols-6, .grid-cols-12,
+                    .md\:grid-cols-2, .md\:grid-cols-3, .md\:grid-cols-4,
+                    .lg\:grid-cols-2, .lg\:grid-cols-3, .lg\:grid-cols-4,
+                    .xl\:grid-cols-2, .xl\:grid-cols-3, .xl\:grid-cols-4)
+    :not(.sr-only):not(.no-stack) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  /* Tables: keep the wide ledger, but make its scroll reachable and obvious. */
+  :root :where(div, section):has(> table)
+    :not(:where(.ledger-wrap, .scroll-fade, [class*='overflow-x-auto'], [class*='overflow-auto'])) {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .ledger-wrap,
+  :root :where(div, section):has(> table) {
+    scrollbar-width: thin;
+    scrollbar-color: var(--brand) var(--surface-2);
+  }
+  .ledger-wrap::-webkit-scrollbar,
+  :root :where(div, section):has(> table)::-webkit-scrollbar {
+    height: 10px;
+  }
+
+  /* Dialogs, sheets, drawers and panels: viewport-safe with internal scroll.
+     The nav drawer is a full-bleed surface and is intentionally excluded. */
+  :root :where([role='dialog'], [role='alertdialog']):not(.nav-drawer):not([role='menu']) {
+    box-sizing: border-box;
+    left: 0 !important;
+    right: 0 !important;
+    top: auto !important;
+    bottom: 0.75rem !important;
+    width: min(100%, calc(100vw - 1.5rem)) !important;
+    max-width: min(100%, calc(100vw - 1.5rem)) !important;
+    max-height: calc(100dvh - 1.5rem) !important;
+    margin-inline: auto;
+    overflow: hidden;
+  }
+  :root .sync-panel {
+    width: min(100%, calc(100vw - 1.5rem));
+    max-height: calc(100dvh - 1.5rem);
+  }
+  :root :where([role='dialog'], [role='alertdialog'], .panel, .registry-panel)
+    :where(.min-h-0, [class*='overflow-y-auto']) {
+    min-height: 0;
+  }
+
+  /* The feature manifest, command palette and keyboard help all contain long
+     keys / file paths. Give those chips a max width and let them wrap. */
+  :root :where([role='dialog'], [role='alertdialog']) kbd,
+  :root :where([role='dialog'], [role='alertdialog']) code {
+    max-width: min(100%, 240px);
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+  :root :where([role='dialog'], [role='alertdialog']) p[title][class*='truncate'] {
+    overflow: visible;
+    text-overflow: clip;
+    white-space: normal;
+  }
+  :root :where([role='dialog'], [role='alertdialog']) li {
+    min-width: 0;
+  }
+}
+
+/* 10.4 · <=375px final tightening pass. Smaller gutters/gaps, no absolute
+   width larger than the phone; nothing may push the document sideways. */
+@media (max-width: 375px) {
+  :root body :where(img, video, canvas, svg, input, select, textarea, button,
+                    .panel, .card-surface, .card-interactive, .luxury-card,
+                    .registry-panel, .app-dialog-content)
+    :not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *,
+             .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *,
+             .page-sheet *)):not(.sr-only) {
+    max-width: 100%;
+  }
+  :root body :where([class*='w-\['], [class*='min-w-\['])
+    :not(:is(table, thead, tbody, tr, td, th)):not(.sr-only) {
+    max-width: 100%;
+  }
+  #main-content > div {
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+  }
+  .app-topbar {
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+  }
+  :root body :where(.panel-body, .toolbar, .filter-bar, .registry-toolbar,
+                    .platform-hero, .platform-section-head):not(.sr-only) {
+    gap: 6px;
+    padding: 12px;
+  }
+  :root :where([role='dialog'], [role='alertdialog']):not(.nav-drawer) {
+    bottom: 0.5rem !important;
+    width: min(100%, calc(100vw - 1rem)) !important;
+    max-width: min(100%, calc(100vw - 1rem)) !important;
+    max-height: calc(100dvh - 1rem) !important;
+  }
+  html, body {
+    overflow-x: clip;
+  }
+}
+
+/* 10.5 · Phone-width touch targets. The pointer-coarse floor above covers real
+   devices; this viewport-based floor keeps the same hit areas in emulators and
+   desktop narrow windows. */
+@media (max-width: 767px) {
+  :root body :where(button, a, [role='button']):not(.sr-only):not(.sr-only *) {
+    min-height: 40px;
+  }
+  :root body :where(button, [role='button']):not(.sr-only):not(.sr-only *) {
+    min-width: 40px;
+  }
+}

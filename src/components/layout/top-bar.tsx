@@ -345,7 +345,10 @@ export function TopBar({
           </button>
 
           {title && (
-            <h1 className="min-w-0 truncate text-[14px] font-semibold tracking-[-0.012em] text-[var(--text-primary)]">
+            <h1
+              className="min-w-0 max-w-full text-[14px] leading-tight font-semibold tracking-[-0.012em] text-[var(--text-primary)]"
+              title={title}
+            >
               {title}
             </h1>
           )}
