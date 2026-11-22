@@ -43,6 +43,7 @@ import {
   applyLinenVerification,
   classifyLinen,
   createSession,
+  transitionViolation,
   daysSince,
   endSession,
   failQueued,
@@ -66,6 +67,7 @@ import {
   type LinenBulkScanResult,
   type LinenStatus,
   type LinenTransition,
+  type LinenTransitionList,
 } from '../../../types/linen'
 import { Card, CardContent } from '../../../components/ui/card'
 import { Button } from '../../../components/ui/button'
@@ -188,6 +190,15 @@ export default function LinenSession() {
       for (const result of pending) {
         if (result.state === 'success' && result.linen) {
           next = applyLinenVerification(next, result.code, result.linen, Date.now())
+          const violation = transitionViolation(catalogue, result.linen.status, session?.toStatus ?? target?.to_status ?? '')
+          if (violation) {
+            next = {
+              ...next,
+              records: next.records.map(record => record.code === result.code
+                ? { ...record, message: violation }
+                : record),
+            }
+          }
         } else if (result.state === 'error') {
           // 404 is the meaningful case: this QR is not a registered linen here.
           next = applyLinenVerification(next, result.code, null, Date.now())
@@ -195,7 +206,7 @@ export default function LinenSession() {
       }
       return next
     })
-  }, [verifications, session?.id])
+  }, [verifications, session?.id, catalogue, target])
 
   const processScan = useCallback((raw: string) => {
     if (phase !== 'scanning' || bulkMutation.isPending) return
@@ -565,6 +576,14 @@ export default function LinenSession() {
         <span className="text-[var(--text-tertiary)]">Nothing written to linen until OK</span>
       </div>
 
+      <TransitionGuide
+        actionLabel={target.label}
+        toStatus={session.toStatus}
+        catalogue={catalogue}
+        violationMode={catalogue?.violation_mode}
+        onOpenSettings={isAdmin}
+      />
+
       {camera.error && (
         <Card className="border border-[var(--danger-border)] bg-[var(--danger-soft)] shadow-sm">
           <CardContent className="p-4 text-xs text-[var(--danger-text)]">{camera.error}</CardContent>
@@ -670,6 +689,65 @@ export default function LinenSession() {
         </Button>
       </div>
     </div>
+  )
+}
+
+/** A calmer, guided header for the active scan tab. It explains where linen is
+ * moving and what the admin's rules allow, instead of a bare action title. */
+function TransitionGuide({
+  actionLabel,
+  toStatus,
+  catalogue,
+  violationMode,
+  onOpenSettings,
+}: {
+  actionLabel: string
+  toStatus: string
+  catalogue?: LinenTransitionList
+  violationMode?: 'block' | 'warn'
+  onOpenSettings: boolean
+}) {
+  const rules = catalogue?.transition_rules || []
+  const sources = rules
+    .filter(rule => rule.to_statuses.includes(toStatus))
+    .map(rule => rule.from_status)
+
+  return (
+    <Card className="border border-[var(--brand-border)] bg-gradient-to-br from-[var(--brand-soft)] to-[var(--surface)] shadow-sm">
+      <CardContent className="p-4">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+          <span className="inline-flex items-center gap-2 rounded-full bg-[var(--brand)] px-3 py-1.5 text-xs font-semibold text-white">
+            <ScanLine size={13} /> {actionLabel}
+          </span>
+          <ArrowRight size={14} className="text-[var(--text-muted)]" />
+          <span className="text-sm font-semibold text-[var(--text-primary)]">{statusLabel(toStatus)}</span>
+          <span className="ml-auto text-[11px] text-[var(--text-muted)]">
+            {rules.length === 0
+              ? 'No transition rules configured — all states allowed'
+              : violationMode === 'warn'
+                ? 'Invalid scans are allowed with a recorded warning'
+                : 'Invalid scans are blocked automatically'}
+          </span>
+        </div>
+        {rules.length > 0 && (
+          <div className="mt-3 border-t border-[var(--brand-border)] pt-3">
+            <p className="text-[11px] font-medium text-[var(--text-muted)]">
+              {sources.length
+                ? `Allowed from: ${sources.map(s => statusLabel(s)).join(', ')}`
+                : 'This target state has no configured source states.'}
+            </p>
+            {onOpenSettings && (
+              <Link
+                to="/management/company-settings"
+                className="mt-1 inline-block text-[11px] text-[var(--brand-text)] underline underline-offset-2"
+              >
+                Edit scan rules in Company Settings
+              </Link>
+            )}
+          </div>
+        )}
+      </CardContent>
+    </Card>
   )
 }
 

@@ -1,4 +1,9 @@
-import type { Linen, LinenBulkScanResult, LinenCustody } from '../../../types/linen'
+import type {
+  Linen,
+  LinenBulkScanResult,
+  LinenCustody,
+  LinenTransitionList,
+} from '../../../types/linen'
 import { parseLinenCode } from './linen-code'
 
 /**
@@ -148,6 +153,34 @@ const OUTCOME_BUCKET: Record<ScanOutcome, SummaryBucket> = {
 
 const MAX_DISPLAY_CODE = 32
 const RETRYABLE: ScanOutcome[] = ['not_found', 'rejected', 'failed']
+
+/** Human-readable reason a scan is not allowed, or null when it is fine.
+ *
+ * Mirrors the server rule: a status missing from the matrix is unrestricted.
+ * The browser check is only advisory — the server always re-checks on submit.
+ */
+export function transitionViolation(
+  catalogue: LinenTransitionList | undefined,
+  fromStatus: string | undefined,
+  toStatus: string,
+): string | null {
+  const rules = catalogue?.transition_rules || []
+  if (!rules.length || !fromStatus) return null
+  const rule = rules.find(r => r.from_status === fromStatus)
+  if (!rule || rule.to_statuses.includes(toStatus)) return null
+  return `Cannot move linen from ${fromStatus.replace(/_/g, ' ').toLowerCase()} to ${toStatus.replace(/_/g, ' ').toLowerCase()}`
+}
+
+/** Target states permitted from a given current state under the admin matrix. */
+export function allowedNextStatuses(
+  catalogue: LinenTransitionList | undefined,
+  fromStatus: string | undefined,
+): string[] | null {
+  const rules = catalogue?.transition_rules || []
+  if (!rules.length || !fromStatus) return null
+  const rule = rules.find(r => r.from_status === fromStatus)
+  return rule ? rule.to_statuses : null
+}
 
 export const CATEGORY_LABEL: Record<LinenScanCategory, string> = {
   bath_towel: 'Bath Towel',

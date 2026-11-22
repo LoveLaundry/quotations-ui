@@ -136,9 +136,19 @@ export interface LinenTransitionGroup {
   transitions: LinenTransition[]
 }
 
+/** Admin-defined allowed target states from one previous state. */
+export interface LinenTransitionRule {
+  from_status: string
+  to_statuses: string[]
+}
+
 export interface LinenTransitionList {
   groups: LinenTransitionGroup[]
   statuses: LinenStatus[]
+  /** Empty when the admin has not configured a matrix (all transitions legal). */
+  transition_rules: LinenTransitionRule[]
+  /** 'block' rejects illegal scans; 'warn' records them with a warning. */
+  violation_mode: 'block' | 'warn'
 }
 
 /** Response rows from `POST /linens/bulk-scan`. */
@@ -146,6 +156,8 @@ export interface LinenBulkScanRow {
   linen_id: string
   from_status?: string
   to_status?: string
+  /** Present in 'warn' mode when the scan broke an admin-defined rule. */
+  warning?: string
 }
 
 export interface LinenBulkScanError {
@@ -158,6 +170,7 @@ export interface LinenBulkScanResult {
   errors: LinenBulkScanError[]
   total_processed: number
   total_errors: number
+  warnings?: { linen_id: string; warning: string }[]
 }
 
 /** Tenant-scoped result of `GET /linens/missing-in-cycle`. */

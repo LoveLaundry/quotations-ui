@@ -17,6 +17,8 @@ import {
   scannedCodes,
   summarise,
   summariseCategories,
+  transitionViolation,
+  allowedNextStatuses,
   type ScanSession,
 } from './scan-session'
 import type { LinenBulkScanResult } from '../../../types/linen'
@@ -38,6 +40,35 @@ function openSession(): ScanSession {
 function result(overrides: Partial<LinenBulkScanResult> = {}): LinenBulkScanResult {
   return { processed: [], errors: [], total_processed: 0, total_errors: 0, ...overrides }
 }
+
+describe('admin-defined transition legality', () => {
+  const catalogue = {
+    groups: [],
+    statuses: [],
+    violation_mode: 'block' as const,
+    transition_rules: [
+      { from_status: 'COLLECTED', to_statuses: ['AT_LAUNDRY'] },
+      { from_status: 'WASHING', to_statuses: ['DRYING'] },
+    ],
+  }
+
+  it('blocks re-collecting an already collected linen', () => {
+    expect(transitionViolation(catalogue, 'COLLECTED', 'COLLECTED')).toContain('Cannot move')
+  })
+
+  it('allows the configured next step', () => {
+    expect(transitionViolation(catalogue, 'COLLECTED', 'AT_LAUNDRY')).toBeNull()
+  })
+
+  it('treats unmapped statuses as unrestricted', () => {
+    expect(transitionViolation(catalogue, 'IN_STOCK', 'WASHING')).toBeNull()
+  })
+
+  it('lists allowed next states', () => {
+    expect(allowedNextStatuses(catalogue, 'COLLECTED')).toEqual(['AT_LAUNDRY'])
+    expect(allowedNextStatuses(catalogue, 'IN_STOCK')).toBeNull()
+  })
+})
 
 describe('linen scan session queue', () => {
   it('queues scans locally and does not count them as updated before OK', () => {

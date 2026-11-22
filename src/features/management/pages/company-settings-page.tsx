@@ -26,6 +26,33 @@ import { Portal } from '../../../components/ui/portal'
 // Order follows JS Date.getDay(): 0=Sunday ... 6=Saturday.
 const DOW_LABELS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
 
+// Mirrors bill-service LINEN_STATUSES. The admin uses these to define which
+// previous state may move to which next states during a scan.
+const LINEN_STATUSES = [
+  'IN_STOCK', 'AT_CLIENT', 'COLLECTED', 'AT_LAUNDRY',
+  'WASHING', 'DRYING', 'PRESSING', 'READY',
+  'DELIVERED', 'MISSING', 'DAMAGED', 'RETIRED',
+] as const
+
+const DEFAULT_TRANSITION_RULES = {
+  violation_mode: 'block',
+  rules: [
+    { from_status: 'IN_STOCK', to_statuses: ['COLLECTED'] },
+    { from_status: 'AT_CLIENT', to_statuses: ['COLLECTED'] },
+    { from_status: 'COLLECTED', to_statuses: ['AT_LAUNDRY'] },
+    { from_status: 'AT_LAUNDRY', to_statuses: ['WASHING'] },
+    { from_status: 'WASHING', to_statuses: ['DRYING'] },
+    { from_status: 'DRYING', to_statuses: ['PRESSING'] },
+    { from_status: 'PRESSING', to_statuses: ['READY'] },
+    { from_status: 'READY', to_statuses: ['DELIVERED'] },
+    { from_status: 'DELIVERED', to_statuses: ['AT_CLIENT'] },
+    { from_status: 'MISSING', to_statuses: ['IN_STOCK', 'AT_CLIENT', 'DAMAGED', 'RETIRED'] },
+    { from_status: 'DAMAGED', to_statuses: ['IN_STOCK', 'RETIRED'] },
+  ],
+}
+
+const statusLabel = (value: string) => value.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, c => c.toUpperCase())
+
 // Backend uses Python weekday(): 0=Monday ... 6=Sunday.
 const pyToJs = (py: number) => (py + 1) % 7
 const jsToPy = (js: number) => (js + 6) % 7
@@ -227,6 +254,7 @@ export default function CompanySettingsPage() {
         company_name: settings.company_name || 'Love Laundry',
         salary_basis_days: settings.salary_basis_days ?? 30,
         linen_missing_after_days: settings.linen_missing_after_days ?? 7,
+        linen_transition_rules: settings.linen_transition_rules || DEFAULT_TRANSITION_RULES,
         working_days_per_week: settings.working_days_per_week ?? 6,
         working_days_pattern: (settings.working_days_pattern || [0, 1, 2, 3, 4, 5]).map(pyToJs),
         default_overtime_rate: settings.default_overtime_rate ?? 0,
@@ -379,6 +407,28 @@ export default function CompanySettingsPage() {
     })
   }
 
+  // ── Linen transition rule helpers ───────────────────────────────────────
+  const setTransitionRule = (fromStatus: string, toStatuses: string[]) => {
+    if (!form) return
+    const current = form.linen_transition_rules || DEFAULT_TRANSITION_RULES
+    const rules = (current.rules || []).filter((r: any) => r.from_status !== fromStatus)
+    if (toStatuses.length) {
+      rules.push({ from_status: fromStatus, to_statuses: toStatuses })
+    }
+    rules.sort((a: any, b: any) => LINEN_STATUSES.indexOf(a.from_status) - LINEN_STATUSES.indexOf(b.from_status))
+    setForm({ ...form, linen_transition_rules: { ...current, rules } })
+  }
+
+  const toggleTargetStatus = (fromStatus: string, toStatus: string) => {
+    const current = form?.linen_transition_rules || DEFAULT_TRANSITION_RULES
+    const rule = (current.rules || []).find((r: any) => r.from_status === fromStatus)
+    const selected = rule ? [...rule.to_statuses] : []
+    const index = selected.indexOf(toStatus)
+    if (index >= 0) selected.splice(index, 1)
+    else selected.push(toStatus)
+    setTransitionRule(fromStatus, selected)
+  }
+
   const normalizeSlabsForSave = (): any[] | null => {
     const slabs = form.electricity_unit_slabs || []
     if (slabs.length === 0) return []
@@ -434,11 +484,21 @@ export default function CompanySettingsPage() {
     const data = {
       ...form,
       linen_missing_after_days: isAdmin ? Number(form.linen_missing_after_days) : undefined,
+      linen_transition_rules: isAdmin ? {
+        violation_mode: form.linen_transition_rules?.violation_mode === 'warn' ? 'warn' : 'block',
+        rules: (form.linen_transition_rules?.rules || [])
+          .filter((rule: any) => rule.from_status && (rule.to_statuses || []).length)
+          .map((rule: any) => ({
+            from_status: String(rule.from_status).toUpperCase(),
+            to_statuses: (rule.to_statuses || []).map((s: string) => String(s).toUpperCase()),
+          })),
+      } : undefined,
       working_days_pattern: (form.working_days_pattern || []).map(jsToPy),
       electricity_unit_slabs: slabs,
     }
     if (!isAdmin) {
       delete data.linen_missing_after_days
+      delete data.linen_transition_rules
       delete data.electricity_meter_1_name
       delete data.electricity_meter_2_name
       delete data.electricity_unit_slabs
@@ -1364,6 +1424,88 @@ export default function CompanySettingsPage() {
             <p className="text-xs text-gray-400 mt-1">
               A linen that has not been scanned within this window appears in the scanner’s
               “Missing in cycle” list. Items already marked missing appear immediately.
+            </p>
+          </div>
+
+          <div className="border-t pt-5 space-y-4">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <h3 className="font-semibold">Allowed scan transitions</h3>
+                <p className="text-sm text-gray-500 mt-1">
+                  Define, for each current state, which next states a scan may move it to.
+                  For example, a linen already <strong>Collected</strong> cannot be collected again,
+                  but may move to <strong>At Laundry</strong> or onward. A state with no boxes
+                  ticked is unrestricted.
+                </p>
+              </div>
+              <label className="text-xs font-medium text-gray-600 dark:text-gray-400">
+                When a scan breaks a rule
+                <select
+                  value={form.linen_transition_rules?.violation_mode || 'block'}
+                  onChange={e => setForm({
+                    ...form,
+                    linen_transition_rules: {
+                      ...(form.linen_transition_rules || DEFAULT_TRANSITION_RULES),
+                      violation_mode: e.target.value,
+                    },
+                  })}
+                  className="block w-full mt-1 px-3 py-2 border rounded-lg text-sm"
+                >
+                  <option value="block">Block the scan (recommended)</option>
+                  <option value="warn">Allow but record a warning</option>
+                </select>
+              </label>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="text-left text-gray-500 border-b">
+                    <th className="py-2 pr-3 font-medium whitespace-nowrap">Current state</th>
+                    <th className="py-2 pr-3 font-medium">Allowed next states</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {LINEN_STATUSES.map(status => {
+                    const rule = (form.linen_transition_rules?.rules || [])
+                      .find((r: any) => r.from_status === status)
+                    const selected: string[] = rule?.to_statuses || []
+                    return (
+                      <tr key={status} className="border-b last:border-0 align-top">
+                        <td className="py-2 pr-3 whitespace-nowrap font-medium">
+                          {statusLabel(status)}
+                          <span className="block text-[10px] font-normal text-gray-400">{status}</span>
+                        </td>
+                        <td className="py-2">
+                          <div className="flex flex-wrap gap-1.5">
+                            {LINEN_STATUSES.filter(next => next !== status).map(next => {
+                              const active = selected.includes(next)
+                              return (
+                                <button
+                                  key={next}
+                                  type="button"
+                                  onClick={() => toggleTargetStatus(status, next)}
+                                  title={`${active ? 'Remove' : 'Allow'} ${statusLabel(next)}`}
+                                  className={`px-2 py-1 rounded-full border text-[11px] font-medium transition-colors ${
+                                    active
+                                      ? 'bg-emerald-600 text-white border-emerald-600'
+                                      : 'bg-white dark:bg-gray-700 text-gray-500 border-gray-200 dark:border-gray-600 hover:border-emerald-400'
+                                  }`}
+                                >
+                                  {statusLabel(next)}
+                                </button>
+                              )
+                            })}
+                          </div>
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
+            <p className="text-xs text-gray-400">
+              Rules are saved with the main Save button and apply to every scanner in this hotel.
             </p>
           </div>
         </section>
