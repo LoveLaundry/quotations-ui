@@ -64,16 +64,16 @@ export const ORDER_STATUS_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
 }
 
 export const ORDER_STATUS_STYLE: Record<OrderStatus, string> = {
-  draft: 'bg-[var(--border)] text-[#475467] border-[var(--border)]',
-  received: 'bg-[#EFF4FF] text-[#3538CD] border-[#C7D7FE]',
-  washing: 'bg-[#EFF4FF] text-[#3538CD] border-[#C7D7FE]',
-  pressing: 'bg-[#FEF6E7] text-[#B54708] border-[#FCE7C0]',
-  folding: 'bg-[#FEF6E7] text-[#B54708] border-[#FCE7C0]',
-  packing: 'bg-[#FEF6E7] text-[#B54708] border-[#FCE7C0]',
-  ready: 'bg-[#ECFDF3] text-[#027A48] border-[#ABEFC6]',
-  out_for_delivery: 'bg-[#ECFDF3] text-[#027A48] border-[#ABEFC6]',
-  delivered: 'bg-[#ECFDF3] text-[#027A48] border-[#ABEFC6]',
-  cancelled: 'bg-[#FEF3F2] text-[#B42318] border-[#FECDCA]',
+  draft: 'bg-[var(--border)] text-[#0A1D3A] border-[var(--border)]',
+  received: 'bg-[#E7EAEE] text-[#3A5277] border-[#BCC4D1]',
+  washing: 'bg-[#E7EAEE] text-[#3A5277] border-[#BCC4D1]',
+  pressing: 'bg-[#F9E7E9] text-[#7D0C14] border-[#EEBDC0]',
+  folding: 'bg-[#F9E7E9] text-[#7D0C14] border-[#EEBDC0]',
+  packing: 'bg-[#F9E7E9] text-[#7D0C14] border-[#EEBDC0]',
+  ready: 'bg-[#E8F2EC] text-[#0E5328] border-[#BDDBC9]',
+  out_for_delivery: 'bg-[#E8F2EC] text-[#0E5328] border-[#BDDBC9]',
+  delivered: 'bg-[#E8F2EC] text-[#0E5328] border-[#BDDBC9]',
+  cancelled: 'bg-[#F9E7E9] text-[#7D0C14] border-[#EEBDC0]',
 }
 
 export interface StatusHistoryEntry {

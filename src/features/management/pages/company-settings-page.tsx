@@ -92,7 +92,7 @@ function UsageCard({ meter, name }: { meter?: any; name: string }) {
       <div className="flex items-center justify-between gap-2">
         <h4 className="font-medium truncate">{name}</h4>
         {meter?.reset_detected && (
-          <span className="shrink-0 text-[11px] text-amber-700" title="A reading was lower than its previous reading">reset detected</span>
+          <span className="shrink-0 text-[11px] text-red-700" title="A reading was lower than its previous reading">reset detected</span>
         )}
       </div>
       <div className="grid grid-cols-2 gap-3">
@@ -132,7 +132,7 @@ function UsageCard({ meter, name }: { meter?: any; name: string }) {
       {meter?.warnings?.length > 0 && (
         <ul className="space-y-1">
           {meter.warnings.map((warning: string, index: number) => (
-            <li key={index} className="text-xs text-amber-700">{warning}</li>
+            <li key={index} className="text-xs text-red-700">{warning}</li>
           ))}
         </ul>
       )}
@@ -160,7 +160,7 @@ function SlabBreakdown({ cost, name }: { cost?: any; name: string }) {
               <td className="py-1 pr-2">
                 {Number(row.from_units).toLocaleString()}–{row.up_to == null ? '∞' : Number(row.up_to).toLocaleString()}
                 {index === cost.applied_slab && (
-                  <span className="ml-1 text-[10px] text-amber-700">(fixed applies)</span>
+                  <span className="ml-1 text-[10px] text-red-700">(fixed applies)</span>
                 )}
               </td>
               <td className="py-1 pr-2">{Number(row.rate_lkr).toLocaleString()} LKR</td>
@@ -196,7 +196,7 @@ function ProjectionCard({ entry, past }: { entry?: any; past: boolean }) {
         </div>
         <div>
           <p className="text-xs text-gray-500">{past ? 'Billed units' : 'Projected units'}</p>
-          <p className="font-semibold text-[#B91C1C]">{formatKwh(entry.projected_units)}</p>
+          <p className="font-semibold text-[#C1121F]">{formatKwh(entry.projected_units)}</p>
         </div>
         <div>
           <p className="text-xs text-gray-500">Trend</p>
@@ -212,7 +212,7 @@ function ProjectionCard({ entry, past }: { entry?: any; past: boolean }) {
         </div>
         <div>
           <p className="text-xs text-gray-500">{past ? 'Billed cost' : 'Projected cost'}</p>
-          <p className="font-semibold text-[#B91C1C]">
+          <p className="font-semibold text-[#C1121F]">
             {entry.projected_cost ? formatLkr(entry.projected_cost.amount_lkr) : '—'}
           </p>
         </div>
@@ -536,7 +536,7 @@ export default function CompanySettingsPage() {
       : []
   const costChartData = [...monthlyLabeled, ...projChartEntry]
   const projSource = projMeter === 'combined' ? meterProjection?.combined : meterProjection?.meters?.[projMeter]
-  const projColor = projMeter === 'meter_1' ? '#2563eb' : projMeter === 'meter_2' ? '#dc2626' : '#16a34a'
+  const projColor = projMeter === 'meter_1' ? '#0F2C59' : projMeter === 'meter_2' ? '#C1121F' : '#15803D'
   const projChartData = (projSource?.series || []).map((day: any) => ({
     date: fmtDay(day.date),
     actual: day.actual,
@@ -729,7 +729,7 @@ export default function CompanySettingsPage() {
             </p>
           </div>
         ) : (
-          <p className="rounded-lg bg-amber-50 dark:bg-amber-950/30 px-3 py-2 text-sm text-amber-800 dark:text-amber-200">
+          <p className="rounded-lg bg-red-50 dark:bg-red-950/30 px-3 py-2 text-sm text-red-800 dark:text-red-200">
             Meter readings are visible here. An admin must add or configure readings.
           </p>
         )}
@@ -803,7 +803,7 @@ export default function CompanySettingsPage() {
               />
             </label>
             {!meterNamesSaved && (
-              <p className="text-xs text-amber-700">
+              <p className="text-xs text-red-700">
                 Save the meter names first before recording readings.
               </p>
             )}
@@ -839,7 +839,7 @@ export default function CompanySettingsPage() {
                       {reading.correction_reason && (
                         <span
                           title={reading.correction_reason}
-                          className="ml-2 inline-flex items-center gap-1 text-[11px] text-amber-700 bg-amber-50 border border-amber-200 rounded px-1.5 py-0.5"
+                          className="ml-2 inline-flex items-center gap-1 text-[11px] text-red-700 bg-red-50 border border-red-200 rounded px-1.5 py-0.5"
                         >
                           <AlertCircle size={11} /> corrected
                         </span>
@@ -851,7 +851,7 @@ export default function CompanySettingsPage() {
                         <button
                           type="button"
                           onClick={() => openEdit(reading)}
-                          className="inline-flex items-center gap-1 text-xs text-[#B91C1C] hover:text-red-700 cursor-pointer"
+                          className="inline-flex items-center gap-1 text-xs text-[#C1121F] hover:text-red-700 cursor-pointer"
                         >
                           <Pencil size={13} /> Edit
                         </button>
@@ -903,8 +903,8 @@ export default function CompanySettingsPage() {
                         ? form.electricity_meter_1_name
                         : form.electricity_meter_2_name}
                     />
-                    <Line type="monotone" dataKey="meter_1" name="meter_1" stroke="#2563eb" connectNulls dot />
-                    <Line type="monotone" dataKey="meter_2" name="meter_2" stroke="#dc2626" connectNulls dot />
+                    <Line type="monotone" dataKey="meter_1" name="meter_1" stroke="#0F2C59" connectNulls dot />
+                    <Line type="monotone" dataKey="meter_2" name="meter_2" stroke="#C1121F" connectNulls dot />
                   </LineChart>
                 </ResponsiveContainer>
               </div>
@@ -945,17 +945,17 @@ export default function CompanySettingsPage() {
                       }
                     />
                     <Legend />
-                    <Bar dataKey="meter_1_amount_lkr" name={form.electricity_meter_1_name} fill="#2563eb">
+                    <Bar dataKey="meter_1_amount_lkr" name={form.electricity_meter_1_name} fill="#0F2C59">
                       {costChartData.map((entry: any, index: number) => (
                         <Cell key={index} fillOpacity={entry.projected ? 0.4 : 1} />
                       ))}
                     </Bar>
-                    <Bar dataKey="meter_2_amount_lkr" name={form.electricity_meter_2_name} fill="#dc2626">
+                    <Bar dataKey="meter_2_amount_lkr" name={form.electricity_meter_2_name} fill="#C1121F">
                       {costChartData.map((entry: any, index: number) => (
                         <Cell key={index} fillOpacity={entry.projected ? 0.4 : 1} />
                       ))}
                     </Bar>
-                    <Bar dataKey="amount_lkr" name="Combined total (sum of both meters)" fill="#16a34a">
+                    <Bar dataKey="amount_lkr" name="Combined total (sum of both meters)" fill="#15803D">
                       {costChartData.map((entry: any, index: number) => (
                         <Cell key={index} fillOpacity={entry.projected ? 0.4 : 1} />
                       ))}
@@ -1014,7 +1014,7 @@ export default function CompanySettingsPage() {
                             {month.errors?.length ? (
                               <span className="text-red-600">{month.errors.join(' ')}</span>
                             ) : month.warnings?.length ? (
-                              <span className="text-amber-700">{month.warnings.join(' ')}</span>
+                              <span className="text-red-700">{month.warnings.join(' ')}</span>
                             ) : month.amount_lkr === null ? (
                               <span className="text-gray-500">Needs another reading</span>
                             ) : (
@@ -1024,7 +1024,7 @@ export default function CompanySettingsPage() {
                               <button
                                 type="button"
                                 onClick={() => setExpandedMonth(current => (current === month.month ? null : month.month))}
-                                className="ml-2 text-xs text-[#B91C1C] hover:text-red-700 underline underline-offset-2 cursor-pointer"
+                                className="ml-2 text-xs text-[#C1121F] hover:text-red-700 underline underline-offset-2 cursor-pointer"
                               >
                                 {expandedMonth === month.month ? 'Hide breakdown' : 'Breakdown'}
                               </button>
@@ -1177,7 +1177,7 @@ export default function CompanySettingsPage() {
         </div>
 
         {(projStart && !projEnd) || (!projStart && projEnd) ? (
-          <p className="text-sm text-amber-700">Set both the start and end dates, or clear both for the current billing month.</p>
+          <p className="text-sm text-red-700">Set both the start and end dates, or clear both for the current billing month.</p>
         ) : projectionLoading ? (
           <p className="py-4 text-sm text-gray-500">Loading projection…</p>
         ) : projectionError ? (
@@ -1195,13 +1195,13 @@ export default function CompanySettingsPage() {
               </div>
               <div className="h-2 rounded-full bg-gray-100 dark:bg-gray-700 overflow-hidden">
                 <div
-                  className="h-full bg-[#B91C1C] rounded-full"
+                  className="h-full bg-[#C1121F] rounded-full"
                   style={{ width: `${meterProjection.total_days ? Math.min(100, (meterProjection.elapsed_days / meterProjection.total_days) * 100) : 0}%` }}
                 />
               </div>
             </div>
             {meterProjection.configuration_error && (
-              <p className="rounded-lg bg-amber-50 dark:bg-amber-950/30 px-3 py-2 text-sm text-amber-800 dark:text-amber-200">
+              <p className="rounded-lg bg-red-50 dark:bg-red-950/30 px-3 py-2 text-sm text-red-800 dark:text-red-200">
                 {meterProjection.configuration_error} Unit totals below exclude LKR costs.
               </p>
             )}
@@ -1253,7 +1253,7 @@ export default function CompanySettingsPage() {
                         type="monotone"
                         dataKey="trend"
                         name="Trend (kWh/day)"
-                        stroke="#111827"
+                        stroke="#0A1D3A"
                         strokeDasharray="6 4"
                         dot={false}
                         connectNulls
@@ -1262,7 +1262,7 @@ export default function CompanySettingsPage() {
                     <ReferenceLine
                       y={projAvg}
                       label={{ value: 'Average pace', position: 'insideTopRight', fontSize: 11 }}
-                      stroke="#6b7280"
+                      stroke="#767676"
                       strokeDasharray="2 3"
                     />
                   </ComposedChart>
@@ -1284,7 +1284,7 @@ export default function CompanySettingsPage() {
               </div>
               <div>
                 <p className="text-xs text-gray-500">{meterProjection.is_current ? 'Projected total' : 'Billed total'} (kWh)</p>
-                <p className="font-semibold text-[#B91C1C]">{formatKwh(meterProjection.combined?.projected_units ?? 0)}</p>
+                <p className="font-semibold text-[#C1121F]">{formatKwh(meterProjection.combined?.projected_units ?? 0)}</p>
               </div>
               <div>
                 <p className="text-xs text-gray-500">Cost so far</p>
@@ -1294,7 +1294,7 @@ export default function CompanySettingsPage() {
               </div>
               <div>
                 <p className="text-xs text-gray-500">{meterProjection.is_current ? 'Projected cost' : 'Billed cost'}</p>
-                <p className="font-semibold text-[#B91C1C]">
+                <p className="font-semibold text-[#C1121F]">
                   {meterProjection.combined?.projected_cost_lkr == null ? '—' : formatLkr(meterProjection.combined.projected_cost_lkr)}
                 </p>
               </div>
@@ -1366,11 +1366,11 @@ export default function CompanySettingsPage() {
                       }
                     />
                     <Legend />
-                    <Bar dataKey="meter_1" name={`${usageMeters?.meter_1?.name || form.electricity_meter_1_name} · daily`} fill="#bfdbfe" radius={[3, 3, 0, 0]} maxBarSize={28} />
-                    <Bar dataKey="meter_2" name={`${usageMeters?.meter_2?.name || form.electricity_meter_2_name} · daily`} fill="#fecaca" radius={[3, 3, 0, 0]} maxBarSize={28} />
-                    <Line type="monotone" dataKey="meter_1_ma7" name={`${usageMeters?.meter_1?.name || form.electricity_meter_1_name} · 7-day avg`} stroke="#1d4ed8" strokeWidth={2} dot={false} />
-                    <Line type="monotone" dataKey="meter_2_ma7" name={`${usageMeters?.meter_2?.name || form.electricity_meter_2_name} · 7-day avg`} stroke="#b91c1c" strokeWidth={2} dot={false} />
-                    <Line type="monotone" dataKey="combined_ma7" name="Combined · 7-day avg" stroke="#15803d" strokeWidth={2} dot={false} />
+                    <Bar dataKey="meter_1" name={`${usageMeters?.meter_1?.name || form.electricity_meter_1_name} · daily`} fill="#BCC4D1" radius={[3, 3, 0, 0]} maxBarSize={28} />
+                    <Bar dataKey="meter_2" name={`${usageMeters?.meter_2?.name || form.electricity_meter_2_name} · daily`} fill="#EEBDC0" radius={[3, 3, 0, 0]} maxBarSize={28} />
+                    <Line type="monotone" dataKey="meter_1_ma7" name={`${usageMeters?.meter_1?.name || form.electricity_meter_1_name} · 7-day avg`} stroke="#0F2C59" strokeWidth={2} dot={false} />
+                    <Line type="monotone" dataKey="meter_2_ma7" name={`${usageMeters?.meter_2?.name || form.electricity_meter_2_name} · 7-day avg`} stroke="#C1121F" strokeWidth={2} dot={false} />
+                    <Line type="monotone" dataKey="combined_ma7" name="Combined · 7-day avg" stroke="#15803D" strokeWidth={2} dot={false} />
                   </ComposedChart>
                 </ResponsiveContainer>
               </div>
@@ -1488,8 +1488,8 @@ export default function CompanySettingsPage() {
                                   title={`${active ? 'Remove' : 'Allow'} ${statusLabel(next)}`}
                                   className={`px-2 py-1 rounded-full border text-[11px] font-medium transition-colors ${
                                     active
-                                      ? 'bg-emerald-600 text-white border-emerald-600'
-                                      : 'bg-white dark:bg-gray-700 text-gray-500 border-gray-200 dark:border-gray-600 hover:border-emerald-400'
+                                      ? 'bg-green-600 text-white border-green-600'
+                                      : 'bg-white dark:bg-gray-700 text-gray-500 border-gray-200 dark:border-gray-600 hover:border-green-400'
                                   }`}
                                 >
                                   {statusLabel(next)}
@@ -1636,7 +1636,7 @@ export default function CompanySettingsPage() {
                       data: { reading_value: Number(editValue), reason: editReason.trim() },
                     })
                   }
-                  className="rounded-md bg-[#B91C1C] px-4 py-2 text-sm text-white font-medium disabled:opacity-40 cursor-pointer disabled:cursor-not-allowed"
+                  className="rounded-md bg-[#C1121F] px-4 py-2 text-sm text-white font-medium disabled:opacity-40 cursor-pointer disabled:cursor-not-allowed"
                 >
                   {updateReadingMut.isPending ? 'Saving…' : 'Save correction'}
                 </button>

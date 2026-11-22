@@ -1,18 +1,18 @@
 import type { DailyReportSnapshot, MonthlyReportSnapshot } from './types'
 
 // ── Brand palette ─────────────────────────────────────────────────────────────
-export const RED = '#C42127'
-export const DARK = '#1F2937'
-export const GRAY = '#6B7280'
-export const LIGHT = '#F3F4F6'
-export const BORDER = '#E5E7EB'
+export const RED = '#CC3D47'
+export const DARK = '#0A1D3A'
+export const GRAY = '#767676'
+export const LIGHT = '#E7EAEE'
+export const BORDER = '#BCC4D1'
 export const GREEN = '#15803D'
-export const AMBER = '#B45309'
-export const BLUE = '#2563EB'
-export const INDIGO = '#5B21B6'
-export const TEAL = '#0D9488'
-export const SKY = '#0284C7'
-export const FADED = '#CBD5E1'
+export const AMBER = '#7D0C14'
+export const BLUE = '#0F2C59'
+export const INDIGO = '#3A5277'
+export const TEAL = '#15803D'
+export const SKY = '#0A1D3A'
+export const FADED = '#BCC4D1'
 
 const TONES: Record<string, string> = {
   red: RED,
@@ -267,7 +267,7 @@ export function groupedBars(opts: BarChartOpts): unknown[] {
   const impact = 4
   for (let g = 1; g < impact; g++) {
     const y = bottom - (plotHeight * g) / impact
-    draw.push({ type: 'line', x1: PAD_X, y1: y, x2: PAD_X + plotW, y2: y, lineColor: '#EEF2F7', lineWidth: 0.5 })
+    draw.push({ type: 'line', x1: PAD_X, y1: y, x2: PAD_X + plotW, y2: y, lineColor: '#E7EAEE', lineWidth: 0.5 })
   }
 
   const groupW = plotW / n
@@ -343,7 +343,7 @@ export function segmentedBar(segments: Segment[], labelBefore?: string) {
     ...segments.map((s, i) => ({
       stack: [
         { text: count(s.value), bold: true, fontSize: 8, color: '#FFFFFF', alignment: 'center' as const },
-        { text: `${Math.round((widths[i] / Math.max(totalW, 1)) * 10000) / 100}%`, fontSize: 6.5, color: 'rgba(255,255,255,0.9)', alignment: 'center' as const },
+        { text: `${Math.round((widths[i] / Math.max(totalW, 1)) * 10000) / 100}%`, fontSize: 6.5, color: 'rgba(255, 255, 255, 0.9)', alignment: 'center' as const },
       ],
       fillColor: s.color,
       margin: [4, 4, 4, 4],
@@ -383,16 +383,18 @@ export function segmentedBar(segments: Segment[], labelBefore?: string) {
 }
 
 function colorOf(color: string): string {
+  // Several old hexes now share a hue, so each allowed colour maps to one tone.
   const map: Record<string, string> = {
+    '#CC3D47': 'red',
+    '#7D0C14': 'amber',
     '#15803D': 'green',
-    '#B45309': 'amber',
-    '#6B7280': 'gray',
-    '#C42127': 'red',
-    '#2563EB': 'blue',
-    '#5B21B6': 'indigo',
-    '#0D9488': 'teal',
-    '#0284C7': 'sky',
-    '#1F2937': 'dark',
+    '#0F2C59': 'blue',
+    '#3A5277': 'indigo',
+    '#0A1D3A': 'dark',
+    '#767676': 'gray',
+    '#BCC4D1': 'faded',
+    '#E7EAEE': 'light',
+    '#FFFFFF': 'white',
   }
   return map[color] ?? color
 }

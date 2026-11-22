@@ -17,9 +17,9 @@ import type { Return } from '../../../types/operations'
 import { invalidateResource } from '../../../cache/invalidation'
 
 const STATUS_CONFIG: Record<string, { label: string; bg: string; text: string; border: string; icon: any }> = {
-  PENDING: { label: 'Pending', bg: '#FEF3C7', text: '#D97706', border: '#FDE68A', icon: Clock },
-  RECEIVED: { label: 'Received', bg: '#DBEAFE', text: '#2563EB', border: '#93C5FD', icon: Package },
-  PROCESSED: { label: 'Processed', bg: '#D1FAE5', text: '#059669', border: '#6EE7B7', icon: CheckCircle2 },
+  PENDING: { label: 'Pending', bg: '#EEBDC0', text: '#CC3D47', border: '#DD7D84', icon: Clock },
+  RECEIVED: { label: 'Received', bg: '#E7EAEE', text: '#0F2C59', border: '#7B8BA4', icon: Package },
+  PROCESSED: { label: 'Processed', bg: '#BDDBC9', text: '#15803D', border: '#7EB994', icon: CheckCircle2 },
 }
 
 const STATUS_TRANSITIONS: Record<string, string[]> = {
@@ -130,7 +130,7 @@ export default function ReturnDetailPage() {
     <div className="space-y-5 pb-10 max-w-4xl">
       {/* Header */}
       <div className="flex items-start gap-3">
-        <Link to="/returns" className="mt-1 text-[#98A2B3] hover:text-[#374151] transition-colors">
+        <Link to="/returns" className="mt-1 text-[#7B8BA4] hover:text-[#0A1D3A] transition-colors">
           <ArrowLeft className="h-4 w-4" />
         </Link>
         <div className="flex-1">
@@ -151,7 +151,7 @@ export default function ReturnDetailPage() {
               {sc.label}
             </span>
           </div>
-          <p className="text-[13px] text-[#98A2B3] mt-0.5">
+          <p className="text-[13px] text-[#7B8BA4] mt-0.5">
             Return ID: <span className="font-mono">{returnData.return_id}</span>
           </p>
         </div>
@@ -167,8 +167,8 @@ export default function ReturnDetailPage() {
         ].map(({ icon: Icon, label, value }) => (
           <Card key={label} className="p-3">
             <div className="flex items-center gap-2 mb-1">
-              <Icon className="h-3.5 w-3.5 text-[#98A2B3]" />
-              <p className="text-[11px] text-[#98A2B3] font-medium uppercase tracking-wide">{label}</p>
+              <Icon className="h-3.5 w-3.5 text-[#7B8BA4]" />
+              <p className="text-[11px] text-[#7B8BA4] font-medium uppercase tracking-wide">{label}</p>
             </div>
             <p className="text-[13px] font-semibold text-[var(--text-primary)]">{value}</p>
           </Card>
@@ -259,7 +259,7 @@ export default function ReturnDetailPage() {
                       ) : (
                         <button
                           onClick={() => handleMarkResent(item.item_name, item.specification || '')}
-                          className="inline-flex items-center gap-1 rounded-md bg-amber-100 px-2 py-1 text-[10px] font-semibold text-amber-800 hover:bg-amber-200 transition cursor-pointer"
+                          className="inline-flex items-center gap-1 rounded-md bg-red-100 px-2 py-1 text-[10px] font-semibold text-red-800 hover:bg-red-200 transition cursor-pointer"
                         >
                           <Send className="h-3 w-3" /> Mark Sent
                         </button>
@@ -282,17 +282,17 @@ export default function ReturnDetailPage() {
           <h3 className="text-[14px] font-semibold text-[var(--text-primary)] mb-3">Bill Adjustment</h3>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
-              <p className="text-[11px] text-[#98A2B3] mb-0.5">Type</p>
+              <p className="text-[11px] text-[#7B8BA4] mb-0.5">Type</p>
               <p className="text-[13px] font-semibold text-[var(--text-primary)]">{returnData.bill_adjustment.adjustment_type}</p>
             </div>
             <div>
-              <p className="text-[11px] text-[#98A2B3] mb-0.5">Amount</p>
+              <p className="text-[11px] text-[#7B8BA4] mb-0.5">Amount</p>
               <p className="text-[13px] font-semibold text-[var(--text-primary)]">LKR {returnData.bill_adjustment.amount.toLocaleString()}</p>
             </div>
             {returnData.bill_adjustment.notes && (
               <div>
-                <p className="text-[11px] text-[#98A2B3] mb-0.5">Notes</p>
-                <p className="text-[13px] text-[#374151]">{returnData.bill_adjustment.notes}</p>
+                <p className="text-[11px] text-[#7B8BA4] mb-0.5">Notes</p>
+                <p className="text-[13px] text-[#0A1D3A]">{returnData.bill_adjustment.notes}</p>
               </div>
             )}
           </div>
@@ -303,7 +303,7 @@ export default function ReturnDetailPage() {
       {returnData.notes && (
         <Card className="p-5">
           <h3 className="text-[14px] font-semibold text-[var(--text-primary)] mb-3">Notes</h3>
-          <p className="text-[13px] text-[#374151]">{returnData.notes}</p>
+          <p className="text-[13px] text-[#0A1D3A]">{returnData.notes}</p>
         </Card>
       )}
     </div>

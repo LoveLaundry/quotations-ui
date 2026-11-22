@@ -55,8 +55,8 @@ export function SmartConfirm({
         onClick={e => e.stopPropagation()}
       >
         <div className="flex items-start gap-3 border-b border-[var(--border)] px-5 py-4">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-50 border border-emerald-200">
-            <ShieldCheck className="h-4 w-4 text-emerald-600" />
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-green-50 border border-green-200">
+            <ShieldCheck className="h-4 w-4 text-green-600" />
           </div>
           <div className="min-w-0">
             <h3 className="text-[15px] font-semibold" style={{ color: 'var(--text-primary)' }}>

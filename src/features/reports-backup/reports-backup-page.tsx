@@ -310,19 +310,19 @@ export default function ReportsBackupPage() {
 
       <div>
         <div className="flex items-center gap-3 mt-1">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#EFF6FF] border border-[#BFDBFE]">
-            <Database className="h-4 w-4 text-[#2563EB]" />
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#E7EAEE] border border-[#BCC4D1]">
+            <Database className="h-4 w-4 text-[#0F2C59]" />
           </div>
           <h1 className="text-dashboard-title">Reports &amp; Backup</h1>
         </div>
-        <p className="text-[13px] mt-0.5 text-[#98A2B3]">
+        <p className="text-[13px] mt-0.5 text-[#7B8BA4]">
           Generate a daily PDF report (with a full month view too) and a machine-readable JSON backup of every business
-          area, filed under <span className="font-medium text-[#475467]">{structure.year}/{structure.monthDir}/</span> in
+          area, filed under <span className="font-medium text-[#0A1D3A]">{structure.year}/{structure.monthDir}/</span> in
           your chosen folder.
         </p>
       </div>
 
-      <div className="flex items-center gap-2 rounded-lg border border-[#FDE68A] bg-[#FFFBEB] px-3 py-2 text-[12px] text-[#92400E]">
+      <div className="flex items-center gap-2 rounded-lg border border-[#DD7D84] bg-[#F9E7E9] px-3 py-2 text-[12px] text-[#7D0C14]">
         <ShieldCheck className="h-4 w-4 shrink-0" />
         <span>
           Admin-only. This browser feature uses the File System Access API (Chrome / Edge) to write the selected
@@ -341,9 +341,9 @@ export default function ReportsBackupPage() {
           </CardHeader>
           <CardContent className="space-y-3">
             {!fsSupported && (
-              <div className="flex items-start gap-2 rounded-lg border border-[#FCA5A5] bg-[#FEF2F2] p-3">
-                <WarningCircle className="h-4 w-4 text-[#DC2626] mt-0.5 shrink-0" />
-                <p className="text-[12px] text-[#B91C1C]">
+              <div className="flex items-start gap-2 rounded-lg border border-[#EEBDC0] bg-[#F9E7E9] p-3">
+                <WarningCircle className="h-4 w-4 text-[#C1121F] mt-0.5 shrink-0" />
+                <p className="text-[12px] text-[#C1121F]">
                   This browser does not support writing to a folder. Use Chrome or Edge to save files into a chosen
                   folder; otherwise backups will be downloaded instead.
                 </p>
@@ -353,10 +353,10 @@ export default function ReportsBackupPage() {
             {folder ? (
               <div className="space-y-2">
                 <div className="flex items-center gap-2 rounded-lg border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2">
-                  <CheckCircle className="h-4 w-4 text-[#16A34A] shrink-0" />
+                  <CheckCircle className="h-4 w-4 text-[#15803D] shrink-0" />
                   <div className="min-w-0">
-                    <p className="text-[13px] font-semibold text-[#111827] truncate">{folder.name}</p>
-                    <p className="text-[11px] text-[#6B7280]">
+                    <p className="text-[13px] font-semibold text-[#0A1D3A] truncate">{folder.name}</p>
+                    <p className="text-[11px] text-[#767676]">
                       {folder.configuredAt ? `Configured ${formatTimestamp(folder.configuredAt)}` : 'Configured on this browser'}
                       {folderCheck?.ok ? ' • writable' : folderCheck ? ` • ${folderCheck.error ?? 'check needed'}` : ''}
                     </p>
@@ -374,8 +374,8 @@ export default function ReportsBackupPage() {
             ) : (
               <div className="space-y-3">
                 <div className="flex items-start gap-2 rounded-lg border border-[var(--border)] bg-[var(--surface-2)] p-3">
-                  <MagnifyingGlass className="h-4 w-4 text-[#6B7280] mt-0.5 shrink-0" />
-                  <p className="text-[12px] text-[#374151]">
+                  <MagnifyingGlass className="h-4 w-4 text-[#767676] mt-0.5 shrink-0" />
+                  <p className="text-[12px] text-[#0A1D3A]">
                     Pick the folder that should hold your reports, e.g.{' '}
                     <span className="font-medium">D:\LoveLaundry\Data\Reports</span>. Reports are filed as
                     YYYY/MM-Month/YYYY-MM-DD.pdf + .json.gz (daily) and YYYY-MM.pdf + .json.gz (monthly) underneath it.
@@ -406,7 +406,7 @@ export default function ReportsBackupPage() {
                   setExisting([])
                 }}
                 className={`h-7 rounded-md text-[12px] font-medium transition-colors ${
-                  periodKind === 'day' ? 'bg-white shadow-sm text-[#111827]' : 'text-[#98A2B3]'
+                  periodKind === 'day' ? 'bg-white shadow-sm text-[#0A1D3A]' : 'text-[#7B8BA4]'
                 }`}
               >
                 Day
@@ -418,14 +418,14 @@ export default function ReportsBackupPage() {
                   setExisting([])
                 }}
                 className={`h-7 rounded-md text-[12px] font-medium transition-colors ${
-                  periodKind === 'month' ? 'bg-white shadow-sm text-[#111827]' : 'text-[#98A2B3]'
+                  periodKind === 'month' ? 'bg-white shadow-sm text-[#0A1D3A]' : 'text-[#7B8BA4]'
                 }`}
               >
                 Month
               </button>
             </div>
             <div>
-              <label className="mb-1 flex items-center gap-1.5 text-[12px] font-medium text-[#475467]">
+              <label className="mb-1 flex items-center gap-1.5 text-[12px] font-medium text-[#0A1D3A]">
                 <CalendarBlank className="h-3.5 w-3.5" /> Report {periodKind === 'day' ? 'date' : 'month'}
               </label>
               {periodKind === 'day' ? (
@@ -437,7 +437,7 @@ export default function ReportsBackupPage() {
                     setDate(e.target.value || todayStr())
                     setExisting([])
                   }}
-                  className="h-9 w-full rounded-lg border border-[var(--border)] bg-white px-3 text-[13px] text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/30"
+                  className="h-9 w-full rounded-lg border border-[var(--border)] bg-white px-3 text-[13px] text-[#0A1D3A] focus:outline-none focus:ring-2 focus:ring-[#0F2C59]/30"
                 />
               ) : (
                 <input
@@ -448,7 +448,7 @@ export default function ReportsBackupPage() {
                     setMonth(e.target.value || currentMonth())
                     setExisting([])
                   }}
-                  className="h-9 w-full rounded-lg border border-[var(--border)] bg-white px-3 text-[13px] text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/30"
+                  className="h-9 w-full rounded-lg border border-[var(--border)] bg-white px-3 text-[13px] text-[#0A1D3A] focus:outline-none focus:ring-2 focus:ring-[#0F2C59]/30"
                 />
               )}
             </div>
@@ -460,7 +460,7 @@ export default function ReportsBackupPage() {
               {existing.length > 0 && (
                 <div className="flex flex-wrap items-center gap-1.5">
                   {existing.map(name => (
-                    <span key={name} className="rounded-md border border-[#FCD34D] bg-[#FEF3C7] px-2 py-0.5 text-[11px] font-medium text-[#92400E]">
+                    <span key={name} className="rounded-md border border-[#DD7D84] bg-[#EEBDC0] px-2 py-0.5 text-[11px] font-medium text-[#7D0C14]">
                       {name} · will overwrite
                     </span>
                   ))}
@@ -480,19 +480,19 @@ export default function ReportsBackupPage() {
               </Button>
             </div>
 
-            <p className="text-[11px] text-[#98A2B3]">
+            <p className="text-[11px] text-[#7B8BA4]">
               {gzipSupported
                 ? 'JSON backups are gzipped (.json.gz) and round-trip verified before saving.'
                 : 'Gzip is not available in this browser — the JSON backup will be saved as plain .json.'}
             </p>
 
             {log.length > 0 && (
-              <div className="rounded-lg border border-[var(--border)] bg-[#111827] p-3">
-                <p className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-[#9CA3AF]">Run log</p>
+              <div className="rounded-lg border border-[var(--border)] bg-[#0A1D3A] p-3">
+                <p className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-[#A6A6A6]">Run log</p>
                 <div className={`${logLinesKey(false)} overflow-x-auto`}>
                   {log.map((line, i) => (
-                    <p key={i} className="text-[11.5px] leading-5 font-mono text-[#D1D5DB]">
-                      <span className="text-[#6B7280]">{String(i + 1).padStart(2, '0')}</span> {line}
+                    <p key={i} className="text-[11.5px] leading-5 font-mono text-[#BCC4D1]">
+                      <span className="text-[#767676]">{String(i + 1).padStart(2, '0')}</span> {line}
                     </p>
                   ))}
                 </div>
@@ -500,8 +500,8 @@ export default function ReportsBackupPage() {
             )}
 
             {busy && (
-              <div className="flex items-center gap-2 text-[12px] text-[#475467]">
-                <Triangle className="h-3.5 w-3.5 animate-spin text-[#DC2626]" />
+              <div className="flex items-center gap-2 text-[12px] text-[#0A1D3A]">
+                <Triangle className="h-3.5 w-3.5 animate-spin text-[#C1121F]" />
                 Working…
               </div>
             )}
@@ -521,32 +521,32 @@ export default function ReportsBackupPage() {
           <CardContent>
             {lastBackup ? (
               <div className="space-y-2 text-[13px]">
-                <p className="text-[#111827]">
+                <p className="text-[#0A1D3A]">
                   <span className="font-medium">
                     {lastBackup.period_kind === 'month'
                       ? monthLabel(lastBackup.report_date)
                       : fmtDate(lastBackup.report_date)}
                   </span>{' '}
-                  <span className="text-[#98A2B3]"> · {lastBackup.finished_at.replace('T', ' ').slice(11, 19)} UTC</span>
+                  <span className="text-[#7B8BA4]"> · {lastBackup.finished_at.replace('T', ' ').slice(11, 19)} UTC</span>
                 </p>
-                <p className="text-[#475467]">
+                <p className="text-[#0A1D3A]">
                   Net {fmtMoney(lastBackup.snapshot_summary.net)} ({fmtMoney(lastBackup.snapshot_summary.income)} income −{' '}
                   {fmtMoney(lastBackup.snapshot_summary.expenses)} expenses)
                 </p>
-                <p className="text-[12px] text-[#98A2B3]">
+                <p className="text-[12px] text-[#7B8BA4]">
                   {lastBackup.snapshot_summary.sources_ok}/{lastBackup.snapshot_summary.sources_total} data sources · {lastBackup.modes.join(' + ')}
                 </p>
                 <ul className="space-y-1">
                   {lastBackup.files.map(f => (
                     <li key={f.name} className="flex items-center justify-between rounded-md border border-[var(--border)] px-2 py-1 text-[12px]">
-                      <span className="font-mono text-[#6B7280]">{f.name}</span>
-                      <span className="text-[#475467]">{fmtBytes(f.size)}</span>
+                      <span className="font-mono text-[#767676]">{f.name}</span>
+                      <span className="text-[#0A1D3A]">{fmtBytes(f.size)}</span>
                     </li>
                   ))}
                 </ul>
               </div>
             ) : (
-              <p className="text-[13px] text-[#98A2B3]">No backup has been generated yet.</p>
+              <p className="text-[13px] text-[#7B8BA4]">No backup has been generated yet.</p>
             )}
           </CardContent>
         </Card>
@@ -573,8 +573,8 @@ export default function ReportsBackupPage() {
                       title={s.error ?? s.label}
                       className={`inline-flex items-center gap-1 rounded-md border px-2 py-0.5 text-[11px] font-medium ${
                         s.ok
-                          ? 'border-[#BBF7D0] bg-[#F0FDF4] text-[#15803D]'
-                          : 'border-[#FCA5A5] bg-[#FEF2F2] text-[#B91C1C]'
+                          ? 'border-[#BDDBC9] bg-[#E8F2EC] text-[#15803D]'
+                          : 'border-[#EEBDC0] bg-[#F9E7E9] text-[#C1121F]'
                       }`}
                     >
                       {s.ok ? <CheckCircle className="h-3 w-3" /> : <WarningCircle className="h-3 w-3" />}
@@ -583,18 +583,18 @@ export default function ReportsBackupPage() {
                   ))}
                 </div>
                 {result.downloadOnly && (
-                  <p className="text-[12px] text-[#B45309]">Files were downloaded instead of written to a folder.</p>
+                  <p className="text-[12px] text-[#7D0C14]">Files were downloaded instead of written to a folder.</p>
                 )}
               </div>
             ) : (
               <div className="space-y-2">
-                <p className="text-[13px] text-[#98A2B3]">
+                <p className="text-[13px] text-[#7B8BA4]">
                   Run a generation to see which data sources were included for that day.
                 </p>
-                <ul className="grid grid-cols-1 gap-1 text-[12px] text-[#475467] sm:grid-cols-2">
+                <ul className="grid grid-cols-1 gap-1 text-[12px] text-[#0A1D3A] sm:grid-cols-2">
                   {REPORT_SOURCES.map(s => (
                     <li key={s.key} className="flex items-center gap-1.5">
-                      <span className="h-1.5 w-1.5 rounded-full bg-[#D1D5DB]" />
+                      <span className="h-1.5 w-1.5 rounded-full bg-[#BCC4D1]" />
                       {s.label}
                     </li>
                   ))}
@@ -609,10 +609,10 @@ export default function ReportsBackupPage() {
 }
 
 function StatBox({ label, value, tone }: { label: string; value: string; tone: 'green' | 'red' }) {
-  const color = tone === 'green' ? 'text-[#15803D]' : 'text-[#DC2626]'
+  const color = tone === 'green' ? 'text-[#15803D]' : 'text-[#C1121F]'
   return (
     <div className="rounded-lg border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2 text-center">
-      <p className="text-[11px] font-medium uppercase tracking-wide text-[#98A2B3]">{label}</p>
+      <p className="text-[11px] font-medium uppercase tracking-wide text-[#7B8BA4]">{label}</p>
       <p className={`mt-0.5 text-[15px] font-bold ${color}`}>{value}</p>
     </div>
   )

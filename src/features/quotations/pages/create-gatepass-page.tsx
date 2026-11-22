@@ -377,15 +377,15 @@ export default function CreateGatePassPage() {
     }
 
     const inputClass =
-        'h-10 w-full rounded-lg border border-[var(--border)] bg-white px-3 text-[13px] text-[var(--text-primary)] outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/10 shadow-sm transition'
+        'h-10 w-full rounded-lg border border-[var(--border)] bg-white px-3 text-[13px] text-[var(--text-primary)] outline-none focus:border-[#0F2C59] focus:ring-2 focus:ring-[#0F2C59]/10 shadow-sm transition'
 
-    const labelClass = 'block text-[11px] font-semibold uppercase tracking-wide text-[#6B7280] mb-1.5'
+    const labelClass = 'block text-[11px] font-semibold uppercase tracking-wide text-[#767676] mb-1.5'
 
     return (
         <div className="space-y-5 pb-10">
             {/* Header */}
             <div className="flex items-center gap-3">
-                <Link to="/gate-passes" className="text-[#98A2B3] hover:text-[#374151] transition-colors">
+                <Link to="/gate-passes" className="text-[#7B8BA4] hover:text-[#0A1D3A] transition-colors">
                     <ArrowLeft className="h-4 w-4" />
                 </Link>
                 <div className="flex-1">
@@ -397,13 +397,13 @@ export default function CreateGatePassPage() {
                         ]}
                     />
                     <h1 className="text-dashboard-title mt-1">New Gate Pass</h1>
-                    <p className="text-[13px] text-[#98A2B3] mt-0.5">
+                    <p className="text-[13px] text-[#7B8BA4] mt-0.5">
                         Record laundry items received from a hotel client
                     </p>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
                     {dirty && (
-                        <span className="inline-flex items-center gap-1.5 rounded-full border border-[var(--border)] bg-white px-2.5 py-1 text-[11px] font-medium text-[#6B7280]">
+                        <span className="inline-flex items-center gap-1.5 rounded-full border border-[var(--border)] bg-white px-2.5 py-1 text-[11px] font-medium text-[#767676]">
                             <FileClock className="h-3 w-3" /> Autosaved draft
                         </span>
                     )}
@@ -416,18 +416,18 @@ export default function CreateGatePassPage() {
             </div>
 
             {duplicatePass && (
-                <div className="flex items-start gap-3 rounded-xl border border-[#FECACA] bg-[#FFF1F1] px-4 py-3">
-                    <AlertCircle className="h-5 w-5 shrink-0 text-[#DC2626] mt-0.5" />
+                <div className="flex items-start gap-3 rounded-xl border border-[#EEBDC0] bg-[#F9E7E9] px-4 py-3">
+                    <AlertCircle className="h-5 w-5 shrink-0 text-[#C1121F] mt-0.5" />
                     <div className="flex-1">
-                        <p className="text-[13px] font-semibold text-[#991B1B]">
+                        <p className="text-[13px] font-semibold text-[#7D0C14]">
                             This gate pass number already exists
                         </p>
-                        <p className="text-[12px] text-[#B91C1C]">
+                        <p className="text-[12px] text-[#C1121F]">
                             #{duplicatePass.gate_pass_number} · {duplicatePass.client_name}
                         </p>
                     </div>
                     <Link to={`/gate-passes/${duplicatePass.id}`}>
-                        <Button size="sm" variant="outline" className="text-[#DC2626]">View existing</Button>
+                        <Button size="sm" variant="outline" className="text-[#C1121F]">View existing</Button>
                     </Link>
                 </div>
             )}
@@ -437,27 +437,27 @@ export default function CreateGatePassPage() {
                 <Card>
                     <CardHeader className="border-b border-[var(--border)] pb-3">
                         <div className="flex items-center gap-2">
-                            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#FFF7ED] border border-[#FED7AA]">
-                                <Link2 className="h-4 w-4 text-[#EA580C]" />
+                            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#F9E7E9] border border-[#EEBDC0]">
+                                <Link2 className="h-4 w-4 text-[#CC3D47]" />
                             </div>
                             <div>
                                 <CardTitle>Link to Quotation</CardTitle>
-                                <p className="text-[11px] text-[#98A2B3] mt-0.5">Optional — link this gate pass to a client quotation for billing reference</p>
+                                <p className="text-[11px] text-[#7B8BA4] mt-0.5">Optional — link this gate pass to a client quotation for billing reference</p>
                             </div>
                         </div>
                     </CardHeader>
                     <CardContent className="pt-4">
                         {selectedQuotation ? (
-                            <div className="flex items-center justify-between gap-3 rounded-xl border border-[#FED7AA] bg-[#FFF7ED] px-4 py-3">
+                            <div className="flex items-center justify-between gap-3 rounded-xl border border-[#EEBDC0] bg-[#F9E7E9] px-4 py-3">
                                 <div>
                                     <p className="text-[13px] font-semibold text-[var(--text-primary)]">{selectedQuotation.client_name}</p>
-                                    <p className="text-[11px] text-[#EA580C]">{selectedQuotation.quotation_title || 'Price List'} · {selectedQuotation.line_items?.length ?? 0} items</p>
+                                    <p className="text-[11px] text-[#CC3D47]">{selectedQuotation.quotation_title || 'Price List'} · {selectedQuotation.line_items?.length ?? 0} items</p>
                                 </div>
                                 <button
                                     type="button"
                                     onClick={removeQuotationLink}
                                     aria-label="Remove quotation link"
-                                    className="flex h-7 w-7 items-center justify-center rounded-lg text-[#EA580C] hover:bg-[#FED7AA] transition-colors cursor-pointer"
+                                    className="flex h-7 w-7 items-center justify-center rounded-lg text-[#CC3D47] hover:bg-[#EEBDC0] transition-colors cursor-pointer"
                                 >
                                     <X className="h-3.5 w-3.5" />
                                 </button>
@@ -470,14 +470,14 @@ export default function CreateGatePassPage() {
                                         value={quotationSearch}
                                         onChange={e => setQuotationSearch(e.target.value)}
                                         placeholder="Search by client or title…"
-                                        className="h-10 w-full rounded-lg border border-[var(--border)] bg-white px-3 text-[13px] text-[var(--text-primary)] outline-none focus:border-[#EA580C] focus:ring-2 focus:ring-[#EA580C]/10 shadow-sm transition"
+                                        className="h-10 w-full rounded-lg border border-[var(--border)] bg-white px-3 text-[13px] text-[var(--text-primary)] outline-none focus:border-[#CC3D47] focus:ring-2 focus:ring-[#CC3D47]/10 shadow-sm transition"
                                         autoFocus
                                     />
                                 </div>
                                 {quotationsLoading ? (
-                                    <div className="py-4 text-center text-[12px] text-[#98A2B3]">Loading quotations…</div>
+                                    <div className="py-4 text-center text-[12px] text-[#7B8BA4]">Loading quotations…</div>
                                 ) : filteredQuotations.length === 0 ? (
-                                    <div className="py-4 text-center text-[12px] text-[#98A2B3]">No quotations found</div>
+                                    <div className="py-4 text-center text-[12px] text-[#7B8BA4]">No quotations found</div>
                                 ) : (
                                     <div className="max-h-48 overflow-y-auto space-y-1.5 pr-1">
                                         {filteredQuotations.map(q => (
@@ -485,11 +485,11 @@ export default function CreateGatePassPage() {
                                                 key={q.id}
                                                 type="button"
                                                 onClick={() => handleSelectQuotation(q)}
-                                                className="group flex w-full items-center gap-3 rounded-lg border border-[var(--border)] bg-white px-3 py-2.5 text-left hover:border-[#FED7AA] hover:bg-[#FFF7ED] transition cursor-pointer"
+                                                className="group flex w-full items-center gap-3 rounded-lg border border-[var(--border)] bg-white px-3 py-2.5 text-left hover:border-[#EEBDC0] hover:bg-[#F9E7E9] transition cursor-pointer"
                                             >
                                                 <div className="min-w-0 flex-1">
                                                     <p className="text-[13px] font-semibold text-[var(--text-primary)] truncate">{q.client_name}</p>
-                                                    <p className="text-[11px] text-[#98A2B3] truncate">{q.quotation_title || 'Price List'} · {q.line_items?.length ?? 0} items</p>
+                                                    <p className="text-[11px] text-[#7B8BA4] truncate">{q.quotation_title || 'Price List'} · {q.line_items?.length ?? 0} items</p>
                                                 </div>
                                             </button>
                                         ))}
@@ -498,7 +498,7 @@ export default function CreateGatePassPage() {
                                 <button
                                     type="button"
                                     onClick={() => { setShowQuotationPicker(false); setQuotationSearch('') }}
-                                    className="text-[12px] text-[#6B7280] hover:text-[#374151] cursor-pointer transition"
+                                    className="text-[12px] text-[#767676] hover:text-[#0A1D3A] cursor-pointer transition"
                                 >
                                     Cancel
                                 </button>
@@ -507,7 +507,7 @@ export default function CreateGatePassPage() {
                             <button
                                 type="button"
                                 onClick={() => setShowQuotationPicker(true)}
-                                className="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed border-[#FED7AA] py-3 text-[13px] font-medium text-[#EA580C] hover:border-[#EA580C] hover:bg-[#FFF7ED]/50 transition cursor-pointer"
+                                className="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed border-[#EEBDC0] py-3 text-[13px] font-medium text-[#CC3D47] hover:border-[#CC3D47] hover:bg-[#F9E7E9]/50 transition cursor-pointer"
                             >
                                 <Link2 className="h-4 w-4" /> Link a Quotation
                             </button>
@@ -519,8 +519,8 @@ export default function CreateGatePassPage() {
                 <Card>
                     <CardHeader className="border-b border-[var(--border)] pb-3">
                         <div className="flex items-center gap-2">
-                            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#EFF6FF] border border-[#BFDBFE]">
-                                <ClipboardList className="h-4 w-4 text-[#2563EB]" />
+                            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#E7EAEE] border border-[#BCC4D1]">
+                                <ClipboardList className="h-4 w-4 text-[#0F2C59]" />
                             </div>
                             <CardTitle>Receiving Details</CardTitle>
                         </div>
@@ -590,11 +590,11 @@ export default function CreateGatePassPage() {
                             <div className="min-w-0 flex-1">
                                 <CardTitle>Linen Items</CardTitle>
                                 {selectedQuotation ? (
-                                    <p className="text-[11px] text-[#98A2B3] mt-0.5">
-                                        Select from <span className="font-semibold text-[#EA580C]">{selectedQuotation.client_name}</span>'s quotation, or type a new one
+                                    <p className="text-[11px] text-[#7B8BA4] mt-0.5">
+                                        Select from <span className="font-semibold text-[#CC3D47]">{selectedQuotation.client_name}</span>'s quotation, or type a new one
                                     </p>
                                 ) : lastItems.length > 0 ? (
-                                    <p className="text-[11px] text-[#98A2B3] mt-0.5">
+                                    <p className="text-[11px] text-[#7B8BA4] mt-0.5">
                                         Last gate pass had {lastItems.length} item type{lastItems.length !== 1 ? 's' : ''} — repeat them below.
                                     </p>
                                 ) : null}
@@ -635,7 +635,7 @@ export default function CreateGatePassPage() {
                                     exit={{ opacity: 0, y: -8 }}
                                     className={`rounded-xl border p-3.5 space-y-3 ${
                                         isCustomItem(item.item_name)
-                                            ? 'border-[#BFDBFE] bg-[#EFF6FF]/40'
+                                            ? 'border-[#BCC4D1] bg-[#E7EAEE]/40'
                                             : 'border-[var(--border)] bg-[#FAFAFA]'
                                     }`}
                                 >
@@ -659,7 +659,7 @@ export default function CreateGatePassPage() {
                                                 required
                                             />
                                             {hasQuotation && item.item_name.trim() && isCustomItem(item.item_name) && (
-                                                <div className="mt-1 inline-flex items-center gap-1 rounded-full bg-[#EFF6FF] border border-[#BFDBFE] px-2 py-0.5 text-[10px] font-semibold text-[#2563EB]">
+                                                <div className="mt-1 inline-flex items-center gap-1 rounded-full bg-[#E7EAEE] border border-[#BCC4D1] px-2 py-0.5 text-[10px] font-semibold text-[#0F2C59]">
                                                     <Sparkles className="h-2.5 w-2.5" /> New · will be added to quotation
                                                 </div>
                                             )}
@@ -716,24 +716,24 @@ export default function CreateGatePassPage() {
                                     {/* Difference badge & mismatch fields */}
                                     <div className="flex items-start gap-3 flex-wrap">
                                         <div className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold border ${item.difference === 0
-                                            ? 'bg-[#F0FDF4] text-[#16A34A] border-[#BBF7D0]'
+                                            ? 'bg-[#E8F2EC] text-[#15803D] border-[#BDDBC9]'
                                             : item.difference > 0
-                                                ? 'bg-[#EFF6FF] text-[#2563EB] border-[#BFDBFE]'
-                                                : 'bg-[#FFF7ED] text-[#C2410C] border-[#FED7AA]'
+                                                ? 'bg-[#E7EAEE] text-[#0F2C59] border-[#BCC4D1]'
+                                                : 'bg-[#F9E7E9] text-[#7D0C14] border-[#EEBDC0]'
                                             }`}>
                                             {item.difference === 0 ? '✓ Matched' : item.difference > 0 ? `+${item.difference} extra` : `${item.difference} short`}
                                         </div>
 
                                         <label className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-semibold cursor-pointer select-none transition ${
                                             item.rewashed
-                                                ? 'bg-[#FFF0F5] text-[#C2410C] border-[#FBCFE8]'
-                                                : 'border-[var(--border)] bg-white text-[#98A2B3] hover:border-[#FBCFE8]'
+                                                ? 'bg-[#F9E7E9] text-[#7D0C14] border-[#BCC4D1]'
+                                                : 'border-[var(--border)] bg-white text-[#7B8BA4] hover:border-[#BCC4D1]'
                                         }`}>
                                             <input
                                                 type="checkbox"
                                                 checked={!!item.rewashed}
                                                 onChange={e => updateItem(idx, 'rewashed', e.target.checked)}
-                                                className="h-3.5 w-3.5 rounded border-[#D0D5DD] accent-[#DB2777]"
+                                                className="h-3.5 w-3.5 rounded border-[#BCC4D1] accent-[#CC3D47]"
                                             />
                                             Rewashed · not billed
                                         </label>
@@ -772,7 +772,7 @@ export default function CreateGatePassPage() {
                                             <button
                                                 type="button"
                                                 onClick={() => removeItem(idx)}
-                                                className="ml-auto flex items-center gap-1 text-[12px] text-[#EF4444] hover:text-[#DC2626] cursor-pointer transition"
+                                                className="ml-auto flex items-center gap-1 text-[12px] text-[#C1121F] hover:text-[#C1121F] cursor-pointer transition"
                                             >
                                                 <Trash2 className="h-3.5 w-3.5" /> Remove
                                             </button>
@@ -785,7 +785,7 @@ export default function CreateGatePassPage() {
                         <button
                             type="button"
                             onClick={addItem}
-                            className="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed border-[var(--border)] py-3 text-[13px] font-medium text-[#6B7280] hover:border-[#2563EB] hover:text-[#2563EB] hover:bg-[#EFF6FF]/30 transition cursor-pointer"
+                            className="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed border-[var(--border)] py-3 text-[13px] font-medium text-[#767676] hover:border-[#0F2C59] hover:text-[#0F2C59] hover:bg-[#E7EAEE]/30 transition cursor-pointer"
                         >
                             <Plus className="h-4 w-4" /> Add another item
                         </button>
@@ -796,30 +796,30 @@ export default function CreateGatePassPage() {
                 <Card>
                     <CardContent className="pt-4">
                         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                            <div className="text-[13px] text-[#6B7280] flex flex-wrap items-center gap-x-2 gap-y-1">
+                            <div className="text-[13px] text-[#767676] flex flex-wrap items-center gap-x-2 gap-y-1">
                                 <span><span className="font-semibold text-[var(--text-primary)]">{form.items.length}</span> item type{form.items.length !== 1 ? 's' : ''}</span>
                                 <span className="text-[var(--border)]">·</span>
                                 <span><span className="font-semibold text-[var(--text-primary)]">{form.items.reduce((s, i) => s + i.received_qty, 0)}</span> pieces total</span>
                                 {form.items.some(i => i.difference !== 0) && (
-                                    <span className="inline-flex items-center gap-1 text-[#D97706]">
+                                    <span className="inline-flex items-center gap-1 text-[#CC3D47]">
                                         <AlertCircle className="h-3.5 w-3.5" />
                                         {form.items.filter(i => i.difference !== 0).length} mismatch{form.items.filter(i => i.difference !== 0).length > 1 ? 'es' : ''}
                                     </span>
                                 )}
                                 {form.items.some(i => i.rewashed) && (
-                                    <span className="inline-flex items-center gap-1 text-[#DB2777]">
+                                    <span className="inline-flex items-center gap-1 text-[#CC3D47]">
                                         <RotateCcw className="h-3.5 w-3.5" />
                                         {form.items.filter(i => i.rewashed).reduce((s, i) => s + i.received_qty, 0)} pcs rewashed · not billed
                                     </span>
                                 )}
                                 {selectedQuotation && (
-                                    <span className="inline-flex items-center gap-1 text-[#EA580C]">
+                                    <span className="inline-flex items-center gap-1 text-[#CC3D47]">
                                         <Link2 className="h-3.5 w-3.5" />
                                         Linked to {selectedQuotation.client_name}
                                     </span>
                                 )}
                                 {customItemCount > 0 && (
-                                    <span className="inline-flex items-center gap-1 text-[#2563EB]">
+                                    <span className="inline-flex items-center gap-1 text-[#0F2C59]">
                                         <Sparkles className="h-3.5 w-3.5" />
                                         {customItemCount} new item{customItemCount > 1 ? 's' : ''} will be added to quotation
                                     </span>
@@ -832,7 +832,7 @@ export default function CreateGatePassPage() {
                                 <Button
                                     type="submit"
                                     disabled={!isValid || createGatePass.isPending}
-                                    className="flex-1 sm:flex-none bg-[#2563EB] hover:bg-[#1D4ED8] text-white disabled:opacity-40"
+                                    className="flex-1 sm:flex-none bg-[#0F2C59] hover:bg-[#0F2C59] text-white disabled:opacity-40"
                                 >
                                     {createGatePass.isPending ? 'Saving…' : 'Create Gate Pass'}
                                 </Button>

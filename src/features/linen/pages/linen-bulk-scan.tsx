@@ -62,7 +62,7 @@ export default function LinenBulkScan() {
                   <select
                     value={action}
                     onChange={e => setAction(e.target.value)}
-                    className="flex-1 px-3 py-2 text-sm border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[#DC2626]/20 focus:border-[#DC2626] transition-colors"
+                    className="flex-1 px-3 py-2 text-sm border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[#C1121F]/20 focus:border-[#C1121F] transition-colors"
                   >
                     {SCAN_ACTIONS.map(sa => <option key={sa.value} value={sa.value}>{sa.label}</option>)}
                   </select>
@@ -82,7 +82,7 @@ export default function LinenBulkScan() {
                   value={location}
                   onChange={e => setLocation(e.target.value)}
                   placeholder="e.g. Hotel Floor 3, Room 301"
-                  className="w-full px-3 py-2 text-sm border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[#DC2626]/20 focus:border-[#DC2626] transition-colors"
+                  className="w-full px-3 py-2 text-sm border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[#C1121F]/20 focus:border-[#C1121F] transition-colors"
                 />
               </div>
 
@@ -99,13 +99,13 @@ export default function LinenBulkScan() {
                   }}
                   placeholder={"Enter linen IDs, one per line or space-separated...\ne.g. LL-7K4P92 LL-82M7QF"}
                   rows={4}
-                  className="w-full px-3 py-2 text-sm font-mono border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)] resize-none focus:outline-none focus:ring-2 focus:ring-[#DC2626]/20 focus:border-[#DC2626] transition-colors"
+                  className="w-full px-3 py-2 text-sm font-mono border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)] resize-none focus:outline-none focus:ring-2 focus:ring-[#C1121F]/20 focus:border-[#C1121F] transition-colors"
                 />
                 <div className="flex items-center gap-2 mt-2">
                   <Button variant="outline" size="sm" onClick={addCode} disabled={!input.trim()}>Add</Button>
                   <Button variant="outline" size="sm" onClick={clearAll} disabled={!codes.length}><Trash2 size={12} className="mr-1" />Clear All</Button>
                   {skipped > 0 && (
-                    <span className="inline-flex items-center gap-1 text-[11px] text-amber-600">
+                    <span className="inline-flex items-center gap-1 text-[11px] text-red-600">
                       <AlertTriangle size={12} /> {skipped} duplicate(s) skipped
                     </span>
                   )}
@@ -167,7 +167,7 @@ export default function LinenBulkScan() {
                     <CheckCircle size={12} /> {bulkMutation.data.total_processed} processed
                   </span>
                   {bulkMutation.data.total_errors > 0 && (
-                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-orange-50 text-orange-700 border border-orange-200">
+                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-red-50 text-red-700 border border-red-200">
                       <AlertTriangle size={12} /> {bulkMutation.data.total_errors} errors
                     </span>
                   )}

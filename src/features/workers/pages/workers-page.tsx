@@ -21,7 +21,7 @@ import { useEscape } from '../../../hooks/use-escape'
 import { Portal } from '../../../components/ui/portal'
 
 const statusColors = {
-  active: 'bg-emerald-50 text-emerald-700 border border-emerald-200',
+  active: 'bg-green-50 text-green-700 border border-green-200',
   inactive: 'bg-gray-50 text-gray-500 border border-gray-200',
 }
 
@@ -98,12 +98,12 @@ export function WorkersPage() {
     <div className="space-y-5">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-[22px] font-semibold text-[#111827] tracking-tight">Staff Management</h1>
-          <p className="text-[13px] text-[#6B7280] mt-0.5">Manage your laundry team members</p>
+          <h1 className="text-[22px] font-semibold text-[#0A1D3A] tracking-tight">Staff Management</h1>
+          <p className="text-[13px] text-[#767676] mt-0.5">Manage your laundry team members</p>
         </div>
         <button
           onClick={openCreate}
-          className="flex items-center gap-2 rounded-lg bg-[#DC2626] px-4 py-2.5 text-[13px] font-semibold text-white hover:bg-[#B91C1C] transition-colors shadow-sm cursor-pointer"
+          className="flex items-center gap-2 rounded-lg bg-[#C1121F] px-4 py-2.5 text-[13px] font-semibold text-white hover:bg-[#C1121F] transition-colors shadow-sm cursor-pointer"
         >
           <Plus size={16} />
           Add Staff
@@ -112,16 +112,16 @@ export function WorkersPage() {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {[
-          { label: 'Total Staff', value: workers.length, icon: UsersThree, color: 'text-[#6366F1]' },
-          { label: 'Active Now', value: activeCount, icon: UserCircle, color: 'text-[#10B981]' },
+          { label: 'Total Staff', value: workers.length, icon: UsersThree, color: 'text-[#7B8BA4]' },
+          { label: 'Active Now', value: activeCount, icon: UserCircle, color: 'text-[#0E5328]' },
         ].map(s => (
           <div key={s.label} className="flex items-center gap-3 rounded-xl border border-[var(--border)] bg-white px-4 py-3.5 shadow-sm">
             <div className={`flex h-9 w-9 items-center justify-center rounded-lg bg-[var(--surface-2)] ${s.color}`}>
               <s.icon size={18} />
             </div>
             <div>
-              <p className="text-[22px] font-bold text-[#111827] leading-none">{s.value}</p>
-              <p className="text-[12px] text-[#6B7280] mt-0.5">{s.label}</p>
+              <p className="text-[22px] font-bold text-[#0A1D3A] leading-none">{s.value}</p>
+              <p className="text-[12px] text-[#767676] mt-0.5">{s.label}</p>
             </div>
           </div>
         ))}
@@ -129,21 +129,21 @@ export function WorkersPage() {
 
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
-          <MagnifyingGlass size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#9CA3AF]" />
+          <MagnifyingGlass size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#A6A6A6]" />
           <input
             type="text"
             placeholder="Search staff by name, department, or phone..."
             value={search}
             onChange={e => setSearch(e.target.value)}
-            className="w-full rounded-lg border border-[var(--border)] bg-white pl-9 pr-3 py-2.5 text-[13px] text-[#111827] placeholder-[#9CA3AF] focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/10 transition-all"
+            className="w-full rounded-lg border border-[var(--border)] bg-white pl-9 pr-3 py-2.5 text-[13px] text-[#0A1D3A] placeholder-[#A6A6A6] focus:border-[#C1121F] focus:ring-2 focus:ring-[#C1121F]/10 transition-all"
           />
         </div>
         <div className="relative">
-          <FunnelSimple size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#9CA3AF]" />
+          <FunnelSimple size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#A6A6A6]" />
           <select
             value={deptFilter}
             onChange={e => setDeptFilter(e.target.value)}
-            className="rounded-lg border border-[var(--border)] bg-white pl-9 pr-8 py-2.5 text-[13px] text-[#111827] focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/10 transition-all appearance-none cursor-pointer"
+            className="rounded-lg border border-[var(--border)] bg-white pl-9 pr-8 py-2.5 text-[13px] text-[#0A1D3A] focus:border-[#C1121F] focus:ring-2 focus:ring-[#C1121F]/10 transition-all appearance-none cursor-pointer"
           >
             <option value="all">All Departments</option>
             {DEPARTMENTS.map(d => (
@@ -177,11 +177,11 @@ export function WorkersPage() {
           </div>
         ) : filtered.length === 0 ? (
           <div className="px-6 py-16 text-center">
-            <UsersThree size={40} className="mx-auto mb-3 text-[#D1D5DB]" />
-            <p className="text-[14px] font-medium text-[#374151]">
+            <UsersThree size={40} className="mx-auto mb-3 text-[#BCC4D1]" />
+            <p className="text-[14px] font-medium text-[#0A1D3A]">
               {search || deptFilter !== 'all' ? 'No staff match your filters' : 'No staff yet'}
             </p>
-            <p className="text-[12px] text-[#9CA3AF] mt-1">
+            <p className="text-[12px] text-[#A6A6A6] mt-1">
               {search || deptFilter !== 'all' ? 'Try a different search or filter' : 'Add your first team member to get started'}
             </p>
           </div>
@@ -190,12 +190,12 @@ export function WorkersPage() {
             <table className="w-full text-left">
               <thead>
                 <tr className="border-b border-[var(--surface-3)] bg-[var(--surface-2)]">
-                  <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-[#6B7280]">Name</th>
-                  <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-[#6B7280]">Department</th>
-                  <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-[#6B7280]">Phone</th>
-                  <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-[#6B7280]">Status</th>
-                  <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-[#6B7280]">Joined</th>
-                  <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-[#6B7280] text-right">Actions</th>
+                  <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-[#767676]">Name</th>
+                  <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-[#767676]">Department</th>
+                  <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-[#767676]">Phone</th>
+                  <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-[#767676]">Status</th>
+                  <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-[#767676]">Joined</th>
+                  <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-[#767676] text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[var(--surface-3)]">
@@ -203,17 +203,17 @@ export function WorkersPage() {
                   <tr key={w.id} className="hover:bg-[var(--surface-2)] transition-colors">
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2.5">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--surface-3)] text-[11px] font-bold text-[#6B7280] uppercase shrink-0">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--surface-3)] text-[11px] font-bold text-[#767676] uppercase shrink-0">
                           {w.worker_name.slice(0, 2)}
                         </div>
-                        <span className="text-[13px] font-medium text-[#111827]">{w.worker_name}</span>
+                        <span className="text-[13px] font-medium text-[#0A1D3A]">{w.worker_name}</span>
                       </div>
                     </td>
                     <td className="px-4 py-3">
-                      <span className="text-[13px] text-[#374151] capitalize">{w.department.toLowerCase().replace('_', ' ')}</span>
+                      <span className="text-[13px] text-[#0A1D3A] capitalize">{w.department.toLowerCase().replace('_', ' ')}</span>
                     </td>
                     <td className="px-4 py-3">
-                      <span className="text-[13px] text-[#6B7280]">{w.phone || '—'}</span>
+                      <span className="text-[13px] text-[#767676]">{w.phone || '—'}</span>
                     </td>
                     <td className="px-4 py-3">
                       <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium ${w.is_active ? statusColors.active : statusColors.inactive}`}>
@@ -221,20 +221,20 @@ export function WorkersPage() {
                       </span>
                     </td>
                     <td className="px-4 py-3">
-                      <span className="text-[12px] text-[#9CA3AF]">{w.joined_date ?? '—'}</span>
+                      <span className="text-[12px] text-[#A6A6A6]">{w.joined_date ?? '—'}</span>
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center justify-end gap-1">
                         <button
                           onClick={() => openEdit(w)}
-                          className="p-1.5 rounded-lg text-[#6B7280] hover:text-[#111827] hover:bg-[var(--surface-3)] transition-colors cursor-pointer"
+                          className="p-1.5 rounded-lg text-[#767676] hover:text-[#0A1D3A] hover:bg-[var(--surface-3)] transition-colors cursor-pointer"
                           title="Edit"
                         >
                           <PencilSimple size={14} />
                         </button>
                         <button
                           onClick={() => setDeleteConfirm(w)}
-                          className="p-1.5 rounded-lg text-[#6B7280] hover:text-[#DC2626] hover:bg-[#FEF2F2] transition-colors cursor-pointer"
+                          className="p-1.5 rounded-lg text-[#767676] hover:text-[#C1121F] hover:bg-[#F9E7E9] transition-colors cursor-pointer"
                           title="Delete"
                         >
                           <TrashSimple size={14} />
@@ -268,36 +268,36 @@ export function WorkersPage() {
               onClick={e => e.stopPropagation()}
             >
               <div className="flex items-center justify-between px-5 py-4 border-b border-[var(--surface-3)]">
-                <h3 className="text-[15px] font-semibold text-[#111827]">
+                <h3 className="text-[15px] font-semibold text-[#0A1D3A]">
                   {editWorker ? 'Edit Staff' : 'Add Staff'}
                 </h3>
                 <button
                   onClick={() => setDialogOpen(false)}
                   className="p-1 rounded-lg hover:bg-[var(--surface-3)] transition-colors cursor-pointer"
                 >
-                  <X size={16} className="text-[#6B7280]" />
+                  <X size={16} className="text-[#767676]" />
                 </button>
               </div>
 
               <div ref={flow.ref} onKeyDown={flow.handleKeyDown} className="px-5 py-4 space-y-4">
                 <div>
-                  <label className="text-[12px] font-medium text-[#374151] block mb-1">Full Name *</label>
+                  <label className="text-[12px] font-medium text-[#0A1D3A] block mb-1">Full Name *</label>
                   <input
                     type="text"
                     value={form.worker_name}
                     onChange={e => setForm(f => ({ ...f, worker_name: e.target.value }))}
                     placeholder="e.g. Ravi Kumar"
                     autoFocus
-                    className="w-full rounded-lg border border-[var(--border)] px-3 py-2.5 text-[13px] text-[#111827] placeholder-[#9CA3AF] focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/10 transition-all"
+                    className="w-full rounded-lg border border-[var(--border)] px-3 py-2.5 text-[13px] text-[#0A1D3A] placeholder-[#A6A6A6] focus:border-[#C1121F] focus:ring-2 focus:ring-[#C1121F]/10 transition-all"
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="text-[12px] font-medium text-[#374151] block mb-1">Department</label>
+                    <label className="text-[12px] font-medium text-[#0A1D3A] block mb-1">Department</label>
                     <select
                       value={form.department}
                       onChange={e => setForm(f => ({ ...f, department: e.target.value }))}
-                      className="w-full rounded-lg border border-[var(--border)] px-3 py-2.5 text-[13px] text-[#111827] focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/10 transition-all appearance-none cursor-pointer"
+                      className="w-full rounded-lg border border-[var(--border)] px-3 py-2.5 text-[13px] text-[#0A1D3A] focus:border-[#C1121F] focus:ring-2 focus:ring-[#C1121F]/10 transition-all appearance-none cursor-pointer"
                     >
                       {DEPARTMENTS.map(d => (
                         <option key={d} value={d}>{d.charAt(0) + d.slice(1).toLowerCase().replace('_', ' ')}</option>
@@ -305,33 +305,33 @@ export function WorkersPage() {
                     </select>
                   </div>
                   <div>
-                    <label className="text-[12px] font-medium text-[#374151] block mb-1">Phone</label>
+                    <label className="text-[12px] font-medium text-[#0A1D3A] block mb-1">Phone</label>
                     <input
                       type="text"
                       value={form.phone}
                       onChange={e => setForm(f => ({ ...f, phone: e.target.value }))}
                       placeholder="Phone number"
-                      className="w-full rounded-lg border border-[var(--border)] px-3 py-2.5 text-[13px] text-[#111827] placeholder-[#9CA3AF] focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/10 transition-all"
+                      className="w-full rounded-lg border border-[var(--border)] px-3 py-2.5 text-[13px] text-[#0A1D3A] placeholder-[#A6A6A6] focus:border-[#C1121F] focus:ring-2 focus:ring-[#C1121F]/10 transition-all"
                     />
                   </div>
                 </div>
                 <div>
-                  <label className="text-[12px] font-medium text-[#374151] block mb-1">Notes</label>
+                  <label className="text-[12px] font-medium text-[#0A1D3A] block mb-1">Notes</label>
                   <input
                     type="text"
                     value={form.notes}
                     onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
                     placeholder="Optional notes"
-                    className="w-full rounded-lg border border-[var(--border)] px-3 py-2.5 text-[13px] text-[#111827] placeholder-[#9CA3AF] focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/10 transition-all"
+                    className="w-full rounded-lg border border-[var(--border)] px-3 py-2.5 text-[13px] text-[#0A1D3A] placeholder-[#A6A6A6] focus:border-[#C1121F] focus:ring-2 focus:ring-[#C1121F]/10 transition-all"
                   />
                 </div>
                 {editWorker && (
                   <div className="flex items-center gap-3">
-                    <label className="text-[12px] font-medium text-[#374151]">Active</label>
+                    <label className="text-[12px] font-medium text-[#0A1D3A]">Active</label>
                     <button
                       type="button"
                       onClick={() => setForm(f => ({ ...f, is_active: !f.is_active }))}
-                      className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors cursor-pointer ${form.is_active ? 'bg-[#16A34A]' : 'bg-[#D1D5DB]'}`}
+                      className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors cursor-pointer ${form.is_active ? 'bg-[#15803D]' : 'bg-[#BCC4D1]'}`}
                     >
                       <span className={`inline-block h-3.5 w-3.5 rounded-full bg-white shadow-sm transition-transform ${form.is_active ? 'translate-x-[18px]' : 'translate-x-[3px]'}`} />
                     </button>
@@ -342,14 +342,14 @@ export function WorkersPage() {
               <div className="flex items-center justify-end gap-2 px-5 py-3.5 border-t border-[var(--surface-3)]">
                 <button
                   onClick={() => setDialogOpen(false)}
-                  className="px-4 py-2 rounded-lg text-[13px] font-medium text-[#374151] hover:bg-[var(--surface-3)] transition-colors cursor-pointer"
+                  className="px-4 py-2 rounded-lg text-[13px] font-medium text-[#0A1D3A] hover:bg-[var(--surface-3)] transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleSubmit}
                   disabled={!form.worker_name.trim() || createWorker.isPending || updateWorker.isPending}
-                  className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#DC2626] text-[13px] font-semibold text-white hover:bg-[#B91C1C] disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#C1121F] text-[13px] font-semibold text-white hover:bg-[#C1121F] disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
                 >
                   {(createWorker.isPending || updateWorker.isPending) ? (
                     <div className="animate-spin w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full" />
@@ -383,24 +383,24 @@ export function WorkersPage() {
             >
               <div className="px-5 py-5 text-center">
                 <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-red-50 mb-3">
-                  <TrashSimple size={18} className="text-[#DC2626]" />
+                  <TrashSimple size={18} className="text-[#C1121F]" />
                 </div>
-                <p className="text-[14px] font-semibold text-[#111827]">Remove Staff?</p>
-                <p className="text-[12px] text-[#6B7280] mt-1">
+                <p className="text-[14px] font-semibold text-[#0A1D3A]">Remove Staff?</p>
+                <p className="text-[12px] text-[#767676] mt-1">
                   This will permanently remove <strong>{deleteConfirm.worker_name}</strong>.
                 </p>
               </div>
               <div className="flex items-center gap-2 px-5 py-3.5 border-t border-[var(--surface-3)]">
                 <button
                   onClick={() => setDeleteConfirm(null)}
-                  className="flex-1 px-4 py-2 rounded-lg text-[13px] font-medium text-[#374151] bg-[var(--surface-3)] hover:bg-[var(--border)] transition-colors cursor-pointer"
+                  className="flex-1 px-4 py-2 rounded-lg text-[13px] font-medium text-[#0A1D3A] bg-[var(--surface-3)] hover:bg-[var(--border)] transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleDelete}
                   disabled={deleteWorker.isPending}
-                  className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg bg-[#DC2626] text-[13px] font-semibold text-white hover:bg-[#B91C1C] disabled:opacity-50 transition-colors cursor-pointer"
+                  className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg bg-[#C1121F] text-[13px] font-semibold text-white hover:bg-[#C1121F] disabled:opacity-50 transition-colors cursor-pointer"
                 >
                   {deleteWorker.isPending ? (
                     <div className="animate-spin w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full" />

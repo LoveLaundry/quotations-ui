@@ -13,14 +13,14 @@ import type {
    ───────────────────────────────────────────────────────────── */
 
 export const RECEIPT_PRINT_STYLE = `
-  .gp-cell-input:focus { border-bottom-color: #DC2626 !important; }
-  .gp-cell-input::placeholder { color: #B6BEC7; }
+  .gp-cell-input:focus { border-bottom-color: #C1121F !important; }
+  .gp-cell-input::placeholder { color: #7B8BA4; }
   @media print {
     @page { size: A4; margin: 7mm; }
     @page :first { size: A4; margin: 7mm; }
     @page :left { size: A4; margin: 7mm; }
     @page :right { size: A4; margin: 7mm; }
-    .gp-page-bg { background: #fff !important; padding: 0 !important; }
+    .gp-page-bg { background: #FFFFFF !important; padding: 0 !important; }
     .gp-sheet {
       width: 100% !important; max-width: none !important;
       min-height: auto !important; margin: 0 !important; padding: 0 !important;
@@ -28,9 +28,9 @@ export const RECEIPT_PRINT_STYLE = `
     }
     .gp-cell-input {
       border-bottom: none !important; background: transparent !important;
-      padding: 0 !important; color: #000 !important;
+      padding: 0 !important; color: #000000 !important;
     }
-    .gp-hairline { border-bottom-color: #fff !important; }
+    .gp-hairline { border-bottom-color: #FFFFFF !important; }
   }
 `
 
@@ -63,12 +63,12 @@ export function EditableCell({ value, onChange, width, align = 'center', placeho
         padding: '0 2px',
         background: 'transparent',
         border: 0,
-        borderBottom: '1px dashed #9CA3AF',
+        borderBottom: '1px dashed #A6A6A6',
         outline: 0,
         fontSize,
         lineHeight: '1.2',
         fontWeight: bold ? 700 : 400,
-        color: '#111827',
+        color: '#0A1D3A',
         fontFamily: 'inherit',
         minWidth: 0,
         ...style,
@@ -81,7 +81,7 @@ export function EditableCell({ value, onChange, width, align = 'center', placeho
    full-bleed with an @page margin when printed. */
 export function ReceiptSheet({ children }: { children: ReactNode }) {
   return (
-    <div className="gp-page-bg" style={{ minHeight: '100vh', background: '#E7EAED', padding: '28px 12px 44px', boxSizing: 'border-box' }}>
+    <div className="gp-page-bg" style={{ minHeight: '100vh', background: '#BCC4D1', padding: '28px 12px 44px', boxSizing: 'border-box' }}>
       <div
         className="gp-sheet"
         style={{
@@ -90,10 +90,10 @@ export function ReceiptSheet({ children }: { children: ReactNode }) {
           minHeight: '280mm',
           margin: '0 auto',
           padding: '8mm 7mm',
-          background: '#fff',
-          boxShadow: '0 2px 18px rgba(17,24,39,0.18)',
+          background: '#FFFFFF',
+          boxShadow: '0 2px 18px rgba(10, 29, 58, 0.18)',
           boxSizing: 'border-box',
-          color: '#111827',
+          color: '#0A1D3A',
         }}
       >
         {children}
@@ -118,7 +118,7 @@ export function ReceiptHeader({ title, subtitle, receiptNo, onReceiptNo, date, o
         display: 'flex',
         alignItems: 'flex-start',
         gap: 12,
-        borderBottom: '2px solid #DC2626',
+        borderBottom: '2px solid #C1121F',
         paddingBottom: 8,
         marginBottom: 12,
       }}
@@ -129,7 +129,7 @@ export function ReceiptHeader({ title, subtitle, receiptNo, onReceiptNo, date, o
       </div>
       <div style={{ flex: 1, textAlign: 'center', minWidth: 0 }}>
         <div style={{ fontSize: 17, fontWeight: 800, letterSpacing: 1, lineHeight: 1.2 }}>{title}</div>
-        <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 0.6, color: '#DC2626', marginTop: 2 }}>{subtitle}</div>
+        <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 0.6, color: '#C1121F', marginTop: 2 }}>{subtitle}</div>
       </div>
       <div style={{ whiteSpace: 'nowrap', paddingTop: 2 }}>
         <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: 0.4 }}>DATE: </span>
@@ -180,7 +180,7 @@ export function SectionTable({ section, sectionIndex, cells, setCell, nameWidth 
           borderCollapse: 'collapse',
           width: '100%',
           tableLayout: 'fixed',
-          borderTop: sectionIndex === 0 ? '1px solid #000' : '3px double #000',
+          borderTop: sectionIndex === 0 ? '1px solid #000000' : '3px double #000000',
           fontFamily: 'inherit',
         }}
       >
@@ -194,14 +194,14 @@ export function SectionTable({ section, sectionIndex, cells, setCell, nameWidth 
               <th
                 colSpan={columns.length}
                 style={{
-                  border: '1px solid #000',
+                  border: '1px solid #000000',
                   padding: '4px 6px',
                   fontSize: 10.5,
                   fontWeight: 800,
                   letterSpacing: 0.8,
                   textTransform: 'uppercase',
                   textAlign: 'left',
-                  background: '#fff',
+                  background: '#FFFFFF',
                 }}
               >
                 {section.heading}
@@ -211,13 +211,13 @@ export function SectionTable({ section, sectionIndex, cells, setCell, nameWidth 
           <tr>
             <th
               style={{
-                border: '1px solid #000',
+                border: '1px solid #000000',
                 padding: '4px 4px',
                 fontSize: 9.5,
                 fontWeight: 800,
                 letterSpacing: 0.4,
                 textAlign: 'center',
-                background: '#fff',
+                background: '#FFFFFF',
               }}
             >
               {columns[0].label}
@@ -226,13 +226,13 @@ export function SectionTable({ section, sectionIndex, cells, setCell, nameWidth 
               <th
                 key={c.key}
                 style={{
-                  border: '1px solid #000',
+                  border: '1px solid #000000',
                   padding: '4px 4px',
                   fontSize: 9.5,
                   fontWeight: 800,
                   letterSpacing: 0.4,
                   textAlign: 'center',
-                  background: '#fff',
+                  background: '#FFFFFF',
                 }}
               >
                 {c.label}
@@ -246,7 +246,7 @@ export function SectionTable({ section, sectionIndex, cells, setCell, nameWidth 
               {row.name !== undefined ? (
                 <td
                   style={{
-                    border: '1px solid #000',
+                    border: '1px solid #000000',
                     padding: '3px 6px',
                     fontSize: 10.5,
                     fontWeight: 500,
@@ -266,7 +266,7 @@ export function SectionTable({ section, sectionIndex, cells, setCell, nameWidth 
                   )}
                 </td>
               ) : (
-                <td style={{ border: '1px solid #000', padding: 0, height: 22 }}>
+                <td style={{ border: '1px solid #000000', padding: 0, height: 22 }}>
                   <EditableCell
                     value={cells[cellKey(section.id, row.key, columns[0].key)] ?? ''}
                     onChange={v => setCell(cellKey(section.id, row.key, columns[0].key), v)}
@@ -276,7 +276,7 @@ export function SectionTable({ section, sectionIndex, cells, setCell, nameWidth 
                 </td>
               )}
               {dataColumns.map(c => (
-                <td key={c.key} style={{ border: '1px solid #000', padding: 0, height: 22 }}>
+                <td key={c.key} style={{ border: '1px solid #000000', padding: 0, height: 22 }}>
                   <EditableCell
                     value={cells[cellKey(section.id, row.key, c.key)] ?? ''}
                     onChange={v => setCell(cellKey(section.id, row.key, c.key), v)}
@@ -311,7 +311,7 @@ export function SignatureSection() {
         <div key={r.label} style={{ flex: 1, textAlign: 'center' }}>
           <div
             className="gp-hairline"
-            style={{ height: 30, borderBottom: '1px dashed #9CA3AF' }}
+            style={{ height: 30, borderBottom: '1px dashed #A6A6A6' }}
           />
           <div style={{ fontSize: 10.5, fontWeight: 700, marginTop: 5 }}>........................</div>
           <div style={{ fontSize: 10.5, fontWeight: 700, marginTop: 2 }}>{r.label}</div>
@@ -340,23 +340,23 @@ export function collectCellKeys(sections: RecipSection[]): string[] {
 
 /* shared small text styles to keep markup readable */
 export const thStyle: CSSProperties = {
-  border: '1px solid #000',
+  border: '1px solid #000000',
   padding: '4px 4px',
   fontSize: 9.5,
   fontWeight: 800,
   letterSpacing: 0.4,
   textAlign: 'center' as const,
-  background: '#fff',
+  background: '#FFFFFF',
 }
 
 export const tdStyle: CSSProperties = {
-  border: '1px solid #000',
+  border: '1px solid #000000',
   padding: 0,
   height: 22,
 }
 
 export const nameTdStyle: CSSProperties = {
-  border: '1px solid #000',
+  border: '1px solid #000000',
   padding: '3px 6px',
   fontSize: 10.5,
   fontWeight: 500,

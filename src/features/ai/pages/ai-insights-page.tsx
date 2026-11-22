@@ -24,7 +24,7 @@ function StatCard({ title, value, sub, icon: Icon, color, trend }: {
         <p className="text-sm text-gray-500 dark:text-gray-400">{title}</p>
         <p className="text-2xl font-bold mt-1 truncate">{value}</p>
         <div className="flex items-center gap-1 mt-1">
-          {trend === 'up' && <TrendingUp size={12} className="text-emerald-500" />}
+          {trend === 'up' && <TrendingUp size={12} className="text-green-500" />}
           {trend === 'down' && <TrendingDown size={12} className="text-red-500" />}
           <p className="text-xs text-gray-400 truncate">{sub}</p>
         </div>
@@ -50,7 +50,7 @@ function ForecastChart({ title, series, forecast, color, formatter = fmt }: {
     <div className="bg-white dark:bg-gray-800 rounded-xl border p-5">
       <div className="flex items-center justify-between mb-4">
         <h3 className="font-semibold">{title}</h3>
-        <span className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full ${trend === 'up' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300' : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'}`}>
+        <span className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full ${trend === 'up' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300' : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'}`}>
           {trend === 'up' ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
           {Math.abs(forecast.growth_pct ?? 0).toFixed(1)}% / mo
         </span>
@@ -63,7 +63,7 @@ function ForecastChart({ title, series, forecast, color, formatter = fmt }: {
           <Tooltip formatter={(v: number) => (v == null ? '—' : formatter(v))} />
           <Legend />
           <Line type="monotone" dataKey="historical" name="History" stroke={color} strokeWidth={2.5} dot={false} />
-          <Line type="monotone" dataKey="forecasted" name="Forecast" stroke="#94a3b8" strokeWidth={2} strokeDasharray="5 4" dot={false} />
+          <Line type="monotone" dataKey="forecasted" name="Forecast" stroke="#7B8BA4" strokeWidth={2} strokeDasharray="5 4" dot={false} />
         </LineChart>
       </ResponsiveContainer>
       <p className="text-xs text-gray-400 mt-2">
@@ -96,7 +96,7 @@ export default function AiInsightsPage() {
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <div className="p-2.5 rounded-xl bg-gradient-to-br from-violet-500 to-fuchsia-500 text-white">
+          <div className="p-2.5 rounded-xl bg-gradient-to-br from-blue-700 to-blue-700 text-white">
             <BrainCircuit size={22} />
           </div>
           <div>
@@ -106,7 +106,7 @@ export default function AiInsightsPage() {
         </div>
         <div className="flex items-center gap-2">
           {verified && (
-            <span className="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1.5 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">
+            <span className="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1.5 rounded-full bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300">
               <ShieldCheck size={13} /> Response verified
             </span>
           )}
@@ -139,22 +139,22 @@ export default function AiInsightsPage() {
       {!loading && !error && (
         <>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <StatCard title="Total Revenue" value={fmtShort(d.total_revenue)} sub={`${d.period?.start} → ${d.period?.end}`} icon={Banknote} color="bg-emerald-500" trend={(d.revenue?.forecast?.growth_pct ?? 0) >= 0 ? 'up' : 'down'} />
+            <StatCard title="Total Revenue" value={fmtShort(d.total_revenue)} sub={`${d.period?.start} → ${d.period?.end}`} icon={Banknote} color="bg-green-500" trend={(d.revenue?.forecast?.growth_pct ?? 0) >= 0 ? 'up' : 'down'} />
             <StatCard title="Total Expenses" value={fmtShort(d.total_expenses)} sub="Last N months" icon={Receipt} color="bg-red-500" trend={(d.expenses?.forecast?.growth_pct ?? 0) >= 0 ? 'up' : 'down'} />
-            <StatCard title="Total Payroll" value={fmtShort(d.total_payroll)} sub="Net paid" icon={Banknote} color="bg-violet-500" />
-            <StatCard title="Avg Monthly Net" value={fmtShort(d.avg_monthly_net)} sub="Revenue − Expenses" icon={Wallet} color={`${d.avg_monthly_net >= 0 ? 'bg-teal-500' : 'bg-rose-500'}`} />
+            <StatCard title="Total Payroll" value={fmtShort(d.total_payroll)} sub="Net paid" icon={Banknote} color="bg-blue-700" />
+            <StatCard title="Avg Monthly Net" value={fmtShort(d.avg_monthly_net)} sub="Revenue − Expenses" icon={Wallet} color={`${d.avg_monthly_net >= 0 ? 'bg-green-500' : 'bg-red-500'}`} />
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <ForecastChart title="Revenue Forecast" series={d.revenue?.series || []} forecast={d.revenue?.forecast || {}} color="#10b981" />
-            <ForecastChart title="Expenses Forecast" series={d.expenses?.series || []} forecast={d.expenses?.forecast || {}} color="#ef4444" />
+            <ForecastChart title="Revenue Forecast" series={d.revenue?.series || []} forecast={d.revenue?.forecast || {}} color="#0E5328" />
+            <ForecastChart title="Expenses Forecast" series={d.expenses?.series || []} forecast={d.expenses?.forecast || {}} color="#C1121F" />
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <ForecastChart title="Payroll Forecast" series={d.payroll?.series || []} forecast={d.payroll?.forecast || {}} color="#7c3aed" />
-            <ForecastChart title="Net Profit View" series={(d.net_profit?.history || []).map((v: number, i: number) => ({ month: d.revenue?.series?.[i]?.month ?? `M${i + 1}`, value: v }))} forecast={{}} color="#14b8a6" />
+            <ForecastChart title="Payroll Forecast" series={d.payroll?.series || []} forecast={d.payroll?.forecast || {}} color="#0F2C59" />
+            <ForecastChart title="Net Profit View" series={(d.net_profit?.history || []).map((v: number, i: number) => ({ month: d.revenue?.series?.[i]?.month ?? `M${i + 1}`, value: v }))} forecast={{}} color="#15803D" />
             <div className="bg-white dark:bg-gray-800 rounded-xl border p-5">
-              <h3 className="font-semibold mb-4 flex items-center gap-2"><Sparkles size={16} className="text-violet-500" /> Payroll Risk</h3>
+              <h3 className="font-semibold mb-4 flex items-center gap-2"><Sparkles size={16} className="text-blue-700" /> Payroll Risk</h3>
               <div className="space-y-3">
                 {(risk.data?.employees_at_risk || []).map((e: any, i: number) => (
                   <div key={i} className="flex justify-between items-center gap-2">
@@ -177,7 +177,7 @@ export default function AiInsightsPage() {
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="bg-white dark:bg-gray-800 rounded-xl border p-5">
-              <h3 className="font-semibold mb-4 flex items-center gap-2"><TrendingUp size={16} className="text-emerald-500" /> Top Customers</h3>
+              <h3 className="font-semibold mb-4 flex items-center gap-2"><TrendingUp size={16} className="text-green-500" /> Top Customers</h3>
               <div className="space-y-3">
                 {(revenue.data?.top_customers || []).map((c: any, i: number) => (
                   <div key={i} className="flex justify-between items-center gap-2">
@@ -203,7 +203,7 @@ export default function AiInsightsPage() {
             </div>
 
             <div className="bg-white dark:bg-gray-800 rounded-xl border p-5">
-              <h3 className="font-semibold mb-4 flex items-center gap-2"><Banknote size={16} className="text-violet-500" /> Top Employees by Payroll</h3>
+              <h3 className="font-semibold mb-4 flex items-center gap-2"><Banknote size={16} className="text-blue-700" /> Top Employees by Payroll</h3>
               <div className="space-y-3">
                 {(salary.data?.top_employees || []).map((e: any, i: number) => (
                   <div key={i} className="flex justify-between items-center gap-2">
@@ -217,16 +217,16 @@ export default function AiInsightsPage() {
           </div>
 
           <div className="bg-white dark:bg-gray-800 rounded-xl border p-5">
-            <h3 className="font-semibold mb-2 flex items-center gap-2"><Sparkles size={16} className="text-amber-500" /> Quick Trend Analysis</h3>
+            <h3 className="font-semibold mb-2 flex items-center gap-2"><Sparkles size={16} className="text-red-500" /> Quick Trend Analysis</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               {[
                 { label: 'Revenue', val: d.revenue?.forecast?.growth_pct, ok: d.revenue?.forecast?.growth_pct >= 0 },
                 { label: 'Expenses', val: d.expenses?.forecast?.growth_pct, ok: d.expenses?.forecast?.growth_pct <= 0 },
                 { label: 'Payroll', val: d.payroll?.forecast?.growth_pct, ok: d.payroll?.forecast?.growth_pct <= 0 },
               ].map(m => (
-                <div key={m.label} className={`rounded-lg border p-3 ${m.ok ? 'border-emerald-200 bg-emerald-50 dark:bg-emerald-900/10' : 'border-red-200 bg-red-50 dark:bg-red-900/10'}`}>
+                <div key={m.label} className={`rounded-lg border p-3 ${m.ok ? 'border-green-200 bg-green-50 dark:bg-green-900/10' : 'border-red-200 bg-red-50 dark:bg-red-900/10'}`}>
                   <p className="text-xs font-medium">{m.label} momentum</p>
-                  <p className={`text-lg font-bold ${m.ok ? 'text-emerald-600' : 'text-red-600'}`}>{Math.abs(m.val ?? 0).toFixed(1)}%/mo</p>
+                  <p className={`text-lg font-bold ${m.ok ? 'text-green-600' : 'text-red-600'}`}>{Math.abs(m.val ?? 0).toFixed(1)}%/mo</p>
                   <p className="text-xs text-gray-400">{m.val >= 0 ? 'Rising' : 'Falling'}</p>
                 </div>
               ))}

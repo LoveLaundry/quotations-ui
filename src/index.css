@@ -119,11 +119,11 @@
 
   /* Softer, more diffuse depth. Shadows stay low-opacity and wide so surfaces
      lift without the hard edge that read as "boxy". */
-  --shadow-xs: 0 1px 2px 0 rgb(16 24 40 / 0.04);
-  --shadow-sm: 0 1px 3px 0 rgb(16 24 40 / 0.06), 0 1px 2px -1px rgb(16 24 40 / 0.05);
-  --shadow-md: 0 6px 16px -6px rgb(16 24 40 / 0.10), 0 2px 6px -2px rgb(16 24 40 / 0.05);
-  --shadow-lg: 0 18px 32px -12px rgb(16 24 40 / 0.14), 0 6px 12px -6px rgb(16 24 40 / 0.06);
-  --shadow-pop: 0 16px 40px -10px rgb(16 24 40 / 0.20), 0 4px 10px -3px rgb(16 24 40 / 0.08);
+  --shadow-xs: 0 1px 2px 0 rgba(10, 29, 58, 0.04);
+  --shadow-sm: 0 1px 3px 0 rgba(10, 29, 58, 0.06), 0 1px 2px -1px rgba(10, 29, 58, 0.05);
+  --shadow-md: 0 6px 16px -6px rgba(10, 29, 58, 0.10), 0 2px 6px -2px rgba(10, 29, 58, 0.05);
+  --shadow-lg: 0 18px 32px -12px rgba(10, 29, 58, 0.14), 0 6px 12px -6px rgba(10, 29, 58, 0.06);
+  --shadow-pop: 0 16px 40px -10px rgba(10, 29, 58, 0.20), 0 4px 10px -3px rgba(10, 29, 58, 0.08);
 
   --animate-fade-in: fade-in 120ms ease-out;
   --animate-slide-up: slide-up 160ms cubic-bezier(0.16, 1, 0.3, 1);
@@ -277,607 +277,607 @@
 [data-theme='light'] {
   color-scheme: light;
 
-  --bg: #f6f7f9;
-  --surface: #ffffff;
-  --surface-2: #f7f8fa;
-  --surface-3: #f0f2f5;
-  --surface-hover: #f2f4f7;
-  --surface-sunken: #fafbfc;
+  --bg: #E7EAEE;
+  --surface: #FFFFFF;
+  --surface-2: #E7EAEE;
+  --surface-3: #E7EAEE;
+  --surface-hover: #E7EAEE;
+  --surface-sunken: #E7EAEE;
 
-  --border: #e3e7ed;
-  --border-2: #d3d9e1;
-  --border-strong: #b8c1cd;
+  --border: #BCC4D1;
+  --border-2: #BCC4D1;
+  --border-strong: #7B8BA4;
 
-  --text-primary: #0f172a;
-  --text-secondary: #26313f;
-  --text-tertiary: #475467;
-  --text-muted: #5b6879;
-  --text-faint: #8592a3;
-  --text-placeholder: #a3aebd;
+  --text-primary: #0A1D3A;
+  --text-secondary: #0A1D3A;
+  --text-tertiary: #0A1D3A;
+  --text-muted: #0A1D3A;
+  --text-faint: #3A5277;
+  --text-placeholder: #7B8BA4;
 
-  --brand: #d92d20;
-  --brand-hover: #b42318;
-  --brand-active: #912018;
-  --brand-soft: #fef3f2;
-  --brand-border: #fecdc9;
-  --brand-text: #b42318;
+  --brand: #C1121F;
+  --brand-hover: #7D0C14;
+  --brand-active: #7D0C14;
+  --brand-soft: #F9E7E9;
+  --brand-border: #EEBDC0;
+  --brand-text: #7D0C14;
 
-  --success-text: #067647;
-  --success-soft: #ecfdf3;
-  --success-border: #a9e5c3;
-  --warning-text: #b54708;
-  --warning-soft: #fffaeb;
-  --warning-border: #fedf89;
-  --danger-text: #b42318;
-  --danger-soft: #fef3f2;
-  --danger-border: #fecdc9;
-  --info-text: #175cd3;
-  --info-soft: #eff8ff;
-  --info-border: #b2ddff;
-  --accent-text: #5925dc;
-  --accent-soft: #f4f3ff;
-  --accent-border: #d9d6fe;
+  --success-text: #0E5328;
+  --success-soft: #E8F2EC;
+  --success-border: #7EB994;
+  --warning-text: #7D0C14;
+  --warning-soft: #F9E7E9;
+  --warning-border: #DD7D84;
+  --danger-text: #7D0C14;
+  --danger-soft: #F9E7E9;
+  --danger-border: #EEBDC0;
+  --info-text: #3A5277;
+  --info-soft: #E7EAEE;
+  --info-border: #BCC4D1;
+  --accent-text: #3A5277;
+  --accent-soft: #E7EAEE;
+  --accent-border: #BCC4D1;
 
-  --ring: #2563eb;
-  --ring-offset: #ffffff;
+  --ring: #0F2C59;
+  --ring-offset: #FFFFFF;
 
   --body-font-size: 14px;
 
-  --sidebar-bg: #101828;
-  --sidebar-border: #1d2939;
-  --sidebar-text: #c3cbd6;
-  --sidebar-label: #7c8aa0;
-  --sidebar-active: #ffffff;
-  --sidebar-hover-bg: #1d2939;
-  --sidebar-hover-text: #ffffff;
-  --sidebar-indicator: #f04438;
-  --sidebar-active-bg: #1e293b;
-  --sidebar-active-border: #334155;
+  --sidebar-bg: #0A1D3A;
+  --sidebar-border: #0A1D3A;
+  --sidebar-text: #BCC4D1;
+  --sidebar-label: #3A5277;
+  --sidebar-active: #FFFFFF;
+  --sidebar-hover-bg: #0A1D3A;
+  --sidebar-hover-text: #FFFFFF;
+  --sidebar-indicator: #C1121F;
+  --sidebar-active-bg: #0A1D3A;
+  --sidebar-active-border: #0A1D3A;
 
-  --skeleton-from: #eef0f4;
-  --skeleton-via: #e3e7ed;
-  --skeleton-to: #eef0f4;
+  --skeleton-from: #E7EAEE;
+  --skeleton-via: #BCC4D1;
+  --skeleton-to: #E7EAEE;
 
   /* Light inherits the soft depth scale from @theme — no per-theme override. */
 
   /* Legacy aliases — pre-token code still references these names. */
-  --red-50: #fef3f2;
-  --red-100: #fee4e2;
-  --red-500: #f04438;
-  --red-600: #d92d20;
-  --red-700: #b42318;
+  --red-50: #F9E7E9;
+  --red-100: #F9E7E9;
+  --red-500: #C1121F;
+  --red-600: #C1121F;
+  --red-700: #7D0C14;
 }
 
 /* High-contrast light: stronger borders, darker text. */
 [data-theme='contrast'] {
   color-scheme: light;
 
-  --bg: #eef0f3;
-  --surface: #ffffff;
-  --surface-2: #f6f7f9;
-  --surface-3: #e9ecf0;
-  --surface-hover: #e4e8ed;
-  --surface-sunken: #f0f2f5;
+  --bg: #E7EAEE;
+  --surface: #FFFFFF;
+  --surface-2: #E7EAEE;
+  --surface-3: #E7EAEE;
+  --surface-hover: #BCC4D1;
+  --surface-sunken: #E7EAEE;
 
-  --border: #c3cbd6;
-  --border-2: #94a1b2;
-  --border-strong: #66748a;
+  --border: #BCC4D1;
+  --border-2: #7B8BA4;
+  --border-strong: #3A5277;
 
-  --text-primary: #05080d;
-  --text-secondary: #101828;
-  --text-tertiary: #1d2939;
-  --text-muted: #344054;
-  --text-faint: #526174;
-  --text-placeholder: #6b7a8e;
+  --text-primary: #0A1D3A;
+  --text-secondary: #0A1D3A;
+  --text-tertiary: #0A1D3A;
+  --text-muted: #0A1D3A;
+  --text-faint: #0A1D3A;
+  --text-placeholder: #3A5277;
 
-  --brand: #c1121f;
-  --brand-hover: #9f0f1a;
-  --brand-active: #7a0c15;
-  --brand-soft: #fdecec;
-  --brand-border: #f4b9b9;
-  --brand-text: #9f0f1a;
+  --brand: #C1121F;
+  --brand-hover: #7D0C14;
+  --brand-active: #7D0C14;
+  --brand-soft: #F9E7E9;
+  --brand-border: #EEBDC0;
+  --brand-text: #7D0C14;
 
-  --success-text: #05603a;
-  --success-soft: #ecfdf3;
-  --success-border: #86e0ac;
-  --warning-text: #93370d;
-  --warning-soft: #fffaeb;
-  --warning-border: #fcd34d;
-  --danger-text: #9f0f1a;
-  --danger-soft: #fdecec;
-  --danger-border: #f4b9b9;
-  --info-text: #14459e;
-  --info-soft: #eff8ff;
-  --info-border: #84caff;
-  --accent-text: #5925dc;
-  --accent-soft: #f4f3ff;
-  --accent-border: #b9b3f8;
+  --success-text: #0E5328;
+  --success-soft: #E8F2EC;
+  --success-border: #7EB994;
+  --warning-text: #7D0C14;
+  --warning-soft: #F9E7E9;
+  --warning-border: #DD7D84;
+  --danger-text: #7D0C14;
+  --danger-soft: #F9E7E9;
+  --danger-border: #EEBDC0;
+  --info-text: #0A1D3A;
+  --info-soft: #E7EAEE;
+  --info-border: #7B8BA4;
+  --accent-text: #3A5277;
+  --accent-soft: #E7EAEE;
+  --accent-border: #BCC4D1;
 
-  --ring: #14459e;
-  --ring-offset: #ffffff;
+  --ring: #0A1D3A;
+  --ring-offset: #FFFFFF;
 
-  --sidebar-bg: #0b1220;
-  --sidebar-border: #1d2939;
-  --sidebar-text: #d0d7e2;
-  --sidebar-label: #8d9aad;
-  --sidebar-active: #ffffff;
-  --sidebar-hover-bg: #1d2939;
-  --sidebar-hover-text: #ffffff;
-  --sidebar-indicator: #f04438;
-  --sidebar-active-bg: #182234;
-  --sidebar-active-border: #2b3a52;
+  --sidebar-bg: #0A1D3A;
+  --sidebar-border: #0A1D3A;
+  --sidebar-text: #BCC4D1;
+  --sidebar-label: #3A5277;
+  --sidebar-active: #FFFFFF;
+  --sidebar-hover-bg: #0A1D3A;
+  --sidebar-hover-text: #FFFFFF;
+  --sidebar-indicator: #C1121F;
+  --sidebar-active-bg: #0A1D3A;
+  --sidebar-active-border: #0A1D3A;
 
-  --skeleton-from: #e4e8ed;
-  --skeleton-via: #c3cbd6;
-  --skeleton-to: #e4e8ed;
+  --skeleton-from: #BCC4D1;
+  --skeleton-via: #BCC4D1;
+  --skeleton-to: #BCC4D1;
 
-  --shadow-xs: 0 1px 2px 0 rgb(16 24 40 / 0.07);
-  --shadow-sm: 0 1px 3px 0 rgb(16 24 40 / 0.10), 0 1px 2px -1px rgb(16 24 40 / 0.07);
-  --shadow-md: 0 6px 16px -6px rgb(16 24 40 / 0.14), 0 2px 6px -2px rgb(16 24 40 / 0.08);
-  --shadow-lg: 0 18px 32px -12px rgb(16 24 40 / 0.18), 0 6px 12px -6px rgb(16 24 40 / 0.10);
-  --shadow-pop: 0 16px 40px -10px rgb(16 24 40 / 0.22), 0 4px 10px -3px rgb(16 24 40 / 0.10);
+  --shadow-xs: 0 1px 2px 0 rgba(10, 29, 58, 0.07);
+  --shadow-sm: 0 1px 3px 0 rgba(10, 29, 58, 0.10), 0 1px 2px -1px rgba(10, 29, 58, 0.07);
+  --shadow-md: 0 6px 16px -6px rgba(10, 29, 58, 0.14), 0 2px 6px -2px rgba(10, 29, 58, 0.08);
+  --shadow-lg: 0 18px 32px -12px rgba(10, 29, 58, 0.18), 0 6px 12px -6px rgba(10, 29, 58, 0.10);
+  --shadow-pop: 0 16px 40px -10px rgba(10, 29, 58, 0.22), 0 4px 10px -3px rgba(10, 29, 58, 0.10);
 
-  --red-50: #fdecec;
-  --red-100: #f8d4d4;
-  --red-500: #c1121f;
-  --red-600: #b01120;
-  --red-700: #9f0f1a;
+  --red-50: #F9E7E9;
+  --red-100: #EEBDC0;
+  --red-500: #C1121F;
+  --red-600: #7D0C14;
+  --red-700: #7D0C14;
 }
 
 /* Ocean: cool blue-tinted light, for operators who prefer a cooler canvas. */
 [data-theme='ocean'] {
   color-scheme: light;
 
-  --bg: #f2f6fc;
-  --surface: #ffffff;
-  --surface-2: #f5f8fd;
-  --surface-3: #eaf0fa;
-  --surface-hover: #edf3fb;
-  --surface-sunken: #f7fafe;
+  --bg: #E7EAEE;
+  --surface: #FFFFFF;
+  --surface-2: #E7EAEE;
+  --surface-3: #E7EAEE;
+  --surface-hover: #E7EAEE;
+  --surface-sunken: #E7EAEE;
 
-  --border: #d9e2f0;
-  --border-2: #c2d0e5;
-  --border-strong: #9db1cf;
+  --border: #BCC4D1;
+  --border-2: #BCC4D1;
+  --border-strong: #7B8BA4;
 
-  --text-primary: #0c1b2e;
-  --text-secondary: #1d3049;
-  --text-tertiary: #37506e;
-  --text-muted: #4a6485;
-  --text-faint: #7d97b4;
-  --text-placeholder: #9ab0c9;
+  --text-primary: #0A1D3A;
+  --text-secondary: #0A1D3A;
+  --text-tertiary: #0A1D3A;
+  --text-muted: #0A1D3A;
+  --text-faint: #3A5277;
+  --text-placeholder: #7B8BA4;
 
-  --brand: #1d4ed8;
-  --brand-hover: #1e40af;
-  --brand-active: #1e3a8a;
-  --brand-soft: #eff6ff;
-  --brand-border: #bfdbfe;
-  --brand-text: #1d4ed8;
+  --brand: #0F2C59;
+  --brand-hover: #0A1D3A;
+  --brand-active: #0A1D3A;
+  --brand-soft: #E7EAEE;
+  --brand-border: #BCC4D1;
+  --brand-text: #0F2C59;
 
-  --success-text: #05603a;
-  --success-soft: #ecfdf3;
-  --success-border: #a9e5c3;
-  --warning-text: #93370d;
-  --warning-soft: #fffaeb;
-  --warning-border: #fedf89;
-  --danger-text: #b42318;
-  --danger-soft: #fef3f2;
-  --danger-border: #fecdc9;
-  --info-text: #0e7490;
-  --info-soft: #ecfeff;
-  --info-border: #a5f3fc;
-  --accent-text: #155e75;
-  --accent-soft: #ecfeff;
-  --accent-border: #a5f3fc;
+  --success-text: #0E5328;
+  --success-soft: #E8F2EC;
+  --success-border: #7EB994;
+  --warning-text: #7D0C14;
+  --warning-soft: #F9E7E9;
+  --warning-border: #DD7D84;
+  --danger-text: #7D0C14;
+  --danger-soft: #F9E7E9;
+  --danger-border: #EEBDC0;
+  --info-text: #0A1D3A;
+  --info-soft: #E7EAEE;
+  --info-border: #BCC4D1;
+  --accent-text: #0A1D3A;
+  --accent-soft: #E7EAEE;
+  --accent-border: #BCC4D1;
 
-  --ring: #1d4ed8;
-  --ring-offset: #ffffff;
+  --ring: #0F2C59;
+  --ring-offset: #FFFFFF;
 
-  --sidebar-bg: #0d1c33;
-  --sidebar-border: #1a2c49;
-  --sidebar-text: #b3c4da;
-  --sidebar-label: #7d93b1;
-  --sidebar-active: #ffffff;
-  --sidebar-hover-bg: #1a2c49;
-  --sidebar-hover-text: #ffffff;
-  --sidebar-indicator: #60a5fa;
-  --sidebar-active-bg: #16283f;
-  --sidebar-active-border: #2b466b;
+  --sidebar-bg: #0A1D3A;
+  --sidebar-border: #0A1D3A;
+  --sidebar-text: #7B8BA4;
+  --sidebar-label: #3A5277;
+  --sidebar-active: #FFFFFF;
+  --sidebar-hover-bg: #0A1D3A;
+  --sidebar-hover-text: #FFFFFF;
+  --sidebar-indicator: #7B8BA4;
+  --sidebar-active-bg: #0A1D3A;
+  --sidebar-active-border: #0A1D3A;
 
-  --skeleton-from: #e9f0fa;
-  --skeleton-via: #d9e2f0;
-  --skeleton-to: #e9f0fa;
+  --skeleton-from: #E7EAEE;
+  --skeleton-via: #BCC4D1;
+  --skeleton-to: #E7EAEE;
 
-  --shadow-xs: 0 1px 2px 0 rgb(12 27 46 / 0.05);
-  --shadow-sm: 0 1px 3px 0 rgb(12 27 46 / 0.08), 0 1px 2px -1px rgb(12 27 46 / 0.05);
-  --shadow-md: 0 6px 16px -6px rgb(12 27 46 / 0.11), 0 2px 6px -2px rgb(12 27 46 / 0.06);
-  --shadow-lg: 0 18px 32px -12px rgb(12 27 46 / 0.15), 0 6px 12px -6px rgb(12 27 46 / 0.07);
-  --shadow-pop: 0 16px 40px -10px rgb(12 27 46 / 0.22), 0 4px 10px -3px rgb(12 27 46 / 0.09);
+  --shadow-xs: 0 1px 2px 0 rgba(10, 29, 58, 0.05);
+  --shadow-sm: 0 1px 3px 0 rgba(10, 29, 58, 0.08), 0 1px 2px -1px rgba(10, 29, 58, 0.05);
+  --shadow-md: 0 6px 16px -6px rgba(10, 29, 58, 0.11), 0 2px 6px -2px rgba(10, 29, 58, 0.06);
+  --shadow-lg: 0 18px 32px -12px rgba(10, 29, 58, 0.15), 0 6px 12px -6px rgba(10, 29, 58, 0.07);
+  --shadow-pop: 0 16px 40px -10px rgba(10, 29, 58, 0.22), 0 4px 10px -3px rgba(10, 29, 58, 0.09);
 
-  --red-50: #eff6ff;
-  --red-100: #dbeafe;
-  --red-500: #3b82f6;
-  --red-600: #1d4ed8;
-  --red-700: #1e40af;
+  --red-50: #E7EAEE;
+  --red-100: #E7EAEE;
+  --red-500: #3A5277;
+  --red-600: #0F2C59;
+  --red-700: #0A1D3A;
 }
 
 /* Forest: green-tinted light. */
 [data-theme='forest'] {
   color-scheme: light;
 
-  --bg: #f1f8f3;
-  --surface: #ffffff;
-  --surface-2: #f5faf6;
-  --surface-3: #e9f4ec;
-  --surface-hover: #ecf5ef;
-  --surface-sunken: #f8fbf9;
+  --bg: #E8F2EC;
+  --surface: #FFFFFF;
+  --surface-2: #E8F2EC;
+  --surface-3: #E8F2EC;
+  --surface-hover: #E8F2EC;
+  --surface-sunken: #E8F2EC;
 
-  --border: #d7e6db;
-  --border-2: #bcd7c2;
-  --border-strong: #93b89d;
+  --border: #BDDBC9;
+  --border-2: #7EB994;
+  --border-strong: #7EB994;
 
-  --text-primary: #0a1f12;
-  --text-secondary: #16301d;
-  --text-tertiary: #2b4a33;
-  --text-muted: #3d6449;
-  --text-faint: #6b8f78;
-  --text-placeholder: #8aa895;
+  --text-primary: #0E5328;
+  --text-secondary: #0E5328;
+  --text-tertiary: #0E5328;
+  --text-muted: #0E5328;
+  --text-faint: #3F9760;
+  --text-placeholder: #3F9760;
 
-  --brand: #15803d;
-  --brand-hover: #166534;
-  --brand-active: #14532d;
-  --brand-soft: #f0fdf4;
-  --brand-border: #bbf7d0;
-  --brand-text: #15803d;
+  --brand: #15803D;
+  --brand-hover: #0E5328;
+  --brand-active: #0E5328;
+  --brand-soft: #E8F2EC;
+  --brand-border: #BDDBC9;
+  --brand-text: #15803D;
 
-  --success-text: #15803d;
-  --success-soft: #f0fdf4;
-  --success-border: #bbf7d0;
-  --warning-text: #93370d;
-  --warning-soft: #fffaeb;
-  --warning-border: #fedf89;
-  --danger-text: #b42318;
-  --danger-soft: #fef3f2;
-  --danger-border: #fecdc9;
-  --info-text: #0e7490;
-  --info-soft: #ecfeff;
-  --info-border: #a5f3fc;
-  --accent-text: #155e75;
-  --accent-soft: #ecfeff;
-  --accent-border: #a5f3fc;
+  --success-text: #15803D;
+  --success-soft: #E8F2EC;
+  --success-border: #BDDBC9;
+  --warning-text: #7D0C14;
+  --warning-soft: #F9E7E9;
+  --warning-border: #DD7D84;
+  --danger-text: #7D0C14;
+  --danger-soft: #F9E7E9;
+  --danger-border: #EEBDC0;
+  --info-text: #0A1D3A;
+  --info-soft: #E7EAEE;
+  --info-border: #BCC4D1;
+  --accent-text: #0A1D3A;
+  --accent-soft: #E7EAEE;
+  --accent-border: #BCC4D1;
 
-  --ring: #15803d;
-  --ring-offset: #ffffff;
+  --ring: #15803D;
+  --ring-offset: #FFFFFF;
 
-  --sidebar-bg: #0c2116;
-  --sidebar-border: #17351f;
-  --sidebar-text: #b3cdbb;
-  --sidebar-label: #75957f;
-  --sidebar-active: #ffffff;
-  --sidebar-hover-bg: #17351f;
-  --sidebar-hover-text: #ffffff;
-  --sidebar-indicator: #4ade80;
-  --sidebar-active-bg: #13301f;
-  --sidebar-active-border: #245c37;
+  --sidebar-bg: #0E5328;
+  --sidebar-border: #0E5328;
+  --sidebar-text: #7EB994;
+  --sidebar-label: #3F9760;
+  --sidebar-active: #FFFFFF;
+  --sidebar-hover-bg: #0E5328;
+  --sidebar-hover-text: #FFFFFF;
+  --sidebar-indicator: #3F9760;
+  --sidebar-active-bg: #0E5328;
+  --sidebar-active-border: #0E5328;
 
-  --skeleton-from: #e9f4ec;
-  --skeleton-via: #d7e6db;
-  --skeleton-to: #e9f4ec;
+  --skeleton-from: #E8F2EC;
+  --skeleton-via: #BDDBC9;
+  --skeleton-to: #E8F2EC;
 
-  --shadow-xs: 0 1px 2px 0 rgb(10 31 18 / 0.05);
-  --shadow-sm: 0 1px 3px 0 rgb(10 31 18 / 0.08), 0 1px 2px -1px rgb(10 31 18 / 0.05);
-  --shadow-md: 0 6px 16px -6px rgb(10 31 18 / 0.11), 0 2px 6px -2px rgb(10 31 18 / 0.06);
-  --shadow-lg: 0 18px 32px -12px rgb(10 31 18 / 0.15), 0 6px 12px -6px rgb(10 31 18 / 0.07);
-  --shadow-pop: 0 16px 40px -10px rgb(10 31 18 / 0.22), 0 4px 10px -3px rgb(10 31 18 / 0.09);
+  --shadow-xs: 0 1px 2px 0 rgba(14, 83, 40, 0.05);
+  --shadow-sm: 0 1px 3px 0 rgba(14, 83, 40, 0.08), 0 1px 2px -1px rgba(14, 83, 40, 0.05);
+  --shadow-md: 0 6px 16px -6px rgba(14, 83, 40, 0.11), 0 2px 6px -2px rgba(14, 83, 40, 0.06);
+  --shadow-lg: 0 18px 32px -12px rgba(14, 83, 40, 0.15), 0 6px 12px -6px rgba(14, 83, 40, 0.07);
+  --shadow-pop: 0 16px 40px -10px rgba(14, 83, 40, 0.22), 0 4px 10px -3px rgba(14, 83, 40, 0.09);
 
-  --red-50: #f0fdf4;
-  --red-100: #dcfce7;
-  --red-500: #22c55e;
-  --red-600: #15803d;
-  --red-700: #166534;
+  --red-50: #E8F2EC;
+  --red-100: #E8F2EC;
+  --red-500: #3F9760;
+  --red-600: #15803D;
+  --red-700: #0E5328;
 }
 
 /* Sepia: warm paper tone. */
 [data-theme='sepia'] {
   color-scheme: light;
 
-  --bg: #f8f5f0;
-  --surface: #fffdfa;
-  --surface-2: #f7f3ec;
-  --surface-3: #efe9df;
-  --surface-hover: #f1ebe1;
-  --surface-sunken: #fbf8f2;
+  --bg: #F9E7E9;
+  --surface: #F9E7E9;
+  --surface-2: #F9E7E9;
+  --surface-3: #EEBDC0;
+  --surface-hover: #EEBDC0;
+  --surface-sunken: #F9E7E9;
 
-  --border: #e2dbcd;
-  --border-2: #cdc3b0;
-  --border-strong: #a99c84;
+  --border: #EEBDC0;
+  --border-2: #DD7D84;
+  --border-strong: #CC3D47;
 
-  --text-primary: #2a2317;
-  --text-secondary: #3b3222;
-  --text-tertiary: #524733;
-  --text-muted: #6a5c42;
-  --text-faint: #978a72;
-  --text-placeholder: #a89c85;
+  --text-primary: #7D0C14;
+  --text-secondary: #7D0C14;
+  --text-tertiary: #7D0C14;
+  --text-muted: #7D0C14;
+  --text-faint: #CC3D47;
+  --text-placeholder: #CC3D47;
 
-  --brand: #b4440a;
-  --brand-hover: #973808;
-  --brand-active: #7a2f07;
-  --brand-soft: #fdf3ec;
-  --brand-border: #f7d3ba;
-  --brand-text: #9a3a09;
+  --brand: #7D0C14;
+  --brand-hover: #7D0C14;
+  --brand-active: #7D0C14;
+  --brand-soft: #F9E7E9;
+  --brand-border: #EEBDC0;
+  --brand-text: #7D0C14;
 
-  --success-text: #3f6212;
-  --success-soft: #f7fee7;
-  --success-border: #d9f99d;
-  --warning-text: #93370d;
-  --warning-soft: #fffaeb;
-  --warning-border: #fde68a;
-  --danger-text: #a1291b;
-  --danger-soft: #fdf0ee;
-  --danger-border: #f6c7bf;
-  --info-text: #1e4d8f;
-  --info-soft: #f0f6ff;
-  --info-border: #c3dafe;
-  --accent-text: #1e4d8f;
-  --accent-soft: #f0f6ff;
-  --accent-border: #c3dafe;
+  --success-text: #0E5328;
+  --success-soft: #E8F2EC;
+  --success-border: #7EB994;
+  --warning-text: #7D0C14;
+  --warning-soft: #F9E7E9;
+  --warning-border: #DD7D84;
+  --danger-text: #7D0C14;
+  --danger-soft: #F9E7E9;
+  --danger-border: #EEBDC0;
+  --info-text: #0A1D3A;
+  --info-soft: #E7EAEE;
+  --info-border: #BCC4D1;
+  --accent-text: #0A1D3A;
+  --accent-soft: #E7EAEE;
+  --accent-border: #BCC4D1;
 
-  --ring: #b4440a;
-  --ring-offset: #fffdfa;
+  --ring: #7D0C14;
+  --ring-offset: #F9E7E9;
 
-  --sidebar-bg: #2a2317;
-  --sidebar-border: #3b3222;
-  --sidebar-text: #cdc0aa;
-  --sidebar-label: #8e8168;
-  --sidebar-active: #fffdfa;
-  --sidebar-hover-bg: #3b3222;
-  --sidebar-hover-text: #fffdfa;
-  --sidebar-indicator: #ea8a4a;
-  --sidebar-active-bg: #3a3120;
-  --sidebar-active-border: #5a4a2e;
+  --sidebar-bg: #7D0C14;
+  --sidebar-border: #7D0C14;
+  --sidebar-text: #DD7D84;
+  --sidebar-label: #CC3D47;
+  --sidebar-active: #F9E7E9;
+  --sidebar-hover-bg: #7D0C14;
+  --sidebar-hover-text: #F9E7E9;
+  --sidebar-indicator: #CC3D47;
+  --sidebar-active-bg: #7D0C14;
+  --sidebar-active-border: #7D0C14;
 
-  --skeleton-from: #efe9df;
-  --skeleton-via: #e2dbcd;
-  --skeleton-to: #efe9df;
+  --skeleton-from: #EEBDC0;
+  --skeleton-via: #EEBDC0;
+  --skeleton-to: #EEBDC0;
 
-  --shadow-xs: 0 1px 2px 0 rgb(42 35 23 / 0.05);
-  --shadow-sm: 0 1px 3px 0 rgb(42 35 23 / 0.08), 0 1px 2px -1px rgb(42 35 23 / 0.05);
-  --shadow-md: 0 6px 16px -6px rgb(42 35 23 / 0.11), 0 2px 6px -2px rgb(42 35 23 / 0.06);
-  --shadow-lg: 0 18px 32px -12px rgb(42 35 23 / 0.15), 0 6px 12px -6px rgb(42 35 23 / 0.07);
-  --shadow-pop: 0 16px 40px -10px rgb(42 35 23 / 0.22), 0 4px 10px -3px rgb(42 35 23 / 0.09);
+  --shadow-xs: 0 1px 2px 0 rgba(125, 12, 20, 0.05);
+  --shadow-sm: 0 1px 3px 0 rgba(125, 12, 20, 0.08), 0 1px 2px -1px rgba(125, 12, 20, 0.05);
+  --shadow-md: 0 6px 16px -6px rgba(125, 12, 20, 0.11), 0 2px 6px -2px rgba(125, 12, 20, 0.06);
+  --shadow-lg: 0 18px 32px -12px rgba(125, 12, 20, 0.15), 0 6px 12px -6px rgba(125, 12, 20, 0.07);
+  --shadow-pop: 0 16px 40px -10px rgba(125, 12, 20, 0.22), 0 4px 10px -3px rgba(125, 12, 20, 0.09);
 
-  --red-50: #fdf3ec;
-  --red-100: #f9ddc9;
-  --red-500: #ea580c;
-  --red-600: #b4440a;
-  --red-700: #973808;
+  --red-50: #F9E7E9;
+  --red-100: #EEBDC0;
+  --red-500: #CC3D47;
+  --red-600: #7D0C14;
+  --red-700: #7D0C14;
 }
 
 /* Slate: balanced grey. */
 [data-theme='slate'] {
   color-scheme: light;
 
-  --bg: #eceff3;
-  --surface: #ffffff;
-  --surface-2: #f3f5f8;
-  --surface-3: #e6eaef;
-  --surface-hover: #e9edf2;
-  --surface-sunken: #f5f7fa;
+  --bg: #E7EAEE;
+  --surface: #FFFFFF;
+  --surface-2: #E7EAEE;
+  --surface-3: #BCC4D1;
+  --surface-hover: #E7EAEE;
+  --surface-sunken: #E7EAEE;
 
-  --border: #cbd2dc;
-  --border-2: #aeb8c6;
-  --border-strong: #8592a3;
+  --border: #BCC4D1;
+  --border-2: #7B8BA4;
+  --border-strong: #3A5277;
 
-  --text-primary: #0f172a;
-  --text-secondary: #1e293b;
-  --text-tertiary: #334155;
-  --text-muted: #475569;
-  --text-faint: #6b7a90;
-  --text-placeholder: #8b98aa;
+  --text-primary: #0A1D3A;
+  --text-secondary: #0A1D3A;
+  --text-tertiary: #0A1D3A;
+  --text-muted: #0A1D3A;
+  --text-faint: #3A5277;
+  --text-placeholder: #3A5277;
 
-  --brand: #c1121f;
-  --brand-hover: #a10f1a;
-  --brand-active: #820c15;
-  --brand-soft: #fdecec;
-  --brand-border: #f4bcbc;
-  --brand-text: #a10f1a;
+  --brand: #C1121F;
+  --brand-hover: #7D0C14;
+  --brand-active: #7D0C14;
+  --brand-soft: #F9E7E9;
+  --brand-border: #EEBDC0;
+  --brand-text: #7D0C14;
 
-  --success-text: #0a6b45;
-  --success-soft: #edf9f2;
-  --success-border: #9ddcbb;
-  --warning-text: #8f5209;
-  --warning-soft: #fdf8ee;
-  --warning-border: #f0d09a;
-  --danger-text: #a10f1a;
-  --danger-soft: #fdecec;
-  --danger-border: #f4bcbc;
-  --info-text: #1d4ed8;
-  --info-soft: #eef3fd;
-  --info-border: #b6cbf5;
-  --accent-text: #1d4ed8;
-  --accent-soft: #eef3fd;
-  --accent-border: #b6cbf5;
+  --success-text: #0E5328;
+  --success-soft: #E8F2EC;
+  --success-border: #7EB994;
+  --warning-text: #7D0C14;
+  --warning-soft: #F9E7E9;
+  --warning-border: #DD7D84;
+  --danger-text: #7D0C14;
+  --danger-soft: #F9E7E9;
+  --danger-border: #EEBDC0;
+  --info-text: #0F2C59;
+  --info-soft: #E7EAEE;
+  --info-border: #BCC4D1;
+  --accent-text: #0F2C59;
+  --accent-soft: #E7EAEE;
+  --accent-border: #BCC4D1;
 
-  --ring: #1d4ed8;
-  --ring-offset: #ffffff;
+  --ring: #0F2C59;
+  --ring-offset: #FFFFFF;
 
-  --sidebar-bg: #1a2331;
-  --sidebar-border: #2a3547;
-  --sidebar-text: #b8c2d1;
-  --sidebar-label: #7b8aa0;
-  --sidebar-active: #ffffff;
-  --sidebar-hover-bg: #2a3547;
-  --sidebar-hover-text: #ffffff;
-  --sidebar-indicator: #f04438;
-  --sidebar-active-bg: #2a3547;
-  --sidebar-active-border: #3c4a60;
+  --sidebar-bg: #0A1D3A;
+  --sidebar-border: #0A1D3A;
+  --sidebar-text: #7B8BA4;
+  --sidebar-label: #3A5277;
+  --sidebar-active: #FFFFFF;
+  --sidebar-hover-bg: #0A1D3A;
+  --sidebar-hover-text: #FFFFFF;
+  --sidebar-indicator: #C1121F;
+  --sidebar-active-bg: #0A1D3A;
+  --sidebar-active-border: #0A1D3A;
 
-  --skeleton-from: #e6eaef;
-  --skeleton-via: #cbd2dc;
-  --skeleton-to: #e6eaef;
+  --skeleton-from: #BCC4D1;
+  --skeleton-via: #BCC4D1;
+  --skeleton-to: #BCC4D1;
 
-  --shadow-xs: 0 1px 2px 0 rgb(15 23 42 / 0.06);
-  --shadow-sm: 0 1px 3px 0 rgb(15 23 42 / 0.09), 0 1px 2px -1px rgb(15 23 42 / 0.05);
-  --shadow-md: 0 6px 16px -6px rgb(15 23 42 / 0.12), 0 2px 6px -2px rgb(15 23 42 / 0.07);
-  --shadow-lg: 0 18px 32px -12px rgb(15 23 42 / 0.16), 0 6px 12px -6px rgb(15 23 42 / 0.08);
-  --shadow-pop: 0 16px 40px -10px rgb(15 23 42 / 0.22), 0 4px 10px -3px rgb(15 23 42 / 0.09);
+  --shadow-xs: 0 1px 2px 0 rgba(10, 29, 58, 0.06);
+  --shadow-sm: 0 1px 3px 0 rgba(10, 29, 58, 0.09), 0 1px 2px -1px rgba(10, 29, 58, 0.05);
+  --shadow-md: 0 6px 16px -6px rgba(10, 29, 58, 0.12), 0 2px 6px -2px rgba(10, 29, 58, 0.07);
+  --shadow-lg: 0 18px 32px -12px rgba(10, 29, 58, 0.16), 0 6px 12px -6px rgba(10, 29, 58, 0.08);
+  --shadow-pop: 0 16px 40px -10px rgba(10, 29, 58, 0.22), 0 4px 10px -3px rgba(10, 29, 58, 0.09);
 
-  --red-50: #fdecec;
-  --red-100: #f8d4d4;
-  --red-500: #dc2626;
-  --red-600: #c1121f;
-  --red-700: #a10f1a;
+  --red-50: #F9E7E9;
+  --red-100: #EEBDC0;
+  --red-500: #C1121F;
+  --red-600: #C1121F;
+  --red-700: #7D0C14;
 }
 
 /* Night Blue: deep blue dark. */
 [data-theme='nightblue'] {
   color-scheme: dark;
 
-  --bg: #0b0e17;
-  --surface: #121722;
-  --surface-2: #171e2b;
-  --surface-3: #1d2635;
-  --surface-hover: #1c2534;
-  --surface-sunken: #0f141d;
+  --bg: #0A1D3A;
+  --surface: #0A1D3A;
+  --surface-2: #0A1D3A;
+  --surface-3: #0A1D3A;
+  --surface-hover: #0A1D3A;
+  --surface-sunken: #0A1D3A;
 
-  --border: #232c3d;
-  --border-2: #2f3a4f;
-  --border-strong: #3d4a63;
+  --border: #0A1D3A;
+  --border-2: #0A1D3A;
+  --border-strong: #0A1D3A;
 
-  --text-primary: #eef2f8;
-  --text-secondary: #ccd5e3;
-  --text-tertiary: #a9b4c6;
-  --text-muted: #8a96a8;
-  --text-faint: #6d798b;
-  --text-placeholder: #5b6675;
+  --text-primary: #E7EAEE;
+  --text-secondary: #BCC4D1;
+  --text-tertiary: #7B8BA4;
+  --text-muted: #3A5277;
+  --text-faint: #3A5277;
+  --text-placeholder: #0A1D3A;
 
-  --brand: #f97066;
-  --brand-hover: #fda29b;
-  --brand-active: #fecdc9;
-  --brand-soft: #2a1618;
-  --brand-border: #4d2325;
-  --brand-text: #fda29b;
+  --brand: #DD7D84;
+  --brand-hover: #EEBDC0;
+  --brand-active: #EEBDC0;
+  --brand-soft: #7D0C14;
+  --brand-border: #7D0C14;
+  --brand-text: #EEBDC0;
 
-  --success-text: #6ce9a6;
-  --success-soft: #0d2019;
-  --success-border: #1e4436;
-  --warning-text: #fdb022;
-  --warning-soft: #241b0c;
-  --warning-border: #4a3416;
-  --danger-text: #f97066;
-  --danger-soft: #2a1618;
-  --danger-border: #4d2325;
-  --info-text: #84caff;
-  --info-soft: #0c1b28;
-  --info-border: #1b3a52;
-  --accent-text: #c4b5fd;
-  --accent-soft: #1b1533;
-  --accent-border: #3b2f6b;
+  --success-text: #7EB994;
+  --success-soft: #0E5328;
+  --success-border: #0E5328;
+  --warning-text: #CC3D47;
+  --warning-soft: #7D0C14;
+  --warning-border: #7D0C14;
+  --danger-text: #DD7D84;
+  --danger-soft: #7D0C14;
+  --danger-border: #7D0C14;
+  --info-text: #7B8BA4;
+  --info-soft: #0A1D3A;
+  --info-border: #0A1D3A;
+  --accent-text: #BCC4D1;
+  --accent-soft: #0A1D3A;
+  --accent-border: #0A1D3A;
 
-  --ring: #7aa2ff;
-  --ring-offset: #0b0e17;
+  --ring: #7B8BA4;
+  --ring-offset: #0A1D3A;
 
-  --sidebar-bg: #070a11;
-  --sidebar-border: #182031;
-  --sidebar-text: #a3b0c4;
-  --sidebar-label: #6d798b;
-  --sidebar-active: #ffffff;
-  --sidebar-hover-bg: #182031;
-  --sidebar-hover-text: #ffffff;
-  --sidebar-indicator: #f97066;
-  --sidebar-active-bg: #131b2a;
-  --sidebar-active-border: #25303f;
+  --sidebar-bg: #0A1D3A;
+  --sidebar-border: #0A1D3A;
+  --sidebar-text: #7B8BA4;
+  --sidebar-label: #3A5277;
+  --sidebar-active: #FFFFFF;
+  --sidebar-hover-bg: #0A1D3A;
+  --sidebar-hover-text: #FFFFFF;
+  --sidebar-indicator: #DD7D84;
+  --sidebar-active-bg: #0A1D3A;
+  --sidebar-active-border: #0A1D3A;
 
-  --skeleton-from: #171e2b;
-  --skeleton-via: #232c3d;
-  --skeleton-to: #171e2b;
+  --skeleton-from: #0A1D3A;
+  --skeleton-via: #0A1D3A;
+  --skeleton-to: #0A1D3A;
 
-  --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.35);
-  --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.45), 0 1px 2px -1px rgb(0 0 0 / 0.35);
-  --shadow-md: 0 6px 16px -6px rgb(0 0 0 / 0.55), 0 2px 6px -2px rgb(0 0 0 / 0.4);
-  --shadow-lg: 0 18px 32px -12px rgb(0 0 0 / 0.6), 0 6px 12px -6px rgb(0 0 0 / 0.45);
-  --shadow-pop: 0 16px 40px -10px rgb(0 0 0 / 0.7), 0 4px 10px -3px rgb(0 0 0 / 0.5);
+  --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.35);
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.45), 0 1px 2px -1px rgba(0, 0, 0, 0.35);
+  --shadow-md: 0 6px 16px -6px rgba(0, 0, 0, 0.55), 0 2px 6px -2px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 18px 32px -12px rgba(0, 0, 0, 0.6), 0 6px 12px -6px rgba(0, 0, 0, 0.45);
+  --shadow-pop: 0 16px 40px -10px rgba(0, 0, 0, 0.7), 0 4px 10px -3px rgba(0, 0, 0, 0.5);
 
-  --red-50: #2a1618;
-  --red-100: #4d2325;
-  --red-500: #f97066;
-  --red-600: #fda29b;
-  --red-700: #fecdc9;
+  --red-50: #7D0C14;
+  --red-100: #7D0C14;
+  --red-500: #DD7D84;
+  --red-600: #EEBDC0;
+  --red-700: #EEBDC0;
 }
 
 /* Midnight: neutral dark. */
 [data-theme='dark'] {
   color-scheme: dark;
 
-  --bg: #0d1016;
-  --surface: #151a22;
-  --surface-2: #1a2029;
-  --surface-3: #212934;
-  --surface-hover: #1f2731;
-  --surface-sunken: #11161d;
+  --bg: #0A1D3A;
+  --surface: #0A1D3A;
+  --surface-2: #0A1D3A;
+  --surface-3: #0A1D3A;
+  --surface-hover: #0A1D3A;
+  --surface-sunken: #0A1D3A;
 
-  --border: #262e3a;
-  --border-2: #333d4c;
-  --border-strong: #435064;
+  --border: #0A1D3A;
+  --border-2: #0A1D3A;
+  --border-strong: #0A1D3A;
 
-  --text-primary: #f2f5f9;
-  --text-secondary: #d3dae4;
-  --text-tertiary: #b0bac8;
-  --text-muted: #8c98a8;
-  --text-faint: #6f7c8d;
-  --text-placeholder: #5d6979;
+  --text-primary: #E7EAEE;
+  --text-secondary: #BCC4D1;
+  --text-tertiary: #7B8BA4;
+  --text-muted: #3A5277;
+  --text-faint: #7E7E7E;
+  --text-placeholder: #0A1D3A;
 
-  --brand: #f04438;
-  --brand-hover: #f97066;
-  --brand-active: #fda29b;
-  --brand-soft: #2a1518;
-  --brand-border: #4a2022;
-  --brand-text: #f97066;
+  --brand: #C1121F;
+  --brand-hover: #DD7D84;
+  --brand-active: #EEBDC0;
+  --brand-soft: #7D0C14;
+  --brand-border: #7D0C14;
+  --brand-text: #DD7D84;
 
-  --success-text: #6ce9a6;
-  --success-soft: #0d2019;
-  --success-border: #1e4436;
-  --warning-text: #fdb022;
-  --warning-soft: #241b0c;
-  --warning-border: #4a3416;
-  --danger-text: #f97066;
-  --danger-soft: #2a1518;
-  --danger-border: #4a2022;
-  --info-text: #84caff;
-  --info-soft: #0c1b28;
-  --info-border: #1b3a52;
-  --accent-text: #c4b5fd;
-  --accent-soft: #1b1533;
-  --accent-border: #3b2f6b;
+  --success-text: #7EB994;
+  --success-soft: #0E5328;
+  --success-border: #0E5328;
+  --warning-text: #CC3D47;
+  --warning-soft: #7D0C14;
+  --warning-border: #7D0C14;
+  --danger-text: #DD7D84;
+  --danger-soft: #7D0C14;
+  --danger-border: #7D0C14;
+  --info-text: #7B8BA4;
+  --info-soft: #0A1D3A;
+  --info-border: #0A1D3A;
+  --accent-text: #BCC4D1;
+  --accent-soft: #0A1D3A;
+  --accent-border: #0A1D3A;
 
-  --ring: #7aa2ff;
-  --ring-offset: #0d1016;
+  --ring: #7B8BA4;
+  --ring-offset: #0A1D3A;
 
-  --sidebar-bg: #090c11;
-  --sidebar-border: #1a212b;
-  --sidebar-text: #a2adbc;
-  --sidebar-label: #6f7c8d;
-  --sidebar-active: #ffffff;
-  --sidebar-hover-bg: #1a212b;
-  --sidebar-hover-text: #ffffff;
-  --sidebar-indicator: #f04438;
-  --sidebar-active-bg: #151b24;
-  --sidebar-active-border: #262e3a;
+  --sidebar-bg: #0A1D3A;
+  --sidebar-border: #0A1D3A;
+  --sidebar-text: #7B8BA4;
+  --sidebar-label: #7E7E7E;
+  --sidebar-active: #FFFFFF;
+  --sidebar-hover-bg: #0A1D3A;
+  --sidebar-hover-text: #FFFFFF;
+  --sidebar-indicator: #C1121F;
+  --sidebar-active-bg: #0A1D3A;
+  --sidebar-active-border: #0A1D3A;
 
-  --skeleton-from: #1a2029;
-  --skeleton-via: #262e3a;
-  --skeleton-to: #1a2029;
+  --skeleton-from: #0A1D3A;
+  --skeleton-via: #0A1D3A;
+  --skeleton-to: #0A1D3A;
 
-  --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.35);
-  --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.45), 0 1px 2px -1px rgb(0 0 0 / 0.35);
-  --shadow-md: 0 6px 16px -6px rgb(0 0 0 / 0.55), 0 2px 6px -2px rgb(0 0 0 / 0.4);
-  --shadow-lg: 0 18px 32px -12px rgb(0 0 0 / 0.6), 0 6px 12px -6px rgb(0 0 0 / 0.45);
-  --shadow-pop: 0 16px 40px -10px rgb(0 0 0 / 0.7), 0 4px 10px -3px rgb(0 0 0 / 0.5);
+  --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.35);
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.45), 0 1px 2px -1px rgba(0, 0, 0, 0.35);
+  --shadow-md: 0 6px 16px -6px rgba(0, 0, 0, 0.55), 0 2px 6px -2px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 18px 32px -12px rgba(0, 0, 0, 0.6), 0 6px 12px -6px rgba(0, 0, 0, 0.45);
+  --shadow-pop: 0 16px 40px -10px rgba(0, 0, 0, 0.7), 0 4px 10px -3px rgba(0, 0, 0, 0.5);
 
-  --red-50: #2a1518;
-  --red-100: #4a2022;
-  --red-500: #f04438;
-  --red-600: #f97066;
-  --red-700: #fda29b;
+  --red-50: #7D0C14;
+  --red-100: #7D0C14;
+  --red-500: #C1121F;
+  --red-600: #DD7D84;
+  --red-700: #EEBDC0;
 }
 
 /* High Contrast Dark. */
@@ -885,75 +885,75 @@
   color-scheme: dark;
 
   --bg: #000000;
-  --surface: #0c0c0c;
+  --surface: #0C0C0C;
   --surface-2: #131313;
-  --surface-3: #1c1c1c;
-  --surface-hover: #1a1a1a;
+  --surface-3: #1C1C1C;
+  --surface-hover: #1A1A1A;
   --surface-sunken: #070707;
 
-  --border: #3d3d3d;
-  --border-2: #5c5c5c;
-  --border-strong: #7a7a7a;
+  --border: #3D3D3D;
+  --border-2: #5C5C5C;
+  --border-strong: #7A7A7A;
 
-  --text-primary: #ffffff;
-  --text-secondary: #ededed;
-  --text-tertiary: #d0d0d0;
-  --text-muted: #b0b0b0;
-  --text-faint: #8c8c8c;
+  --text-primary: #FFFFFF;
+  --text-secondary: #EDEDED;
+  --text-tertiary: #D0D0D0;
+  --text-muted: #B0B0B0;
+  --text-faint: #8C8C8C;
   --text-placeholder: #767676;
 
-  --brand: #ff6b6b;
-  --brand-hover: #ff8f8f;
-  --brand-active: #ffb0b0;
-  --brand-soft: #2a0d0d;
-  --brand-border: #5c1f1f;
-  --brand-text: #ff8f8f;
+  --brand: #DD7D84;
+  --brand-hover: #DD7D84;
+  --brand-active: #EEBDC0;
+  --brand-soft: #7D0C14;
+  --brand-border: #7D0C14;
+  --brand-text: #DD7D84;
 
-  --success-text: #5ce89a;
-  --success-soft: #06210f;
-  --success-border: #1c5c38;
-  --warning-text: #ffc44d;
-  --warning-soft: #241a05;
-  --warning-border: #5c4413;
-  --danger-text: #ff6b6b;
-  --danger-soft: #2a0d0d;
-  --danger-border: #5c1f1f;
-  --info-text: #7cc4ff;
-  --info-soft: #06202e;
-  --info-border: #1c4a66;
-  --accent-text: #ddd6fe;
-  --accent-soft: #241a4d;
-  --accent-border: #5b4a9e;
+  --success-text: #7EB994;
+  --success-soft: #0E5328;
+  --success-border: #0E5328;
+  --warning-text: #DD7D84;
+  --warning-soft: #7D0C14;
+  --warning-border: #7D0C14;
+  --danger-text: #DD7D84;
+  --danger-soft: #7D0C14;
+  --danger-border: #7D0C14;
+  --info-text: #7B8BA4;
+  --info-soft: #0A1D3A;
+  --info-border: #0A1D3A;
+  --accent-text: #BCC4D1;
+  --accent-soft: #0A1D3A;
+  --accent-border: #3A5277;
 
-  --ring: #7cc4ff;
+  --ring: #7B8BA4;
   --ring-offset: #000000;
 
   --sidebar-bg: #000000;
-  --sidebar-border: #2f2f2f;
-  --sidebar-text: #d0d0d0;
+  --sidebar-border: #2F2F2F;
+  --sidebar-text: #D0D0D0;
   --sidebar-label: #969696;
-  --sidebar-active: #ffffff;
-  --sidebar-hover-bg: #1a1a1a;
-  --sidebar-hover-text: #ffffff;
-  --sidebar-indicator: #ff6b6b;
-  --sidebar-active-bg: #1f1f1f;
+  --sidebar-active: #FFFFFF;
+  --sidebar-hover-bg: #1A1A1A;
+  --sidebar-hover-text: #FFFFFF;
+  --sidebar-indicator: #DD7D84;
+  --sidebar-active-bg: #1F1F1F;
   --sidebar-active-border: #383838;
 
   --skeleton-from: #131313;
-  --skeleton-via: #2b2b2b;
+  --skeleton-via: #2B2B2B;
   --skeleton-to: #131313;
 
-  --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.7);
-  --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.85), 0 1px 2px -1px rgb(0 0 0 / 0.7);
-  --shadow-md: 0 6px 16px -6px rgb(0 0 0 / 0.9), 0 2px 6px -2px rgb(0 0 0 / 0.75);
-  --shadow-lg: 0 18px 32px -12px rgb(0 0 0 / 0.95), 0 6px 12px -6px rgb(0 0 0 / 0.8);
-  --shadow-pop: 0 16px 40px -10px rgb(0 0 0 / 0.95), 0 4px 10px -3px rgb(0 0 0 / 0.85);
+  --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.7);
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.85), 0 1px 2px -1px rgba(0, 0, 0, 0.7);
+  --shadow-md: 0 6px 16px -6px rgba(0, 0, 0, 0.9), 0 2px 6px -2px rgba(0, 0, 0, 0.75);
+  --shadow-lg: 0 18px 32px -12px rgba(0, 0, 0, 0.95), 0 6px 12px -6px rgba(0, 0, 0, 0.8);
+  --shadow-pop: 0 16px 40px -10px rgba(0, 0, 0, 0.95), 0 4px 10px -3px rgba(0, 0, 0, 0.85);
 
-  --red-50: #2a0d0d;
-  --red-100: #5c1f1f;
-  --red-500: #ff6b6b;
-  --red-600: #ff8f8f;
-  --red-700: #ffb0b0;
+  --red-50: #7D0C14;
+  --red-100: #7D0C14;
+  --red-500: #DD7D84;
+  --red-600: #DD7D84;
+  --red-700: #EEBDC0;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -984,21 +984,21 @@
   background-color: var(--surface);
 }
 
-:root .bg-\[\#F9FAFB\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
+:root .bg-\[\#E7EAEE\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
 :root .bg-\[\#FAFAFA\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
-:root .bg-\[\#FCFCFD\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
-:root .bg-\[\#F7F8FA\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
-:root .bg-\[\#F8F9FB\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
-:root .bg-\[\#F3F4F6\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
-:root .bg-\[\#F2F4F7\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
-:root .bg-\[\#F4F4F5\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
-:root .bg-\[\#EAECF0\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
+:root .bg-\[\#E7EAEE\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
+:root .bg-\[\#E7EAEE\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
+:root .bg-\[\#E7EAEE\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
+:root .bg-\[\#E7EAEE\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
+:root .bg-\[\#E7EAEE\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
+:root .bg-\[\#F4F4F4\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
+:root .bg-\[\#E7EAEE\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
 :root .bg-\[\#F5F5F5\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)) {
   background-color: var(--surface-2);
 }
 
-:root .bg-\[\#E5E7EB\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
-:root .bg-\[\#E4E7EC\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)) {
+:root .bg-\[\#BCC4D1\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
+:root .bg-\[\#BCC4D1\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)) {
   background-color: var(--surface-3);
 }
 
@@ -1022,198 +1022,198 @@
 }
 
 /* ── Hover / active surfaces ───────────────────────────────────────────────── */
-:root .hover\:bg-\[\#F9FAFB\]:hover:not(:is(.quotation-print-page *, .bill-print-page *, #printable-receipt *)),
+:root .hover\:bg-\[\#E7EAEE\]:hover:not(:is(.quotation-print-page *, .bill-print-page *, #printable-receipt *)),
 :root .hover\:bg-\[\#FAFAFA\]:hover:not(:is(.quotation-print-page *, .bill-print-page *, #printable-receipt *)),
-:root .hover\:bg-\[\#F3F4F6\]:hover:not(:is(.quotation-print-page *, .bill-print-page *, #printable-receipt *)),
-:root .hover\:bg-\[\#F2F4F7\]:hover:not(:is(.quotation-print-page *, .bill-print-page *, #printable-receipt *)),
-:root .hover\:bg-\[\#EAECF0\]:hover:not(:is(.quotation-print-page *, .bill-print-page *, #printable-receipt *)),
-:root .hover\:bg-\[\#F7F8FA\]:hover:not(:is(.quotation-print-page *, .bill-print-page *, #printable-receipt *)) {
+:root .hover\:bg-\[\#E7EAEE\]:hover:not(:is(.quotation-print-page *, .bill-print-page *, #printable-receipt *)),
+:root .hover\:bg-\[\#E7EAEE\]:hover:not(:is(.quotation-print-page *, .bill-print-page *, #printable-receipt *)),
+:root .hover\:bg-\[\#E7EAEE\]:hover:not(:is(.quotation-print-page *, .bill-print-page *, #printable-receipt *)),
+:root .hover\:bg-\[\#E7EAEE\]:hover:not(:is(.quotation-print-page *, .bill-print-page *, #printable-receipt *)) {
   background-color: var(--surface-hover);
 }
 
 /* ── Borders ───────────────────────────────────────────────────────────────── */
-:root .border-\[\#E4E7EC\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
-:root .border-\[\#E5E7EB\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
-:root .border-\[\#EAECF0\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
-:root .border-\[\#F2F4F7\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
-:root .border-\[\#F3F4F6\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
+:root .border-\[\#BCC4D1\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
+:root .border-\[\#BCC4D1\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
+:root .border-\[\#E7EAEE\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
+:root .border-\[\#E7EAEE\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
+:root .border-\[\#E7EAEE\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
 :root .border-gray-200:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
 :root .border-gray-300:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)) {
   border-color: var(--border);
 }
 
-:root .border-\[\#D1D5DB\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
-:root .border-\[\#D0D5DD\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
-:root .border-\[\#DADDE3\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)) {
+:root .border-\[\#BCC4D1\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
+:root .border-\[\#BCC4D1\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
+:root .border-\[\#BCC4D1\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)) {
   border-color: var(--border-2);
 }
 
-:root .divide-\[\#F2F4F7\] > :not([hidden]) ~ :not([hidden]),
-:root .divide-\[\#E5E7EB\] > :not([hidden]) ~ :not([hidden]),
+:root .divide-\[\#E7EAEE\] > :not([hidden]) ~ :not([hidden]),
+:root .divide-\[\#BCC4D1\] > :not([hidden]) ~ :not([hidden]),
 :root .divide-gray-100 > :not([hidden]) ~ :not([hidden]) {
   border-color: var(--border);
 }
 
-:root .ring-\[\#E5E7EB\]:not(:is(.quotation-print-page *, #printable-receipt *)),
-:root .ring-\[\#E4E7EC\]:not(:is(.quotation-print-page *, #printable-receipt *)) {
+:root .ring-\[\#BCC4D1\]:not(:is(.quotation-print-page *, #printable-receipt *)),
+:root .ring-\[\#BCC4D1\]:not(:is(.quotation-print-page *, #printable-receipt *)) {
   --tw-ring-color: var(--border);
 }
 
-:root .focus-within\:border-\[\#DC2626\]:focus-within,
-:root .focus-within\:ring-\[\#FEE2E2\]:focus-within {
+:root .focus-within\:border-\[\#C1121F\]:focus-within,
+:root .focus-within\:ring-\[\#F9E7E9\]:focus-within {
   --tw-ring-color: var(--brand-border);
 }
 
 /* ── Text ──────────────────────────────────────────────────────────────────── */
-:root .text-\[\#101828\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
-:root .text-\[\#111827\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
-:root .text-\[\#0F172A\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
-:root .text-slate-900:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)) {
+:root .text-\[\#0A1D3A\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
+:root .text-\[\#0A1D3A\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
+:root .text-\[\#0A1D3A\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
+:root .text-gray-900:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)) {
   color: var(--text-primary);
 }
 
-:root .text-\[\#1D2939\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
-:root .text-\[\#344054\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
-:root .text-\[\#374151\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
-:root .text-slate-800:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)) {
+:root .text-\[\#0A1D3A\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
+:root .text-\[\#0A1D3A\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
+:root .text-\[\#0A1D3A\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
+:root .text-gray-800:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)) {
   color: var(--text-secondary);
 }
 
-:root .text-\[\#475467\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
-:root .text-\[\#4B5563\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
-:root .text-slate-600:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)) {
+:root .text-\[\#0A1D3A\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
+:root .text-\[\#0A1D3A\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
+:root .text-gray-600:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)) {
   color: var(--text-tertiary);
 }
 
-:root .text-\[\#667085\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
-:root .text-\[\#6B7280\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
-/* gray-400 / #98A2B3 / #9CA3AF / slate-500 land on --text-muted, not on
+:root .text-\[\#3A5277\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
+:root .text-\[\#767676\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
+/* gray-400 / #7B8BA4 / #A6A6A6 / slate-500 land on --text-muted, not on
    --text-faint. These ~115 call sites are readable copy — form labels, helper
    text, table metadata — not decoration. --text-faint measures 3.16:1 on a
    white surface, which fails WCAG AA (4.5:1) for body text; --text-muted
    measures 5.67:1. A deliberate one-step loss of granularity between gray-400
    and gray-500 is the price for making all of that text legible. */
-:root .text-\[\#98A2B3\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
-:root .text-\[\#9CA3AF\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
+:root .text-\[\#7B8BA4\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
+:root .text-\[\#A6A6A6\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
 :root .text-gray-400:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
-:root .text-slate-500:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)) {
+:root .text-gray-500:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)) {
   color: var(--text-muted);
 }
 
-:root .placeholder\:text-\[\#98A2B3\]::placeholder,
-:root .placeholder\:text-\[\#9CA3AF\]::placeholder,
+:root .placeholder\:text-\[\#7B8BA4\]::placeholder,
+:root .placeholder\:text-\[\#A6A6A6\]::placeholder,
 :root .placeholder\:text-gray-400::placeholder {
   color: var(--text-placeholder);
 }
 
-:root .hover\:text-\[\#111827\]:hover:not(:is(.quotation-print-page *, #printable-receipt *)),
-:root .hover\:text-\[\#374151\]:hover:not(:is(.quotation-print-page *, #printable-receipt *)) {
+:root .hover\:text-\[\#0A1D3A\]:hover:not(:is(.quotation-print-page *, #printable-receipt *)),
+:root .hover\:text-\[\#0A1D3A\]:hover:not(:is(.quotation-print-page *, #printable-receipt *)) {
   color: var(--text-primary);
 }
-:root .hover\:text-\[\#101828\]:hover:not(:is(.quotation-print-page *, #printable-receipt *)) {
+:root .hover\:text-\[\#0A1D3A\]:hover:not(:is(.quotation-print-page *, #printable-receipt *)) {
   color: var(--text-primary);
 }
 
 /* ── Brand ─────────────────────────────────────────────────────────────────── */
-:root .text-\[\#DC2626\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
-:root .text-\[\#E01E31\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
+:root .text-\[\#C1121F\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
+:root .text-\[\#C1121F\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
 :root .text-red-600:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)) {
   color: var(--brand-text);
 }
 
-:root .bg-\[\#DC2626\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
-:root .bg-\[\#E01E31\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
+:root .bg-\[\#C1121F\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
+:root .bg-\[\#C1121F\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
 :root .bg-red-600:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)) {
   background-color: var(--brand);
 }
 
-:root .bg-\[\#FEF2F2\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
-:root .bg-\[\#FFF1F1\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
+:root .bg-\[\#F9E7E9\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
+:root .bg-\[\#F9E7E9\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
 :root .bg-red-50:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)) {
   background-color: var(--brand-soft);
 }
 
-:root .border-\[\#FECACA\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
-:root .border-\[\#FEE2E2\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
+:root .border-\[\#EEBDC0\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
+:root .border-\[\#F9E7E9\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
 :root .border-red-200:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)) {
   border-color: var(--brand-border);
 }
 
-:root .hover\:bg-\[\#B91C1C\]:hover,
+:root .hover\:bg-\[\#C1121F\]:hover,
 :root .hover\:bg-red-700:hover { background-color: var(--brand-hover); }
-:root .hover\:text-\[\#B91C1C\]:hover { color: var(--brand-hover); }
+:root .hover\:text-\[\#C1121F\]:hover { color: var(--brand-hover); }
 
 /* ── Status · success ──────────────────────────────────────────────────────── */
-:root .text-\[\#16A34A\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
-:root .text-emerald-600:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)) {
+:root .text-\[\#15803D\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
+:root .text-green-600:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)) {
   color: var(--success-text);
 }
 :root .text-\[\#15803D\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
-:root .text-emerald-700:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)) {
+:root .text-green-700:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)) {
   color: var(--success-text);
 }
-:root .text-emerald-800:not(:is(.quotation-print-page *, .bill-print-page *, #printable-receipt *)) {
+:root .text-green-800:not(:is(.quotation-print-page *, .bill-print-page *, #printable-receipt *)) {
   color: var(--success-text);
 }
-:root .bg-\[\#F0FDF4\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
-:root .bg-emerald-50:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)) {
+:root .bg-\[\#E8F2EC\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
+:root .bg-green-50:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)) {
   background-color: var(--success-soft);
 }
-:root .border-\[\#BBF7D0\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
-:root .border-emerald-200:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)) {
+:root .border-\[\#BDDBC9\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
+:root .border-green-200:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)) {
   border-color: var(--success-border);
 }
-:root .border-emerald-100:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)) {
+:root .border-green-100:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)) {
   border-color: var(--success-border);
 }
-:root .bg-\[\#16A34A\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)) {
+:root .bg-\[\#15803D\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)) {
   background-color: var(--success-text);
 }
 
 /* ── Status · warning ──────────────────────────────────────────────────────── */
-:root .text-\[\#D97706\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
-:root .text-amber-600:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)) {
+:root .text-\[\#CC3D47\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
+:root .text-red-600:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)) {
   color: var(--warning-text);
 }
-:root .text-\[\#B45309\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
-:root .text-\[\#EA580C\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
-:root .text-\[\#C2410C\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
-:root .text-orange-600:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
-:root .text-amber-700:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)) {
+:root .text-\[\#7D0C14\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
+:root .text-\[\#CC3D47\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
+:root .text-\[\#7D0C14\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
+:root .text-red-600:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
+:root .text-red-700:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)) {
   color: var(--warning-text);
 }
-:root .bg-\[\#FEF3C7\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
-:root .bg-\[\#FFFBEB\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
-:root .bg-\[\#FFF7ED\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
-:root .bg-amber-50:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
-:root .bg-orange-50:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)) {
+:root .bg-\[\#EEBDC0\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
+:root .bg-\[\#F9E7E9\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
+:root .bg-\[\#F9E7E9\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
+:root .bg-red-50:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
+:root .bg-red-50:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)) {
   background-color: var(--warning-soft);
 }
-:root .border-\[\#FDE68A\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
-:root .border-\[\#FED7AA\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
-:root .border-amber-200:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
-:root .border-amber-300:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
-:root .border-orange-200:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)) {
+:root .border-\[\#DD7D84\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
+:root .border-\[\#EEBDC0\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
+:root .border-red-200:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
+:root .border-red-300:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
+:root .border-red-200:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)) {
   border-color: var(--warning-border);
 }
-:root .text-\[\#F59E0B\]:not(:is(.quotation-print-page *, .bill-print-page *, #printable-receipt *)) {
+:root .text-\[\#CC3D47\]:not(:is(.quotation-print-page *, .bill-print-page *, #printable-receipt *)) {
   color: var(--warning-text);
 }
 
 /* ── Status · info ─────────────────────────────────────────────────────────── */
-:root .text-\[\#2563EB\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
-:root .text-blue-600:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)) {
+:root .text-\[\#0F2C59\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
+:root .text-blue-800:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)) {
   color: var(--info-text);
 }
-:root .text-\[\#1D4ED8\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
-:root .text-blue-700:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)) {
+:root .text-\[\#0F2C59\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
+:root .text-blue-900:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)) {
   color: var(--info-text);
 }
-:root .bg-\[\#EFF6FF\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
+:root .bg-\[\#E7EAEE\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
 :root .bg-blue-50:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)) {
   background-color: var(--info-soft);
 }
-:root .border-\[\#BFDBFE\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
+:root .border-\[\#BCC4D1\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
 :root .border-blue-200:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)) {
   border-color: var(--info-border);
 }
@@ -1227,34 +1227,34 @@
    The one non-semantic status tone. It used to be hard-coded Tailwind violet,
    which meant it rendered identically in all nine palettes and was
    light-on-light in the dark ones. It now resolves like every other tone. */
-:root .text-\[\#7C3AED\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
-:root .text-\[\#6D28D9\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
-:root .text-\[\#5B21B6\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
-:root .text-violet-600:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
-:root .text-violet-700:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)) {
+:root .text-\[\#0F2C59\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
+:root .text-\[\#0F2C59\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
+:root .text-\[\#3A5277\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
+:root .text-blue-800:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
+:root .text-blue-900:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)) {
   color: var(--accent-text);
 }
-:root .text-\[\#8B5CF6\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
-:root .text-\[\#A78BFA\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
-:root .text-violet-500:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)) {
+:root .text-\[\#0F2C59\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
+:root .text-\[\#7B8BA4\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
+:root .text-blue-700:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)) {
   color: var(--accent-text);
 }
-:root .bg-\[\#F5F3FF\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
-:root .bg-\[\#F3F0FF\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
-:root .bg-violet-50:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
-:root .bg-purple-50:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)) {
+:root .bg-\[\#E7EAEE\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
+:root .bg-\[\#E7EAEE\]:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
+:root .bg-blue-50:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
+:root .bg-blue-50:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)) {
   background-color: var(--accent-soft);
 }
-:root .bg-violet-900\/20:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
-:root .bg-purple-900\/20:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)) {
+:root .bg-blue-950\/20:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
+:root .bg-blue-950\/20:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)) {
   background-color: var(--accent-soft);
 }
-:root .border-violet-200:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
-:root .border-purple-200:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)) {
+:root .border-blue-200:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
+:root .border-blue-200:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)) {
   border-color: var(--accent-border);
 }
-:root .bg-violet-500:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
-:root .bg-purple-500:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)) {
+:root .bg-blue-700:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)),
+:root .bg-blue-700:not(:is(.quotation-print-page *, .bill-print-page *, .dls-page *, .gp-page-bg *, .gps-page *, .slip-container *, #printable-receipt *)) {
   background-color: var(--accent-text);
 }
 
@@ -1367,8 +1367,8 @@
   background:
     linear-gradient(to right, var(--surface) 30%, transparent) left / 32px 100% no-repeat,
     linear-gradient(to left, var(--surface) 30%, transparent) right / 32px 100% no-repeat,
-    linear-gradient(to right, rgb(0 0 0 / 0.07), transparent) left / 12px 100% no-repeat,
-    linear-gradient(to left, rgb(0 0 0 / 0.07), transparent) right / 12px 100% no-repeat;
+    linear-gradient(to right, rgba(0, 0, 0, 0.07), transparent) left / 12px 100% no-repeat,
+    linear-gradient(to left, rgba(0, 0, 0, 0.07), transparent) right / 12px 100% no-repeat;
   background-attachment: local, local, scroll, scroll;
 }
 
@@ -1583,7 +1583,7 @@ body:has(.overlay-backdrop),
 body:has(.fixed.inset-0) { overflow: hidden; }
 
 /* An overlay backdrop dims; it does not frosted-glass the page behind it. */
-.overlay-backdrop { background: rgb(16 24 40 / 0.45); }
+.overlay-backdrop { background: rgba(10, 29, 58, 0.45); }
 
 /* ═══════════════════════════════════════════════════════════════════════════
    7 · PRINT
@@ -1592,11 +1592,11 @@ body:has(.fixed.inset-0) { overflow: hidden; }
 @media print {
   :root,
   [data-theme] {
-    --bg: #ffffff;
-    --surface: #ffffff;
-    --surface-2: #ffffff;
-    --surface-3: #ffffff;
-    --surface-hover: #ffffff;
+    --bg: #FFFFFF;
+    --surface: #FFFFFF;
+    --surface-2: #FFFFFF;
+    --surface-3: #FFFFFF;
+    --surface-hover: #FFFFFF;
   }
 
   .sidebar-dark,
@@ -1653,7 +1653,7 @@ body:has(.fixed.inset-0) { overflow: hidden; }
     left: 10mm;
     right: 10mm;
     bottom: 10mm;
-    border: 2px solid #000;
+    border: 2px solid #000000;
     pointer-events: none;
     z-index: 9999;
   }
@@ -1673,7 +1673,7 @@ body:has(.fixed.inset-0) { overflow: hidden; }
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgb(0 0 0 / 0.4);
+  background: rgba(0, 0, 0, 0.4);
   backdrop-filter: blur(8px) saturate(160%);
   -webkit-backdrop-filter: blur(8px) saturate(160%);
   animation: sync-overlay-in 200ms cubic-bezier(0.16, 1, 0.3, 1);
@@ -1695,9 +1695,9 @@ body:has(.fixed.inset-0) { overflow: hidden; }
   background: var(--surface);
   border: 1px solid var(--border);
   box-shadow:
-    0 24px 80px -16px rgb(0 0 0 / 0.28),
-    0 8px 24px -8px rgb(0 0 0 / 0.14),
-    0 0 0 0.5px rgb(255 255 255 / 0.06) inset;
+    0 24px 80px -16px rgba(0, 0, 0, 0.28),
+    0 8px 24px -8px rgba(0, 0, 0, 0.14),
+    0 0 0 0.5px rgba(255, 255, 255, 0.06) inset;
   overflow: hidden;
   animation: sync-panel-in 280ms cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -1991,9 +1991,9 @@ body:has(.fixed.inset-0) { overflow: hidden; }
   color: white;
   cursor: pointer;
   box-shadow:
-    0 8px 24px -6px rgb(0 0 0 / 0.28),
-    0 4px 10px -4px rgb(0 0 0 / 0.18),
-    0 0 0 1px rgb(255 255 255 / 0.1) inset;
+    0 8px 24px -6px rgba(0, 0, 0, 0.28),
+    0 4px 10px -4px rgba(0, 0, 0, 0.18),
+    0 0 0 1px rgba(255, 255, 255, 0.1) inset;
   transition: all 200ms cubic-bezier(0.16, 1, 0.3, 1);
   animation: sync-fab-in 400ms 200ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
@@ -2004,9 +2004,9 @@ body:has(.fixed.inset-0) { overflow: hidden; }
 .sync-fab:hover {
   transform: scale(1.06);
   box-shadow:
-    0 12px 32px -6px rgb(0 0 0 / 0.36),
-    0 6px 14px -4px rgb(0 0 0 / 0.22),
-    0 0 0 1px rgb(255 255 255 / 0.12) inset;
+    0 12px 32px -6px rgba(0, 0, 0, 0.36),
+    0 6px 14px -4px rgba(0, 0, 0, 0.22),
+    0 0 0 1px rgba(255, 255, 255, 0.12) inset;
 }
 .sync-fab:active {
   transform: scale(0.97);
@@ -2038,9 +2038,9 @@ body:has(.fixed.inset-0) { overflow: hidden; }
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
   box-shadow:
-    0 8px 32px -8px rgb(0 0 0 / 0.18),
-    0 2px 8px -2px rgb(0 0 0 / 0.08),
-    0 0 0 0.5px rgb(0 0 0 / 0.04);
+    0 8px 32px -8px rgba(0, 0, 0, 0.18),
+    0 2px 8px -2px rgba(0, 0, 0, 0.08),
+    0 0 0 0.5px rgba(0, 0, 0, 0.04);
   border: 1px solid var(--border) !important;
 }
 
@@ -2404,8 +2404,8 @@ button:not(:disabled):active,
       linear-gradient(var(--ui-hairline) 1px, transparent 1px),
       linear-gradient(90deg, var(--ui-hairline) 1px, transparent 1px);
     background-size: 32px 32px;
-    -webkit-mask-image: linear-gradient(90deg, transparent 35%, #000 100%);
-    mask-image: linear-gradient(90deg, transparent 35%, #000 100%);
+    -webkit-mask-image: linear-gradient(90deg, transparent 35%, #000000 100%);
+    mask-image: linear-gradient(90deg, transparent 35%, #000000 100%);
   }
   .platform-hero-copy {
     max-width: 720px;
@@ -2460,7 +2460,7 @@ button:not(:disabled):active,
   .platform-hero-primary {
     border: 1px solid var(--brand);
     background: var(--brand);
-    color: #fff;
+    color: #FFFFFF;
     box-shadow: var(--shadow-sm);
   }
   .platform-hero-primary:hover {
@@ -3070,18 +3070,18 @@ button:not(:disabled):active,
   /* Colour identity is shared by a group panel and its cards. */
   .scan-group[data-custody='hotel'],
   .scan-card[data-custody='hotel'] {
-    --scan-accent: #f59e0b;
-    --scan-accent-2: #fb7185;
+    --scan-accent: #0F2C59;
+    --scan-accent-2: #3A5277;
   }
   .scan-group[data-custody='laundry'],
   .scan-card[data-custody='laundry'] {
-    --scan-accent: #38bdf8;
-    --scan-accent-2: #818cf8;
+    --scan-accent: #15803D;
+    --scan-accent-2: #55A87B;
   }
   .scan-group[data-custody='exception'],
   .scan-card[data-custody='exception'] {
-    --scan-accent: #fb7185;
-    --scan-accent-2: #f97316;
+    --scan-accent: #C1121F;
+    --scan-accent-2: #DD7D84;
   }
 
   /* ── Select hero ─────────────────────────────────────────────────────── */
@@ -3090,7 +3090,7 @@ button:not(:disabled):active,
     background:
       radial-gradient(120% 150% at 50% -30%, color-mix(in srgb, var(--brand) 16%, transparent), transparent 62%),
       linear-gradient(155deg, color-mix(in srgb, var(--surface-2) 78%, var(--surface)), var(--surface));
-    box-shadow: var(--shadow-sm), inset 0 1px 0 color-mix(in srgb, #fff 40%, transparent);
+    box-shadow: var(--shadow-sm), inset 0 1px 0 color-mix(in srgb, #FFFFFF 40%, transparent);
   }
   .scan-hero-grid {
     position: absolute;
@@ -3099,8 +3099,8 @@ button:not(:disabled):active,
     opacity: 0.55;
     background-image: radial-gradient(circle at 1px 1px, color-mix(in srgb, var(--text-muted) 24%, transparent) 1px, transparent 0);
     background-size: 22px 22px;
-    -webkit-mask-image: radial-gradient(ellipse 72% 82% at 50% 38%, #000, transparent 82%);
-    mask-image: radial-gradient(ellipse 72% 82% at 50% 38%, #000, transparent 82%);
+    -webkit-mask-image: radial-gradient(ellipse 72% 82% at 50% 38%, #000000, transparent 82%);
+    mask-image: radial-gradient(ellipse 72% 82% at 50% 38%, #000000, transparent 82%);
   }
   .scan-hero-orb {
     position: absolute;
@@ -3123,7 +3123,7 @@ button:not(:disabled):active,
     right: -40px;
     width: 230px;
     height: 230px;
-    background: rgb(56 189 248 / 0.42);
+    background: rgba(58, 82, 119, 0.42);
     animation: scan-orb-two 14s ease-in-out infinite;
   }
   .scan-hero-orb--three {
@@ -3131,7 +3131,7 @@ button:not(:disabled):active,
     left: 36%;
     width: 290px;
     height: 210px;
-    background: rgb(251 191 36 / 0.34);
+    background: rgba(204, 61, 71, 0.34);
     animation: scan-orb-three 19s ease-in-out infinite;
   }
   @keyframes scan-orb-one {
@@ -3184,8 +3184,8 @@ button:not(:disabled):active,
     font-weight: 600;
     white-space: nowrap;
   }
-  .scan-flow-chip[data-flow='hotel'] svg { color: #f59e0b; }
-  .scan-flow-chip[data-flow='laundry'] svg { color: #38bdf8; }
+  .scan-flow-chip[data-flow='hotel'] svg { color: #0F2C59; }
+  .scan-flow-chip[data-flow='laundry'] svg { color: #15803D; }
   .scan-flow-chip[data-flow='return'] svg { color: var(--brand); }
   .scan-hero-note {
     display: inline-flex;
@@ -3250,9 +3250,9 @@ button:not(:disabled):active,
     height: 42px;
     flex-shrink: 0;
     border-radius: 13px;
-    color: #fff;
+    color: #FFFFFF;
     background: linear-gradient(135deg, var(--scan-accent), var(--scan-accent-2));
-    box-shadow: 0 8px 20px -8px color-mix(in srgb, var(--scan-accent) 90%, transparent), inset 0 1px 0 rgb(255 255 255 / 0.32);
+    box-shadow: 0 8px 20px -8px color-mix(in srgb, var(--scan-accent) 90%, transparent), inset 0 1px 0 rgba(255, 255, 255, 0.32);
   }
   .scan-group-count {
     display: inline-flex;
@@ -3304,7 +3304,7 @@ button:not(:disabled):active,
     position: absolute;
     inset: 0;
     pointer-events: none;
-    background: linear-gradient(115deg, transparent 32%, color-mix(in srgb, #fff 50%, transparent) 48%, transparent 64%);
+    background: linear-gradient(115deg, transparent 32%, color-mix(in srgb, #FFFFFF 50%, transparent) 48%, transparent 64%);
     transform: translateX(-130%);
     transition: transform 750ms var(--ease-travel);
   }
@@ -3316,9 +3316,9 @@ button:not(:disabled):active,
     width: 48px;
     height: 48px;
     border-radius: 15px;
-    color: #fff;
+    color: #FFFFFF;
     background: linear-gradient(140deg, var(--scan-accent), var(--scan-accent-2));
-    box-shadow: 0 10px 22px -8px color-mix(in srgb, var(--scan-accent) 85%, transparent), inset 0 1px 0 rgb(255 255 255 / 0.35);
+    box-shadow: 0 10px 22px -8px color-mix(in srgb, var(--scan-accent) 85%, transparent), inset 0 1px 0 rgba(255, 255, 255, 0.35);
     transition: box-shadow 260ms var(--ease-travel), filter 260ms var(--ease-travel);
   }
   .scan-card-icon::after {
@@ -3333,7 +3333,7 @@ button:not(:disabled):active,
   }
   .scan-card:hover .scan-card-icon {
     filter: saturate(1.12);
-    box-shadow: 0 14px 30px -6px color-mix(in srgb, var(--scan-accent) 92%, transparent), inset 0 1px 0 rgb(255 255 255 / 0.4);
+    box-shadow: 0 14px 30px -6px color-mix(in srgb, var(--scan-accent) 92%, transparent), inset 0 1px 0 rgba(255, 255, 255, 0.4);
   }
   .scan-card:hover .scan-card-icon::after { opacity: 1; transform: scale(1); }
   .scan-card-status {
@@ -3374,11 +3374,11 @@ button:not(:disabled):active,
 
   /* ── Colour-coded stat tiles, shared by scan + summary ─────────────── */
   .scan-stat[data-tone='brand'] { --stat-accent: var(--brand); --stat-accent-2: var(--accent-text); }
-  .scan-stat[data-tone='blue'] { --stat-accent: #38bdf8; --stat-accent-2: #6366f1; }
-  .scan-stat[data-tone='violet'] { --stat-accent: #a78bfa; --stat-accent-2: #ec4899; }
-  .scan-stat[data-tone='green'] { --stat-accent: #34d399; --stat-accent-2: #10b981; }
-  .scan-stat[data-tone='amber'] { --stat-accent: #fbbf24; --stat-accent-2: #f97316; }
-  .scan-stat[data-tone='rose'] { --stat-accent: #fb7185; --stat-accent-2: #f43f5e; }
+  .scan-stat[data-tone='blue'] { --stat-accent: #3A5277; --stat-accent-2: #7B8BA4; }
+  .scan-stat[data-tone='violet'] { --stat-accent: #7B8BA4; --stat-accent-2: #CC3D47; }
+  .scan-stat[data-tone='green'] { --stat-accent: #3F9760; --stat-accent-2: #0E5328; }
+  .scan-stat[data-tone='amber'] { --stat-accent: #CC3D47; --stat-accent-2: #CC3D47; }
+  .scan-stat[data-tone='rose'] { --stat-accent: #DD7D84; --stat-accent-2: #CC3D47; }
   .scan-stat {
     background: linear-gradient(145deg, color-mix(in srgb, var(--stat-accent) 11%, var(--surface)), var(--surface));
     transition: transform 200ms var(--ease-travel), border-color 200ms var(--ease-travel), box-shadow 200ms var(--ease-travel);

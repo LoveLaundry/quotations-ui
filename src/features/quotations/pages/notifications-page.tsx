@@ -89,7 +89,7 @@ export default function NotificationsPage() {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h1 className="text-dashboard-title">Notifications</h1>
-          <p className="text-[13px] text-[#98A2B3] mt-0.5">
+          <p className="text-[13px] text-[#7B8BA4] mt-0.5">
             {totalCount > 0
               ? `${totalCount} item${totalCount !== 1 ? 's' : ''} need your attention`
               : 'Everything is up to date'}
@@ -115,16 +115,16 @@ export default function NotificationsPage() {
               className={`flex items-center gap-2 px-4 py-2 text-[13px] font-medium rounded-lg transition-all cursor-pointer ${
                 filter === tab.key
                   ? 'bg-white text-[var(--text-primary)] shadow-sm'
-                  : 'text-[#6B7280] hover:text-[#111827]'
+                  : 'text-[#767676] hover:text-[#0A1D3A]'
               }`}
             >
               {tab.label}
               <span className={`inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full text-[10px] font-bold ${
                 tab.count > 0 && tab.key !== 'all'
-                  ? 'bg-[#DC2626] text-white'
+                  ? 'bg-[#C1121F] text-white'
                   : filter === tab.key
-                    ? 'bg-[var(--surface-3)] text-[#6B7280]'
-                    : 'bg-[var(--border)] text-[#6B7280]'
+                    ? 'bg-[var(--surface-3)] text-[#767676]'
+                    : 'bg-[var(--border)] text-[#767676]'
               }`}>
                 {tab.count}
               </span>
@@ -133,17 +133,17 @@ export default function NotificationsPage() {
         </div>
 
         <div className="relative w-full md:w-72">
-          <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#98A2B3]" />
+          <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#7B8BA4]" />
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search client, item or gate pass..."
-            className="h-10 w-full rounded-lg border border-[var(--border)] bg-white pl-9 pr-9 text-[13px] text-[var(--text-primary)] outline-none focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/10 transition"
+            className="h-10 w-full rounded-lg border border-[var(--border)] bg-white pl-9 pr-9 text-[13px] text-[var(--text-primary)] outline-none focus:border-[#C1121F] focus:ring-2 focus:ring-[#C1121F]/10 transition"
           />
           {search && (
             <button
               onClick={() => setSearch('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-[#98A2B3] hover:text-[#111827]"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-[#7B8BA4] hover:text-[#0A1D3A]"
               aria-label="Clear search"
             >
               <X size={15} />
@@ -174,7 +174,7 @@ export default function NotificationsPage() {
                     onClick={() => setSelected(row)}
                     className="flex items-start gap-4 flex-1 min-w-0 text-left cursor-pointer"
                   >
-                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border bg-[#FEF2F2] text-[#DC2626] border-[#FECACA]">
+                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border bg-[#F9E7E9] text-[#C1121F] border-[#EEBDC0]">
                       <Truck size={20} />
                     </div>
                     <div className="min-w-0 flex-1">
@@ -182,17 +182,17 @@ export default function NotificationsPage() {
                         <p className="text-[14px] font-semibold text-[var(--text-primary)] truncate">
                           {e.item_name}
                         </p>
-                        <span className="inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide whitespace-nowrap bg-[#FEF2F2] text-[#DC2626] border-[#FECACA]">
+                        <span className="inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide whitespace-nowrap bg-[#F9E7E9] text-[#C1121F] border-[#EEBDC0]">
                           Pending to Send
                         </span>
                       </div>
-                      <p className="text-[12px] text-[#6B7280] mt-0.5 truncate">
+                      <p className="text-[12px] text-[#767676] mt-0.5 truncate">
                         {e.client_name} · Gate Pass #{e.gate_pass_number}
                       </p>
-                      <div className="mt-1.5 flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-[#98A2B3]">
+                      <div className="mt-1.5 flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-[#7B8BA4]">
                         <span>Received: {e.received}</span>
                         <span>Delivered: {e.delivered}</span>
-                        <span className="font-semibold text-[#DC2626]">Pending: {e.pending}</span>
+                        <span className="font-semibold text-[#C1121F]">Pending: {e.pending}</span>
                       </div>
                     </div>
                   </button>
@@ -208,13 +208,13 @@ export default function NotificationsPage() {
                     <Button
                       size="sm"
                       onClick={() => navigate(`/gate-passes/${e.gate_pass_id}`)}
-                      className="bg-[#DC2626] hover:bg-[#B91C1C]"
+                      className="bg-[#C1121F] hover:bg-[#C1121F]"
                     >
                       <Truck size={14} /> View Gate Pass
                     </Button>
                     <button
                       onClick={() => setSelected(row)}
-                      className="flex h-8 w-8 items-center justify-center rounded-lg text-[#98A2B3] hover:bg-[var(--surface-3)] hover:text-[#111827] transition-colors cursor-pointer"
+                      className="flex h-8 w-8 items-center justify-center rounded-lg text-[#7B8BA4] hover:bg-[var(--surface-3)] hover:text-[#0A1D3A] transition-colors cursor-pointer"
                       aria-label="Open details"
                     >
                       <ChevronRight size={18} />
@@ -234,7 +234,7 @@ export default function NotificationsPage() {
                   onClick={() => setSelected(row)}
                   className="flex items-start gap-4 flex-1 min-w-0 text-left cursor-pointer"
                 >
-                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border bg-[#FFF7ED] text-[#EA580C] border-[#FED7AA]">
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border bg-[#F9E7E9] text-[#CC3D47] border-[#EEBDC0]">
                     <FileText size={20} />
                   </div>
                   <div className="min-w-0 flex-1">
@@ -242,19 +242,19 @@ export default function NotificationsPage() {
                       <p className="text-[14px] font-semibold text-[var(--text-primary)] truncate">
                         {q.client_name}
                       </p>
-                      <span className="inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide whitespace-nowrap bg-[#FFF7ED] text-[#EA580C] border-[#FED7AA]">
+                      <span className="inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide whitespace-nowrap bg-[#F9E7E9] text-[#CC3D47] border-[#EEBDC0]">
                         Ready for Billing
                       </span>
                       {q.tag && (
-                        <span className="inline-flex items-center rounded-full bg-[var(--surface-3)] border border-[var(--border)] px-2 py-0.5 text-[10px] font-semibold uppercase text-[#6B7280]">
+                        <span className="inline-flex items-center rounded-full bg-[var(--surface-3)] border border-[var(--border)] px-2 py-0.5 text-[10px] font-semibold uppercase text-[#767676]">
                           {q.tag}
                         </span>
                       )}
                     </div>
-                    <p className="text-[12px] text-[#6B7280] mt-0.5 truncate">
+                    <p className="text-[12px] text-[#767676] mt-0.5 truncate">
                       {q.quotation_title || 'General Price List'} · #{String(q.id).slice(0, 8)}
                     </p>
-                    <div className="mt-1.5 flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-[#98A2B3]">
+                    <div className="mt-1.5 flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-[#7B8BA4]">
                       <span>{q.line_items?.length ?? 0} items</span>
                       <span>
                         LKR {(q.line_items ?? []).reduce((sum, li) => sum + li.unit_price, 0).toFixed(2)} total rate value
@@ -274,13 +274,13 @@ export default function NotificationsPage() {
                   <Button
                     size="sm"
                     onClick={() => handleAction(row)}
-                    className="bg-[var(--text-primary)] hover:bg-[#374151]"
+                    className="bg-[var(--text-primary)] hover:bg-[#0A1D3A]"
                   >
                     <Plus size={14} /> Create Bill
                   </Button>
                   <button
                     onClick={() => setSelected(row)}
-                    className="flex h-8 w-8 items-center justify-center rounded-lg text-[#98A2B3] hover:bg-[var(--surface-3)] hover:text-[#111827] transition-colors cursor-pointer"
+                    className="flex h-8 w-8 items-center justify-center rounded-lg text-[#7B8BA4] hover:bg-[var(--surface-3)] hover:text-[#0A1D3A] transition-colors cursor-pointer"
                     aria-label="Open details"
                   >
                     <ChevronRight size={18} />

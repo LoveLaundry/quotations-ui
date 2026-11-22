@@ -74,7 +74,7 @@ export function PasswordResetConfirmPage() {
 
   if (tokenValid === false) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 p-4">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 p-4">
         <Card className="w-full max-w-md">
           <CardContent className="pt-6">
             <div className="flex flex-col items-center text-center space-y-4">
@@ -82,8 +82,8 @@ export function PasswordResetConfirmPage() {
                 <AlertCircle className="w-8 h-8 text-red-600" />
               </div>
               <div>
-                <h2 className="text-2xl font-bold text-slate-900">Invalid or expired link</h2>
-                <p className="mt-2 text-slate-600">
+                <h2 className="text-2xl font-bold text-gray-900">Invalid or expired link</h2>
+                <p className="mt-2 text-gray-600">
                   This password reset link is no longer valid. It may have expired or already been used.
                 </p>
               </div>
@@ -93,7 +93,7 @@ export function PasswordResetConfirmPage() {
                     Request a new reset link
                   </Button>
                 </Link>
-                <Link to="/login" className="text-sm text-slate-600 hover:text-slate-900 underline">
+                <Link to="/login" className="text-sm text-gray-600 hover:text-gray-900 underline">
                   Back to login
                 </Link>
               </div>
@@ -106,14 +106,14 @@ export function PasswordResetConfirmPage() {
 
   if (tokenValid === null) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 p-4">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 p-4">
         <Card className="w-full max-w-md">
           <CardContent className="pt-6">
             <div className="flex flex-col items-center text-center space-y-4">
-              <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center animate-pulse">
-                <Lock className="w-8 h-8 text-slate-400" />
+              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center animate-pulse">
+                <Lock className="w-8 h-8 text-gray-400" />
               </div>
-              <p className="text-slate-600">Validating reset link...</p>
+              <p className="text-gray-600">Validating reset link...</p>
             </div>
           </CardContent>
         </Card>
@@ -122,15 +122,15 @@ export function PasswordResetConfirmPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 p-4">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <Link to="/login" className="flex items-center text-sm text-slate-600 hover:text-slate-900 mb-4">
+          <Link to="/login" className="flex items-center text-sm text-gray-600 hover:text-gray-900 mb-4">
             <ArrowLeft className="w-4 h-4 mr-1" />
             Back to login
           </Link>
           <CardTitle className="text-2xl font-bold">Set new password</CardTitle>
-          <p className="text-slate-600">
+          <p className="text-gray-600">
             Enter your new password below. Make sure it's at least 8 characters long.
           </p>
         </CardHeader>
@@ -152,12 +152,12 @@ export function PasswordResetConfirmPage() {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
-              <p className="text-xs text-slate-500">Must be at least 8 characters</p>
+              <p className="text-xs text-gray-500">Must be at least 8 characters</p>
             </div>
 
             <div className="space-y-2">

@@ -200,7 +200,7 @@ export default function SalarySlipPage() {
         subtitle="Calculate earnings & deductions for an employee period"
         actions={
           paramEmp ? (
-            <span className="flex items-center gap-1.5 text-sm text-amber-600 dark:text-amber-400 font-medium">
+            <span className="flex items-center gap-1.5 text-sm text-red-600 dark:text-red-400 font-medium">
               <Sparkles size={15} /> Quick-launch from employee card — auto-calculated
             </span>
           ) : undefined
@@ -376,7 +376,7 @@ export default function SalarySlipPage() {
                 </div>
                 <button
                   onClick={() => handleSummaryPrint()}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm flex items-center gap-2"
+                  className="px-4 py-2 bg-blue-800 text-white rounded-lg hover:bg-blue-900 text-sm flex items-center gap-2"
                 >
                   <Printer size={16} /> Print
                 </button>
@@ -395,7 +395,7 @@ export default function SalarySlipPage() {
                   {selectedSlip.attendance_required !== false && (
                     <>
                       <div className="flex justify-between"><span className="text-gray-500">Worked Days</span><span className="font-medium text-green-600">{selectedSlip.worked_days ?? '-'}</span></div>
-                      <div className="flex justify-between"><span className="text-gray-500">Leave Days</span><span className="font-medium text-blue-600">{selectedSlip.leave_days ?? '-'}</span></div>
+                      <div className="flex justify-between"><span className="text-gray-500">Leave Days</span><span className="font-medium text-blue-800">{selectedSlip.leave_days ?? '-'}</span></div>
                       <div className="flex justify-between"><span className="text-gray-500">Absent Days</span><span className="font-medium text-red-600">{selectedSlip.absent_days ?? '-'}</span></div>
                       <div className="flex justify-between"><span className="text-gray-500">Calendar / Working Days</span><span className="font-medium">{selectedSlip.calendar_days ?? '-'} / {selectedSlip.working_days ?? '-'}</span></div>
                     </>
@@ -446,10 +446,10 @@ export default function SalarySlipPage() {
               <div className="flex justify-between"><span className="text-gray-500">Calendar Days</span><span className="font-medium">{calculation.calendar_days}</span></div>
               <div className="flex justify-between"><span className="text-gray-500">Working Days</span><span className="font-medium">{calculation.total_working_days}</span></div>
               <div className="flex justify-between"><span className="text-gray-500">Worked Days</span><span className="font-medium text-green-600">{calculation.worked_days}</span></div>
-              <div className="flex justify-between"><span className="text-gray-500">Leave Days</span><span className="font-medium text-blue-600">{calculation.leave_days}</span></div>
+              <div className="flex justify-between"><span className="text-gray-500">Leave Days</span><span className="font-medium text-blue-800">{calculation.leave_days}</span></div>
               <div className="flex justify-between"><span className="text-gray-500">Absent Days</span><span className="font-medium text-red-600">{calculation.absent_days}</span></div>
-              <div className="flex justify-between"><span className="text-gray-500">Holidays</span><span className="font-medium text-purple-600">{calculation.holiday_count || 0}</span></div>
-              <div className="flex justify-between"><span className="text-gray-500">Weekends</span><span className="font-medium text-purple-600">{calculation.weekend_count || 0}</span></div>
+              <div className="flex justify-between"><span className="text-gray-500">Holidays</span><span className="font-medium text-blue-800">{calculation.holiday_count || 0}</span></div>
+              <div className="flex justify-between"><span className="text-gray-500">Weekends</span><span className="font-medium text-blue-800">{calculation.weekend_count || 0}</span></div>
               <div className="flex justify-between"><span className="text-gray-500">Basic Salary</span><span className="font-medium">LKR {calculation.basic_salary.toLocaleString()}</span></div>
               <div className="flex justify-between"><span className="text-gray-500">Adjusted Base</span><span className="font-medium">LKR {calculation.adjusted_base_salary.toLocaleString()}</span></div>
               <div className="col-span-2 flex justify-between border-t pt-2">
@@ -467,7 +467,7 @@ export default function SalarySlipPage() {
                   <div className="flex justify-between"><span className="text-gray-500">Configured Amount</span><span className="font-medium">LKR {calculation.basic_salary.toLocaleString()}</span></div>
                   <div className="flex justify-between"><span className="text-gray-500">Base for Period</span><span className="font-medium">LKR {calculation.base_salary_for_period.toLocaleString()}</span></div>
                 </div>
-                <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 rounded-lg p-3 text-sm text-amber-700 dark:text-amber-300">
+                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 rounded-lg p-3 text-sm text-red-700 dark:text-red-300">
                   Fixed salary arrangement — attendance is not required and does not affect this employee's pay. Prorated only for mid-period joins/leaves.
                 </div>
               </>
@@ -608,7 +608,7 @@ export default function SalarySlipPage() {
               </div>
               <button
                 onClick={() => handlePrint()}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm flex items-center gap-2"
+                className="px-4 py-2 bg-blue-800 text-white rounded-lg hover:bg-blue-900 text-sm flex items-center gap-2"
               >
                 <Printer size={16} /> Print
               </button>

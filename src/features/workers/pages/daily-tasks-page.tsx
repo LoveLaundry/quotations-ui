@@ -30,15 +30,15 @@ import { addDaysISO, todayISO } from '../../../lib/time'
 import { Portal } from '../../../components/ui/portal'
 
 const taskTypes = [
-  { value: 'WASHING', label: 'Washing', icon: ArrowsClockwise, color: 'bg-blue-50 text-blue-600' },
-  { value: 'PRESSING', label: 'Pressing', icon: HandPalm, color: 'bg-orange-50 text-orange-600' },
-  { value: 'FOLDING', label: 'Folding', icon: Cube, color: 'bg-purple-50 text-purple-600' },
+  { value: 'WASHING', label: 'Washing', icon: ArrowsClockwise, color: 'bg-blue-50 text-blue-800' },
+  { value: 'PRESSING', label: 'Pressing', icon: HandPalm, color: 'bg-red-50 text-red-600' },
+  { value: 'FOLDING', label: 'Folding', icon: Cube, color: 'bg-blue-50 text-blue-800' },
   { value: 'PACKING', label: 'Packing', icon: Package, color: 'bg-green-50 text-green-600' },
-  { value: 'STAIN_TREATMENT', label: 'Stain Removal', icon: TShirt, color: 'bg-pink-50 text-pink-600' },
-  { value: 'DRY_CLEANING', label: 'Dry Cleaning', icon: Tag, color: 'bg-teal-50 text-teal-600' },
-  { value: 'MACHINE_CLEANING', label: 'Machine Clean', icon: ArrowsClockwise, color: 'bg-cyan-50 text-cyan-600' },
-  { value: 'SORTING_TAGGING', label: 'Sorting', icon: Tag, color: 'bg-amber-50 text-amber-600' },
-  { value: 'DELIVERY_SUPPORT', label: 'Delivery', icon: Package, color: 'bg-indigo-50 text-indigo-600' },
+  { value: 'STAIN_TREATMENT', label: 'Stain Removal', icon: TShirt, color: 'bg-red-50 text-red-600' },
+  { value: 'DRY_CLEANING', label: 'Dry Cleaning', icon: Tag, color: 'bg-green-50 text-green-600' },
+  { value: 'MACHINE_CLEANING', label: 'Machine Clean', icon: ArrowsClockwise, color: 'bg-blue-50 text-blue-800' },
+  { value: 'SORTING_TAGGING', label: 'Sorting', icon: Tag, color: 'bg-red-50 text-red-600' },
+  { value: 'DELIVERY_SUPPORT', label: 'Delivery', icon: Package, color: 'bg-blue-50 text-blue-800' },
   { value: 'MAINTENANCE', label: 'Maintenance', icon: Cube, color: 'bg-gray-50 text-gray-600' },
   { value: 'OTHER', label: 'Other', icon: Tag, color: 'bg-gray-50 text-gray-600' },
 ]
@@ -148,12 +148,12 @@ export function DailyTasksPage() {
     <div className="space-y-5">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-[22px] font-semibold text-[#111827] tracking-tight">Staff Daily Tasks</h1>
-          <p className="text-[13px] text-[#6B7280] mt-0.5">Track tasks, link to gate passes, monitor productivity</p>
+          <h1 className="text-[22px] font-semibold text-[#0A1D3A] tracking-tight">Staff Daily Tasks</h1>
+          <p className="text-[13px] text-[#767676] mt-0.5">Track tasks, link to gate passes, monitor productivity</p>
         </div>
         <button
           onClick={openCreate}
-          className="flex items-center gap-2 rounded-lg bg-[#DC2626] px-4 py-2.5 text-[13px] font-semibold text-white hover:bg-[#B91C1C] transition-colors shadow-sm cursor-pointer"
+          className="flex items-center gap-2 rounded-lg bg-[#C1121F] px-4 py-2.5 text-[13px] font-semibold text-white hover:bg-[#C1121F] transition-colors shadow-sm cursor-pointer"
         >
           <Plus size={16} />
           Log Task
@@ -162,18 +162,18 @@ export function DailyTasksPage() {
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {[
-          { label: 'Tasks Logged', value: stats.totalTasks, icon: ListChecks, color: 'text-[#6366F1]' },
-          { label: 'Hours Spent', value: stats.totalHours, icon: Clock, color: 'text-[#F59E0B]' },
-          { label: 'Gate Passes', value: stats.gatePassRefs, icon: ClipboardText, color: 'text-[#10B981]' },
-          { label: 'Active Staff', value: stats.uniqueWorkers, icon: User, color: 'text-[#EC4899]' },
+          { label: 'Tasks Logged', value: stats.totalTasks, icon: ListChecks, color: 'text-[#7B8BA4]' },
+          { label: 'Hours Spent', value: stats.totalHours, icon: Clock, color: 'text-[#CC3D47]' },
+          { label: 'Gate Passes', value: stats.gatePassRefs, icon: ClipboardText, color: 'text-[#0E5328]' },
+          { label: 'Active Staff', value: stats.uniqueWorkers, icon: User, color: 'text-[#CC3D47]' },
         ].map(s => (
           <div key={s.label} className="flex items-center gap-3 rounded-xl border border-[var(--border)] bg-white px-3.5 py-3 shadow-sm">
             <div className={`flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--surface-2)] ${s.color}`}>
               <s.icon size={16} />
             </div>
             <div>
-              <p className="text-[18px] font-bold text-[#111827] leading-none">{s.value}</p>
-              <p className="text-[11px] text-[#6B7280] mt-0.5">{s.label}</p>
+              <p className="text-[18px] font-bold text-[#0A1D3A] leading-none">{s.value}</p>
+              <p className="text-[11px] text-[#767676] mt-0.5">{s.label}</p>
             </div>
           </div>
         ))}
@@ -181,18 +181,18 @@ export function DailyTasksPage() {
 
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="flex items-center gap-2 bg-white border border-[var(--border)] rounded-lg px-3 py-2.5 shadow-sm">
-          <CalendarBlank size={14} className="text-[#6B7280]" />
+          <CalendarBlank size={14} className="text-[#767676]" />
           <input
             type="date"
             value={selectedDate}
             onChange={e => setSelectedDate(e.target.value)}
-            className="text-[13px] text-[#111827] border-none outline-none bg-transparent cursor-pointer"
+            className="text-[13px] text-[#0A1D3A] border-none outline-none bg-transparent cursor-pointer"
           />
-          <span className="text-[11px] text-[#9CA3AF] border-l border-[var(--border)] pl-2 ml-1">to</span>
+          <span className="text-[11px] text-[#A6A6A6] border-l border-[var(--border)] pl-2 ml-1">to</span>
           <select
             value={dateRangeDays}
             onChange={e => setDateRangeDays(Number(e.target.value))}
-            className="text-[13px] text-[#111827] border-none outline-none bg-transparent cursor-pointer"
+            className="text-[13px] text-[#0A1D3A] border-none outline-none bg-transparent cursor-pointer"
           >
             <option value={1}>1 day</option>
             <option value={7}>7 days</option>
@@ -202,22 +202,22 @@ export function DailyTasksPage() {
         </div>
 
         <div className="relative flex-1 max-w-xs">
-          <MagnifyingGlass size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#9CA3AF]" />
+          <MagnifyingGlass size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#A6A6A6]" />
           <input
             type="text"
             placeholder="Search tasks, gate passes..."
             value={search}
             onChange={e => setSearch(e.target.value)}
-            className="w-full rounded-lg border border-[var(--border)] bg-white pl-9 pr-3 py-2.5 text-[13px] text-[#111827] placeholder-[#9CA3AF] focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/10 transition-all"
+            className="w-full rounded-lg border border-[var(--border)] bg-white pl-9 pr-3 py-2.5 text-[13px] text-[#0A1D3A] placeholder-[#A6A6A6] focus:border-[#C1121F] focus:ring-2 focus:ring-[#C1121F]/10 transition-all"
           />
         </div>
 
         <div className="relative">
-          <User size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#9CA3AF]" />
+          <User size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#A6A6A6]" />
           <select
             value={workerFilter}
             onChange={e => setWorkerFilter(e.target.value)}
-            className="rounded-lg border border-[var(--border)] bg-white pl-9 pr-8 py-2.5 text-[13px] text-[#111827] focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/10 transition-all appearance-none cursor-pointer"
+            className="rounded-lg border border-[var(--border)] bg-white pl-9 pr-8 py-2.5 text-[13px] text-[#0A1D3A] focus:border-[#C1121F] focus:ring-2 focus:ring-[#C1121F]/10 transition-all appearance-none cursor-pointer"
           >
             <option value="all">All Staff</option>
             {workers.map(w => (
@@ -227,11 +227,11 @@ export function DailyTasksPage() {
         </div>
 
         <div className="relative">
-          <FunnelSimple size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#9CA3AF]" />
+          <FunnelSimple size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#A6A6A6]" />
           <select
             value={typeFilter}
             onChange={e => setTypeFilter(e.target.value)}
-            className="rounded-lg border border-[var(--border)] bg-white pl-9 pr-8 py-2.5 text-[13px] text-[#111827] focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/10 transition-all appearance-none cursor-pointer"
+            className="rounded-lg border border-[var(--border)] bg-white pl-9 pr-8 py-2.5 text-[13px] text-[#0A1D3A] focus:border-[#C1121F] focus:ring-2 focus:ring-[#C1121F]/10 transition-all appearance-none cursor-pointer"
           >
             <option value="all">All Types</option>
             {taskTypes.map(t => (
@@ -251,20 +251,20 @@ export function DailyTasksPage() {
           </div>
         ) : loadingTasks || loadingWorkers ? (
           <div className="rounded-xl border border-[var(--border)] bg-white px-6 py-16 text-center shadow-sm">
-            <div className="animate-spin inline-block w-6 h-6 border-2 border-[#DC2626] border-t-transparent rounded-full mb-3" />
-            <p className="text-[13px] text-[#6B7280]">Loading tasks...</p>
+            <div className="animate-spin inline-block w-6 h-6 border-2 border-[#C1121F] border-t-transparent rounded-full mb-3" />
+            <p className="text-[13px] text-[#767676]">Loading tasks...</p>
           </div>
         ) : filteredLogs.length === 0 ? (
           <div className="rounded-xl border border-[var(--border)] bg-white px-6 py-16 text-center shadow-sm">
             <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-[var(--surface-3)] mb-4">
-              <ClipboardText size={24} className="text-[#9CA3AF]" />
+              <ClipboardText size={24} className="text-[#A6A6A6]" />
             </div>
-            <p className="text-[14px] font-medium text-[#374151]">
+            <p className="text-[14px] font-medium text-[#0A1D3A]">
               {search || workerFilter !== 'all' || typeFilter !== 'all'
                 ? 'No tasks match your filters'
                 : 'No tasks logged yet'}
             </p>
-            <p className="text-[12px] text-[#9CA3AF] mt-1">
+            <p className="text-[12px] text-[#A6A6A6] mt-1">
               {search || workerFilter !== 'all' || typeFilter !== 'all'
                 ? 'Try adjusting your search or filters'
                 : 'Log your first task or link one to a gate pass'}
@@ -272,7 +272,7 @@ export function DailyTasksPage() {
             {!search && workerFilter === 'all' && typeFilter === 'all' && (
               <button
                 onClick={openCreate}
-                className="mt-4 inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#DC2626] text-[13px] font-semibold text-white hover:bg-[#B91C1C] transition-colors cursor-pointer"
+                className="mt-4 inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#C1121F] text-[13px] font-semibold text-white hover:bg-[#C1121F] transition-colors cursor-pointer"
               >
                 <Plus size={14} />
                 Log First Task
@@ -284,14 +284,14 @@ export function DailyTasksPage() {
             <div key={log.id} className="rounded-xl border border-[var(--border)] bg-white shadow-sm overflow-hidden">
               <div className="flex items-center justify-between px-4 py-3 bg-[var(--surface-2)] border-b border-[var(--surface-3)]">
                 <div className="flex items-center gap-2.5">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--surface-3)] text-[11px] font-bold text-[#6B7280] uppercase">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--surface-3)] text-[11px] font-bold text-[#767676] uppercase">
                     {log.is_group_work ? 'GR' : log.worker_name?.slice(0, 2) ?? '??'}
                   </div>
                   <div>
-                    <p className="text-[13px] font-semibold text-[#111827]">
+                    <p className="text-[13px] font-semibold text-[#0A1D3A]">
                       {log.is_group_work ? 'Group Work' : log.worker_name}
                     </p>
-                    <p className="text-[11px] text-[#6B7280]">
+                    <p className="text-[11px] text-[#767676]">
                       {log.work_date} · {log.shift?.replace('_', ' ').toLowerCase()}
                       {log.is_group_work && log.team_members?.length
                         ? ` · ${log.team_members.join(', ')}`
@@ -299,10 +299,10 @@ export function DailyTasksPage() {
                     </p>
                   </div>
                 </div>
-                <div className="flex items-center gap-4 text-[11px] text-[#6B7280]">
+                <div className="flex items-center gap-4 text-[11px] text-[#767676]">
                   <span>{log.tasks.length} task{log.tasks.length !== 1 ? 's' : ''}</span>
                   {log.is_group_work && (
-                    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-[#EEF2FF] text-[#4338CA] border border-[#C7D2FE] text-[10px] font-medium">
+                    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-[#E7EAEE] text-[#3A5277] border border-[#BCC4D1] text-[10px] font-medium">
                       <Users size={10} /> Group
                     </span>
                   )}
@@ -320,38 +320,38 @@ export function DailyTasksPage() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <span className="text-[13px] font-medium text-[#111827]">{task.task_type.replace('_', ' ')}</span>
+                          <span className="text-[13px] font-medium text-[#0A1D3A]">{task.task_type.replace('_', ' ')}</span>
                           {task.gate_pass_number && (
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-[#EFF6FF] text-[11px] font-medium text-[#2563EB] border border-[#BFDBFE]">
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-[#E7EAEE] text-[11px] font-medium text-[#0F2C59] border border-[#BCC4D1]">
                               <ClipboardText size={10} />
                               {task.gate_pass_number}
                             </span>
                           )}
                           {task.hours_spent != null && task.hours_spent > 0 && (
-                            <span className="text-[11px] text-[#9CA3AF]">{task.hours_spent}h</span>
+                            <span className="text-[11px] text-[#A6A6A6]">{task.hours_spent}h</span>
                           )}
                           {task.quantity > 0 && (
-                            <span className="text-[11px] text-[#9CA3AF]">{task.quantity} {task.unit?.toLowerCase() ?? 'pcs'}</span>
+                            <span className="text-[11px] text-[#A6A6A6]">{task.quantity} {task.unit?.toLowerCase() ?? 'pcs'}</span>
                           )}
                         </div>
                         {task.description && (
-                           <p className="text-[12px] text-[#6B7280] mt-0.5 line-clamp-2">{task.description}</p>
+                           <p className="text-[12px] text-[#767676] mt-0.5 line-clamp-2">{task.description}</p>
                          )}
                         {task.remark && (
-                           <p className="text-[11px] text-[#9CA3AF] mt-0.5 line-clamp-1 italic">Remark: {task.remark}</p>
+                           <p className="text-[11px] text-[#A6A6A6] mt-0.5 line-clamp-1 italic">Remark: {task.remark}</p>
                         )}
                       </div>
                       <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
                         <button
                           onClick={() => openEdit(log, idx, task)}
-                          className="p-1.5 rounded-lg text-[#9CA3AF] hover:text-[#111827] hover:bg-[var(--surface-3)] transition-colors cursor-pointer"
+                          className="p-1.5 rounded-lg text-[#A6A6A6] hover:text-[#0A1D3A] hover:bg-[var(--surface-3)] transition-colors cursor-pointer"
                           title="Edit"
                         >
                           <PencilSimple size={13} />
                         </button>
                         <button
                           onClick={() => setDeleteConfirm({ log, taskIndex: idx, task })}
-                          className="p-1.5 rounded-lg text-[#9CA3AF] hover:text-[#DC2626] hover:bg-[#FEF2F2] transition-colors cursor-pointer"
+                          className="p-1.5 rounded-lg text-[#A6A6A6] hover:text-[#C1121F] hover:bg-[#F9E7E9] transition-colors cursor-pointer"
                           title="Delete"
                         >
                           <TrashSimple size={13} />
@@ -429,24 +429,24 @@ export function DailyTasksPage() {
             >
               <div className="px-5 py-5 text-center">
                 <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-red-50 mb-3">
-                  <TrashSimple size={18} className="text-[#DC2626]" />
+                  <TrashSimple size={18} className="text-[#C1121F]" />
                 </div>
-                <p className="text-[14px] font-semibold text-[#111827]">Delete Task?</p>
-                <p className="text-[12px] text-[#6B7280] mt-1">
+                <p className="text-[14px] font-semibold text-[#0A1D3A]">Delete Task?</p>
+                <p className="text-[12px] text-[#767676] mt-1">
                   This will permanently remove the <strong>{deleteConfirm.task.task_type.replace('_', ' ')}</strong> entry.
                 </p>
               </div>
               <div className="flex items-center gap-2 px-5 py-3.5 border-t border-[var(--surface-3)]">
                 <button
                   onClick={() => setDeleteConfirm(null)}
-                  className="flex-1 px-4 py-2 rounded-lg text-[13px] font-medium text-[#374151] bg-[var(--surface-3)] hover:bg-[var(--border)] transition-colors cursor-pointer"
+                  className="flex-1 px-4 py-2 rounded-lg text-[13px] font-medium text-[#0A1D3A] bg-[var(--surface-3)] hover:bg-[var(--border)] transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleDelete}
                   disabled={deleteTask.isPending || updateTask.isPending}
-                  className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg bg-[#DC2626] text-[13px] font-semibold text-white hover:bg-[#B91C1C] disabled:opacity-50 transition-colors cursor-pointer"
+                  className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg bg-[#C1121F] text-[13px] font-semibold text-white hover:bg-[#C1121F] disabled:opacity-50 transition-colors cursor-pointer"
                 >
                   {(deleteTask.isPending || updateTask.isPending) ? (
                     <div className="animate-spin w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full" />
@@ -511,18 +511,18 @@ function GatePassPicker({
   if (gatePassNumber && selected) {
     return (
       <div>
-        <label className="text-[12px] font-medium text-[#374151] block mb-1">Linked Gate Pass</label>
-        <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[#EFF6FF] border border-[#BFDBFE] text-[12px]">
-          <ClipboardText size={13} className="text-[#2563EB] shrink-0" />
-          <span className="font-medium text-[#1E40AF]">{selected.gate_pass_number}</span>
-          <span className="text-[#6B7280] truncate">— {selected.client_name}, {selected.items.length} items</span>
+        <label className="text-[12px] font-medium text-[#0A1D3A] block mb-1">Linked Gate Pass</label>
+        <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[#E7EAEE] border border-[#BCC4D1] text-[12px]">
+          <ClipboardText size={13} className="text-[#0F2C59] shrink-0" />
+          <span className="font-medium text-[#0A1D3A]">{selected.gate_pass_number}</span>
+          <span className="text-[#767676] truncate">— {selected.client_name}, {selected.items.length} items</span>
           <button
             type="button"
             onClick={() => { setGatePassNumber(''); setSearch('') }}
-            className="ml-auto p-0.5 rounded hover:bg-[#DBEAFE] cursor-pointer shrink-0"
+            className="ml-auto p-0.5 rounded hover:bg-[#E7EAEE] cursor-pointer shrink-0"
             aria-label="Clear gate pass"
           >
-            <X size={13} className="text-[#2563EB]" />
+            <X size={13} className="text-[#0F2C59]" />
           </button>
         </div>
       </div>
@@ -531,16 +531,16 @@ function GatePassPicker({
 
   return (
     <div>
-      <label className="text-[12px] font-medium text-[#374151] block mb-1">Link to Gate Pass (optional)</label>
+      <label className="text-[12px] font-medium text-[#0A1D3A] block mb-1">Link to Gate Pass (optional)</label>
       <div className="relative">
-        <ClipboardText size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#9CA3AF]" />
+        <ClipboardText size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#A6A6A6]" />
         <input
           type="text"
           value={search}
           onChange={e => { setSearch(e.target.value); setShowPicker(true) }}
           onFocus={() => setShowPicker(true)}
           placeholder="Search gate pass number or client..."
-          className="w-full rounded-lg border border-[var(--border)] bg-white pl-9 pr-3 py-2.5 text-[13px] text-[#111827] placeholder-[#9CA3AF] focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/10 transition-all"
+          className="w-full rounded-lg border border-[var(--border)] bg-white pl-9 pr-3 py-2.5 text-[13px] text-[#0A1D3A] placeholder-[#A6A6A6] focus:border-[#C1121F] focus:ring-2 focus:ring-[#C1121F]/10 transition-all"
         />
         {showPicker && filtered.length > 0 && (
           <div className="absolute z-10 top-full left-0 right-0 mt-1 max-h-48 overflow-y-auto rounded-lg border border-[var(--border)] bg-white shadow-lg">
@@ -552,10 +552,10 @@ function GatePassPicker({
                 className="w-full text-left px-3 py-2.5 hover:bg-[var(--surface-2)] transition-colors border-b border-[var(--surface-3)] last:border-0 cursor-pointer"
               >
                 <div className="flex items-center justify-between">
-                  <span className="text-[13px] font-medium text-[#111827]">{gp.gate_pass_number}</span>
-                  <span className="text-[11px] text-[#9CA3AF]">{gp.receiving_date}</span>
+                  <span className="text-[13px] font-medium text-[#0A1D3A]">{gp.gate_pass_number}</span>
+                  <span className="text-[11px] text-[#A6A6A6]">{gp.receiving_date}</span>
                 </div>
-                <p className="text-[11px] text-[#6B7280] mt-0.5">{gp.client_name} · {gp.items.length} item{gp.items.length !== 1 ? 's' : ''}</p>
+                <p className="text-[11px] text-[#767676] mt-0.5">{gp.client_name} · {gp.items.length} item{gp.items.length !== 1 ? 's' : ''}</p>
               </button>
             ))}
           </div>
@@ -704,11 +704,11 @@ function TaskDialog({ open, onClose, editEntry, workers, gatePasses, onSubmit, i
         onClick={e => e.stopPropagation()}
       >
         <div className="flex items-center justify-between px-5 py-4 border-b border-[var(--surface-3)]">
-          <h3 className="text-[15px] font-semibold text-[#111827]">
+          <h3 className="text-[15px] font-semibold text-[#0A1D3A]">
             {editEntry ? 'Edit Task' : 'Log New Task'}
           </h3>
           <button onClick={onClose} aria-label="Close dialog" className="p-1 rounded-lg hover:bg-[var(--surface-3)] transition-colors cursor-pointer">
-            <X size={16} className="text-[#6B7280]" />
+            <X size={16} className="text-[#767676]" />
           </button>
         </div>
 
@@ -716,14 +716,14 @@ function TaskDialog({ open, onClose, editEntry, workers, gatePasses, onSubmit, i
           <div className="grid grid-cols-2 gap-3">
             <div>
               <div className="flex items-center justify-between mb-1">
-                <label className="text-[12px] font-medium text-[#374151]">Staff *</label>
+                <label className="text-[12px] font-medium text-[#0A1D3A]">Staff *</label>
                 {!isEdit && (
-                  <label className="flex items-center gap-1.5 text-[11px] text-[#6B7280] cursor-pointer select-none">
+                  <label className="flex items-center gap-1.5 text-[11px] text-[#767676] cursor-pointer select-none">
                     <input
                       type="checkbox"
                       checked={isGroup}
                       onChange={e => setIsGroup(e.target.checked)}
-                      className="accent-[#DC2626] w-3.5 h-3.5"
+                      className="accent-[#C1121F] w-3.5 h-3.5"
                     />
                     Group work
                   </label>
@@ -733,7 +733,7 @@ function TaskDialog({ open, onClose, editEntry, workers, gatePasses, onSubmit, i
                 <input
                   value={workerName}
                   disabled
-                  className="w-full rounded-lg border border-[var(--border)] px-3 py-2.5 text-[13px] text-[#111827] bg-[var(--surface-2)] disabled:opacity-60 cursor-not-allowed"
+                  className="w-full rounded-lg border border-[var(--border)] px-3 py-2.5 text-[13px] text-[#0A1D3A] bg-[var(--surface-2)] disabled:opacity-60 cursor-not-allowed"
                 />
               ) : isGroup ? (
                 <div className="rounded-lg border border-[var(--border)] p-2 max-h-40 overflow-y-auto space-y-1 bg-white">
@@ -751,21 +751,21 @@ function TaskDialog({ open, onClose, editEntry, workers, gatePasses, onSubmit, i
                                 : prev.filter(n => n !== w.worker_name)
                             )
                           }
-                          className="accent-[#DC2626] w-4 h-4 shrink-0"
+                          className="accent-[#C1121F] w-4 h-4 shrink-0"
                         />
-                        <span className="text-[13px] text-[#111827]">{w.worker_name}</span>
+                        <span className="text-[13px] text-[#0A1D3A]">{w.worker_name}</span>
                       </label>
                     )
                   })}
                   {teamMembers.length > 0 && (
-                    <p className="text-[11px] text-[#6B7280] px-2 pt-1">{teamMembers.length} member(s) selected</p>
+                    <p className="text-[11px] text-[#767676] px-2 pt-1">{teamMembers.length} member(s) selected</p>
                   )}
                 </div>
               ) : (
                 <select
                   value={workerName}
                   onChange={e => setWorkerName(e.target.value)}
-                  className="w-full rounded-lg border border-[var(--border)] px-3 py-2.5 text-[13px] text-[#111827] focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/10 transition-all appearance-none cursor-pointer"
+                  className="w-full rounded-lg border border-[var(--border)] px-3 py-2.5 text-[13px] text-[#0A1D3A] focus:border-[#C1121F] focus:ring-2 focus:ring-[#C1121F]/10 transition-all appearance-none cursor-pointer"
                 >
                   {workers.map(w => (
                     <option key={w.id} value={w.worker_name}>{w.worker_name}</option>
@@ -774,13 +774,13 @@ function TaskDialog({ open, onClose, editEntry, workers, gatePasses, onSubmit, i
               )}
             </div>
             <div>
-              <label className="text-[12px] font-medium text-[#374151] block mb-1">Date *</label>
+              <label className="text-[12px] font-medium text-[#0A1D3A] block mb-1">Date *</label>
               <input
                 type="date"
                 value={workDate}
                 onChange={e => setWorkDate(e.target.value)}
                 disabled={isEdit}
-                className="w-full rounded-lg border border-[var(--border)] px-3 py-2.5 text-[13px] text-[#111827] focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/10 transition-all disabled:opacity-50"
+                className="w-full rounded-lg border border-[var(--border)] px-3 py-2.5 text-[13px] text-[#0A1D3A] focus:border-[#C1121F] focus:ring-2 focus:ring-[#C1121F]/10 transition-all disabled:opacity-50"
               />
             </div>
           </div>
@@ -788,7 +788,7 @@ function TaskDialog({ open, onClose, editEntry, workers, gatePasses, onSubmit, i
           {isEdit ? (
             <>
               <div>
-                <label className="text-[12px] font-medium text-[#374151] block mb-1">Task Type *</label>
+                <label className="text-[12px] font-medium text-[#0A1D3A] block mb-1">Task Type *</label>
                 <div className="grid grid-cols-3 sm:grid-cols-4 gap-1.5">
                   {taskTypes.map(t => {
                     const isSelected = taskType === t.value
@@ -799,11 +799,11 @@ function TaskDialog({ open, onClose, editEntry, workers, gatePasses, onSubmit, i
                         onClick={() => setTaskType(t.value)}
                         className={`flex flex-col items-center gap-1 px-2 py-2.5 rounded-lg text-[11px] font-medium transition-all cursor-pointer border ${
                           isSelected
-                            ? 'bg-[#DC2626] text-white border-[#DC2626] shadow-sm'
-                            : 'bg-white text-[#374151] border-[var(--border)] hover:border-[#D1D5DB] hover:bg-[var(--surface-2)]'
+                            ? 'bg-[#C1121F] text-white border-[#C1121F] shadow-sm'
+                            : 'bg-white text-[#0A1D3A] border-[var(--border)] hover:border-[#BCC4D1] hover:bg-[var(--surface-2)]'
                         }`}
                       >
-                        <t.icon size={16} className={isSelected ? 'text-white' : 'text-[#6B7280]'} />
+                        <t.icon size={16} className={isSelected ? 'text-white' : 'text-[#767676]'} />
                         <span className="truncate w-full text-center">{t.label}</span>
                       </button>
                     )
@@ -813,22 +813,22 @@ function TaskDialog({ open, onClose, editEntry, workers, gatePasses, onSubmit, i
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
-                  <label className="text-[12px] font-medium text-[#374151] block mb-1">Quantity</label>
+                  <label className="text-[12px] font-medium text-[#0A1D3A] block mb-1">Quantity</label>
                   <input
                     type="number"
                     min="0"
                     value={editQuantity}
                     onChange={e => setEditQuantity(e.target.value)}
                     placeholder="0"
-                    className="w-full rounded-lg border border-[var(--border)] px-3 py-2.5 text-[13px] text-[#111827] placeholder-[#9CA3AF] focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/10 transition-all"
+                    className="w-full rounded-lg border border-[var(--border)] px-3 py-2.5 text-[13px] text-[#0A1D3A] placeholder-[#A6A6A6] focus:border-[#C1121F] focus:ring-2 focus:ring-[#C1121F]/10 transition-all"
                   />
                 </div>
                 <div>
-                  <label className="text-[12px] font-medium text-[#374151] block mb-1">Unit</label>
+                  <label className="text-[12px] font-medium text-[#0A1D3A] block mb-1">Unit</label>
                   <select
                     value={editUnit}
                     onChange={e => setEditUnit(e.target.value)}
-                    className="w-full rounded-lg border border-[var(--border)] px-3 py-2.5 text-[13px] text-[#111827] focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/10 transition-all appearance-none cursor-pointer"
+                    className="w-full rounded-lg border border-[var(--border)] px-3 py-2.5 text-[13px] text-[#0A1D3A] focus:border-[#C1121F] focus:ring-2 focus:ring-[#C1121F]/10 transition-all appearance-none cursor-pointer"
                   >
                     <option value="PIECES">Pieces</option>
                     <option value="KG">Kg</option>
@@ -837,7 +837,7 @@ function TaskDialog({ open, onClose, editEntry, workers, gatePasses, onSubmit, i
                   </select>
                 </div>
                 <div>
-                  <label className="text-[12px] font-medium text-[#374151] block mb-1">Hours Spent</label>
+                  <label className="text-[12px] font-medium text-[#0A1D3A] block mb-1">Hours Spent</label>
                   <input
                     type="number"
                     step="0.5"
@@ -845,7 +845,7 @@ function TaskDialog({ open, onClose, editEntry, workers, gatePasses, onSubmit, i
                     value={editHours}
                     onChange={e => setEditHours(e.target.value)}
                     placeholder="0"
-                    className="w-full rounded-lg border border-[var(--border)] px-3 py-2.5 text-[13px] text-[#111827] placeholder-[#9CA3AF] focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/10 transition-all"
+                    className="w-full rounded-lg border border-[var(--border)] px-3 py-2.5 text-[13px] text-[#0A1D3A] placeholder-[#A6A6A6] focus:border-[#C1121F] focus:ring-2 focus:ring-[#C1121F]/10 transition-all"
                   />
                 </div>
               </div>
@@ -861,23 +861,23 @@ function TaskDialog({ open, onClose, editEntry, workers, gatePasses, onSubmit, i
               />
 
               <div>
-                <label className="text-[12px] font-medium text-[#374151] block mb-1">Item / Service</label>
+                <label className="text-[12px] font-medium text-[#0A1D3A] block mb-1">Item / Service</label>
                 <input
                   value={editDescription}
                   onChange={e => setEditDescription(e.target.value)}
                   placeholder="e.g. 20 shirts, Washing load A"
-                  className="w-full rounded-lg border border-[var(--border)] px-3 py-2.5 text-[13px] text-[#111827] placeholder-[#9CA3AF] focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/10 transition-all"
+                  className="w-full rounded-lg border border-[var(--border)] px-3 py-2.5 text-[13px] text-[#0A1D3A] placeholder-[#A6A6A6] focus:border-[#C1121F] focus:ring-2 focus:ring-[#C1121F]/10 transition-all"
                 />
               </div>
 
               <div>
-                <label className="text-[12px] font-medium text-[#374151] block mb-1">Remark</label>
+                <label className="text-[12px] font-medium text-[#0A1D3A] block mb-1">Remark</label>
                 <textarea
                   value={editRemark}
                   onChange={e => setEditRemark(e.target.value)}
                   placeholder="Optional remark about this task..."
                   rows={2}
-                  className="w-full rounded-lg border border-[var(--border)] px-3 py-2.5 text-[13px] text-[#111827] placeholder-[#9CA3AF] focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/10 transition-all resize-none"
+                  className="w-full rounded-lg border border-[var(--border)] px-3 py-2.5 text-[13px] text-[#0A1D3A] placeholder-[#A6A6A6] focus:border-[#C1121F] focus:ring-2 focus:ring-[#C1121F]/10 transition-all resize-none"
                 />
               </div>
             </>
@@ -895,7 +895,7 @@ function TaskDialog({ open, onClose, editEntry, workers, gatePasses, onSubmit, i
 
               {selectedGatePass && (
                 <div className="rounded-lg border border-[var(--border)] p-3">
-                  <p className="text-[12px] font-medium text-[#374151] mb-2">
+                  <p className="text-[12px] font-medium text-[#0A1D3A] mb-2">
                     Items in {selectedGatePass.gate_pass_number} — select what was worked on
                   </p>
                   <div className="space-y-1.5 max-h-44 overflow-y-auto">
@@ -907,11 +907,11 @@ function TaskDialog({ open, onClose, editEntry, workers, gatePasses, onSubmit, i
                             type="checkbox"
                             checked={checked}
                             onChange={e => e.target.checked ? addGatePassItem(item) : removeRow(`gp:${selectedGatePass.gate_pass_number}:${item.item_name}`)}
-                            className="accent-[#DC2626] w-4 h-4 shrink-0"
+                            className="accent-[#C1121F] w-4 h-4 shrink-0"
                           />
                           <div className="flex-1 min-w-0">
-                            <p className="text-[13px] font-medium text-[#111827] truncate">{item.item_name}{item.category ? ` (${item.category})` : ''}</p>
-                            <p className="text-[11px] text-[#6B7280]">Client: {item.client_qty} · Received: {item.received_qty}</p>
+                            <p className="text-[13px] font-medium text-[#0A1D3A] truncate">{item.item_name}{item.category ? ` (${item.category})` : ''}</p>
+                            <p className="text-[11px] text-[#767676]">Client: {item.client_qty} · Received: {item.received_qty}</p>
                           </div>
                         </label>
                       )
@@ -921,45 +921,45 @@ function TaskDialog({ open, onClose, editEntry, workers, gatePasses, onSubmit, i
               )}
 
               <div className="flex items-center justify-between">
-                <p className="text-[12px] font-medium text-[#374151]">Tasks to log ({rows.length})</p>
+                <p className="text-[12px] font-medium text-[#0A1D3A]">Tasks to log ({rows.length})</p>
                 <button
                   type="button"
                   onClick={addManualRow}
-                  className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-[var(--border)] text-[12px] font-medium text-[#374151] hover:bg-[var(--surface-2)] transition-colors cursor-pointer"
+                  className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-[var(--border)] text-[12px] font-medium text-[#0A1D3A] hover:bg-[var(--surface-2)] transition-colors cursor-pointer"
                 >
                   <Plus size={13} /> Add item manually
                 </button>
               </div>
 
               {rows.length === 0 ? (
-                <p className="text-[12px] text-[#9CA3AF] text-center py-4 border border-dashed border-[var(--border)] rounded-lg">
+                <p className="text-[12px] text-[#A6A6A6] text-center py-4 border border-dashed border-[var(--border)] rounded-lg">
                   Select gate pass items above, or add an item manually
                 </p>
               ) : (
                 <div onKeyDown={grid.handleKeyDown} className="space-y-2 max-h-72 overflow-y-auto pr-1">
                   {rows.map((row, ri) => (
-                    <div key={row.key} className="rounded-lg border border-[var(--border)] p-3 space-y-2 bg-[#FCFCFD]">
+                    <div key={row.key} className="rounded-lg border border-[var(--border)] p-3 space-y-2 bg-[#E7EAEE]">
                       <div className="flex items-center gap-2">
                         <select
                           ref={grid.registerCell(ri, 0)}
                           value={row.task_type}
                           onChange={e => updateRow(row.key, { task_type: e.target.value })}
-                          className="rounded-lg border border-[var(--border)] px-2 py-1.5 text-[12px] text-[#111827] focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/10 transition-all appearance-none cursor-pointer"
+                          className="rounded-lg border border-[var(--border)] px-2 py-1.5 text-[12px] text-[#0A1D3A] focus:border-[#C1121F] focus:ring-2 focus:ring-[#C1121F]/10 transition-all appearance-none cursor-pointer"
                         >
                           {taskTypes.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
                         </select>
                         {row.fromGatePass && (
-                          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-[#EFF6FF] text-[10px] font-medium text-[#2563EB] border border-[#BFDBFE]">
+                          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-[#E7EAEE] text-[10px] font-medium text-[#0F2C59] border border-[#BCC4D1]">
                             <ClipboardText size={9} /> GP
                           </span>
                         )}
                         <button
                           type="button"
                           onClick={() => removeRow(row.key)}
-                          className="ml-auto p-1 rounded hover:bg-[#FEF2F2] cursor-pointer"
+                          className="ml-auto p-1 rounded hover:bg-[#F9E7E9] cursor-pointer"
                           aria-label="Remove"
                         >
-                          <TrashSimple size={13} className="text-[#9CA3AF] hover:text-[#DC2626]" />
+                          <TrashSimple size={13} className="text-[#A6A6A6] hover:text-[#C1121F]" />
                         </button>
                       </div>
                       <input
@@ -967,7 +967,7 @@ function TaskDialog({ open, onClose, editEntry, workers, gatePasses, onSubmit, i
                         value={row.description}
                         onChange={e => updateRow(row.key, { description: e.target.value })}
                         placeholder="Item / service description"
-                        className="w-full rounded-lg border border-[var(--border)] px-2.5 py-1.5 text-[12px] text-[#111827] placeholder-[#9CA3AF] focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/10 transition-all"
+                        className="w-full rounded-lg border border-[var(--border)] px-2.5 py-1.5 text-[12px] text-[#0A1D3A] placeholder-[#A6A6A6] focus:border-[#C1121F] focus:ring-2 focus:ring-[#C1121F]/10 transition-all"
                       />
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                         <input
@@ -976,13 +976,13 @@ function TaskDialog({ open, onClose, editEntry, workers, gatePasses, onSubmit, i
                           value={row.quantity}
                           onChange={e => updateRow(row.key, { quantity: e.target.value })}
                           placeholder="Qty"
-                          className="rounded-lg border border-[var(--border)] px-2.5 py-1.5 text-[12px] text-[#111827] placeholder-[#9CA3AF] focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/10 transition-all"
+                          className="rounded-lg border border-[var(--border)] px-2.5 py-1.5 text-[12px] text-[#0A1D3A] placeholder-[#A6A6A6] focus:border-[#C1121F] focus:ring-2 focus:ring-[#C1121F]/10 transition-all"
                         />
                         <select
                           ref={grid.registerCell(ri, 3)}
                           value={row.unit}
                           onChange={e => updateRow(row.key, { unit: e.target.value })}
-                          className="rounded-lg border border-[var(--border)] px-2 py-1.5 text-[12px] text-[#111827] focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/10 transition-all appearance-none cursor-pointer"
+                          className="rounded-lg border border-[var(--border)] px-2 py-1.5 text-[12px] text-[#0A1D3A] focus:border-[#C1121F] focus:ring-2 focus:ring-[#C1121F]/10 transition-all appearance-none cursor-pointer"
                         >
                           {['PIECES', 'KG', 'LOADS', 'HOURS'].map(u => <option key={u} value={u}>{u}</option>)}
                         </select>
@@ -992,7 +992,7 @@ function TaskDialog({ open, onClose, editEntry, workers, gatePasses, onSubmit, i
                           value={row.hours_spent}
                           onChange={e => updateRow(row.key, { hours_spent: e.target.value })}
                           placeholder="Hrs"
-                          className="rounded-lg border border-[var(--border)] px-2.5 py-1.5 text-[12px] text-[#111827] placeholder-[#9CA3AF] focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/10 transition-all"
+                          className="rounded-lg border border-[var(--border)] px-2.5 py-1.5 text-[12px] text-[#0A1D3A] placeholder-[#A6A6A6] focus:border-[#C1121F] focus:ring-2 focus:ring-[#C1121F]/10 transition-all"
                         />
                       </div>
                       <input
@@ -1000,7 +1000,7 @@ function TaskDialog({ open, onClose, editEntry, workers, gatePasses, onSubmit, i
                         value={row.remark}
                         onChange={e => updateRow(row.key, { remark: e.target.value })}
                         placeholder="Remark (optional)"
-                        className="w-full rounded-lg border border-[var(--border)] px-2.5 py-1.5 text-[12px] text-[#111827] placeholder-[#9CA3AF] focus:border-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/10 transition-all"
+                        className="w-full rounded-lg border border-[var(--border)] px-2.5 py-1.5 text-[12px] text-[#0A1D3A] placeholder-[#A6A6A6] focus:border-[#C1121F] focus:ring-2 focus:ring-[#C1121F]/10 transition-all"
                       />
                     </div>
                   ))}
@@ -1013,14 +1013,14 @@ function TaskDialog({ open, onClose, editEntry, workers, gatePasses, onSubmit, i
         <div className="flex items-center justify-end gap-2 px-5 py-3.5 border-t border-[var(--surface-3)]">
           <button
             onClick={onClose}
-            className="px-4 py-2 rounded-lg text-[13px] font-medium text-[#374151] hover:bg-[var(--surface-3)] transition-colors cursor-pointer"
+            className="px-4 py-2 rounded-lg text-[13px] font-medium text-[#0A1D3A] hover:bg-[var(--surface-3)] transition-colors cursor-pointer"
           >
             Cancel
           </button>
           <button
             onClick={isEdit ? handleEditSubmit : handleCreateSubmit}
             disabled={(isGroup ? teamMembers.length < 2 : !workerName.trim()) || (!isEdit && rows.length === 0) || isPending}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#DC2626] text-[13px] font-semibold text-white hover:bg-[#B91C1C] disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
+            className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#C1121F] text-[13px] font-semibold text-white hover:bg-[#C1121F] disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
           >
             {isPending ? (
               <div className="animate-spin w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full" />

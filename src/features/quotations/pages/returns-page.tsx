@@ -15,9 +15,9 @@ import type { Return } from '../../../types/operations'
 import { invalidateResource } from '../../../cache/invalidation'
 
 const STATUS_COLORS: Record<string, { bg: string; border: string; text: string }> = {
-  PENDING: { bg: '#FEF3C7', border: '#FDE68A', text: '#D97706' },
-  RECEIVED: { bg: '#DBEAFE', border: '#93C5FD', text: '#2563EB' },
-  PROCESSED: { bg: '#D1FAE5', border: '#6EE7B7', text: '#059669' },
+  PENDING: { bg: '#EEBDC0', border: '#DD7D84', text: '#CC3D47' },
+  RECEIVED: { bg: '#E7EAEE', border: '#7B8BA4', text: '#0F2C59' },
+  PROCESSED: { bg: '#BDDBC9', border: '#7EB994', text: '#15803D' },
 }
 
 function ReturnCard({ r, onResent }: { r: Return; onResent: (returnId: string, itemName: string, spec: string) => void }) {
@@ -33,12 +33,12 @@ function ReturnCard({ r, onResent }: { r: Return; onResent: (returnId: string, i
     <Link to={`/returns/${r.return_id}`}>
       <Card className="p-4 h-full cursor-pointer hover:shadow-md transition-shadow">
         <div className="flex items-start gap-3 mb-3">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#FEF3C7] text-[#D97706] border border-[#FDE68A]">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#EEBDC0] text-[#CC3D47] border border-[#DD7D84]">
             <RotateCcw className="h-4 w-4" />
           </div>
           <div className="min-w-0 flex-1">
             <p className="text-[13px] font-semibold text-[var(--text-primary)] truncate">{r.client_name}</p>
-            <p className="text-[11px] text-[#98A2B3] mt-0.5">{r.return_id}</p>
+            <p className="text-[11px] text-[#7B8BA4] mt-0.5">{r.return_id}</p>
           </div>
           <span
             className="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold whitespace-nowrap"
@@ -63,16 +63,16 @@ function ReturnCard({ r, onResent }: { r: Return; onResent: (returnId: string, i
           ))}
         </div>
 
-        <div className="flex items-center justify-between border-t border-[var(--border)] pt-3 text-[12px] text-[#6B7280]">
+        <div className="flex items-center justify-between border-t border-[var(--border)] pt-3 text-[12px] text-[#767676]">
           <span>{totalReturned} items returned</span>
           <span>{reasons.join(', ')}</span>
         </div>
 
         {pendingResend.length > 0 && (
-          <div className="mt-2 pt-2 border-t border-amber-100 space-y-1.5">
+          <div className="mt-2 pt-2 border-t border-red-100 space-y-1.5">
             {pendingResend.map((item, idx) => (
               <div key={idx} className="flex items-center justify-between">
-                <span className="text-[11px] text-amber-700">
+                <span className="text-[11px] text-red-700">
                   {item.item_name}{item.specification ? ` (${item.specification})` : ''} ×{item.returned_qty}
                 </span>
                 <button
@@ -82,7 +82,7 @@ function ReturnCard({ r, onResent }: { r: Return; onResent: (returnId: string, i
                     e.stopPropagation()
                     onResent(r.return_id, item.item_name, item.specification || '')
                   }}
-                  className="inline-flex items-center gap-1 rounded-md bg-amber-100 px-2 py-1 text-[10px] font-semibold text-amber-800 hover:bg-amber-200 transition cursor-pointer"
+                  className="inline-flex items-center gap-1 rounded-md bg-red-100 px-2 py-1 text-[10px] font-semibold text-red-800 hover:bg-red-200 transition cursor-pointer"
                 >
                   <Send className="h-3 w-3" /> Sent
                 </button>
@@ -150,12 +150,12 @@ export default function ReturnsPage() {
             ]}
           />
           <h1 className="text-dashboard-title mt-1">Returns</h1>
-          <p className="text-[13px] text-[#98A2B3] mt-0.5">
+          <p className="text-[13px] text-[#7B8BA4] mt-0.5">
             {loading ? 'Loading…' : `${returns.length} return record${returns.length !== 1 ? 's' : ''}`}
           </p>
         </div>
         <Link to="/returns/new">
-          <Button className="bg-[#D97706] hover:bg-[#B45309] text-white shadow-lg shadow-amber-600/20">
+          <Button className="bg-[#CC3D47] hover:bg-[#7D0C14] text-white shadow-lg shadow-red-600/20">
             <Plus className="h-4 w-4" />
             Record Return
           </Button>
@@ -164,19 +164,19 @@ export default function ReturnsPage() {
 
       {/* Search */}
       <div className="relative max-w-md">
-        <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#98A2B3]" />
+        <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#7B8BA4]" />
         <input
           type="text"
           value={searchInput}
           onChange={(e) => setSearchInput(e.target.value)}
           placeholder="Search by client name…"
-          className="h-10 w-full rounded-lg border border-[var(--border)] bg-white pl-9 pr-8 text-[13px] text-[var(--text-primary)] outline-none focus:border-[#D97706] focus:ring-2 focus:ring-[#D97706]/10 shadow-sm"
+          className="h-10 w-full rounded-lg border border-[var(--border)] bg-white pl-9 pr-8 text-[13px] text-[var(--text-primary)] outline-none focus:border-[#CC3D47] focus:ring-2 focus:ring-[#CC3D47]/10 shadow-sm"
         />
         {searchInput && (
           <button
             type="button"
             onClick={() => setSearchInput('')}
-            className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#98A2B3] hover:text-[#374151] cursor-pointer"
+            className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#7B8BA4] hover:text-[#0A1D3A] cursor-pointer"
           >
             <X className="h-3.5 w-3.5" />
           </button>
@@ -199,7 +199,7 @@ export default function ReturnsPage() {
           action={
             !clientName && (
               <Link to="/returns/new">
-                <Button className="bg-[#D97706] hover:bg-[#B45309] text-white">
+                <Button className="bg-[#CC3D47] hover:bg-[#7D0C14] text-white">
                   <Plus className="h-4 w-4" />
                   Record Return
                 </Button>

@@ -186,7 +186,7 @@ export function AppShell() {
           {support && (
             <div
               role="status"
-              className="fixed inset-x-0 top-0 z-50 flex h-9 items-center justify-center gap-x-3 gap-2 overflow-hidden bg-amber-500 px-4 text-[12.5px] font-semibold whitespace-nowrap text-amber-950 shadow-md"
+              className="fixed inset-x-0 top-0 z-50 flex h-9 items-center justify-center gap-x-3 gap-2 overflow-hidden bg-red-500 px-4 text-[12.5px] font-semibold whitespace-nowrap text-red-950 shadow-md"
             >
               <span className="min-w-0 truncate">
                 {support.kind === 'laundry' ? 'Support session in' : 'Support session for'} {supportSessionLabel(support)} — audited.
@@ -195,7 +195,7 @@ export function AppShell() {
                 type="button"
                 onClick={exitSupport}
                 aria-label="Exit support session"
-                className="shrink-0 cursor-pointer rounded bg-amber-950/90 px-2.5 py-1 text-[12px] font-bold text-amber-50 transition-colors hover:bg-amber-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+                className="shrink-0 cursor-pointer rounded bg-red-950/90 px-2.5 py-1 text-[12px] font-bold text-red-50 transition-colors hover:bg-red-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
               >
                 Exit support
               </button>

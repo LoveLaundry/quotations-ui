@@ -124,15 +124,15 @@ export default function LinenTagGenerator() {
   body { margin: 0; font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif; }
   .print-header {
     display: flex; justify-content: space-between; align-items: center;
-    border-bottom: 2px solid #000; padding-bottom: 2mm; margin-bottom: 4mm;
+    border-bottom: 2px solid #000000; padding-bottom: 2mm; margin-bottom: 4mm;
     font-size: 10px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px;
   }
-  .print-header .muted { font-weight: normal; color: #4B5563; letter-spacing: 0; text-transform: none; }
+  .print-header .muted { font-weight: normal; color: #0A1D3A; letter-spacing: 0; text-transform: none; }
   .tags-grid { display: flex; flex-wrap: wrap; gap: 2.5mm; }
   .tag-card {
-    border: 2px solid #000; padding: 2.5mm; width: 63mm; height: 33mm;
+    border: 2px solid #000000; padding: 2.5mm; width: 63mm; height: 33mm;
     display: flex; flex-direction: column; align-items: center; gap: 1mm;
-    box-sizing: border-box; page-break-inside: avoid; background: #fff;
+    box-sizing: border-box; page-break-inside: avoid; background: #FFFFFF;
   }
   .tag-brand { font-size: 7px; font-weight: bold; text-transform: uppercase; letter-spacing: 2px; font-family: 'Courier New', monospace; }
   .tag-qr { display: flex; justify-content: center; }
@@ -173,41 +173,41 @@ export default function LinenTagGenerator() {
             <div>
               <label className="text-[11px] font-semibold text-[var(--text-muted)] uppercase tracking-wide mb-1.5 block">Category</label>
               <select value={category} onChange={e => setCategory(e.target.value)}
-                className="w-full px-3 py-2 text-sm border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[#DC2626]/20 focus:border-[#DC2626] transition-colors">
+                className="w-full px-3 py-2 text-sm border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[#C1121F]/20 focus:border-[#C1121F] transition-colors">
                 {LINEN_CATEGORIES.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
               </select>
             </div>
             <div>
               <label className="text-[11px] font-semibold text-[var(--text-muted)] uppercase tracking-wide mb-1.5 block">Item Type *</label>
               <input value={itemType} onChange={e => setItemType(e.target.value)} placeholder="e.g. King Bedsheet"
-                className="w-full px-3 py-2 text-sm border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[#DC2626]/20 focus:border-[#DC2626] transition-colors" />
+                className="w-full px-3 py-2 text-sm border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[#C1121F]/20 focus:border-[#C1121F] transition-colors" />
             </div>
             <div>
               <label className="text-[11px] font-semibold text-[var(--text-muted)] uppercase tracking-wide mb-1.5 block">Client / Hotel *</label>
               <input value={clientName} onChange={e => setClientName(e.target.value)} placeholder="e.g. Hotel Riu"
-                className="w-full px-3 py-2 text-sm border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[#DC2626]/20 focus:border-[#DC2626] transition-colors" />
+                className="w-full px-3 py-2 text-sm border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[#C1121F]/20 focus:border-[#C1121F] transition-colors" />
             </div>
             <div>
               <label className="text-[11px] font-semibold text-[var(--text-muted)] uppercase tracking-wide mb-1.5 block">Quantity *</label>
               <input type="number" value={quantity} onChange={e => setQuantity(Number(e.target.value))} min={1} max={10000}
-                className="w-full px-3 py-2 text-sm border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[#DC2626]/20 focus:border-[#DC2626] transition-colors" />
+                className="w-full px-3 py-2 text-sm border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[#C1121F]/20 focus:border-[#C1121F] transition-colors" />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="text-[11px] font-semibold text-[var(--text-muted)] uppercase tracking-wide mb-1.5 block">Size</label>
                 <input value={size} onChange={e => setSize(e.target.value)} placeholder="e.g. King"
-                  className="w-full px-3 py-2 text-sm border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[#DC2626]/20 focus:border-[#DC2626] transition-colors" />
+                  className="w-full px-3 py-2 text-sm border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[#C1121F]/20 focus:border-[#C1121F] transition-colors" />
               </div>
               <div>
                 <label className="text-[11px] font-semibold text-[var(--text-muted)] uppercase tracking-wide mb-1.5 block">Color</label>
                 <input value={color} onChange={e => setColor(e.target.value)} placeholder="e.g. White"
-                  className="w-full px-3 py-2 text-sm border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[#DC2626]/20 focus:border-[#DC2626] transition-colors" />
+                  className="w-full px-3 py-2 text-sm border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[#C1121F]/20 focus:border-[#C1121F] transition-colors" />
               </div>
             </div>
             <div>
               <label className="text-[11px] font-semibold text-[var(--text-muted)] uppercase tracking-wide mb-1.5 block">Department</label>
               <input value={department} onChange={e => setDepartment(e.target.value)} placeholder="e.g. Housekeeping"
-                className="w-full px-3 py-2 text-sm border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[#DC2626]/20 focus:border-[#DC2626] transition-colors" />
+                className="w-full px-3 py-2 text-sm border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[#C1121F]/20 focus:border-[#C1121F] transition-colors" />
             </div>
             <Button onClick={handleGenerate} disabled={!itemType || !clientName || quantity <= 0 || generateMutation.isPending} className="w-full">
               <Plus size={16} className="mr-2" />
@@ -226,7 +226,7 @@ export default function LinenTagGenerator() {
                     <CheckCircle size={12} /> {generatedTags.length} tags ready to print
                   </span>
                 ) : (
-                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-200 text-xs font-semibold">
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-red-50 text-red-700 border border-red-200 text-xs font-semibold">
                     <Loader2 size={12} className="animate-spin" /> Preparing preview...
                   </span>
                 )}

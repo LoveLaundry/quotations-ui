@@ -16,23 +16,23 @@ interface MonthlyOperationsReportProps {
 
 const reportStyles = `
   @page { size: A4 portrait; margin: 12mm; }
-  .mor-root { width: 190mm; margin: 0 auto; color: #17202a; background: #fff; font-family: Georgia, serif; }
-  .mor-header { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding-bottom: 12px; border-bottom: 3px solid #b91c1c; }
-  .mor-brand { color: #991b1b; font-size: 22px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; }
-  .mor-title { color: #b91c1c; font-size: 20px; font-weight: 800; letter-spacing: 2px; text-align: right; }
+  .mor-root { width: 190mm; margin: 0 auto; color: #0A1D3A; background: #FFFFFF; font-family: Georgia, serif; }
+  .mor-header { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding-bottom: 12px; border-bottom: 3px solid #C1121F; }
+  .mor-brand { color: #7D0C14; font-size: 22px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; }
+  .mor-title { color: #C1121F; font-size: 20px; font-weight: 800; letter-spacing: 2px; text-align: right; }
   .mor-meta { display: flex; justify-content: space-between; gap: 14px; margin: 14px 0; font-size: 10px; }
-  .mor-box { flex: 1; border: 1px solid #cbd5e1; padding: 8px 10px; }
+  .mor-box { flex: 1; border: 1px solid #BCC4D1; padding: 8px 10px; }
   .mor-section { margin-top: 16px; break-inside: avoid; }
-  .mor-section h2 { margin: 0 0 7px; color: #991b1b; font-size: 11px; letter-spacing: 1px; text-transform: uppercase; }
+  .mor-section h2 { margin: 0 0 7px; color: #7D0C14; font-size: 11px; letter-spacing: 1px; text-transform: uppercase; }
   .mor-table { width: 100%; border-collapse: collapse; font-size: 8px; }
-  .mor-table th, .mor-table td { border: 1px solid #cbd5e1; padding: 5px 4px; }
-  .mor-table th { color: #fff; background: #b91c1c; text-align: left; }
+  .mor-table th, .mor-table td { border: 1px solid #BCC4D1; padding: 5px 4px; }
+  .mor-table th { color: #FFFFFF; background: #C1121F; text-align: left; }
   .mor-table td.num { text-align: right; white-space: nowrap; }
   .mor-kpis { display: grid; grid-template-columns: repeat(5, 1fr); gap: 7px; }
-  .mor-kpi { border: 1px solid #cbd5e1; padding: 8px; }
-  .mor-label { color: #64748b; font-size: 8px; text-transform: uppercase; }
+  .mor-kpi { border: 1px solid #BCC4D1; padding: 8px; }
+  .mor-label { color: #3A5277; font-size: 8px; text-transform: uppercase; }
   .mor-value { margin-top: 4px; font-size: 12px; font-weight: 800; }
-  .mor-footer { margin-top: 22px; padding-top: 8px; border-top: 2px solid #b91c1c; text-align: center; font-size: 8px; }
+  .mor-footer { margin-top: 22px; padding-top: 8px; border-top: 2px solid #C1121F; text-align: center; font-size: 8px; }
   @media print { .mor-root { width: auto; } .mor-table thead { display: table-header-group; } .mor-table tr { break-inside: avoid; } }
 `
 

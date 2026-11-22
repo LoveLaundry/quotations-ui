@@ -59,14 +59,14 @@ const printStyles = `
       left: 10mm;
       right: 10mm;
       bottom: 10mm;
-      border: 2px solid #000;
+      border: 2px solid #000000;
       pointer-events: none;
       z-index: 9999;
     }
   }
   .quotation-print-page {
-    color: #000;
-    background: #fff;
+    color: #000000;
+    background: #FFFFFF;
     font-family: "Spectral", Georgia, serif;
   }
   .page-sheet {
@@ -75,9 +75,9 @@ const printStyles = `
     padding: 15mm;
     box-sizing: border-box;
     position: relative;
-    background: #fff;
+    background: #FFFFFF;
     margin: 0 auto 20px auto;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
   }
   .page-sheet:last-child {
     margin-bottom: 0;
@@ -88,14 +88,14 @@ const printStyles = `
     left: 10mm;
     right: 10mm;
     bottom: 10mm;
-    border: 2px solid #000;
+    border: 2px solid #000000;
     pointer-events: none;
   }
   .header-row {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    border-bottom: 3px double #000;
+    border-bottom: 3px double #000000;
     padding-bottom: 16px;
     margin-bottom: 20px;
   }
@@ -108,10 +108,10 @@ const printStyles = `
     width: 80px;
     height: 80px;
     object-fit: contain;
-    border: 2px solid #000;
+    border: 2px solid #000000;
     border-radius: 0;
     padding: 4px;
-    background: #fafafa;
+    background: #FAFAFA;
   }
   .company-info {
     text-align: center;
@@ -131,7 +131,7 @@ const printStyles = `
     font-weight: 500;
     font-style: italic;
     margin: 0;
-    color: #333;
+    color: #333333;
     font-family: "Spectral", Georgia, serif;
   }
   .reg-no {
@@ -139,9 +139,9 @@ const printStyles = `
     font-weight: 600;
     text-align: right;
     white-space: nowrap;
-    border: 1px solid #000;
+    border: 1px solid #000000;
     padding: 6px 12px;
-    background: #f9f9f9;
+    background: #F9F9F9;
     border-radius: 0;
   }
   .services-row {
@@ -150,7 +150,7 @@ const printStyles = `
     gap: 20px;
     font-size: 11px;
     font-weight: 600;
-    border-bottom: 2px solid #000;
+    border-bottom: 2px solid #000000;
     padding-bottom: 12px;
     margin-bottom: 16px;
     flex-wrap: wrap;
@@ -161,14 +161,14 @@ const printStyles = `
     gap: 6px;
     white-space: nowrap;
     padding: 4px 8px;
-    background: #f5f5f5;
-    border: 1px solid #000;
+    background: #F5F5F5;
+    border: 1px solid #000000;
     border-radius: 0;
   }
   .service-dot {
     width: 8px;
     height: 8px;
-    background: #000;
+    background: #000000;
     border-radius: 50%;
     flex-shrink: 0;
   }
@@ -179,8 +179,8 @@ const printStyles = `
     font-weight: 500;
     margin-bottom: 20px;
     padding: 10px 0;
-    border-top: 1px solid #000;
-    border-bottom: 1px solid #000;
+    border-top: 1px solid #000000;
+    border-bottom: 1px solid #000000;
   }
   .contact-left, .contact-right {
     line-height: 1.7;
@@ -197,7 +197,7 @@ const printStyles = `
     text-transform: uppercase;
     letter-spacing: 2px;
     text-align: center;
-    border-bottom: 2px solid #000;
+    border-bottom: 2px solid #000000;
     padding-bottom: 10px;
     margin-bottom: 20px;
     font-family: "Spectral", Georgia, serif;
@@ -219,10 +219,10 @@ const printStyles = `
     font-weight: 700;
     white-space: nowrap;
     min-width: 80px;
-    color: #000;
+    color: #000000;
   }
   .detail-value {
-    border-bottom: 2px solid #000;
+    border-bottom: 2px solid #000000;
     flex: 1;
     padding-bottom: 4px;
     min-height: 20px;
@@ -242,33 +242,33 @@ const printStyles = `
     margin-bottom: 20px;
     font-size: 11px;
     page-break-inside: auto;
-    border: 2px solid #000;
+    border: 2px solid #000000;
   }
   .items-table th,
   .items-table td {
-    border: 1px solid #000;
+    border: 1px solid #000000;
     padding: 10px 8px;
     vertical-align: top;
   }
   .items-table th {
-    background: #000;
-    color: #fff;
+    background: #000000;
+    color: #FFFFFF;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.5px;
     font-size: 10px;
     font-family: "Spectral", Georgia, serif;
-    border: 1px solid #000;
+    border: 1px solid #000000;
   }
   .items-table .col-no { width: 45px; text-align: center; }
   .items-table .col-item { width: auto; min-width: 200px; }
   .items-table .col-category { width: 120px; }
   .items-table .col-price { width: 100px; text-align: right; }
   .items-table tbody tr:nth-child(even) td {
-    background: #f5f5f5;
+    background: #F5F5F5;
   }
   .items-table tbody tr:hover td {
-    background: #e8e8e8;
+    background: #E8E8E8;
   }
   .total-items-row {
     text-align: right;
@@ -276,9 +276,9 @@ const printStyles = `
     font-weight: 700;
     margin-bottom: 30px;
     padding: 12px 0;
-    border-top: 2px solid #000;
-    border-bottom: 2px solid #000;
-    background: #f0f0f0;
+    border-top: 2px solid #000000;
+    border-bottom: 2px solid #000000;
+    background: #F0F0F0;
     font-family: "Spectral", Georgia, serif;
   }
   .signatures {
@@ -287,7 +287,7 @@ const printStyles = `
     align-items: flex-end;
     margin-top: 40px;
     padding-top: 20px;
-    border-top: 2px solid #000;
+    border-top: 2px solid #000000;
   }
   .sig-block {
     width: 160px;
@@ -295,7 +295,7 @@ const printStyles = `
     font-size: 11px;
   }
   .sig-line {
-    border-top: 2px dotted #000;
+    border-top: 2px dotted #000000;
     padding-top: 10px;
     margin-bottom: 8px;
     min-height: 50px;
@@ -305,7 +305,7 @@ const printStyles = `
     font-size: 10px;
     text-transform: uppercase;
     letter-spacing: 1px;
-    color: #000;
+    color: #000000;
   }
   .sig-center {
     flex: 1;
@@ -314,9 +314,9 @@ const printStyles = `
   }
   .empty-state {
     text-align: center;
-    color: #999;
+    color: #999999;
     padding: 60px 20px;
-    border: 2px dashed #000;
+    border: 2px dashed #000000;
     font-style: italic;
     border-radius: 0;
   }
@@ -326,15 +326,15 @@ const printStyles = `
     align-items: center;
     margin-bottom: 10px;
     padding-bottom: 8px;
-    border-bottom: 1px solid #000;
+    border-bottom: 1px solid #000000;
     font-size: 10px;
-    color: #666;
+    color: #666666;
   }
   .page-header-title {
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 1px;
-    color: #000;
+    color: #000000;
   }
   .page-indicator {
     font-family: "Spectral", Georgia, serif;
@@ -342,10 +342,10 @@ const printStyles = `
   .continue-notice {
     text-align: center;
     font-size: 10px;
-    color: #999;
+    color: #999999;
     font-style: italic;
     padding: 8px;
-    border-top: 1px dashed #000;
+    border-top: 1px dashed #000000;
     margin-top: -10px;
     margin-bottom: 10px;
   }
@@ -380,7 +380,7 @@ export const QuotationPrintTemplate = React.forwardRef<HTMLDivElement, Quotation
         className="quotation-print-page"
         style={{
           fontFamily: '"Spectral", Georgia, serif',
-          color: '#000',
+          color: '#000000',
         }}
       >
         <style dangerouslySetInnerHTML={{ __html: printStyles }} />
@@ -487,7 +487,7 @@ export const QuotationPrintTemplate = React.forwardRef<HTMLDivElement, Quotation
                 <tbody>
                   {pageItems.length > 0 ? (
                     pageItems.map((item: typeof pageItems[0], index: number) => (
-                      <tr key={item.id ?? index} className="avoid-break" style={{ background: (startNum + index) % 2 === 0 ? '#f5f5f5' : 'transparent' }}>
+                      <tr key={item.id ?? index} className="avoid-break" style={{ background: (startNum + index) % 2 === 0 ? '#F5F5F5' : 'transparent' }}>
                         <td className="col-no">{startNum + index + 1}.</td>
                         <td className="col-item">
                           <div>{item.item_name}</div>
@@ -495,7 +495,7 @@ export const QuotationPrintTemplate = React.forwardRef<HTMLDivElement, Quotation
                             <div style={{ marginTop: 2, fontSize: '10px' }}>
                               {item.specifications.map((s, i) => (
                                 <div key={i} style={{ lineHeight: 1.3 }}>
-                                  <span style={{ color: '#DC2626' }}>• </span>
+                                  <span style={{ color: '#C1121F' }}>• </span>
                                   {s.specification} — LKR {s.unit_price.toFixed(2)}
                                 </div>
                               ))}

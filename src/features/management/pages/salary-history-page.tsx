@@ -29,9 +29,9 @@ const SALARY_TYPE_OPTIONS = ['MONTHLY', 'WEEKLY', 'DAILY', 'CONTRACT']
 const PACKAGE_KEYS: (keyof any)[] = ['basic_salary', 'daily_rate', 'weekly_rate', 'contract_amount', 'overtime_rate', 'allowance', 'epf_rate', 'etf_rate']
 
 const STATUS_COLORS: Record<string, string> = {
-  DRAFT: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400',
+  DRAFT: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',
   FINALIZED: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
-  PAID: 'bg-sky-100 text-sky-800 dark:bg-sky-900/30 dark:text-sky-400',
+  PAID: 'bg-blue-100 text-blue-900 dark:bg-blue-950/30 dark:text-blue-600',
   CANCELLED: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',
   DELETED: 'bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-300',
 }
@@ -269,7 +269,7 @@ export default function SalaryHistoryPage() {
             </select>
           </div>
           <button onClick={loadPreview} disabled={previewLoading || payrollLoading}
-            className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 disabled:opacity-50">
+            className="px-4 py-2 bg-blue-800 text-white rounded-lg text-sm font-medium hover:bg-blue-900 disabled:opacity-50">
             {previewLoading ? 'Previewing...' : 'Preview Month'}
           </button>
           <button onClick={runPayroll} disabled={payrollLoading}
@@ -288,12 +288,12 @@ export default function SalaryHistoryPage() {
               <div className="text-xs text-gray-400">Missing slips will be created on Run Payroll. Existing slips are skipped.</div>
             </div>
 
-            <div className="rounded-xl border border-indigo-200 bg-indigo-50/60 dark:border-indigo-800/60 dark:bg-indigo-900/10 p-3">
-              <div className="text-xs font-semibold text-indigo-600 dark:text-indigo-300 mb-2">Projection — if every employee attends all remaining working days</div>
+            <div className="rounded-xl border border-blue-200 bg-blue-50/60 dark:border-blue-900/60 dark:bg-blue-950/10 p-3">
+              <div className="text-xs font-semibold text-blue-800 dark:text-blue-300 mb-2">Projection — if every employee attends all remaining working days</div>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-                <div><div className="text-xl font-bold text-indigo-700 dark:text-indigo-200">LKR {formatNumber(preview.projected_total_gross)}</div><div className="text-xs text-gray-400">Gross Total</div></div>
-                <div><div className="text-xl font-bold text-indigo-700 dark:text-indigo-200">LKR {formatNumber(preview.projected_total_deductions)}</div><div className="text-xs text-gray-400">Deductions</div></div>
-                <div><div className="text-xl font-bold text-indigo-700 dark:text-indigo-200">LKR {formatNumber(preview.projected_total_net)}</div><div className="text-xs text-gray-400">Net Payroll</div></div>
+                <div><div className="text-xl font-bold text-blue-900 dark:text-blue-200">LKR {formatNumber(preview.projected_total_gross)}</div><div className="text-xs text-gray-400">Gross Total</div></div>
+                <div><div className="text-xl font-bold text-blue-900 dark:text-blue-200">LKR {formatNumber(preview.projected_total_deductions)}</div><div className="text-xs text-gray-400">Deductions</div></div>
+                <div><div className="text-xl font-bold text-blue-900 dark:text-blue-200">LKR {formatNumber(preview.projected_total_net)}</div><div className="text-xs text-gray-400">Net Payroll</div></div>
                 <div><div className="text-xl font-bold text-green-700 dark:text-green-300">+ LKR {formatNumber(preview.projected_total_net_variance)}</div><div className="text-xs text-gray-400">Additional if all attend</div></div>
               </div>
             </div>
@@ -320,7 +320,7 @@ export default function SalaryHistoryPage() {
                       <td className="px-3 py-2 font-medium">{row.employee_name}</td>
                       <td className="px-3 py-2">{row.salary_type || 'MONTHLY'}</td>
                       <td className="px-3 py-2 text-xs">{CALC_METHOD_LABELS[row.calculation_method] || row.calculation_method || '—'}</td>
-                      <td className="px-3 py-2">{row.attendance_required !== false ? 'Required' : <span className="text-amber-600 font-medium">Not required (fixed)</span>}</td>
+                      <td className="px-3 py-2">{row.attendance_required !== false ? 'Required' : <span className="text-red-600 font-medium">Not required (fixed)</span>}</td>
                       <td className="px-3 py-2 text-right">LKR {formatNumber(row.base_salary_for_period)}</td>
                       <td className="px-3 py-2 text-right font-semibold">LKR {formatNumber(row.net_salary)}</td>
                       <td className="px-3 py-2 text-right" title={`Projection if all remaining working days are attended (base + allowance + OT so far − EPF)`}>
@@ -329,7 +329,7 @@ export default function SalaryHistoryPage() {
                           const extra = f.projected - (row.net_salary || 0)
                           return (
                             <>
-                              <span className="font-semibold text-indigo-700 dark:text-indigo-300 tabular-nums">LKR {formatNumber(f.projected)}</span>
+                              <span className="font-semibold text-blue-900 dark:text-blue-300 tabular-nums">LKR {formatNumber(f.projected)}</span>
                               {extra > 0 && (
                                 <span className="block text-[10px] text-green-600 dark:text-green-400">+ LKR {formatNumber(extra)} if all attend</span>
                               )}
@@ -344,7 +344,7 @@ export default function SalaryHistoryPage() {
                           const r = remainingRow(row)
                           return (
                             <>
-                              <span className="font-semibold text-emerald-700 dark:text-emerald-300 tabular-nums">+ LKR {formatNumber(r.remaining_amount)}</span>
+                              <span className="font-semibold text-green-700 dark:text-green-300 tabular-nums">+ LKR {formatNumber(r.remaining_amount)}</span>
                               <span className="block text-[10px] text-gray-400">{r.remaining_working_days} working days left</span>
                             </>
                           )
@@ -434,7 +434,7 @@ export default function SalaryHistoryPage() {
               <div className="text-xs text-gray-400">Total Net Salary</div>
             </div>
             <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 p-3">
-              <div className="text-xl font-bold text-sky-600">LKR {formatNumber(selTotPaid)}</div>
+              <div className="text-xl font-bold text-blue-800">LKR {formatNumber(selTotPaid)}</div>
               <div className="text-xs text-gray-400">Total Paid{selTotNet > selTotPaid ? ` · ${formatNumber(selTotNet - selTotPaid)} outstanding` : ''}</div>
             </div>
           </div>
@@ -469,7 +469,7 @@ export default function SalaryHistoryPage() {
                     <td className="px-3 py-2 text-right">LKR {formatNumber(row.earnings)}</td>
                     <td className="px-3 py-2 text-right text-red-600">LKR {formatNumber(row.deductions)}</td>
                     <td className="px-3 py-2 text-right font-semibold">LKR {formatNumber(row.net)}</td>
-                    <td className="px-3 py-2 text-right text-sky-600">LKR {formatNumber(row.paid)}</td>
+                    <td className="px-3 py-2 text-right text-blue-800">LKR {formatNumber(row.paid)}</td>
                   </tr>
                 ))}
                 <tr className="bg-gray-50 dark:bg-gray-800">
@@ -478,7 +478,7 @@ export default function SalaryHistoryPage() {
                   <td className="px-3 py-2 text-right font-bold">LKR {formatNumber(selTotGross)}</td>
                   <td className="px-3 py-2 text-right font-bold text-red-600">LKR {formatNumber(selTotDed)}</td>
                   <td className="px-3 py-2 text-right font-bold text-green-600">LKR {formatNumber(selTotNet)}</td>
-                  <td className="px-3 py-2 text-right font-bold text-sky-600">LKR {formatNumber(selTotPaid)}</td>
+                  <td className="px-3 py-2 text-right font-bold text-blue-800">LKR {formatNumber(selTotPaid)}</td>
                 </tr>
               </tbody>
             </table>
@@ -539,7 +539,7 @@ export default function SalaryHistoryPage() {
                     <td className="px-4 py-3">{slip.employee_name}</td>
                     <td className="px-4 py-3 text-xs text-gray-600 dark:text-gray-400">
                       {CALC_METHOD_LABELS[slip.calculation_method] || slip.calculation_method || slip.salary_type || '—'}
-                      {slip.attendance_required === false && <span className="ml-1 text-amber-600 font-medium">· fixed</span>}
+                      {slip.attendance_required === false && <span className="ml-1 text-red-600 font-medium">· fixed</span>}
                     </td>
                     <td className="px-4 py-3">{slip.period_start}</td>
                     <td className="px-4 py-3 text-right">LKR {formatNumber(slip.total_earnings)}</td>
@@ -551,7 +551,7 @@ export default function SalaryHistoryPage() {
                           {slip.status}
                         </span>
                         {slip.paid && (
-                          <span className="inline-block px-2 py-0.5 rounded text-xs font-medium bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300" title={`Paid ${slip.paid_date} — LKR ${slip.amount_paid}`}>
+                          <span className="inline-block px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300" title={`Paid ${slip.paid_date} — LKR ${slip.amount_paid}`}>
                             Paid LKR {formatNumber(slip.amount_paid)}
                           </span>
                         )}
@@ -568,7 +568,7 @@ export default function SalaryHistoryPage() {
                           </button>
                         )}
                         {slip.status === 'FINALIZED' && !slip.paid && (
-                          <button onClick={() => handleMarkPaid(slip)} className="p-1.5 hover:bg-sky-100 text-sky-600 rounded" title="Mark Paid" disabled={payMut.isPending}>
+                          <button onClick={() => handleMarkPaid(slip)} className="p-1.5 hover:bg-blue-100 text-blue-800 rounded" title="Mark Paid" disabled={payMut.isPending}>
                             <Wallet size={14} />
                           </button>
                         )}
@@ -722,7 +722,7 @@ export default function SalaryHistoryPage() {
                     </button>
                   </div>
                 )}
-                <button onClick={() => handlePrint()} className="px-3 py-1.5 bg-blue-600 text-white rounded-lg text-sm flex items-center gap-1">
+                <button onClick={() => handlePrint()} className="px-3 py-1.5 bg-blue-800 text-white rounded-lg text-sm flex items-center gap-1">
                   <Printer size={14} /> Print
                 </button>
                 <button onClick={() => setViewSlip(null)} className="p-1.5 hover:bg-gray-100 rounded">
@@ -738,7 +738,7 @@ export default function SalaryHistoryPage() {
                       {viewSlip.status}
                     </span>
                     {viewSlip.paid && (
-                      <span className="inline-block px-2 py-0.5 rounded text-xs font-medium bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">
+                      <span className="inline-block px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300">
                         Paid {lkr(viewSlip.amount_paid)}{viewSlip.paid_date ? ` · ${viewSlip.paid_date}` : ''}
                       </span>
                     )}
@@ -756,7 +756,7 @@ export default function SalaryHistoryPage() {
                         {viewSlip.attendance_required !== false && (
                           <>
                             <div className="flex justify-between"><span className="text-gray-500">Worked Days</span><span className="font-medium text-green-600">{viewSlip.worked_days ?? '-'}</span></div>
-                            <div className="flex justify-between"><span className="text-gray-500">Leave Days</span><span className="font-medium text-blue-600">{viewSlip.leave_days ?? '-'}</span></div>
+                            <div className="flex justify-between"><span className="text-gray-500">Leave Days</span><span className="font-medium text-blue-800">{viewSlip.leave_days ?? '-'}</span></div>
                             <div className="flex justify-between"><span className="text-gray-500">Absent Days</span><span className="font-medium text-red-600">{viewSlip.absent_days ?? '-'}</span></div>
                             <div className="flex justify-between"><span className="text-gray-500">Calendar / Working Days</span><span className="font-medium">{viewSlip.calendar_days ?? '-'} / {viewSlip.working_days ?? '-'}</span></div>
                           </>

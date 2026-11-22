@@ -17,11 +17,11 @@ import { toISODateTime } from '../../../lib/time'
 import { Portal } from '../../../components/ui/portal'
 
 const STATUS_STYLE: Record<DispatchStatus, string> = {
-  SCHEDULED: 'bg-[#EFF4FF] text-[#3538CD] border-[#C7D7FE]',
-  ASSIGNED: 'bg-[var(--border)] text-[#475467] border-[var(--border)]',
-  EN_ROUTE: 'bg-[#FEF6E7] text-[#B54708] border-[#FCE7C0]',
-  COMPLETED: 'bg-[#ECFDF3] text-[#027A48] border-[#ABEFC6]',
-  CANCELLED: 'bg-[#FEF3F2] text-[#B42318] border-[#FECDCA]',
+  SCHEDULED: 'bg-[#E7EAEE] text-[#3A5277] border-[#BCC4D1]',
+  ASSIGNED: 'bg-[var(--border)] text-[#0A1D3A] border-[var(--border)]',
+  EN_ROUTE: 'bg-[#F9E7E9] text-[#7D0C14] border-[#EEBDC0]',
+  COMPLETED: 'bg-[#E8F2EC] text-[#0E5328] border-[#BDDBC9]',
+  CANCELLED: 'bg-[#F9E7E9] text-[#7D0C14] border-[#EEBDC0]',
 }
 
 const NEXT_STATUS: Partial<Record<DispatchStatus, DispatchStatus>> = {
@@ -63,10 +63,10 @@ export default function DispatchPage() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="flex items-center gap-2 text-[20px] font-bold text-[var(--text-primary)]">
-            <Truck className="h-5 w-5 text-[#E01E31]" />
+            <Truck className="h-5 w-5 text-[#C1121F]" />
             Dispatch &amp; Pickups
           </h1>
-          <p className="text-[13px] text-[#667085]">
+          <p className="text-[13px] text-[#3A5277]">
             Schedule customer pickups and deliveries, assign drivers and track each job.
           </p>
         </div>
@@ -87,8 +87,8 @@ export default function DispatchPage() {
             onClick={() => setTypeFilter(t)}
             className={`rounded-full border px-3 py-1.5 text-[12px] font-semibold ${
               typeFilter === t
-                ? 'border-[#E01E31] bg-[#FEF2F2] text-[#E01E31]'
-                : 'border-[#E5E5E5] text-[#475467]'
+                ? 'border-[#C1121F] bg-[#F9E7E9] text-[#C1121F]'
+                : 'border-[#E5E5E5] text-[#0A1D3A]'
             }`}
           >
             {t === '' ? 'All types' : t === 'pickup' ? 'Pickups' : 'Deliveries'}
@@ -101,8 +101,8 @@ export default function DispatchPage() {
               onClick={() => setStatusFilter(s)}
               className={`rounded-full border px-3 py-1.5 text-[12px] font-semibold ${
                 statusFilter === s
-                  ? 'border-[#E01E31] bg-[#FEF2F2] text-[#E01E31]'
-                  : 'border-[#E5E5E5] text-[#475467]'
+                  ? 'border-[#C1121F] bg-[#F9E7E9] text-[#C1121F]'
+                  : 'border-[#E5E5E5] text-[#0A1D3A]'
               }`}
             >
               {s === '' ? 'All statuses' : STATUS_LABEL[s]}
@@ -112,7 +112,7 @@ export default function DispatchPage() {
       </div>
 
       {isLoading ? (
-        <p className="text-[13px] text-[#98A2B3]">Loading jobs…</p>
+        <p className="text-[13px] text-[#7B8BA4]">Loading jobs…</p>
       ) : jobs.length === 0 ? (
         <EmptyState
           title="No dispatch jobs"
@@ -186,7 +186,7 @@ function JobCard({
         <div className="flex items-start justify-between gap-2">
           <div>
             <p className="text-[14px] font-semibold text-[var(--text-primary)]">{job.client_name}</p>
-            <span className="text-[11px] font-semibold uppercase tracking-wide text-[#98A2B3]">
+            <span className="text-[11px] font-semibold uppercase tracking-wide text-[#7B8BA4]">
               {job.job_type === 'pickup' ? 'Pickup' : 'Delivery'}
             </span>
           </div>
@@ -200,20 +200,20 @@ function JobCard({
         </div>
 
         {job.address && (
-          <p className="flex items-start gap-1.5 text-[12px] text-[#475467]">
-            <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[#98A2B3]" />
+          <p className="flex items-start gap-1.5 text-[12px] text-[#0A1D3A]">
+            <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[#7B8BA4]" />
             {job.address}
           </p>
         )}
         {job.scheduled_at && (
-          <p className="flex items-center gap-1.5 text-[12px] text-[#475467]">
-            <CalendarDays className="h-3.5 w-3.5 text-[#98A2B3]" />
+          <p className="flex items-center gap-1.5 text-[12px] text-[#0A1D3A]">
+            <CalendarDays className="h-3.5 w-3.5 text-[#7B8BA4]" />
             {formatDate(job.scheduled_at)}
           </p>
         )}
         {job.contact_name && (
-          <p className="flex items-center gap-1.5 text-[12px] text-[#475467]">
-            <User className="h-3.5 w-3.5 text-[#98A2B3]" />
+          <p className="flex items-center gap-1.5 text-[12px] text-[#0A1D3A]">
+            <User className="h-3.5 w-3.5 text-[#7B8BA4]" />
             {job.contact_name}
             {job.contact_phone ? ` · ${job.contact_phone}` : ''}
           </p>
@@ -224,7 +224,7 @@ function JobCard({
             value={driver}
             onChange={(e) => setDriver(e.target.value)}
             placeholder="Assign driver"
-            className="flex-1 rounded-lg border border-[#E5E5E5] px-2.5 py-1.5 text-[12px] outline-none focus:border-[#E01E31]"
+            className="flex-1 rounded-lg border border-[#E5E5E5] px-2.5 py-1.5 text-[12px] outline-none focus:border-[#C1121F]"
           />
           <Button size="sm" variant="outline" onClick={() => onAssign(driver)}>
             Assign
@@ -245,7 +245,7 @@ function JobCard({
           <Button
             size="sm"
             variant="ghost"
-            className="text-[#B42318]"
+            className="text-[#7D0C14]"
             onClick={() => setShowDeleteConfirm(true)}
           >
             Delete
@@ -317,8 +317,8 @@ function NewJobModal({
                 onClick={() => set('job_type', t)}
                 className={`flex-1 rounded-lg border px-3 py-2 text-[12px] font-semibold capitalize ${
                   form.job_type === t
-                    ? 'border-[#E01E31] bg-[#FEF2F2] text-[#E01E31]'
-                    : 'border-[#E5E5E5] text-[#475467]'
+                    ? 'border-[#C1121F] bg-[#F9E7E9] text-[#C1121F]'
+                    : 'border-[#E5E5E5] text-[#0A1D3A]'
                 }`}
               >
                 {t}
@@ -329,14 +329,14 @@ function NewJobModal({
             <input
               value={form.client_name}
               onChange={(e) => set('client_name', e.target.value)}
-              className="w-full rounded-lg border border-[#E5E5E5] px-3 py-2 text-[13px] outline-none focus:border-[#E01E31]"
+              className="w-full rounded-lg border border-[#E5E5E5] px-3 py-2 text-[13px] outline-none focus:border-[#C1121F]"
             />
           </Field>
           <Field label="Address">
             <input
               value={form.address}
               onChange={(e) => set('address', e.target.value)}
-              className="w-full rounded-lg border border-[#E5E5E5] px-3 py-2 text-[13px] outline-none focus:border-[#E01E31]"
+              className="w-full rounded-lg border border-[#E5E5E5] px-3 py-2 text-[13px] outline-none focus:border-[#C1121F]"
             />
           </Field>
           <div className="grid grid-cols-2 gap-3">
@@ -344,14 +344,14 @@ function NewJobModal({
               <input
                 value={form.contact_name}
                 onChange={(e) => set('contact_name', e.target.value)}
-                className="w-full rounded-lg border border-[#E5E5E5] px-3 py-2 text-[13px] outline-none focus:border-[#E01E31]"
+                className="w-full rounded-lg border border-[#E5E5E5] px-3 py-2 text-[13px] outline-none focus:border-[#C1121F]"
               />
             </Field>
             <Field label="Contact phone">
               <input
                 value={form.contact_phone}
                 onChange={(e) => set('contact_phone', e.target.value)}
-                className="w-full rounded-lg border border-[#E5E5E5] px-3 py-2 text-[13px] outline-none focus:border-[#E01E31]"
+                className="w-full rounded-lg border border-[#E5E5E5] px-3 py-2 text-[13px] outline-none focus:border-[#C1121F]"
               />
             </Field>
           </div>
@@ -360,14 +360,14 @@ function NewJobModal({
               type="datetime-local"
               value={form.scheduled_at}
               onChange={(e) => set('scheduled_at', e.target.value)}
-              className="w-full rounded-lg border border-[#E5E5E5] px-3 py-2 text-[13px] outline-none focus:border-[#E01E31]"
+              className="w-full rounded-lg border border-[#E5E5E5] px-3 py-2 text-[13px] outline-none focus:border-[#C1121F]"
             />
           </Field>
           <Field label="Assign driver">
             <input
               value={form.assigned_to}
               onChange={(e) => set('assigned_to', e.target.value)}
-              className="w-full rounded-lg border border-[#E5E5E5] px-3 py-2 text-[13px] outline-none focus:border-[#E01E31]"
+              className="w-full rounded-lg border border-[#E5E5E5] px-3 py-2 text-[13px] outline-none focus:border-[#C1121F]"
             />
           </Field>
           <div className="grid grid-cols-2 gap-3">
@@ -377,7 +377,7 @@ function NewJobModal({
                 step="any"
                 value={form.latitude}
                 onChange={(e) => set('latitude', e.target.value)}
-                className="w-full rounded-lg border border-[#E5E5E5] px-3 py-2 text-[13px] outline-none focus:border-[#E01E31]"
+                className="w-full rounded-lg border border-[#E5E5E5] px-3 py-2 text-[13px] outline-none focus:border-[#C1121F]"
               />
             </Field>
             <Field label="Longitude (optional)">
@@ -386,7 +386,7 @@ function NewJobModal({
                 step="any"
                 value={form.longitude}
                 onChange={(e) => set('longitude', e.target.value)}
-                className="w-full rounded-lg border border-[#E5E5E5] px-3 py-2 text-[13px] outline-none focus:border-[#E01E31]"
+                className="w-full rounded-lg border border-[#E5E5E5] px-3 py-2 text-[13px] outline-none focus:border-[#C1121F]"
               />
             </Field>
           </div>
@@ -395,7 +395,7 @@ function NewJobModal({
               value={form.notes}
               onChange={(e) => set('notes', e.target.value)}
               rows={2}
-              className="w-full rounded-lg border border-[#E5E5E5] px-3 py-2 text-[13px] outline-none focus:border-[#E01E31]"
+              className="w-full rounded-lg border border-[#E5E5E5] px-3 py-2 text-[13px] outline-none focus:border-[#C1121F]"
             />
           </Field>
         </div>
@@ -453,7 +453,7 @@ function RoutePlannerModal({
               value={driver}
               onChange={(e) => setDriver(e.target.value)}
               placeholder="Driver name"
-              className="w-full rounded-lg border border-[#E5E5E5] px-3 py-2 text-[13px] outline-none focus:border-[#E01E31]"
+              className="w-full rounded-lg border border-[#E5E5E5] px-3 py-2 text-[13px] outline-none focus:border-[#C1121F]"
             />
           </Field>
           <Field label="Date (optional)">
@@ -461,22 +461,22 @@ function RoutePlannerModal({
               type="date"
               value={date}
               onChange={(e) => setDate(e.target.value)}
-              className="w-full rounded-lg border border-[#E5E5E5] px-3 py-2 text-[13px] outline-none focus:border-[#E01E31]"
+              className="w-full rounded-lg border border-[#E5E5E5] px-3 py-2 text-[13px] outline-none focus:border-[#C1121F]"
             />
           </Field>
 
           {plan && plan.stops.length > 0 && (
-            <ol className="space-y-2 rounded-xl border border-[#EEF0F3] p-3">
+            <ol className="space-y-2 rounded-xl border border-[#E7EAEE] p-3">
               {plan.stops.map((stop, i) => (
                 <li key={stop.id} className="flex items-start gap-3">
-                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#E01E31] text-[11px] font-bold text-white">
+                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#C1121F] text-[11px] font-bold text-white">
                     {i + 1}
                   </span>
                   <div>
                     <p className="text-[13px] font-semibold text-[var(--text-primary)]">
                       {stop.client_name}
                     </p>
-                    <p className="text-[11px] text-[#667085]">
+                    <p className="text-[11px] text-[#3A5277]">
                       {stop.job_type === 'pickup' ? 'Pickup' : 'Delivery'}
                       {stop.address ? ` · ${stop.address}` : ''}
                     </p>
@@ -486,7 +486,7 @@ function RoutePlannerModal({
             </ol>
           )}
           {plan && plan.stops.length === 0 && (
-            <p className="text-[12px] text-[#98A2B3]">
+            <p className="text-[12px] text-[#7B8BA4]">
               No active jobs found for this driver{date ? ` on ${date}` : ''}.
             </p>
           )}
@@ -510,7 +510,7 @@ function RoutePlannerModal({
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label className="block">
-      <span className="mb-1 block text-[12px] font-medium text-[#475467]">{label}</span>
+      <span className="mb-1 block text-[12px] font-medium text-[#0A1D3A]">{label}</span>
       {children}
     </label>
   )

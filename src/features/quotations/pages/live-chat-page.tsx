@@ -30,7 +30,7 @@ function MessageBubble({ msg }: { msg: ConversationDetail['messages'][number] })
   if (msg.sender === 'admin') {
     return (
       <div className="flex justify-end">
-        <div className="max-w-[80%] rounded-2xl rounded-br-md bg-[#DC2626] px-4 py-2.5 text-[13px] leading-relaxed text-white">
+        <div className="max-w-[80%] rounded-2xl rounded-br-md bg-[#C1121F] px-4 py-2.5 text-[13px] leading-relaxed text-white">
           <p className="mb-0.5 text-[10px] font-semibold text-white/70">
             You ({msg.sender_name ?? 'Admin'})
           </p>
@@ -43,15 +43,15 @@ function MessageBubble({ msg }: { msg: ConversationDetail['messages'][number] })
   const isBot = msg.sender === 'bot'
   return (
     <div className="flex justify-start gap-2">
-      <div className="mt-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#FEF2F2] text-[#DC2626]">
+      <div className="mt-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#F9E7E9] text-[#C1121F]">
         {isBot ? <Robot size={15} /> : <UserCircle size={15} />}
       </div>
-      <div className="max-w-[80%] rounded-2xl rounded-bl-md bg-[var(--surface-3)] px-4 py-2.5 text-[13px] leading-relaxed text-[#111827]">
-        <p className="mb-0.5 text-[10px] font-semibold text-[#6B7280]">
+      <div className="max-w-[80%] rounded-2xl rounded-bl-md bg-[var(--surface-3)] px-4 py-2.5 text-[13px] leading-relaxed text-[#0A1D3A]">
+        <p className="mb-0.5 text-[10px] font-semibold text-[#767676]">
           {isBot ? 'Bot' : msg.sender_name ?? 'Guest'}
         </p>
         <p className="whitespace-pre-line">{msg.text}</p>
-        <p className="mt-1 text-[10px] text-[#9CA3AF]">{formatTime(msg.timestamp)}</p>
+        <p className="mt-1 text-[10px] text-[#A6A6A6]">{formatTime(msg.timestamp)}</p>
       </div>
     </div>
   )
@@ -111,11 +111,11 @@ export default function LiveChatPage() {
           gutters (py-4 / sm:py-5 / lg:py-6). dvh keeps the composer visible
           above mobile browser chrome. */}
       <div className="border-b border-[var(--border)] px-4 py-4 sm:px-6">
-        <h1 className="flex items-center gap-2 text-lg font-semibold text-[#111827]">
-          <ChatCircleDots size={20} className="text-[#DC2626]" />
+        <h1 className="flex items-center gap-2 text-lg font-semibold text-[#0A1D3A]">
+          <ChatCircleDots size={20} className="text-[#C1121F]" />
           Live Chat
         </h1>
-        <p className="text-[13px] text-[#6B7280]">
+        <p className="text-[13px] text-[#767676]">
           Public website conversations. Take over a chat to answer as yourself — the bot stays
           silent once you join.
         </p>
@@ -129,9 +129,9 @@ export default function LiveChatPage() {
           }`}
         >
           {listQuery.isLoading ? (
-            <div className="p-4 text-[13px] text-[#9CA3AF]">Loading conversations…</div>
+            <div className="p-4 text-[13px] text-[#A6A6A6]">Loading conversations…</div>
           ) : conversations.length === 0 ? (
-            <div className="p-6 text-center text-[13px] text-[#9CA3AF]">
+            <div className="p-6 text-center text-[13px] text-[#A6A6A6]">
               No conversations yet.
             </div>
           ) : (
@@ -143,30 +143,30 @@ export default function LiveChatPage() {
                   type="button"
                   onClick={() => setSelectedId(c.conversation_id)}
                   className={`flex w-full flex-col gap-1 border-b border-[var(--surface-3)] px-4 py-3 text-left transition-colors ${
-                    active ? 'bg-[#FEF2F2]' : 'hover:bg-[var(--surface-2)]'
+                    active ? 'bg-[#F9E7E9]' : 'hover:bg-[var(--surface-2)]'
                   }`}
                 >
                   <div className="flex items-center justify-between gap-2">
-                    <span className="truncate text-[13px] font-semibold text-[#111827]">
+                    <span className="truncate text-[13px] font-semibold text-[#0A1D3A]">
                       {c.guest_name || 'Website visitor'}
                     </span>
                     <span
                       className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold ${
                         c.status === 'closed'
-                          ? 'bg-[var(--surface-3)] text-[#6B7280]'
-                          : 'bg-[#DCFCE7] text-[#15803D]'
+                          ? 'bg-[var(--surface-3)] text-[#767676]'
+                          : 'bg-[#E8F2EC] text-[#15803D]'
                       }`}
                     >
                       {c.status}
                     </span>
                   </div>
-                  <p className="truncate text-[12px] text-[#6B7280]">
+                  <p className="truncate text-[12px] text-[#767676]">
                     {c.last_message?.text ?? 'No messages'}
                   </p>
-                  <div className="flex items-center justify-between text-[10px] text-[#9CA3AF]">
+                  <div className="flex items-center justify-between text-[10px] text-[#A6A6A6]">
                     <span>{formatTime(c.updated_at)}</span>
                     {c.assigned_admin_name && (
-                      <span className="flex items-center gap-1 text-[#DC2626]">
+                      <span className="flex items-center gap-1 text-[#C1121F]">
                         <UserCircle size={12} /> {c.assigned_admin_name}
                       </span>
                     )}
@@ -182,7 +182,7 @@ export default function LiveChatPage() {
           className={`min-w-0 flex-1 flex-col bg-[#FAFAFA] ${selectedId ? 'flex' : 'hidden md:flex'}`}
         >
           {!detail ? (
-            <div className="flex flex-1 items-center justify-center text-[13px] text-[#9CA3AF]">
+            <div className="flex flex-1 items-center justify-center text-[13px] text-[#A6A6A6]">
               Select a conversation to view the chat.
             </div>
           ) : (
@@ -192,16 +192,16 @@ export default function LiveChatPage() {
                   <button
                     type="button"
                     onClick={() => setSelectedId(null)}
-                    className="-ml-1 shrink-0 rounded-lg p-1.5 text-[#6B7280] transition hover:bg-[var(--surface-3)] md:hidden"
+                    className="-ml-1 shrink-0 rounded-lg p-1.5 text-[#767676] transition hover:bg-[var(--surface-3)] md:hidden"
                     aria-label="Back to conversations"
                   >
                     <ArrowLeft size={18} />
                   </button>
                   <div className="min-w-0">
-                    <p className="truncate text-[14px] font-semibold text-[#111827]">
+                    <p className="truncate text-[14px] font-semibold text-[#0A1D3A]">
                       {detail.guest_name || 'Website visitor'}
                     </p>
-                    <p className="truncate text-[11px] text-[#9CA3AF]">
+                    <p className="truncate text-[11px] text-[#A6A6A6]">
                       {detail.assigned_admin_name
                         ? `Handled by ${detail.assigned_admin_name}`
                         : 'Bot is answering'}
@@ -213,7 +213,7 @@ export default function LiveChatPage() {
                     <button
                       type="button"
                       onClick={() => setStatus('closed')}
-                      className="flex items-center gap-1 rounded-lg border border-[var(--border)] px-3 py-1.5 text-[12px] font-medium text-[#6B7280] transition hover:bg-[var(--surface-3)]"
+                      className="flex items-center gap-1 rounded-lg border border-[var(--border)] px-3 py-1.5 text-[12px] font-medium text-[#767676] transition hover:bg-[var(--surface-3)]"
                     >
                       <XCircle size={14} /> Close
                     </button>
@@ -221,7 +221,7 @@ export default function LiveChatPage() {
                     <button
                       type="button"
                       onClick={() => setStatus('open')}
-                      className="flex items-center gap-1 rounded-lg border border-[var(--border)] px-3 py-1.5 text-[12px] font-medium text-[#15803D] transition hover:bg-[#F0FDF4]"
+                      className="flex items-center gap-1 rounded-lg border border-[var(--border)] px-3 py-1.5 text-[12px] font-medium text-[#15803D] transition hover:bg-[#E8F2EC]"
                     >
                       <CheckCircle size={14} /> Reopen
                     </button>
@@ -249,13 +249,13 @@ export default function LiveChatPage() {
                     }}
                     rows={1}
                     placeholder="Reply as yourself… (Enter to send)"
-                    className="max-h-32 min-h-[40px] flex-1 resize-none rounded-xl border border-[var(--border)] px-3 py-2 text-[13px] text-[#111827] outline-none focus:border-[#DC2626]/40"
+                    className="max-h-32 min-h-[40px] flex-1 resize-none rounded-xl border border-[var(--border)] px-3 py-2 text-[13px] text-[#0A1D3A] outline-none focus:border-[#C1121F]/40"
                   />
                   <button
                     type="button"
                     onClick={send}
                     disabled={!draft.trim() || sending}
-                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#DC2626] text-white transition hover:bg-[#B91C1C] disabled:cursor-not-allowed disabled:opacity-40"
+                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#C1121F] text-white transition hover:bg-[#C1121F] disabled:cursor-not-allowed disabled:opacity-40"
                   >
                     {sending ? <CircleNotch size={16} className="animate-spin" /> : <PaperPlaneTilt size={16} />}
                   </button>

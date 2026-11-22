@@ -56,7 +56,7 @@ export function QuotationPreviewDialog({ quotation, open, onOpenChange }: Props)
                 <div>Love Laundry</div>
               </div>
               <div className="flex absolute w-full inset-0 items-center justify-center">
-                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-red-600 text-white border border-[#FECACA] text-[16px] font-bold">
+                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-red-600 text-white border border-[#EEBDC0] text-[16px] font-bold">
                   {(selectedQuotation.client_name ?? '?').charAt(0).toUpperCase()}
                 </div>
               </div>
@@ -76,7 +76,7 @@ export function QuotationPreviewDialog({ quotation, open, onOpenChange }: Props)
               {groupEntries.map(([cat, catItems]) => (
                 <div key={cat}>
                   {groupEntries.length > 1 && (
-                    <p className="text-[10px] font-semibold uppercase tracking-widest text-[#98A2B3] mb-1.5 px-1">
+                    <p className="text-[10px] font-semibold uppercase tracking-widest text-[#7B8BA4] mb-1.5 px-1">
                       {cat}
                     </p>
                   )}
@@ -86,7 +86,7 @@ export function QuotationPreviewDialog({ quotation, open, onOpenChange }: Props)
                       return (
                         <div
                           key={li.id ?? idx}
-                          className="flex items-center justify-between rounded-lg border border-[var(--border)] bg-red-100 px-3 py-2 hover:bg-red-600 text-black hover:text-white hover:border-[#D1D5DB] transition-colors"
+                          className="flex items-center justify-between rounded-lg border border-[var(--border)] bg-red-100 px-3 py-2 hover:bg-red-600 text-black hover:text-white hover:border-[#BCC4D1] transition-colors"
                         >
                           <div className="flex items-center gap-2 min-w-0">
                             <span className="text-[10px] font-bold w-5 shrink-0 text-right">

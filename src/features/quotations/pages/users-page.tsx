@@ -226,19 +226,19 @@ export default function UsersPage() {
     const roleOptions = isPlatformAdmin ? [...ROLES, 'PLATFORM_ADMIN'] : ROLES
 
     const inputClass =
-        'h-10 w-full rounded-xl border border-[var(--border)] bg-white px-3.5 text-[13px] text-[var(--text-primary)] placeholder:text-[#98A2B3] outline-none focus:border-[var(--text-primary)] focus:ring-1 focus:ring-[var(--text-primary)] transition-all duration-150'
+        'h-10 w-full rounded-xl border border-[var(--border)] bg-white px-3.5 text-[13px] text-[var(--text-primary)] placeholder:text-[#7B8BA4] outline-none focus:border-[var(--text-primary)] focus:ring-1 focus:ring-[var(--text-primary)] transition-all duration-150'
 
     const roleColor: Record<string, string> = {
-        ADMIN: 'bg-[#FEF3C7] text-[#92400E] border-[#FDE68A]',
-        MANAGER: 'bg-[#EDE9FE] text-[#5B21B6] border-[#DDD6FE]',
-        STAFF: 'bg-[#F0FDF4] text-[#166534] border-[#BBF7D0]',
+        ADMIN: 'bg-[#EEBDC0] text-[#7D0C14] border-[#DD7D84]',
+        MANAGER: 'bg-[#E7EAEE] text-[#3A5277] border-[#BCC4D1]',
+        STAFF: 'bg-[#E8F2EC] text-[#0E5328] border-[#BDDBC9]',
         PLATFORM_ADMIN: 'bg-[var(--text-primary)] text-white border-[var(--text-primary)]',
     }
 
     const statusColor: Record<string, string> = {
-        active: 'bg-[#F0FDF4] text-[#166534] border-[#BBF7D0]',
-        inactive: 'bg-[#FEF2F2] text-[#DC2626] border-[#FECACA]',
-        unset: 'bg-[var(--surface-3)] text-[#6B7280] border-[var(--border)]',
+        active: 'bg-[#E8F2EC] text-[#0E5328] border-[#BDDBC9]',
+        inactive: 'bg-[#F9E7E9] text-[#C1121F] border-[#EEBDC0]',
+        unset: 'bg-[var(--surface-3)] text-[#767676] border-[var(--border)]',
     }
 
     return (
@@ -248,7 +248,7 @@ export default function UsersPage() {
                 <div>
                     <Breadcrumb items={[{ label: 'Dashboard', href: '/' }, { label: 'Users' }]} />
                     <h1 className="text-dashboard-title mt-1">User Management</h1>
-                    <p className="text-[13px] text-[#98A2B3] mt-0.5">
+                    <p className="text-[13px] text-[#7B8BA4] mt-0.5">
                         {isPlatformAdmin ? 'Manage users and laundry admins across every laundry' : 'Create and manage system users'}
                     </p>
                 </div>
@@ -273,13 +273,13 @@ export default function UsersPage() {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 {[
                     { label: 'Total Users', value: users.length, color: 'text-[var(--text-primary)]' },
-                    { label: 'Active', value: users.filter(u => u.status === 'active').length, color: 'text-[#16A34A]' },
-                    { label: 'Admins', value: users.filter(u => ['ADMIN', 'PLATFORM_ADMIN'].includes(u.role_id?.toUpperCase() ?? '')).length, color: 'text-[#92400E]' },
+                    { label: 'Active', value: users.filter(u => u.status === 'active').length, color: 'text-[#15803D]' },
+                    { label: 'Admins', value: users.filter(u => ['ADMIN', 'PLATFORM_ADMIN'].includes(u.role_id?.toUpperCase() ?? '')).length, color: 'text-[#7D0C14]' },
                 ].map(stat => (
                     <Card key={stat.label}>
                         <CardContent className="pt-4 pb-4 text-center">
                             <p className={`text-[24px] font-bold ${stat.color}`}>{loadingUsers ? '—' : stat.value}</p>
-                            <p className="text-[12px] text-[#6B7280] mt-0.5">{stat.label}</p>
+                            <p className="text-[12px] text-[#767676] mt-0.5">{stat.label}</p>
                         </CardContent>
                     </Card>
                 ))}
@@ -314,15 +314,15 @@ export default function UsersPage() {
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: Math.min(idx * 0.04, 0.3) }}
                             >
-                                <Card className="hover:border-[#D1D5DB] transition-colors">
+                                <Card className="hover:border-[#BCC4D1] transition-colors">
                                     <CardContent className="pt-4 pb-4">
                                         <div className="flex items-start gap-3">
-                                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[var(--text-primary)] to-[#374151] text-white font-bold text-[15px]">
+                                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[var(--text-primary)] to-[#0A1D3A] text-white font-bold text-[15px]">
                                                 {u.user_name.charAt(0).toUpperCase()}
                                             </div>
                                             <div className="min-w-0 flex-1">
                                                 <p className="text-[14px] font-semibold text-[var(--text-primary)] truncate">{u.user_name}</p>
-                                                <p className="text-[12px] text-[#6B7280] truncate">{u.email || u.auth_id}</p>
+                                                <p className="text-[12px] text-[#767676] truncate">{u.email || u.auth_id}</p>
                                                 <div className="flex items-center gap-1.5 mt-2 flex-wrap">
                                                     <span className={`inline-flex items-center rounded-md border px-2 py-0.5 text-[10px] font-semibold ${roleColor[u.role_id?.toUpperCase()] || roleColor.STAFF}`}>
                                                         {u.role_id?.toUpperCase()}
@@ -331,14 +331,14 @@ export default function UsersPage() {
                                                         {u.status}
                                                     </span>
                                                     {u.employee_id && (
-                                                        <span className="inline-flex items-center rounded-md border border-[var(--border)] bg-[var(--surface-2)] px-2 py-0.5 text-[10px] text-[#6B7280]">
+                                                        <span className="inline-flex items-center rounded-md border border-[var(--border)] bg-[var(--surface-2)] px-2 py-0.5 text-[10px] text-[#767676]">
                                                             #{u.employee_id}
                                                         </span>
                                                     )}
                                                     {isPlatformAdmin && (
                                                         <span
                                                             title={memberships.map(m => `${m.name} (${m.role})`).join(', ') || 'Not enrolled in any laundry'}
-                                                            className="inline-flex items-center gap-1 rounded-md border border-[var(--border)] bg-[var(--surface-2)] px-2 py-0.5 text-[10px] text-[#6B7280]"
+                                                            className="inline-flex items-center gap-1 rounded-md border border-[var(--border)] bg-[var(--surface-2)] px-2 py-0.5 text-[10px] text-[#767676]"
                                                         >
                                                             <Building2 size={11} />
                                                             {memberships.length === 0
@@ -355,7 +355,7 @@ export default function UsersPage() {
                                                         onClick={() => setManageUser(u)}
                                                         title="Manage laundries"
                                                         aria-label="Manage laundries"
-                                                        className="flex h-7 w-7 items-center justify-center rounded-lg text-[#6B7280] hover:bg-[var(--surface-3)] hover:text-[var(--text-primary)] transition-colors"
+                                                        className="flex h-7 w-7 items-center justify-center rounded-lg text-[#767676] hover:bg-[var(--surface-3)] hover:text-[var(--text-primary)] transition-colors"
                                                     >
                                                         <Building2 size={15} />
                                                     </button>
@@ -364,7 +364,7 @@ export default function UsersPage() {
                                                     type="button"
                                                     onClick={() => openEdit(u)}
                                                     title="Edit user"
-                                                    className="flex h-7 w-7 items-center justify-center rounded-lg text-[#6B7280] hover:bg-[var(--surface-3)] hover:text-[var(--text-primary)] transition-colors"
+                                                    className="flex h-7 w-7 items-center justify-center rounded-lg text-[#767676] hover:bg-[var(--surface-3)] hover:text-[var(--text-primary)] transition-colors"
                                                 >
                                                     <Pencil size={15} />
                                                 </button>
@@ -407,13 +407,13 @@ export default function UsersPage() {
                                         </div>
                                         <div>
                                             <p className="text-[14px] font-bold text-[var(--text-primary)]">{editId ? 'Edit User' : 'Create User'}</p>
-                                            <p className="text-[11px] text-[#6B7280]">{editId ? 'Update this system user' : 'Add a new system user'}</p>
+                                            <p className="text-[11px] text-[#767676]">{editId ? 'Update this system user' : 'Add a new system user'}</p>
                                         </div>
                                     </div>
                                     <button
                                         type="button"
                                         onClick={() => setShowModal(false)}
-                                        className="flex h-7 w-7 items-center justify-center rounded-lg text-[#6B7280] hover:bg-[var(--surface-3)] hover:text-[var(--text-primary)] transition-colors"
+                                        className="flex h-7 w-7 items-center justify-center rounded-lg text-[#767676] hover:bg-[var(--surface-3)] hover:text-[var(--text-primary)] transition-colors"
                                     >
                                         <X size={16} />
                                     </button>
@@ -423,8 +423,8 @@ export default function UsersPage() {
                                 <form onSubmit={handleSubmit} ref={flow.ref} onKeyDown={flow.handleKeyDown} className="p-6 space-y-4 max-h-[75vh] overflow-y-auto">
                                     <div className="grid grid-cols-2 gap-3">
                                         <div>
-                                            <label className="block text-[12px] font-medium text-[#374151] mb-1.5">
-                                                Full Name <span className="text-[#DC2626]">*</span>
+                                            <label className="block text-[12px] font-medium text-[#0A1D3A] mb-1.5">
+                                                Full Name <span className="text-[#C1121F]">*</span>
                                             </label>
                                             <input
                                                 type="text"
@@ -437,8 +437,8 @@ export default function UsersPage() {
                                             />
                                         </div>
                                         <div>
-                                            <label className="block text-[12px] font-medium text-[#374151] mb-1.5">
-                                                Username <span className="text-[#DC2626]">*</span>
+                                            <label className="block text-[12px] font-medium text-[#0A1D3A] mb-1.5">
+                                                Username <span className="text-[#C1121F]">*</span>
                                             </label>
                                             <input
                                                 type="text"
@@ -452,8 +452,8 @@ export default function UsersPage() {
                                     </div>
 
                                     <div>
-                                        <label className="block text-[12px] font-medium text-[#374151] mb-1.5">
-                                            {editId ? 'New Password' : 'Password'} {!editId && <span className="text-[#DC2626]">*</span>}
+                                        <label className="block text-[12px] font-medium text-[#0A1D3A] mb-1.5">
+                                            {editId ? 'New Password' : 'Password'} {!editId && <span className="text-[#C1121F]">*</span>}
                                         </label>
                                         <div className="relative">
                                             <input
@@ -467,7 +467,7 @@ export default function UsersPage() {
                                             <button
                                                 type="button"
                                                 onClick={() => setShowPw(v => !v)}
-                                                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#98A2B3] hover:text-[#374151] transition-colors"
+                                                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#7B8BA4] hover:text-[#0A1D3A] transition-colors"
                                                 tabIndex={-1}
                                             >
                                                 {showPw ? <EyeOff size={16} /> : <Eye size={16} />}
@@ -477,7 +477,7 @@ export default function UsersPage() {
 
                                     <div className="grid grid-cols-2 gap-3">
                                         <div>
-                                            <label className="block text-[12px] font-medium text-[#374151] mb-1.5">Role</label>
+                                            <label className="block text-[12px] font-medium text-[#0A1D3A] mb-1.5">Role</label>
                                             <select
                                                 value={form.role_id}
                                                 onChange={e => setForm(f => ({ ...f, role_id: e.target.value }))}
@@ -489,7 +489,7 @@ export default function UsersPage() {
                                             </select>
                                         </div>
                                         <div>
-                                            <label className="block text-[12px] font-medium text-[#374151] mb-1.5">Status</label>
+                                            <label className="block text-[12px] font-medium text-[#0A1D3A] mb-1.5">Status</label>
                                             <select
                                                 value={form.status}
                                                 onChange={e => setForm(f => ({ ...f, status: e.target.value }))}
@@ -504,7 +504,7 @@ export default function UsersPage() {
 
                                     {isPlatformAdmin && form.role_id !== 'PLATFORM_ADMIN' && (
                                         <div>
-                                            <label className="block text-[12px] font-medium text-[#374151] mb-1.5">Enroll in laundry</label>
+                                            <label className="block text-[12px] font-medium text-[#0A1D3A] mb-1.5">Enroll in laundry</label>
                                             <select
                                                 value={form.laundry_id}
                                                 onChange={e => setForm(f => ({ ...f, laundry_id: e.target.value }))}
@@ -515,12 +515,12 @@ export default function UsersPage() {
                                                     <option key={l.laundry_id} value={l.laundry_id}>{l.name}</option>
                                                 ))}
                                             </select>
-                                            <p className="text-[11px] text-[#98A2B3] mt-1">Optional. Enrolls this account as a member of the selected active laundry.</p>
+                                            <p className="text-[11px] text-[#7B8BA4] mt-1">Optional. Enrolls this account as a member of the selected active laundry.</p>
                                         </div>
                                     )}
 
                                     <div>
-                                        <label className="block text-[12px] font-medium text-[#374151] mb-1.5">Email</label>
+                                        <label className="block text-[12px] font-medium text-[#0A1D3A] mb-1.5">Email</label>
                                         <input
                                             type="email"
                                             value={form.email}
@@ -532,7 +532,7 @@ export default function UsersPage() {
 
                                     <div className="grid grid-cols-2 gap-3">
                                         <div>
-                                            <label className="block text-[12px] font-medium text-[#374151] mb-1.5">Mobile</label>
+                                            <label className="block text-[12px] font-medium text-[#0A1D3A] mb-1.5">Mobile</label>
                                             <input
                                                 type="text"
                                                 value={form.mobile_number}
@@ -542,7 +542,7 @@ export default function UsersPage() {
                                             />
                                         </div>
                                         <div>
-                                            <label className="block text-[12px] font-medium text-[#374151] mb-1.5">Employee ID</label>
+                                            <label className="block text-[12px] font-medium text-[#0A1D3A] mb-1.5">Employee ID</label>
                                             <input
                                                 type="text"
                                                 value={form.employee_id}
@@ -554,9 +554,9 @@ export default function UsersPage() {
                                     </div>
 
                                     {/* Admin notice */}
-                                    <div className="flex items-start gap-2 rounded-lg bg-[#F0FDF4] border border-[#BBF7D0] px-3 py-2.5">
-                                        <ShieldCheck size={14} className="text-[#16A34A] mt-0.5 shrink-0" />
-                                        <p className="text-[11px] text-[#166534]">
+                                    <div className="flex items-start gap-2 rounded-lg bg-[#E8F2EC] border border-[#BDDBC9] px-3 py-2.5">
+                                        <ShieldCheck size={14} className="text-[#15803D] mt-0.5 shrink-0" />
+                                        <p className="text-[11px] text-[#0E5328]">
                                             {editId
                                                 ? 'Changes are saved immediately. Enter a new password only if you want to reset it.'
                                                 : 'User will be created with the selected role. They can log in immediately using their username and password.'}
@@ -567,14 +567,14 @@ export default function UsersPage() {
                                         <button
                                             type="button"
                                             onClick={() => setShowModal(false)}
-                                            className="flex-1 h-10 rounded-xl border border-[var(--border)] bg-white text-[13px] font-medium text-[#374151] hover:bg-[var(--surface-2)] transition-colors"
+                                            className="flex-1 h-10 rounded-xl border border-[var(--border)] bg-white text-[13px] font-medium text-[#0A1D3A] hover:bg-[var(--surface-2)] transition-colors"
                                         >
                                             Cancel
                                         </button>
                                         <button
                                             type="submit"
                                             disabled={submitting}
-                                            className="flex-1 h-10 rounded-xl bg-[var(--text-primary)] text-[13px] font-medium text-white hover:bg-[#1D2939] transition-colors disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                            className="flex-1 h-10 rounded-xl bg-[var(--text-primary)] text-[13px] font-medium text-white hover:bg-[#0A1D3A] transition-colors disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                                         >
                                             {submitting ? (
                                                 <>
@@ -687,13 +687,13 @@ function ManageLaundriesModal({
                                     </div>
                                     <div className="min-w-0">
                                         <p className="text-[14px] font-bold text-[var(--text-primary)] truncate">Manage laundries</p>
-                                        <p className="text-[11px] text-[#6B7280] truncate">{user.user_name} · {user.auth_id}</p>
+                                        <p className="text-[11px] text-[#767676] truncate">{user.user_name} · {user.auth_id}</p>
                                     </div>
                                 </div>
                                 <button
                                     type="button"
                                     onClick={onClose}
-                                    className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-[#6B7280] hover:bg-[var(--surface-3)] hover:text-[var(--text-primary)] transition-colors"
+                                    className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-[#767676] hover:bg-[var(--surface-3)] hover:text-[var(--text-primary)] transition-colors"
                                 >
                                     <X size={16} />
                                 </button>
@@ -701,9 +701,9 @@ function ManageLaundriesModal({
 
                             <div className="p-4 space-y-2 max-h-[60vh] overflow-y-auto">
                                 {loading ? (
-                                    <p className="py-6 text-center text-[12px] text-[#98A2B3]">Loading laundries…</p>
+                                    <p className="py-6 text-center text-[12px] text-[#7B8BA4]">Loading laundries…</p>
                                 ) : laundries.length === 0 ? (
-                                    <p className="py-6 text-center text-[12px] text-[#98A2B3]">No laundries found.</p>
+                                    <p className="py-6 text-center text-[12px] text-[#7B8BA4]">No laundries found.</p>
                                 ) : (
                                     laundries.map(l => (
                                         <ManageLaundryRow
@@ -722,7 +722,7 @@ function ManageLaundriesModal({
                                 <button
                                     type="button"
                                     onClick={onClose}
-                                    className="h-9 rounded-xl border border-[var(--border)] bg-white px-4 text-[13px] font-medium text-[#374151] hover:bg-[var(--surface-2)] transition-colors"
+                                    className="h-9 rounded-xl border border-[var(--border)] bg-white px-4 text-[13px] font-medium text-[#0A1D3A] hover:bg-[var(--surface-2)] transition-colors"
                                 >
                                     Done
                                 </button>
@@ -755,14 +755,14 @@ function ManageLaundryRow({
     return (
         <div className="flex items-center gap-2 rounded-xl border border-[var(--border)] bg-white px-3 py-2.5">
             <span
-                className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-md border ${isMember ? 'border-[#BBF7D0] bg-[#F0FDF4] text-[#16A34A]' : 'border-[var(--border)] bg-[var(--surface-2)] text-[#98A2B3]'}`}
+                className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-md border ${isMember ? 'border-[#BDDBC9] bg-[#E8F2EC] text-[#15803D]' : 'border-[var(--border)] bg-[var(--surface-2)] text-[#7B8BA4]'}`}
                 title={isMember ? 'Member' : 'Not a member'}
             >
                 {isMember ? <Check size={13} /> : <Building2 size={13} />}
             </span>
             <div className="min-w-0 flex-1">
                 <p className="text-[13px] font-medium text-[var(--text-primary)] truncate">{laundry.name}</p>
-                <p className="text-[11px] text-[#98A2B3] truncate">{laundry.laundry_id}</p>
+                <p className="text-[11px] text-[#7B8BA4] truncate">{laundry.laundry_id}</p>
             </div>
             <select
                 value={isMember ? currentRole ?? 'STAFF' : role}
@@ -781,7 +781,7 @@ function ManageLaundryRow({
                     onClick={() => onRemove(laundry.laundry_id)}
                     disabled={busy}
                     title="Remove from laundry"
-                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-[#DC2626] hover:bg-[#FEF2F2] transition-colors disabled:opacity-50"
+                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-[#C1121F] hover:bg-[#F9E7E9] transition-colors disabled:opacity-50"
                 >
                     <UserRoundMinus size={15} />
                 </button>
@@ -791,7 +791,7 @@ function ManageLaundryRow({
                     onClick={() => onAdd(laundry.laundry_id, role)}
                     disabled={busy}
                     title="Add to laundry"
-                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-[#16A34A] hover:bg-[#F0FDF4] transition-colors disabled:opacity-50"
+                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-[#15803D] hover:bg-[#E8F2EC] transition-colors disabled:opacity-50"
                 >
                     <UserRoundPlus size={15} />
                 </button>

@@ -314,7 +314,7 @@ export default function LedgerPage() {
         e.kind === 'INCOME' ? (
           <span className="inline-flex items-center gap-1 text-xs font-medium text-[var(--warning-text)]"><ArrowUpCircle size={13} /> Income</span>
         ) : e.kind === 'BILL' ? (
-          <span className="inline-flex items-center gap-1 text-xs font-medium text-blue-700"><FileText size={13} /> Bill</span>
+          <span className="inline-flex items-center gap-1 text-xs font-medium text-blue-900"><FileText size={13} /> Bill</span>
         ) : (
           <span className="inline-flex items-center gap-1 text-xs font-medium text-[var(--success-text)]"><ArrowDownCircle size={13} /> Received</span>
         ),
@@ -398,7 +398,7 @@ export default function LedgerPage() {
       ))}
 
       {showStale && (
-        <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-950 dark:bg-amber-950/30 dark:text-amber-100" role="status">
+        <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-red-300 bg-red-50 px-3 py-2 text-xs text-red-950 dark:bg-red-950/30 dark:text-red-100" role="status">
           <span>Connection dropped — showing saved ledger. Balances refresh when the network is back.</span>
           <button type="button" onClick={retry} className="font-semibold underline underline-offset-2 hover:no-underline">
             Retry now
@@ -435,7 +435,7 @@ export default function LedgerPage() {
       </FilterBar>
 
       {truncated && (
-        <p className="text-xs text-amber-950 bg-amber-50 border border-amber-300 dark:bg-amber-950/30 dark:text-amber-100 rounded-lg px-3 py-2">
+        <p className="text-xs text-red-950 bg-red-50 border border-red-300 dark:bg-red-950/30 dark:text-red-100 rounded-lg px-3 py-2">
           Showing {bills.length} of {billsTotal} bills — narrow the client or date range for a complete ledger.
         </p>
       )}

@@ -139,7 +139,7 @@ export default function CamelotUniformReceipt() {
           </div>
         </div>
 
-        <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
           <div className="flex items-start gap-2">
             <AlertTriangle size={16} className="mt-0.5 flex-shrink-0" />
             <div>

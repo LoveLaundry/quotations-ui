@@ -15,14 +15,14 @@ import { usePermissions } from '../../../hooks/usePermissions'
  * guards enforce — otherwise it would offer links that bounce straight back.
  */
 const QUICK_ACTIONS = [
-  { to: '/management/employees', label: 'Employees', icon: UserCircle, color: 'bg-rose-500' },
-  { to: '/management/attendance-log', label: 'Log Attendance', icon: CalendarPlus, color: 'bg-teal-500' },
-  { to: '/management/salary-slip', label: 'Generate Slip', icon: Banknote, color: 'bg-emerald-500' },
-  { to: '/management/salary-history', label: 'Salary History', icon: ListChecks, color: 'bg-indigo-500' },
-  { to: '/management/advances', label: 'Advances', icon: Wallet, color: 'bg-amber-500' },
-  { to: '/management/holidays', label: 'Holidays', icon: Sun, color: 'bg-orange-500' },
-  { to: '/management/extra-work', label: 'Extra Work', icon: Zap, color: 'bg-purple-500' },
-  { to: '/management/company-settings', label: 'Company Settings', icon: Settings, color: 'bg-slate-600' },
+  { to: '/management/employees', label: 'Employees', icon: UserCircle, color: 'bg-red-500' },
+  { to: '/management/attendance-log', label: 'Log Attendance', icon: CalendarPlus, color: 'bg-green-500' },
+  { to: '/management/salary-slip', label: 'Generate Slip', icon: Banknote, color: 'bg-green-500' },
+  { to: '/management/salary-history', label: 'Salary History', icon: ListChecks, color: 'bg-blue-700' },
+  { to: '/management/advances', label: 'Advances', icon: Wallet, color: 'bg-red-500' },
+  { to: '/management/holidays', label: 'Holidays', icon: Sun, color: 'bg-red-500' },
+  { to: '/management/extra-work', label: 'Extra Work', icon: Zap, color: 'bg-blue-700' },
+  { to: '/management/company-settings', label: 'Company Settings', icon: Settings, color: 'bg-gray-600' },
 ]
 
 export default function ManagementDashboard() {
@@ -93,8 +93,8 @@ export default function ManagementDashboard() {
               <YAxis />
               <Tooltip formatter={(v: number) => `LKR ${v.toLocaleString()}`} />
               <Legend />
-              <Bar dataKey="revenue" fill="#22c55e" name="Revenue" />
-              <Bar dataKey="expenses" fill="#ef4444" name="Expenses" />
+              <Bar dataKey="revenue" fill="#3F9760" name="Revenue" />
+              <Bar dataKey="expenses" fill="#C1121F" name="Expenses" />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -107,7 +107,7 @@ export default function ManagementDashboard() {
               <XAxis dataKey="month" />
               <YAxis />
               <Tooltip formatter={(v: number) => `LKR ${v.toLocaleString()}`} />
-              <Line type="monotone" dataKey="profit" stroke="#8b5cf6" strokeWidth={2} />
+              <Line type="monotone" dataKey="profit" stroke="#0F2C59" strokeWidth={2} />
             </LineChart>
           </ResponsiveContainer>
         </div>

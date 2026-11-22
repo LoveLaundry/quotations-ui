@@ -50,15 +50,15 @@ function RecordPaymentModal({
     )
   }
 
-  const inputClass = 'h-10 w-full rounded-lg border border-[var(--border)] bg-white px-3 text-[13px] text-[var(--text-primary)] outline-none focus:border-[#16A34A] focus:ring-2 focus:ring-[#16A34A]/10 transition'
+  const inputClass = 'h-10 w-full rounded-lg border border-[var(--border)] bg-white px-3 text-[13px] text-[var(--text-primary)] outline-none focus:border-[#15803D] focus:ring-2 focus:ring-[#15803D]/10 transition'
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent>
         <form onSubmit={handleSubmit}>
           <DialogHeader>
-            <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-[#F0FDF4] border border-[#BBF7D0]">
-              <Banknote className="h-5 w-5 text-[#16A34A]" />
+            <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-[#E8F2EC] border border-[#BDDBC9]">
+              <Banknote className="h-5 w-5 text-[#15803D]" />
             </div>
             <DialogTitle>Record Payment</DialogTitle>
             <DialogDescription>Submit a new payment record for this bill.</DialogDescription>
@@ -67,7 +67,7 @@ function RecordPaymentModal({
           <DialogBody>
             <div className="space-y-4 text-left">
               <div>
-                <label className="block text-[11px] font-semibold uppercase tracking-wide text-[#6B7280] mb-1.5">Amount (LKR)</label>
+                <label className="block text-[11px] font-semibold uppercase tracking-wide text-[#767676] mb-1.5">Amount (LKR)</label>
                 <input
                   type="number"
                   min={0.01}
@@ -81,7 +81,7 @@ function RecordPaymentModal({
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-[11px] font-semibold uppercase tracking-wide text-[#6B7280] mb-1.5">Method</label>
+                  <label className="block text-[11px] font-semibold uppercase tracking-wide text-[#767676] mb-1.5">Method</label>
                   <select
                     value={method}
                     onChange={e => setMethod(e.target.value)}
@@ -94,7 +94,7 @@ function RecordPaymentModal({
                   </select>
                 </div>
                 <div>
-                  <label className="block text-[11px] font-semibold uppercase tracking-wide text-[#6B7280] mb-1.5">Date</label>
+                  <label className="block text-[11px] font-semibold uppercase tracking-wide text-[#767676] mb-1.5">Date</label>
                   <input
                     type="date"
                     required
@@ -106,7 +106,7 @@ function RecordPaymentModal({
               </div>
 
               <div>
-                <label className="block text-[11px] font-semibold uppercase tracking-wide text-[#6B7280] mb-1.5">Reference (Optional)</label>
+                <label className="block text-[11px] font-semibold uppercase tracking-wide text-[#767676] mb-1.5">Reference (Optional)</label>
                 <input
                   type="text"
                   placeholder="Cheque # or TXN ID"
@@ -117,7 +117,7 @@ function RecordPaymentModal({
               </div>
 
               <div>
-                <label className="block text-[11px] font-semibold uppercase tracking-wide text-[#6B7280] mb-1.5">Notes (Optional)</label>
+                <label className="block text-[11px] font-semibold uppercase tracking-wide text-[#767676] mb-1.5">Notes (Optional)</label>
                 <input
                   type="text"
                   placeholder="Additional details..."
@@ -132,7 +132,7 @@ function RecordPaymentModal({
           <DialogFooter>
             <Button
               type="submit"
-              className="w-full bg-[#16A34A] hover:bg-[#15803D] text-white disabled:opacity-50"
+              className="w-full bg-[#15803D] hover:bg-[#15803D] text-white disabled:opacity-50"
               disabled={!isValid || createPayment.isPending}
             >
               {createPayment.isPending ? 'Logging Payment...' : 'Record Payment'}
@@ -222,7 +222,7 @@ export default function BillDetailPage() {
             ]}
           />
           <div className="flex items-center gap-3 mt-1">
-            <Link to="/bills" className="text-[#98A2B3] hover:text-[#374151]">
+            <Link to="/bills" className="text-[#7B8BA4] hover:text-[#0A1D3A]">
               <ArrowLeft className="h-4 w-4" />
             </Link>
             <h1 className="text-dashboard-title">Bill Details</h1>
@@ -258,7 +258,7 @@ export default function BillDetailPage() {
               size="sm"
               onClick={handleDelete}
               disabled={deleteBill.isPending}
-              className="text-[#DC2626] hover:bg-[#FEF2F2]"
+              className="text-[#C1121F] hover:bg-[#F9E7E9]"
             >
               <Trash2 className="h-3.5 w-3.5" /> Delete
             </Button>
@@ -281,19 +281,19 @@ export default function BillDetailPage() {
           <Card className="flex-1 w-full">
             <CardHeader className="border-b border-[var(--border)] pb-4">
               <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#EFF6FF] text-[#2563EB] border border-[#BFDBFE]">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#E7EAEE] text-[#0F2C59] border border-[#BCC4D1]">
                   <Building2 className="h-4.5 w-4.5" />
                 </div>
                 <div>
                   <CardTitle>{bill.client_name}</CardTitle>
-                  <p className="text-[12px] text-[#98A2B3] mt-0.5">
+                  <p className="text-[12px] text-[#7B8BA4] mt-0.5">
                     {bill.quotation_title || 'General Price List'}
                   </p>
                 </div>
               </div>
-              <div className="flex items-center gap-1.5 text-[12px] text-[#98A2B3] mt-4">
+              <div className="flex items-center gap-1.5 text-[12px] text-[#7B8BA4] mt-4">
                 <Calendar className="h-3.5 w-3.5" /> Date:
-                <span className="font-medium text-[#374151]">{formatDate(bill.created_at)}</span>
+                <span className="font-medium text-[#0A1D3A]">{formatDate(bill.created_at)}</span>
               </div>
             </CardHeader>
 
@@ -316,8 +316,8 @@ export default function BillDetailPage() {
                     {(bill.items ?? []).map((item, i) => (
                       <tr key={i}>
                         <td className="px-4 py-3 font-medium text-[var(--text-primary)]">{item.item_name}</td>
-                        <td className="px-4 py-3 text-right text-[#374151]">{item.quantity}</td>
-                        <td className="px-4 py-3 text-right text-[#6B7280]">{item.unit_price.toFixed(2)}</td>
+                        <td className="px-4 py-3 text-right text-[#0A1D3A]">{item.quantity}</td>
+                        <td className="px-4 py-3 text-right text-[#767676]">{item.unit_price.toFixed(2)}</td>
                         <td className="px-4 py-3 text-right font-semibold text-[var(--text-primary)]">{item.line_total.toFixed(2)}</td>
                       </tr>
                     ))}
@@ -327,9 +327,9 @@ export default function BillDetailPage() {
 
               <div className="mt-6 flex justify-end">
                 <div className="w-full max-w-72 space-y-3 pt-4 border-t border-[var(--border)]">
-                  <div className="flex items-center justify-between text-[13px] text-[#6B7280]">
+                  <div className="flex items-center justify-between text-[13px] text-[#767676]">
                     <span>Total Quantity</span>
-                    <span className="font-medium text-[#374151]">{bill.total_quantity} pcs</span>
+                    <span className="font-medium text-[#0A1D3A]">{bill.total_quantity} pcs</span>
                   </div>
                   <div className="flex items-center justify-between border-t border-[var(--border)] pt-3 text-[14px] font-semibold text-[var(--text-primary)]">
                     <span>Gross Amount</span>
@@ -346,38 +346,38 @@ export default function BillDetailPage() {
             <Card>
               <CardHeader className="border-b border-[var(--border)] pb-3 bg-[var(--surface-2)] rounded-t-lg">
                 <CardTitle className="flex items-center gap-2 text-[14px]">
-                  <Wallet className="h-4 w-4 text-[#6B7280]" /> Payment Summary
+                  <Wallet className="h-4 w-4 text-[#767676]" /> Payment Summary
                 </CardTitle>
               </CardHeader>
               <CardContent className="pt-4 space-y-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-[13px] text-[#6B7280]">Gross Amount</span>
+                  <span className="text-[13px] text-[#767676]">Gross Amount</span>
                   <span className="text-[14px] font-semibold text-[var(--text-primary)]">LKR {bill.total_amount.toFixed(2)}</span>
                 </div>
                 {isEditing ? (
                   <div className="space-y-3">
                     <div>
-                      <label className="text-[11px] font-medium text-[#6B7280]">Discount (LKR)</label>
+                      <label className="text-[11px] font-medium text-[#767676]">Discount (LKR)</label>
                       <input type="number" value={editForm.discounts} onChange={e => setEditForm(f => ({...f, discounts: Number(e.target.value)}))}
                         className="w-full mt-1 rounded-lg border px-2.5 py-1.5 text-[13px]" style={{borderColor: 'var(--border)'}} />
                     </div>
                     <div>
-                      <label className="text-[11px] font-medium text-[#6B7280]">Transport Fee (LKR)</label>
+                      <label className="text-[11px] font-medium text-[#767676]">Transport Fee (LKR)</label>
                       <input type="number" value={editForm.transport_fee} onChange={e => setEditForm(f => ({...f, transport_fee: Number(e.target.value)}))}
                         className="w-full mt-1 rounded-lg border px-2.5 py-1.5 text-[13px]" style={{borderColor: 'var(--border)'}} />
                     </div>
                     <div>
-                      <label className="text-[11px] font-medium text-[#6B7280]">Taxes (LKR)</label>
+                      <label className="text-[11px] font-medium text-[#767676]">Taxes (LKR)</label>
                       <input type="number" value={editForm.taxes} onChange={e => setEditForm(f => ({...f, taxes: Number(e.target.value)}))}
                         className="w-full mt-1 rounded-lg border px-2.5 py-1.5 text-[13px]" style={{borderColor: 'var(--border)'}} />
                     </div>
                     <div>
-                      <label className="text-[11px] font-medium text-[#6B7280]">Other Charges (LKR)</label>
+                      <label className="text-[11px] font-medium text-[#767676]">Other Charges (LKR)</label>
                       <input type="number" value={editForm.additional_charges} onChange={e => setEditForm(f => ({...f, additional_charges: Number(e.target.value)}))}
                         className="w-full mt-1 rounded-lg border px-2.5 py-1.5 text-[13px]" style={{borderColor: 'var(--border)'}} />
                     </div>
                     <div>
-                      <label className="text-[11px] font-medium text-[#6B7280]">Notes</label>
+                      <label className="text-[11px] font-medium text-[#767676]">Notes</label>
                       <textarea value={editForm.notes} onChange={e => setEditForm(f => ({...f, notes: e.target.value}))} rows={2}
                         className="w-full mt-1 rounded-lg border px-2.5 py-1.5 text-[13px] resize-none" style={{borderColor: 'var(--border)'}} />
                     </div>
@@ -386,25 +386,25 @@ export default function BillDetailPage() {
                   <>
                     {(bill.discounts ?? 0) > 0 && (
                       <div className="flex items-center justify-between">
-                        <span className="text-[13px] text-[#6B7280]">Discount</span>
-                        <span className="text-[14px] font-semibold text-[#D97706]">- LKR {(bill.discounts ?? 0).toFixed(2)}</span>
+                        <span className="text-[13px] text-[#767676]">Discount</span>
+                        <span className="text-[14px] font-semibold text-[#CC3D47]">- LKR {(bill.discounts ?? 0).toFixed(2)}</span>
                       </div>
                     )}
                     {(bill.transport_fee ?? 0) > 0 && (
                       <div className="flex items-center justify-between">
-                        <span className="text-[13px] text-[#6B7280]">Transport</span>
+                        <span className="text-[13px] text-[#767676]">Transport</span>
                         <span className="text-[14px] font-semibold text-[var(--text-primary)]">+ LKR {(bill.transport_fee ?? 0).toFixed(2)}</span>
                       </div>
                     )}
                     {(bill.taxes ?? 0) > 0 && (
                       <div className="flex items-center justify-between">
-                        <span className="text-[13px] text-[#6B7280]">Taxes</span>
+                        <span className="text-[13px] text-[#767676]">Taxes</span>
                         <span className="text-[14px] font-semibold text-[var(--text-primary)]">+ LKR {(bill.taxes ?? 0).toFixed(2)}</span>
                       </div>
                     )}
                     {(bill.additional_charges ?? 0) > 0 && (
                       <div className="flex items-center justify-between">
-                        <span className="text-[13px] text-[#6B7280]">Other Charges</span>
+                        <span className="text-[13px] text-[#767676]">Other Charges</span>
                         <span className="text-[14px] font-semibold text-[var(--text-primary)]">+ LKR {(bill.additional_charges ?? 0).toFixed(2)}</span>
                       </div>
                     )}
@@ -415,18 +415,18 @@ export default function BillDetailPage() {
                   <span className="text-[15px] font-bold text-[var(--text-primary)]">LKR {grandTotal.toFixed(2)}</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-[13px] text-[#6B7280]">Paid</span>
-                  <span className="text-[14px] font-semibold text-[#16A34A]">LKR {(bill.paid_amount ?? 0).toFixed(2)}</span>
+                  <span className="text-[13px] text-[#767676]">Paid</span>
+                  <span className="text-[14px] font-semibold text-[#15803D]">LKR {(bill.paid_amount ?? 0).toFixed(2)}</span>
                 </div>
                 <div className="flex items-center justify-between pt-3 border-t border-[var(--border)]">
                   <span className="text-[13px] font-semibold text-[var(--text-primary)]">Available Deficit</span>
-                  <span className="text-[16px] font-bold text-[#DC2626]">LKR {outstanding.toFixed(2)}</span>
+                  <span className="text-[16px] font-bold text-[#C1121F]">LKR {outstanding.toFixed(2)}</span>
                 </div>
 
                 {outstanding > 0 && (
                   <Button
                     onClick={() => setIsPaymentModalOpen(true)}
-                    className="w-full bg-[#16A34A] hover:bg-[#15803D] text-white shadow-sm mt-2"
+                    className="w-full bg-[#15803D] hover:bg-[#15803D] text-white shadow-sm mt-2"
                   >
                     <Banknote className="h-4 w-4 mr-1.5" /> Add Payment
                   </Button>
@@ -438,28 +438,28 @@ export default function BillDetailPage() {
             <Card>
               <CardHeader className="border-b border-[var(--border)] pb-3">
                 <CardTitle className="flex items-center gap-2 text-[14px]">
-                  <FileText className="h-4 w-4 text-[#6B7280]" /> Payment History
+                  <FileText className="h-4 w-4 text-[#767676]" /> Payment History
                 </CardTitle>
               </CardHeader>
               <CardContent className="pt-4 p-0">
                 {paymentsLoading ? (
                   <div className="p-4"><Skeleton className="h-10" /></div>
                 ) : payments.length === 0 ? (
-                  <div className="py-6 text-center text-[12px] text-[#98A2B3]">No payments recorded yet.</div>
+                  <div className="py-6 text-center text-[12px] text-[#7B8BA4]">No payments recorded yet.</div>
                 ) : (
                   <div className="divide-y divide-[var(--border)]">
                     {payments.map((p: any) => (
                       <div key={p.id} className="p-4 flex items-center justify-between hover:bg-[var(--surface-2)] transition">
                         <div>
                           <p className="text-[13px] font-semibold text-[var(--text-primary)]">LKR {p.amount.toFixed(2)}</p>
-                          <div className="text-[11px] text-[#6B7280] flex items-center gap-1.5 mt-0.5">
-                            <span className="font-medium text-[#374151]">{p.payment_method}</span>
+                          <div className="text-[11px] text-[#767676] flex items-center gap-1.5 mt-0.5">
+                            <span className="font-medium text-[#0A1D3A]">{p.payment_method}</span>
                             <span>•</span>
                             <span>{formatCalendarDate(p.payment_date)}</span>
                           </div>
                         </div>
                         {p.reference && (
-                          <span className="text-[11px] bg-[var(--surface-3)] text-[#4B5563] px-2 py-0.5 rounded-full border border-[var(--border)] font-mono">
+                          <span className="text-[11px] bg-[var(--surface-3)] text-[#0A1D3A] px-2 py-0.5 rounded-full border border-[var(--border)] font-mono">
                             {p.reference}
                           </span>
                         )}

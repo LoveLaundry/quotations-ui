@@ -242,14 +242,14 @@ export default function IncomePage() {
         <StatCard label="Outstanding" value={`LKR ${Math.round(outstanding).toLocaleString()}`} icon={<AlertCircle size={20} />} tone="danger" to="/ledger" />
       </div>
       {unpricedPasses > 0 && (
-        <p className="text-xs text-amber-950 bg-amber-50 border border-amber-300 dark:bg-amber-950/30 dark:text-amber-100 rounded-lg px-3 py-2">
+        <p className="text-xs text-red-950 bg-red-50 border border-red-300 dark:bg-red-950/30 dark:text-red-100 rounded-lg px-3 py-2">
           {unpricedQty.toLocaleString()} received items across {unpricedPasses} gate pass{unpricedPasses === 1 ? '' : 'es'} have
           no quotation price and are valued at LKR 0. Link a quotation to the gate pass to count them as income.
         </p>
       )}
 
       {billsTotal > bills.length && (
-        <p className="text-xs text-amber-950 bg-amber-50 border border-amber-300 dark:bg-amber-950/30 dark:text-amber-100 rounded-lg px-3 py-2">
+        <p className="text-xs text-red-950 bg-red-50 border border-red-300 dark:bg-red-950/30 dark:text-red-100 rounded-lg px-3 py-2">
           Showing {bills.length} of {billsTotal} bills — billed, received and outstanding totals may be
           incomplete. Narrow the client or date range for exact bill money.
         </p>
@@ -258,7 +258,7 @@ export default function IncomePage() {
       ))}
 
       {showStale && (
-        <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-950 dark:bg-amber-950/30 dark:text-amber-100" role="status">
+        <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-red-300 bg-red-50 px-3 py-2 text-xs text-red-950 dark:bg-red-950/30 dark:text-red-100" role="status">
           <span>Connection dropped — showing saved data. It will refresh when the network is back.</span>
           <button type="button" onClick={refetch} className="font-semibold underline underline-offset-2 hover:no-underline">
             Retry now

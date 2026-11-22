@@ -108,7 +108,7 @@ export default function ImportWizard() {
             </button>
           </div>
 
-          <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 text-sm">
+          <div className="bg-blue-50 dark:bg-blue-950/20 rounded-lg p-4 text-sm">
             <p className="font-medium mb-2">Required columns:</p>
             <p className="text-gray-600 dark:text-gray-300">
               Date, Customer Name, Invoice Number, Item Name, Qty Received, Qty Washed, Qty Delivered, Qty Rejected, Qty Damaged, Rate, Cost, Notes
@@ -135,9 +135,9 @@ export default function ImportWizard() {
           </div>
 
           {previewData.errors.length > 0 && (
-            <div className="bg-amber-50 dark:bg-amber-900/20 rounded-lg p-4 text-sm">
+            <div className="bg-red-50 dark:bg-red-900/20 rounded-lg p-4 text-sm">
               <div className="flex items-center gap-2 mb-2">
-                <AlertTriangle size={16} className="text-amber-500" />
+                <AlertTriangle size={16} className="text-red-500" />
                 <span className="font-medium">{previewData.errors.length} validation errors found</span>
               </div>
               <div className="max-h-32 overflow-y-auto space-y-1">

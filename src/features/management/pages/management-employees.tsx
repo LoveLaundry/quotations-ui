@@ -208,7 +208,7 @@ export default function ManagementEmployees() {
                       {isActive ? 'ACTIVE' : 'INACTIVE'}
                     </span>
                     {!attendanceReq && (
-                      <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300" title="Fixed salary arrangement — attendance not required for payroll">FIXED</span>
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300" title="Fixed salary arrangement — attendance not required for payroll">FIXED</span>
                     )}
                   </div>
                   <p className="text-sm text-gray-500">{emp.employee_code ? `#${emp.employee_code}` : ''} {emp.position || emp.department}</p>
@@ -277,10 +277,10 @@ export default function ManagementEmployees() {
                   <div className="text-[11px] text-gray-500 flex flex-wrap gap-x-3 gap-y-0.5" title={`Attendance for ${now.toLocaleString('default', { month: 'long' })} ${attYear}`}>
                     <span className="w-full text-gray-400 text-[10px] uppercase tracking-wide">Attendance · {now.toLocaleString('default', { month: 'long' })}</span>
                     <span className="text-green-600 font-bold">{attSummary[emp.id]?.worked_days ?? 0} P</span>
-                    <span className="text-amber-600 font-bold">{attSummary[emp.id]?.half_days ?? 0} H</span>
-                    <span className="text-blue-600 font-bold">{attSummary[emp.id]?.paid_leave_days ?? 0} L</span>
+                    <span className="text-red-600 font-bold">{attSummary[emp.id]?.half_days ?? 0} H</span>
+                    <span className="text-blue-800 font-bold">{attSummary[emp.id]?.paid_leave_days ?? 0} L</span>
                     <span className="text-red-600 font-bold">{attSummary[emp.id]?.unpaid_days ?? 0} A</span>
-                    <span className="text-indigo-600 font-bold">{attSummary[emp.id]?.overtime_hours ?? 0} OT</span>
+                    <span className="text-blue-800 font-bold">{attSummary[emp.id]?.overtime_hours ?? 0} OT</span>
                   </div>
                 ) : (
                   <p className="text-[11px] text-gray-400">Attendance not tracked (fixed arrangement)</p>
@@ -367,7 +367,7 @@ export default function ManagementEmployees() {
                   {SALARY_TYPES.map(t => <option key={t} value={t}>{SALARY_TYPE_LABELS[t] || t}</option>)}
                 </select>
                 {editing?.salary_type === 'MONTHLY' && editing?.attendance_required === false && (
-                  <p className="text-[11px] text-amber-600 dark:text-amber-400 mt-1">Current arrangement: Monthly fixed amount (attendance not required) — a full fixed salary every month.</p>
+                  <p className="text-[11px] text-red-600 dark:text-red-400 mt-1">Current arrangement: Monthly fixed amount (attendance not required) — a full fixed salary every month.</p>
                 )}
               </div>
               <label className="flex items-center gap-2 text-sm">

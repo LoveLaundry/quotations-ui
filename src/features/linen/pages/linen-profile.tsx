@@ -44,7 +44,7 @@ export default function LinenProfile() {
   )
   if (isError || !linen) return <ErrorState />
 
-  const stCfg = LINEN_STATUS_CONFIG[linen.status as LinenStatus] ?? { label: linen.status, color: '#6B7280', bg: 'var(--surface-3)' }
+  const stCfg = LINEN_STATUS_CONFIG[linen.status as LinenStatus] ?? { label: linen.status, color: '#767676', bg: 'var(--surface-3)' }
 
   const handleQuickAction = (action: string) => {
     if (!id) return
@@ -105,7 +105,7 @@ export default function LinenProfile() {
                     key={sa.value}
                     variant="outline"
                     size="sm"
-                    className="text-xs justify-start h-8 focus:ring-2 focus:ring-[#DC2626]/20"
+                    className="text-xs justify-start h-8 focus:ring-2 focus:ring-[#C1121F]/20"
                     style={{ borderColor: sa.color + '30', color: sa.color }}
                     onClick={() => handleQuickAction(sa.value)}
                     disabled={scanMutation.isPending}
@@ -163,11 +163,11 @@ export default function LinenProfile() {
                 <div className="space-y-0">
                   {events.items.map((evt, i) => {
                     const fromCfg = evt.from_status ? LINEN_STATUS_CONFIG[evt.from_status as LinenStatus] : null
-                    const toCfg = LINEN_STATUS_CONFIG[evt.to_status as LinenStatus] ?? { label: evt.to_status, color: '#6B7280' }
+                    const toCfg = LINEN_STATUS_CONFIG[evt.to_status as LinenStatus] ?? { label: evt.to_status, color: '#767676' }
                     return (
                       <div key={evt.id} className="flex gap-3 relative pb-4 last:pb-0">
                         {i < events.items.length - 1 && <div className="absolute left-[7px] top-5 bottom-0 w-px bg-[var(--border)]" />}
-                        <div className="w-[15px] h-[15px] rounded-full border-2 flex-shrink-0 mt-0.5 z-10" style={{ borderColor: toCfg.color, backgroundColor: i === 0 ? toCfg.color : '#fff' }} />
+                        <div className="w-[15px] h-[15px] rounded-full border-2 flex-shrink-0 mt-0.5 z-10" style={{ borderColor: toCfg.color, backgroundColor: i === 0 ? toCfg.color : '#FFFFFF' }} />
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 flex-wrap">
                             {fromCfg && <span className="text-xs text-[var(--text-muted)]">{fromCfg.label} →</span>}

@@ -116,7 +116,7 @@ export default function ManagementExpenses() {
 
   const expenseColumns = [
     { key: 'date', header: 'Date' },
-    { key: 'category_name', header: 'Category', render: (e: any) => <span className="text-xs px-2 py-0.5 rounded-full bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300">{e.category_name}</span> },
+    { key: 'category_name', header: 'Category', render: (e: any) => <span className="text-xs px-2 py-0.5 rounded-full bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300">{e.category_name}</span> },
     { key: 'description', header: 'Description' },
     { key: 'amount', header: 'Amount', align: 'right' as const, render: (e: any) => <span className="font-medium">LKR {e.amount.toLocaleString()}</span> },
     { key: 'payment_method', header: 'Payment', render: (e: any) => <span className="text-xs px-2 py-0.5 rounded bg-gray-100 dark:bg-gray-700">{e.payment_method}</span> },
@@ -231,7 +231,7 @@ export default function ManagementExpenses() {
                 </button>
               )}
               {!categoriesLoading && !categoriesError && categories.length === 0 && (
-                <p className="text-xs text-amber-700">No expense categories yet. Add one below to continue.</p>
+                <p className="text-xs text-red-700">No expense categories yet. Add one below to continue.</p>
               )}
               {showNewCategory ? (
                 <div className="flex gap-2">

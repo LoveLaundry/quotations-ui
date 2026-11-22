@@ -29,27 +29,27 @@ interface InvoiceColumn {
 
 const printStyles = `
   @page { size: A4 portrait; margin: 12mm; }
-  .inv-root { width: 190mm; margin: 0 auto; background: white; color: #17202a; }
+  .inv-root { width: 190mm; margin: 0 auto; background: white; color: #0A1D3A; }
   .inv-page { min-height: 270mm; position: relative; padding-bottom: 22mm; }
-  .inv-brand { display: flex; align-items: center; justify-content: space-between; gap: 14px; border-bottom: 3px solid #b91c1c; padding-bottom: 12px; }
+  .inv-brand { display: flex; align-items: center; justify-content: space-between; gap: 14px; border-bottom: 3px solid #C1121F; padding-bottom: 12px; }
   .inv-brand img { width: 68px; height: 68px; object-fit: contain; }
-  .inv-title { color: #b91c1c; font-size: 26px; letter-spacing: 3px; font-weight: 800; text-align: right; }
+  .inv-title { color: #C1121F; font-size: 26px; letter-spacing: 3px; font-weight: 800; text-align: right; }
   .inv-table { width: 100%; border-collapse: collapse; font-size: 8px; table-layout: auto; }
-  .inv-table th, .inv-table td { border: 1px solid #cbd5e1; padding: 5px 4px; vertical-align: middle; }
-  .inv-table th { color: white; background: #b91c1c; text-align: center; font-weight: 700; }
+  .inv-table th, .inv-table td { border: 1px solid #BCC4D1; padding: 5px 4px; vertical-align: middle; }
+  .inv-table th { color: white; background: #C1121F; text-align: center; font-weight: 700; }
   .inv-table td { text-align: center; overflow-wrap: anywhere; }
   .inv-table td.item-name { text-align: left; }
   .inv-table td.num { text-align: right; white-space: nowrap; }
-  .inv-table tbody tr:nth-child(even) { background: #fff7ed; }
-  .inv-table tfoot td { background: #fef3c7; font-weight: 800; }
-  .inv-box { border: 1px solid #cbd5e1; padding: 10px 12px; }
-  .inv-section-title { color: #991b1b; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
-  .inv-footer { position: absolute; bottom: 0; left: 0; right: 0; border-top: 2px solid #b91c1c; padding-top: 8px; text-align: center; font-size: 9px; }
+  .inv-table tbody tr:nth-child(even) { background: #F9E7E9; }
+  .inv-table tfoot td { background: #EEBDC0; font-weight: 800; }
+  .inv-box { border: 1px solid #BCC4D1; padding: 10px 12px; }
+  .inv-section-title { color: #7D0C14; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
+  .inv-footer { position: absolute; bottom: 0; left: 0; right: 0; border-top: 2px solid #C1121F; padding-top: 8px; text-align: center; font-size: 9px; }
   .inv-sign { display: flex; justify-content: space-between; gap: 30px; margin-top: 28px; text-align: center; font-size: 10px; font-weight: 700; }
   .inv-sign-block { display: flex; width: 42%; flex-direction: column; justify-content: flex-end; }
-  .inv-sign-line { display: block; border-top: 1px solid #111827; padding-top: 5px; }
+  .inv-sign-line { display: block; border-top: 1px solid #0A1D3A; padding-top: 5px; }
   .inv-sign-image { display: block; max-width: 140px; height: 38px; margin: 0 auto 4px; object-fit: contain; }
-  .inv-terms-page { margin-top: 24px; border-top: 1px dashed #94a3b8; padding-top: 24px; }
+  .inv-terms-page { margin-top: 24px; border-top: 1px dashed #7B8BA4; padding-top: 24px; }
   @media print {
     html, body { margin: 0; padding: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     .inv-root { width: auto; margin: 0; }
@@ -216,7 +216,7 @@ export const ConsolidatedInvoiceTemplate = React.forwardRef<HTMLDivElement, Cons
             <div className="inv-box" style={{ minWidth: 240, fontSize: 11, lineHeight: 1.9 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16 }}><strong>Total amount</strong><span>{money(totalAmount)}</span></div>
               <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16 }}><span>Paid</span><span>{money(totalPaid)}</span></div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16, borderTop: '1px solid #94a3b8', paddingTop: 4, color: '#991b1b', fontWeight: 800 }}><span>Balance due</span><span>{money(totalOutstanding)}</span></div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16, borderTop: '1px solid #7B8BA4', paddingTop: 4, color: '#7D0C14', fontWeight: 800 }}><span>Balance due</span><span>{money(totalOutstanding)}</span></div>
             </div>
           </div>
 
@@ -274,7 +274,7 @@ export const ConsolidatedInvoiceTemplate = React.forwardRef<HTMLDivElement, Cons
             </div>
           </div>
 
-          <p style={{ marginTop: 38, textAlign: 'center', fontSize: 13, fontWeight: 800, color: '#991b1b' }}>Thank you for choosing Love Laundry.</p>
+          <p style={{ marginTop: 38, textAlign: 'center', fontSize: 13, fontWeight: 800, color: '#7D0C14' }}>Thank you for choosing Love Laundry.</p>
           <footer className="inv-footer">
             {COMPANY.name} · {COMPANY.address.line1}, {COMPANY.address.line2} · {COMPANY.phone.primary} · {COMPANY.email}
           </footer>

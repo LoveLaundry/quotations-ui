@@ -57,7 +57,7 @@ export function NotificationDetailDialog({ open, onOpenChange, data, type }: Not
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${
-                isGatePass ? 'bg-[#FEF2F2] text-[#DC2626]' : 'bg-[#F0FDF4] text-[#16A34A]'
+                isGatePass ? 'bg-[#F9E7E9] text-[#C1121F]' : 'bg-[#E8F2EC] text-[#15803D]'
               }`}>
                 {isGatePass ? <Truck size={20} /> : <FileText size={20} />}
               </div>
@@ -65,7 +65,7 @@ export function NotificationDetailDialog({ open, onOpenChange, data, type }: Not
                 <DialogTitle className="text-[16px] font-semibold text-[var(--text-primary)]">
                   {isGatePass ? 'Pending to Send' : 'Ready for Billing'}
                 </DialogTitle>
-                <DialogDescription className="text-[13px] text-[#6B7280]">
+                <DialogDescription className="text-[13px] text-[#767676]">
                   {isGatePass
                     ? 'This item is still pending to be sent from its gate pass'
                     : 'This quotation has been accepted and is ready to create a bill'}
@@ -74,7 +74,7 @@ export function NotificationDetailDialog({ open, onOpenChange, data, type }: Not
             </div>
             <button
               onClick={handleClose}
-              className="flex h-7 w-7 items-center justify-center rounded-lg text-[#98A2B3] hover:bg-[var(--surface-3)] hover:text-[#111827] transition-colors"
+              className="flex h-7 w-7 items-center justify-center rounded-lg text-[#7B8BA4] hover:bg-[var(--surface-3)] hover:text-[#0A1D3A] transition-colors"
               aria-label="Close"
             >
               <X size={18} />
@@ -87,30 +87,30 @@ export function NotificationDetailDialog({ open, onOpenChange, data, type }: Not
             <div className="rounded-lg border border-[var(--border)] bg-white p-4 space-y-3">
               <div className="grid grid-cols-1 min-[380px]:grid-cols-2 gap-x-4 gap-y-3">
                 <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-wide text-[#98A2B3]">Client</p>
+                  <p className="text-[11px] font-semibold uppercase tracking-wide text-[#7B8BA4]">Client</p>
                   <p className="text-[14px] font-medium text-[var(--text-primary)]">{(data as GatePassPendingEntry).client_name}</p>
                 </div>
                 <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-wide text-[#98A2B3]">Gate Pass</p>
+                  <p className="text-[11px] font-semibold uppercase tracking-wide text-[#7B8BA4]">Gate Pass</p>
                   <p className="text-[14px] font-medium text-[var(--text-primary)] font-mono">#{(data as GatePassPendingEntry).gate_pass_number}</p>
                 </div>
                 <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-wide text-[#98A2B3]">Item</p>
+                  <p className="text-[11px] font-semibold uppercase tracking-wide text-[#7B8BA4]">Item</p>
                   <p className="text-[14px] font-medium text-[var(--text-primary)]">{(data as GatePassPendingEntry).item_name}</p>
                 </div>
                 <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-wide text-[#98A2B3]">Pending to Send</p>
-                  <p className="text-[14px] font-semibold text-[#DC2626]">{(data as GatePassPendingEntry).pending}</p>
+                  <p className="text-[11px] font-semibold uppercase tracking-wide text-[#7B8BA4]">Pending to Send</p>
+                  <p className="text-[14px] font-semibold text-[#C1121F]">{(data as GatePassPendingEntry).pending}</p>
                 </div>
               </div>
 
               <div className="border-t border-[var(--border)] pt-3 grid grid-cols-1 min-[380px]:grid-cols-2 gap-x-4 gap-y-3">
                 <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-wide text-[#98A2B3]">Received</p>
+                  <p className="text-[11px] font-semibold uppercase tracking-wide text-[#7B8BA4]">Received</p>
                   <p className="text-[14px] font-medium text-[var(--text-primary)]">{(data as GatePassPendingEntry).received}</p>
                 </div>
                 <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-wide text-[#98A2B3]">Delivered so far</p>
+                  <p className="text-[11px] font-semibold uppercase tracking-wide text-[#7B8BA4]">Delivered so far</p>
                   <p className="text-[14px] font-medium text-[var(--text-primary)]">{(data as GatePassPendingEntry).delivered}</p>
                 </div>
               </div>
@@ -119,37 +119,37 @@ export function NotificationDetailDialog({ open, onOpenChange, data, type }: Not
             <div className="rounded-lg border border-[var(--border)] bg-white p-4 space-y-3">
               <div className="grid grid-cols-1 min-[380px]:grid-cols-2 gap-x-4 gap-y-3">
                 <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-wide text-[#98A2B3]">Client</p>
+                  <p className="text-[11px] font-semibold uppercase tracking-wide text-[#7B8BA4]">Client</p>
                   <p className="text-[14px] font-medium text-[var(--text-primary)]">{(data as Quotation).client_name}</p>
                 </div>
                 <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-wide text-[#98A2B3]">Title</p>
+                  <p className="text-[11px] font-semibold uppercase tracking-wide text-[#7B8BA4]">Title</p>
                   <p className="text-[14px] font-medium text-[var(--text-primary)]">{(data as Quotation).quotation_title || 'General Price List'}</p>
                 </div>
                 <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-wide text-[#98A2B3]">Date</p>
+                  <p className="text-[11px] font-semibold uppercase tracking-wide text-[#7B8BA4]">Date</p>
                   <p className="text-[14px] font-medium text-[var(--text-primary)]">{(data as Quotation).created_at ? formatDate((data as Quotation).created_at) : '—'}</p>
                 </div>
                 <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-wide text-[#98A2B3]">Quotation #</p>
+                  <p className="text-[11px] font-semibold uppercase tracking-wide text-[#7B8BA4]">Quotation #</p>
                   <p className="text-[14px] font-medium text-[var(--text-primary)] font-mono">{(data as Quotation).id}</p>
                 </div>
               </div>
 
               <div className="border-t border-[var(--border)] pt-3">
-                <p className="text-[11px] font-semibold uppercase tracking-wide text-[#98A2B3] mb-2">
+                <p className="text-[11px] font-semibold uppercase tracking-wide text-[#7B8BA4] mb-2">
                   Items {((data as Quotation).line_items?.length ?? 0)}
                 </p>
                 <div className="space-y-1.5 max-h-48 overflow-y-auto">
                   {((data as Quotation).line_items?.slice(0, 10) ?? []).map((item, idx) => (
                     <div key={item.id ?? idx} className="flex items-center justify-between text-[13px]">
                       <span className="text-[var(--text-primary)] truncate pr-2">{item.item_name}</span>
-                      <span className="text-[#6B7280] shrink-0">{item.category || 'General'}</span>
+                      <span className="text-[#767676] shrink-0">{item.category || 'General'}</span>
                       <span className="font-semibold text-[var(--text-primary)] shrink-0 ml-3">LKR {item.unit_price.toFixed(2)}</span>
                     </div>
                   ))}
                   {((data as Quotation).line_items?.length ?? 0) > 10 && (
-                    <p className="text-[12px] text-[#98A2B3] text-center py-2">
+                    <p className="text-[12px] text-[#7B8BA4] text-center py-2">
                       +{((data as Quotation).line_items?.length ?? 0) - 10} more items
                     </p>
                   )}
@@ -158,14 +158,14 @@ export function NotificationDetailDialog({ open, onOpenChange, data, type }: Not
 
               <div className="flex items-center gap-2">
                 <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-[11px] font-semibold whitespace-nowrap ${
-                  (data as Quotation).status === 'draft' ? 'bg-[#FEF2F2] text-[#DC2626] border-[#FECACA]' :
-                  (data as Quotation).status === 'received' ? 'bg-[#EFF6FF] text-[#2563EB] border-[#BFDBFE]' :
-                  (data as Quotation).status === 'delivered' ? 'bg-[#F0FDF4] text-[#16A34A] border-[#BBF7D0]' :
-                  'bg-[var(--surface-3)] text-[#4B5563] border-[var(--border)]'
+                  (data as Quotation).status === 'draft' ? 'bg-[#F9E7E9] text-[#C1121F] border-[#EEBDC0]' :
+                  (data as Quotation).status === 'received' ? 'bg-[#E7EAEE] text-[#0F2C59] border-[#BCC4D1]' :
+                  (data as Quotation).status === 'delivered' ? 'bg-[#E8F2EC] text-[#15803D] border-[#BDDBC9]' :
+                  'bg-[var(--surface-3)] text-[#0A1D3A] border-[var(--border)]'
                 }`}>
                   {(data as Quotation).status?.toUpperCase()}
                 </span>
-                <span className="text-[13px] text-[#6B7280]">Tag: {(data as Quotation).tag?.toUpperCase() || '—'}</span>
+                <span className="text-[13px] text-[#767676]">Tag: {(data as Quotation).tag?.toUpperCase() || '—'}</span>
               </div>
             </div>
           )}
@@ -188,7 +188,7 @@ export function NotificationDetailDialog({ open, onOpenChange, data, type }: Not
             View Details
           </Button>
           <Button
-            className="w-full sm:w-auto bg-[#DC2626] hover:bg-[#B91C1C] text-white"
+            className="w-full sm:w-auto bg-[#C1121F] hover:bg-[#C1121F] text-white"
             onClick={handlePrimaryAction}
           >
             {isGatePass ? (

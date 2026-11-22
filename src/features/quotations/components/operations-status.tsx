@@ -9,23 +9,23 @@ export interface StatusStyle {
 }
 
 export const GATE_PASS_STATUSES: Record<string, StatusStyle> = {
-    RECEIVED: { label: 'Received', bg: '#EFF6FF', text: '#2563EB', border: '#BFDBFE', dot: '#3B82F6' },
-    PROCESSING: { label: 'Processing', bg: '#FFF7ED', text: '#C2410C', border: '#FED7AA', dot: '#F97316' },
-    READY_FOR_DELIVERY: { label: 'Ready', bg: '#F0FDF4', text: '#15803D', border: '#BBF7D0', dot: '#22C55E' },
-    PARTIALLY_DELIVERED: { label: 'Partial', bg: '#FFFBEB', text: '#D97706', border: '#FDE68A', dot: '#F59E0B' },
-    DELIVERED: { label: 'Delivered', bg: '#F0FDF4', text: '#16A34A', border: '#BBF7D0', dot: '#16A34A' },
-    CANCELLED: { label: 'Cancelled', bg: 'var(--surface-2)', text: '#6B7280', border: 'var(--border)', dot: '#9CA3AF' },
+    RECEIVED: { label: 'Received', bg: '#E7EAEE', text: '#0F2C59', border: '#BCC4D1', dot: '#3A5277' },
+    PROCESSING: { label: 'Processing', bg: '#F9E7E9', text: '#7D0C14', border: '#EEBDC0', dot: '#CC3D47' },
+    READY_FOR_DELIVERY: { label: 'Ready', bg: '#E8F2EC', text: '#15803D', border: '#BDDBC9', dot: '#3F9760' },
+    PARTIALLY_DELIVERED: { label: 'Partial', bg: '#F9E7E9', text: '#CC3D47', border: '#DD7D84', dot: '#CC3D47' },
+    DELIVERED: { label: 'Delivered', bg: '#E8F2EC', text: '#15803D', border: '#BDDBC9', dot: '#15803D' },
+    CANCELLED: { label: 'Cancelled', bg: 'var(--surface-2)', text: '#767676', border: 'var(--border)', dot: '#A6A6A6' },
 }
 
 export type DeliveryStatus = 'DELIVERED' | 'PARTIALLY_DELIVERED' | 'READY' | 'IN_PROGRESS' | 'PENDING' | 'CANCELLED'
 
 export const DELIVERY_STATUSES: Record<DeliveryStatus, StatusStyle> = {
-    DELIVERED: { label: 'Delivered', bg: '#F0FDF4', text: '#16A34A', border: '#BBF7D0', dot: '#16A34A' },
-    PARTIALLY_DELIVERED: { label: 'Partial', bg: '#FFFBEB', text: '#D97706', border: '#FDE68A', dot: '#F59E0B' },
-    READY: { label: 'Ready', bg: '#F0FDF4', text: '#15803D', border: '#BBF7D0', dot: '#22C55E' },
-    IN_PROGRESS: { label: 'In Progress', bg: '#FFF7ED', text: '#C2410C', border: '#FED7AA', dot: '#F97316' },
-    PENDING: { label: 'Pending', bg: 'var(--surface-2)', text: '#667085', border: 'var(--border)', dot: '#98A2B3' },
-    CANCELLED: { label: 'Cancelled', bg: 'var(--surface-2)', text: '#6B7280', border: 'var(--border)', dot: '#9CA3AF' },
+    DELIVERED: { label: 'Delivered', bg: '#E8F2EC', text: '#15803D', border: '#BDDBC9', dot: '#15803D' },
+    PARTIALLY_DELIVERED: { label: 'Partial', bg: '#F9E7E9', text: '#CC3D47', border: '#DD7D84', dot: '#CC3D47' },
+    READY: { label: 'Ready', bg: '#E8F2EC', text: '#15803D', border: '#BDDBC9', dot: '#3F9760' },
+    IN_PROGRESS: { label: 'In Progress', bg: '#F9E7E9', text: '#7D0C14', border: '#EEBDC0', dot: '#CC3D47' },
+    PENDING: { label: 'Pending', bg: 'var(--surface-2)', text: '#3A5277', border: 'var(--border)', dot: '#7B8BA4' },
+    CANCELLED: { label: 'Cancelled', bg: 'var(--surface-2)', text: '#767676', border: 'var(--border)', dot: '#A6A6A6' },
 }
 
 export const DELIVERY_STATUS_ORDER: DeliveryStatus[] = [

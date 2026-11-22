@@ -11,7 +11,7 @@ import { toast } from 'sonner'
 import * as XLSX from 'xlsx'
 import { useAuth } from '../../../context/AuthContext'
 
-const COLORS = ['#ef4444', '#3b82f6', '#22c55e', '#f59e0b', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316']
+const COLORS = ['#C1121F', '#3A5277', '#3F9760', '#CC3D47', '#0F2C59', '#CC3D47', '#15803D', '#CC3D47']
 const LIST_LIMIT = 500
 
 function PayrollBreakdown({ rows = [] }: { rows?: any[] }) {
@@ -295,8 +295,8 @@ export default function ManagementReports() {
   } : null
   const receivingIncomeByDay = dailyIncomeSeries(masterReportData)
   const expenseMix = [
-    { name: 'Salary', value: Number(masterReportData?.salary_expense_total || 0), color: '#dc2626' },
-    { name: 'Other expenses', value: Number(masterReportData?.other_expense_total || 0), color: '#f59e0b' },
+    { name: 'Salary', value: Number(masterReportData?.salary_expense_total || 0), color: '#C1121F' },
+    { name: 'Other expenses', value: Number(masterReportData?.other_expense_total || 0), color: '#CC3D47' },
   ].filter(row => row.value > 0)
   const reportHotels = operationsData?.hotel_options || []
   const selectedHotelData = operationsData?.hotel_summary?.find((hotel: any) => normalizeClientName(hotel.client_name) === normalizeClientName(selectedHotel))
@@ -499,7 +499,7 @@ export default function ManagementReports() {
             </div>
             <div className="bg-white dark:bg-gray-800 rounded-xl border p-4">
               <p className="text-sm text-gray-500">Cost of Goods</p>
-              <p className="text-xl font-bold text-orange-600">{fmt(plData.total_cogs)}</p>
+              <p className="text-xl font-bold text-red-600">{fmt(plData.total_cogs)}</p>
             </div>
             <div className="bg-white dark:bg-gray-800 rounded-xl border p-4">
               <p className="text-sm text-gray-500">Gross Profit</p>
@@ -520,7 +520,7 @@ export default function ManagementReports() {
                   <XAxis type="number" />
                   <YAxis type="category" dataKey="name" width={120} />
                   <Tooltip formatter={(v: number) => `LKR ${v.toLocaleString()}`} />
-                  <Bar dataKey="value" fill="#22c55e" />
+                  <Bar dataKey="value" fill="#3F9760" />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -664,7 +664,7 @@ export default function ManagementReports() {
                             </option>
                           ))}
                         </select>
-                        {!hotelQuotations.length && <span className="mt-1 block text-xs text-amber-700">No quotation found for this hotel.</span>}
+                        {!hotelQuotations.length && <span className="mt-1 block text-xs text-red-700">No quotation found for this hotel.</span>}
                       </label>
                     )
                   })}
@@ -706,7 +706,7 @@ export default function ManagementReports() {
             </div>
 
             {operationsData.unpriced_count > 0 ? (
-              <div className="rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-950 dark:bg-amber-950/30 dark:text-amber-100" role="status">
+              <div className="rounded-lg border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-950 dark:bg-red-950/30 dark:text-red-100" role="status">
                 <strong>{operationsData.unpriced_count} receiving line(s) have no usable quotation price.</strong>
                 <span className="ml-1">Their quantities are listed below and excluded from income until the hotel quotation is corrected or selected.</span>
               </div>
@@ -733,7 +733,7 @@ export default function ManagementReports() {
                       <XAxis dataKey="date" minTickGap={24} tick={{ fontSize: 11 }} />
                       <YAxis tickFormatter={value => Number(value).toLocaleString()} tick={{ fontSize: 11 }} width={72} />
                       <Tooltip formatter={(value: number) => [fmtMoney(value), 'Receiving income']} />
-                      <Bar dataKey="income" name="Receiving income" fill="#16a34a" radius={[3, 3, 0, 0]} maxBarSize={28} />
+                      <Bar dataKey="income" name="Receiving income" fill="#15803D" radius={[3, 3, 0, 0]} maxBarSize={28} />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
@@ -804,12 +804,12 @@ export default function ManagementReports() {
               <PayrollBreakdown rows={payrollRows(masterReportData)} />
             </div>
 
-            {masterReportData.unpriced_count > 0 && <div className="overflow-hidden rounded-xl border border-amber-300 bg-amber-50 dark:bg-amber-950/30">
-              <h3 className="border-b border-amber-200 px-4 py-3 font-semibold text-amber-900 dark:text-amber-200">Unpriced receiving items ({masterReportData.unpriced_count})</h3>
+            {masterReportData.unpriced_count > 0 && <div className="overflow-hidden rounded-xl border border-red-300 bg-red-50 dark:bg-red-950/30">
+              <h3 className="border-b border-red-200 px-4 py-3 font-semibold text-red-900 dark:text-red-200">Unpriced receiving items ({masterReportData.unpriced_count})</h3>
               <div className="overflow-x-auto">
                 <table className="w-full min-w-620 text-sm">
                   <thead><tr><th className="px-3 py-2 text-left">Date</th><th className="px-3 py-2 text-left">Hotel</th><th className="px-3 py-2 text-left">Item</th><th className="px-3 py-2 text-right">Quantity</th></tr></thead>
-                  <tbody>{masterReportData.unpriced_items.map((row: any, index: number) => <tr key={`${row.date}-${row.client_name}-${row.item_name}-${index}`} className="border-t border-amber-200"><td className="px-3 py-2">{row.date}</td><td className="px-3 py-2">{row.client_name}</td><td className="px-3 py-2">{row.item_name}{row.specification ? ` · ${row.specification}` : ''}</td><td className="px-3 py-2 text-right">{row.quantity}</td></tr>)}</tbody>
+                  <tbody>{masterReportData.unpriced_items.map((row: any, index: number) => <tr key={`${row.date}-${row.client_name}-${row.item_name}-${index}`} className="border-t border-red-200"><td className="px-3 py-2">{row.date}</td><td className="px-3 py-2">{row.client_name}</td><td className="px-3 py-2">{row.item_name}{row.specification ? ` · ${row.specification}` : ''}</td><td className="px-3 py-2 text-right">{row.quantity}</td></tr>)}</tbody>
                 </table>
               </div>
             </div>}

@@ -15,8 +15,8 @@ const gatePassPrintStyles = `
   @page :first { margin: 0; }
   .gps-page {
     font-family: "Spectral", Georgia, serif;
-    color: #000;
-    background: #fff;
+    color: #000000;
+    background: #FFFFFF;
   }
   .gps-sheet {
     width: 210mm;
@@ -30,7 +30,7 @@ const gatePassPrintStyles = `
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    border-bottom: 2px solid #000;
+    border-bottom: 2px solid #000000;
     padding-bottom: 8px;
     margin-bottom: 8px;
   }
@@ -38,7 +38,7 @@ const gatePassPrintStyles = `
     width: 80px;
     height: 80px;
     object-fit: contain;
-    border: 2px solid #DC2626;
+    border: 2px solid #C1121F;
     border-radius: 50%;
     padding: 4px;
   }
@@ -62,7 +62,7 @@ const gatePassPrintStyles = `
     gap: 20px;
     font-size: 11px;
     font-weight: 700;
-    border-bottom: 2px solid #000;
+    border-bottom: 2px solid #000000;
     padding-bottom: 8px;
     margin-bottom: 8px;
     flex-wrap: wrap;
@@ -71,7 +71,7 @@ const gatePassPrintStyles = `
     width: 5px;
     height: 5px;
     border-radius: 50%;
-    background: #000;
+    background: #000000;
     display: inline-block;
     margin-right: 4px;
   }
@@ -86,7 +86,7 @@ const gatePassPrintStyles = `
     display: flex;
     justify-content: space-between;
     align-items: flex-end;
-    border: 2px solid #000;
+    border: 2px solid #000000;
     padding: 8px 10px;
     margin-bottom: 10px;
   }
@@ -115,26 +115,26 @@ const gatePassPrintStyles = `
   .gps-detail-label { width: 110px; flex-shrink: 0; }
   .gps-detail-value {
     flex: 1;
-    border-bottom: 1px dotted #000;
+    border-bottom: 1px dotted #000000;
     padding-left: 4px;
     font-weight: 600;
   }
   .gps-items-table {
     width: 100%;
     border-collapse: collapse;
-    border: 2px solid #000;
+    border: 2px solid #000000;
     font-size: 12px;
     font-weight: 700;
     margin-bottom: 6px;
   }
   .gps-items-table th,
   .gps-items-table td {
-    border: 1px solid #000;
+    border: 1px solid #000000;
     padding: 4px 6px;
   }
   .gps-items-table th {
     text-align: left;
-    background: #f5f5f5;
+    background: #F5F5F5;
   }
   .gps-items-table td {
     height: 22px;
@@ -153,7 +153,7 @@ const gatePassPrintStyles = `
   .gps-mismatch {
     font-size: 11px;
     font-weight: 700;
-    color: #DC2626;
+    color: #C1121F;
     margin-bottom: 10px;
   }
   .gps-signatures {
@@ -167,7 +167,7 @@ const gatePassPrintStyles = `
   }
   .gps-sig-box { width: 150px; }
   .gps-sig-line {
-    border-top: 2px dotted #000;
+    border-top: 2px dotted #000000;
     padding-top: 4px;
   }
 `
@@ -291,7 +291,7 @@ export const GatePassPrintSheet = React.forwardRef<
                     )}
 
                     {rewashedItems.length > 0 && (
-                        <div className="gps-mismatch" style={{ color: '#000' }}>
+                        <div className="gps-mismatch" style={{ color: '#000000' }}>
                             Note: {rewashedItems.length} item{rewashedItems.length !== 1 ? 's' : ''} tagged as free
                             re-wash — not billable.
                         </div>

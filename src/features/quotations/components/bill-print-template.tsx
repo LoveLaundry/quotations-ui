@@ -26,8 +26,8 @@ const billPrintStyles = `
 
   .bill-print-page {
     font-family: "Spectral", Georgia, serif;
-    color: #000;
-    background: #fff;
+    color: #000000;
+    background: #FFFFFF;
   }
   .bp-sheet {
     width: 210mm;
@@ -41,7 +41,7 @@ const billPrintStyles = `
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    border-bottom: 2px solid #000;
+    border-bottom: 2px solid #000000;
     padding-bottom: 8px;
     margin-bottom: 8px;
   }
@@ -49,7 +49,7 @@ const billPrintStyles = `
     width: 80px;
     height: 80px;
     object-fit: contain;
-    border: 2px solid #DC2626;
+    border: 2px solid #C1121F;
     border-radius: 50%;
     padding: 4px;
   }
@@ -78,7 +78,7 @@ const billPrintStyles = `
     gap: 20px;
     font-size: 11px;
     font-weight: 700;
-    border-bottom: 2px solid #000;
+    border-bottom: 2px solid #000000;
     padding-bottom: 8px;
     margin-bottom: 8px;
     flex-wrap: wrap;
@@ -87,7 +87,7 @@ const billPrintStyles = `
     width: 5px;
     height: 5px;
     border-radius: 50%;
-    background: #000;
+    background: #000000;
     display: inline-block;
     margin-right: 4px;
   }
@@ -118,7 +118,7 @@ const billPrintStyles = `
   }
   .bp-detail-value {
     flex: 1;
-    border-bottom: 1px dotted #000;
+    border-bottom: 1px dotted #000000;
     padding-left: 4px;
   }
   .bp-dates-box {
@@ -129,24 +129,24 @@ const billPrintStyles = `
   .bp-dates-table {
     width: 200px;
     border-collapse: collapse;
-    border: 2px solid #000;
+    border: 2px solid #000000;
     font-size: 12px;
   }
   .bp-dates-table td {
-    border: 2px solid #000;
+    border: 2px solid #000000;
     padding: 3px 6px;
   }
   .bp-items-table {
     width: 100%;
     border-collapse: collapse;
-    border: 2px solid #000;
+    border: 2px solid #000000;
     font-size: 12px;
     font-weight: 700;
     margin-bottom: 6px;
   }
   .bp-items-table th,
   .bp-items-table td {
-    border: 2px solid #000;
+    border: 2px solid #000000;
     padding: 4px 6px;
   }
   .bp-items-table th {
@@ -164,7 +164,7 @@ const billPrintStyles = `
     margin-top: 4px;
     margin-bottom: 8px;
   }
-  .bp-red { color: #DC2626; }
+  .bp-red { color: #C1121F; }
   .bp-conditions {
     font-size: 10px;
     font-weight: 700;
@@ -190,11 +190,11 @@ const billPrintStyles = `
     width: 150px;
   }
   .bp-sig-line {
-    border-top: 2px dotted #000;
+    border-top: 2px dotted #000000;
     padding-top: 4px;
   }
   .bp-id-line {
-    border-bottom: 2px dotted #000;
+    border-bottom: 2px dotted #000000;
     padding-bottom: 2px;
     margin-bottom: 4px;
     padding-left: 10px;

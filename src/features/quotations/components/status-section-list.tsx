@@ -13,11 +13,11 @@ export interface StatusSection<T> {
 }
 
 const toneMap: Record<string, { bg: string; text: string; border: string }> = {
-    blue: { bg: 'bg-[#EFF6FF] text-[#1D4ED8] border-[#BFDBFE]', text: 'text-[#1D4ED8]', border: 'border-[#BFDBFE]' },
-    green: { bg: 'bg-[#F0FDF4] text-[#15803D] border-[#BBF7D0]', text: 'text-[#15803D]', border: 'border-[#BBF7D0]' },
-    amber: { bg: 'bg-[#FFFBEB] text-[#B45309] border-[#FDE68A]', text: 'text-[#B45309]', border: 'border-[#FDE68A]' },
-    red: { bg: 'bg-[#FEF2F2] text-[#B91C1C] border-[#FECACA]', text: 'text-[#B91C1C]', border: 'border-[#FECACA]' },
-    gray: { bg: 'bg-[var(--surface-2)] text-[#475467] border-[var(--border)]', text: 'text-[#475467]', border: 'border-[var(--border)]' },
+    blue: { bg: 'bg-[#E7EAEE] text-[#0F2C59] border-[#BCC4D1]', text: 'text-[#0F2C59]', border: 'border-[#BCC4D1]' },
+    green: { bg: 'bg-[#E8F2EC] text-[#15803D] border-[#BDDBC9]', text: 'text-[#15803D]', border: 'border-[#BDDBC9]' },
+    amber: { bg: 'bg-[#F9E7E9] text-[#7D0C14] border-[#DD7D84]', text: 'text-[#7D0C14]', border: 'border-[#DD7D84]' },
+    red: { bg: 'bg-[#F9E7E9] text-[#C1121F] border-[#EEBDC0]', text: 'text-[#C1121F]', border: 'border-[#EEBDC0]' },
+    gray: { bg: 'bg-[var(--surface-2)] text-[#0A1D3A] border-[var(--border)]', text: 'text-[#0A1D3A]', border: 'border-[var(--border)]' },
 }
 
 /**

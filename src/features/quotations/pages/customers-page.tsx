@@ -56,23 +56,23 @@ export default function CustomersPage() {
     <div className="space-y-6">
       <div>
         <h1 className="flex items-center gap-2 text-[20px] font-bold text-[var(--text-primary)]">
-          <Users className="h-5 w-5 text-[#E01E31]" />
+          <Users className="h-5 w-5 text-[#C1121F]" />
           Customer 360
         </h1>
-        <p className="text-[13px] text-[#667085]">
+        <p className="text-[13px] text-[#3A5277]">
           Unified view of a customer across quotations, gate passes, deliveries and billing.
         </p>
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
         <div className="relative flex-1 min-w-[240px]">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#98A2B3]" />
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#7B8BA4]" />
           <input
             value={client}
             onChange={(e) => setClient(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && matchNames[0] && setActive(matchNames[0])}
             placeholder="Search customer by name…"
-            className="w-full rounded-lg border border-[#E5E5E5] py-2.5 pl-9 pr-3 text-[13px] outline-none focus:border-[#E01E31]"
+            className="w-full rounded-lg border border-[#E5E5E5] py-2.5 pl-9 pr-3 text-[13px] outline-none focus:border-[#C1121F]"
           />
         </div>
         <Button
@@ -89,7 +89,7 @@ export default function CustomersPage() {
             <button
               key={n}
               onClick={() => setActive(n)}
-              className="rounded-full border border-[#E5E5E5] bg-white px-3 py-1.5 text-[12px] font-semibold text-[#475467] hover:border-[#F3C7CE] hover:text-[#E01E31]"
+              className="rounded-full border border-[#E5E5E5] bg-white px-3 py-1.5 text-[12px] font-semibold text-[#0A1D3A] hover:border-[#EEBDC0] hover:text-[#C1121F]"
             >
               {n}
             </button>
@@ -103,7 +103,7 @@ export default function CustomersPage() {
             <h2 className="text-[16px] font-semibold text-[var(--text-primary)]">{active}</h2>
             <button
               onClick={() => setActive('')}
-              className="text-[12px] font-semibold text-[#667085] hover:text-[#E01E31]"
+              className="text-[12px] font-semibold text-[#3A5277] hover:text-[#C1121F]"
             >
               Clear
             </button>
@@ -144,17 +144,17 @@ export default function CustomersPage() {
             <Card>
               <CardContent className="flex flex-wrap items-center justify-between gap-3 pt-5">
                 <div className="flex items-center gap-4">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#FFF7ED] text-[#C2410C]">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#F9E7E9] text-[#7D0C14]">
                     <Banknote className="h-6 w-6" />
                   </div>
                   <div>
-                    <p className="text-[11px] uppercase tracking-wide text-[#98A2B3]">
+                    <p className="text-[11px] uppercase tracking-wide text-[#7B8BA4]">
                       Loyalty · {loyalty.tier}
                     </p>
                     <p className="text-[20px] font-bold text-[var(--text-primary)]">
                       {loyalty.points} pts
                     </p>
-                    <p className="text-[11px] text-[#667085]">
+                    <p className="text-[11px] text-[#3A5277]">
                       {loyalty.visits} visit(s)
                     </p>
                   </div>
@@ -259,7 +259,7 @@ export default function CustomersPage() {
                   />
                 ))}
                 {clientSummary?.stats && (
-                  <div className="mt-2 rounded-lg bg-[var(--surface-2)] px-3 py-2 text-[12px] text-[#667085]">
+                  <div className="mt-2 rounded-lg bg-[var(--surface-2)] px-3 py-2 text-[12px] text-[#3A5277]">
                     Total: LKR {(clientSummary.stats.total_shop_billed ?? 0).toLocaleString()} ·
                     Paid: LKR {(clientSummary.stats.total_shop_paid ?? 0).toLocaleString()} ·
                     Outstanding: LKR {(clientSummary.stats.shop_outstanding ?? 0).toLocaleString()}
@@ -286,11 +286,11 @@ function Stat({
   return (
     <Card>
       <CardContent className="flex items-center gap-3 pt-5">
-        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#FEF2F2] text-[#E01E31]">
+        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#F9E7E9] text-[#C1121F]">
           {icon}
         </div>
         <div>
-          <p className="text-[11px] text-[#98A2B3]">{label}</p>
+          <p className="text-[11px] text-[#7B8BA4]">{label}</p>
           <p className="text-[16px] font-bold text-[var(--text-primary)]">{value}</p>
         </div>
       </CardContent>
@@ -311,10 +311,10 @@ function Row({
     <div className="flex items-center justify-between rounded-lg border border-[#F2F2F2] px-3 py-2">
       <div>
         <p className="text-[13px] font-medium text-[var(--text-primary)]">{title}</p>
-        <p className="text-[11px] text-[#98A2B3]">{sub}</p>
+        <p className="text-[11px] text-[#7B8BA4]">{sub}</p>
       </div>
       {tag && (
-        <span className="rounded-full bg-[var(--border)] px-2 py-0.5 text-[10px] font-semibold uppercase text-[#475467]">
+        <span className="rounded-full bg-[var(--border)] px-2 py-0.5 text-[10px] font-semibold uppercase text-[#0A1D3A]">
           {tag}
         </span>
       )}
@@ -323,7 +323,7 @@ function Row({
 }
 
 function Empty({ text }: { text: string }) {
-  return <p className="text-[12px] text-[#98A2B3]">{text}</p>
+  return <p className="text-[12px] text-[#7B8BA4]">{text}</p>
 }
 
 function LoyaltyAdjust({
@@ -347,7 +347,7 @@ function LoyaltyAdjust({
         value={delta}
         onChange={(e) => setDelta(e.target.value)}
         placeholder="points"
-        className="w-20 rounded-lg border border-[#E5E5E5] px-2.5 py-1.5 text-[12px] outline-none focus:border-[#E01E31]"
+        className="w-20 rounded-lg border border-[#E5E5E5] px-2.5 py-1.5 text-[12px] outline-none focus:border-[#C1121F]"
       />
       <Button size="sm" variant="outline" disabled={pending} onClick={() => apply(1)}>
         Earn

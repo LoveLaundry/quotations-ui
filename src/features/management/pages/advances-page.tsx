@@ -157,7 +157,7 @@ export default function AdvancesPage() {
                     <td className="px-4 py-3 text-gray-500">{adv.reason || '—'}</td>
                     <td className="px-4 py-3 text-center">
                       <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${
-                        adv.status === 'OUTSTANDING' ? 'bg-yellow-100 text-yellow-800' :
+                        adv.status === 'OUTSTANDING' ? 'bg-red-100 text-red-800' :
                         adv.status === 'FULLY_DEDUCTED' ? 'bg-green-100 text-green-800' :
                         'bg-red-100 text-red-800'
                       }`}>

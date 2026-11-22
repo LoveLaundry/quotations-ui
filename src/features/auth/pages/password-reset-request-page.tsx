@@ -39,19 +39,19 @@ export function PasswordResetRequestPage() {
 
   if (success) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 p-4">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 p-4">
         <Card className="w-full max-w-md">
           <CardContent className="pt-6">
             <div className="flex flex-col items-center text-center space-y-4">
-              <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center">
-                <Mail className="w-8 h-8 text-emerald-600" />
+              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
+                <Mail className="w-8 h-8 text-green-600" />
               </div>
               <div>
-                <h2 className="text-2xl font-bold text-slate-900">Check your email</h2>
-                <p className="mt-2 text-slate-600">
+                <h2 className="text-2xl font-bold text-gray-900">Check your email</h2>
+                <p className="mt-2 text-gray-600">
                   We've sent a password reset link to <span className="font-medium">{email}</span>
                 </p>
-                <p className="mt-2 text-sm text-slate-500">
+                <p className="mt-2 text-sm text-gray-500">
                   The link will expire in 1 hour. Please check your spam folder if you don't see it.
                 </p>
               </div>
@@ -62,7 +62,7 @@ export function PasswordResetRequestPage() {
               >
                 Request another reset
               </Button>
-              <Link to="/login" className="text-sm text-slate-600 hover:text-slate-900 underline">
+              <Link to="/login" className="text-sm text-gray-600 hover:text-gray-900 underline">
                 Back to login
               </Link>
             </div>
@@ -73,15 +73,15 @@ export function PasswordResetRequestPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 p-4">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <Link to="/login" className="flex items-center text-sm text-slate-600 hover:text-slate-900 mb-4">
+          <Link to="/login" className="flex items-center text-sm text-gray-600 hover:text-gray-900 mb-4">
             <ArrowLeft className="w-4 h-4 mr-1" />
             Back to login
           </Link>
           <CardTitle className="text-2xl font-bold">Reset your password</CardTitle>
-          <p className="text-slate-600">
+          <p className="text-gray-600">
             Enter your email address and we'll send you a link to reset your password.
           </p>
         </CardHeader>
@@ -103,9 +103,9 @@ export function PasswordResetRequestPage() {
               {loading ? 'Sending...' : 'Send reset link'}
             </Button>
           </form>
-          <p className="mt-4 text-xs text-slate-500 text-center">
+          <p className="mt-4 text-xs text-gray-500 text-center">
             Don't have an account?{' '}
-            <Link to="/register" className="text-slate-900 font-medium hover:underline">
+            <Link to="/register" className="text-gray-900 font-medium hover:underline">
               Contact your administrator
             </Link>
           </p>

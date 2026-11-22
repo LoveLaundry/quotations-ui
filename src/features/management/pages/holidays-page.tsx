@@ -98,7 +98,7 @@ export default function HolidaysPage() {
                 <p className="text-sm text-gray-500 mt-1">{h.date}</p>
                 {h.description && <p className="text-xs text-gray-400 mt-1">{h.description}</p>}
                 {h.is_recurring && (
-                  <span className="inline-block mt-1 px-2 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded text-xs">
+                  <span className="inline-block mt-1 px-2 py-0.5 bg-blue-100 dark:bg-blue-950/30 text-blue-900 dark:text-blue-600 rounded text-xs">
                     Recurring
                   </span>
                 )}
