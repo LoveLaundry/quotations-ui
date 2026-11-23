@@ -102,3 +102,28 @@ This document mirrors `src/features/feature-pack/manifest.ts`. Every entry is a 
 98. **Notification count badge** — The bell shows a capped count with an exact accessible label. · `src/components/layout/top-bar.tsx`
 99. **Notification detail dialog** — A notification entry opens its record in a focused detail dialog. · `src/features/quotations/components/notification-detail-dialog.tsx`
 100. **Feature manifest panel** — Ctrl/Cmd+Shift+F opens a searchable catalogue of all 100 delivered features. · `src/features/feature-pack/FeaturePanel.tsx`
+
+## Current state (2026-11-23)
+
+- **Checkout:** `system-manegment/quotations-ui` is the authoritative web app, on `main`
+  (`2de54db`) and pinned at that commit by the root repository. The typo'd
+  `system-managment/quotations-ui` twin is legacy and is intentionally not synced.
+- **Theme system:** `src/ll-theme.tsx` + `src/ll-design-tokens.css` provide 20
+  contrast-checked light/dark presets. The inline script in `index.html` applies the
+  saved `lovelaundry-theme` before first paint; legacy `theme-preset` values migrate on
+  read. The palette stays inside the approved black / white / red / green system with
+  no blue, and the latest token layer includes the sidebar-text contrast fix and
+  print-specific overrides.
+- **Beyond the 100-item catalogue:** consolidated invoice list and create/detail flows,
+  full daily operations sheet, linen live feed / guided scan sessions / QR verification /
+  category rules / missing-cycle view, platform laundry registry with support sessions,
+  and Dexie-backed offline queues. These are live routes in `src/routes/index.tsx`, not
+  planned work.
+- **Session hardening:** only provably expired or absent tokens clear the stored session
+  (`src/lib/auth-token.ts`); cross-tab events, guarded data fetches on login/guest screens,
+  and scoped cache clearing on sign-out are active.
+- **Verification:** `npm run build` and `npm test` were run on this checkout — build OK
+  (pre-existing CSS-selector and large-chunk warnings) and **60/60 tests passed**. Local
+  Node 20.16 is below Vite 8's recommended 20.19+, which produces an engine warning only.
+- **Shared theme source:** the hotel and shop portals now import the same `ll-theme.tsx`
+  and `ll-design-tokens.css` files from this app, so all three frontends stay visually aligned.
