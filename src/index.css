@@ -408,7 +408,7 @@
   --sidebar-border: color-mix(in srgb, var(--ll-white) 12%, var(--ll-blue));
   --sidebar-text: color-mix(in srgb, var(--ll-white) 82%, var(--ll-black));
   --sidebar-label: color-mix(in srgb, var(--ll-white) 55%, transparent);
-  --sidebar-active: var(--ll-white);
+  --sidebar-active: var(--ll-black);
   --sidebar-hover-bg: color-mix(in srgb, var(--ll-white) 11%, var(--ll-blue));
   --sidebar-hover-text: var(--ll-white);
   --sidebar-indicator: var(--ll-red);
