@@ -606,7 +606,7 @@ export default function LinenSession() {
                     processScan(event.currentTarget.value)
                   }
                 }}
-                placeholder="Scan or type a linen ID (LL-XXXXXX)"
+                placeholder="Scan or type a linen ID (e.g. BSG-A0001XL)"
                 autoComplete="off"
                 disabled={bulkMutation.isPending}
                 className="w-full rounded-md border border-[var(--border)] bg-[var(--surface)] py-3 pl-10 pr-4 font-[family-name:var(--font-mono)] text-lg text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)] disabled:opacity-50"

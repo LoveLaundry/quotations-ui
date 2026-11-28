@@ -21,9 +21,17 @@ import {
   allowedNextStatuses,
   type ScanSession,
 } from './scan-session'
+import { checkLetters } from './linen-code'
 import type { LinenBulkScanResult } from '../../../types/linen'
 
 const T0 = 1_700_000_000_000
+
+/** A valid current-format tag: item BS, hotel G, series A, four-digit number
+ * and the matching two-letter check. Only these are accepted by the scanners. */
+function code(sequence: number): string {
+  const base = `BSG-A${String(sequence).padStart(4, '0')}`
+  return base + checkLetters(base)
+}
 
 function openSession(): ScanSession {
   return createSession({
@@ -72,12 +80,14 @@ describe('admin-defined transition legality', () => {
 
 describe('linen scan session queue', () => {
   it('queues scans locally and does not count them as updated before OK', () => {
+    const first = code(1)
+    const second = code(2)
     let session = openSession()
-    session = recordScan(session, 'LL-AAAAAA', T0 + 1)
-    session = recordScan(session, '  ll-bbbbbb  ', T0 + 2)
+    session = recordScan(session, first, T0 + 1)
+    session = recordScan(session, `  ${second.toLowerCase()}  `, T0 + 2)
 
-    expect(queuedCodes(session)).toEqual(['LL-AAAAAA', 'LL-BBBBBB'])
-    expect(session.records[0].code).toBe('LL-BBBBBB')
+    expect(queuedCodes(session)).toEqual([first, second])
+    expect(session.records[0].code).toBe(second)
 
     const summary = summarise(session)
     expect(summary.attempts).toBe(2)
@@ -86,54 +96,67 @@ describe('linen scan session queue', () => {
   })
 
   it('normalises deep links and rejects non-linen reads without queueing them', () => {
+    const tag = code(5)
     let session = openSession()
-    session = recordScan(session, 'https://ll.example/scan?code=LL-7K4P92', T0 + 1)
+    session = recordScan(session, `https://ll.example/scan?code=${tag.toLowerCase()}`, T0 + 1)
     session = recordScan(session, 'Cafe WiFi', T0 + 2)
 
-    expect(queuedCodes(session)).toEqual(['LL-7K4P92'])
+    expect(queuedCodes(session)).toEqual([tag])
     expect(session.records[0]).toMatchObject({ code: 'Cafe WiFi', outcome: 'unreadable' })
     expect(summarise(session).unreadable).toBe(1)
   })
 
-  it('rejects a repeated tag in the same session but keeps a failed tag retryable', () => {
+  it('rejects legacy tags, old numeric IDs and wrong check letters', () => {
     let session = openSession()
-    session = recordScan(session, 'LL-AAAAAA', T0 + 1)
-    session = recordScan(session, 'LL-AAAAAA', T0 + 2)
+    session = recordScan(session, 'LL-7K4P92', T0 + 1)
+    session = recordScan(session, 'BSG-00001', T0 + 2)
+    session = recordScan(session, 'https://lovelaundry.lk/i/BSG-A0001XY', T0 + 3)
 
-    expect(session.records[0]).toMatchObject({ code: 'LL-AAAAAA', outcome: 'duplicate' })
-    expect(queuedCodes(session)).toEqual(['LL-AAAAAA'])
+    expect(queuedCodes(session)).toEqual([])
+    expect(summarise(session).unreadable).toBe(3)
+  })
+
+  it('rejects a repeated tag in the same session but keeps a failed tag retryable', () => {
+    const tag = code(1)
+    let session = openSession()
+    session = recordScan(session, tag, T0 + 1)
+    session = recordScan(session, tag, T0 + 2)
+
+    expect(session.records[0]).toMatchObject({ code: tag, outcome: 'duplicate' })
+    expect(queuedCodes(session)).toEqual([tag])
 
     session = failQueued(session, 'network down', T0 + 3)
-    session = recordScan(session, 'LL-AAAAAA', T0 + 4)
-    expect(queuedCodes(session)).toEqual(['LL-AAAAAA'])
+    session = recordScan(session, tag, T0 + 4)
+    expect(queuedCodes(session)).toEqual([tag])
   })
 
   it('settles every queued row from the single OK response', () => {
+    const codes = [code(1), code(2), code(3), code(4)]
     let session = openSession()
-    for (const code of ['LL-AAAAAA', 'LL-BBBBBB', 'LL-CCCCCC', 'LL-DDDDDD']) {
-      session = recordScan(session, code, T0 + 1)
+    for (const tag of codes) {
+      session = recordScan(session, tag, T0 + 1)
     }
 
     session = applyBulkResult(session, result({
       processed: [
-        { linen_id: 'LL-AAAAAA', from_status: 'IN_STOCK', to_status: 'COLLECTED' },
-        { linen_id: 'LL-BBBBBB', from_status: 'READY', to_status: 'COLLECTED' },
+        { linen_id: codes[0], from_status: 'IN_STOCK', to_status: 'COLLECTED' },
+        { linen_id: codes[1], from_status: 'READY', to_status: 'COLLECTED' },
       ],
       errors: [
-        { linen_id: 'LL-CCCCCC', error: 'Not found' },
-        { linen_id: 'LL-DDDDDD', error: 'Unknown action' },
+        { linen_id: codes[2], error: 'Not found' },
+        { linen_id: codes[3], error: 'Unknown action' },
       ],
       total_processed: 2,
       total_errors: 2,
     }), T0 + 2)
 
     const byCode = new Map(session.records.map(record => [record.code, record]))
-    expect(byCode.get('LL-AAAAAA')).toMatchObject({
+    expect(byCode.get(codes[0])).toMatchObject({
       outcome: 'success', fromStatus: 'IN_STOCK', toStatus: 'COLLECTED',
     })
-    expect(byCode.get('LL-BBBBBB')).toMatchObject({ outcome: 'success' })
-    expect(byCode.get('LL-CCCCCC')?.outcome).toBe('not_found')
-    expect(byCode.get('LL-DDDDDD')?.outcome).toBe('rejected')
+    expect(byCode.get(codes[1])).toMatchObject({ outcome: 'success' })
+    expect(byCode.get(codes[2])?.outcome).toBe('not_found')
+    expect(byCode.get(codes[3])?.outcome).toBe('rejected')
 
     const summary = summarise(session)
     expect(summary.queued).toBe(0)
@@ -143,7 +166,8 @@ describe('linen scan session queue', () => {
   })
 
   it('marks a code with no result as failed rather than silently losing it', () => {
-    let session = recordScan(openSession(), 'LL-AAAAAA', T0 + 1)
+    const tag = code(1)
+    let session = recordScan(openSession(), tag, T0 + 1)
     session = applyBulkResult(session, result(), T0 + 2)
 
     expect(session.records[0]).toMatchObject({ outcome: 'failed' })
@@ -151,44 +175,50 @@ describe('linen scan session queue', () => {
   })
 
   it('requeues only unresolved rows when correcting after the summary', () => {
-    let session = recordScan(openSession(), 'LL-AAAAAA', T0 + 1)
-    session = recordScan(session, 'LL-BBBBBB', T0 + 2)
+    const first = code(1)
+    const second = code(2)
+    let session = recordScan(openSession(), first, T0 + 1)
+    session = recordScan(session, second, T0 + 2)
     session = recordScan(session, 'Cafe WiFi', T0 + 3)
     session = applyBulkResult(session, result({
-      processed: [{ linen_id: 'LL-AAAAAA', from_status: 'READY', to_status: 'COLLECTED' }],
-      errors: [{ linen_id: 'LL-BBBBBB', error: 'Not found' }],
+      processed: [{ linen_id: first, from_status: 'READY', to_status: 'COLLECTED' }],
+      errors: [{ linen_id: second, error: 'Not found' }],
     }), T0 + 4)
     session = endSession(session, T0 + 5)
 
     session = requeueUnresolved(session)
 
     expect(session.endedAt).toBeUndefined()
-    expect(queuedCodes(session)).toEqual(['LL-BBBBBB'])
+    expect(queuedCodes(session)).toEqual([second])
     expect(session.records.some(record => record.code === 'Cafe WiFi')).toBe(false)
-    expect(session.records.find(record => record.code === 'LL-AAAAAA')?.outcome).toBe('success')
+    expect(session.records.find(record => record.code === first)?.outcome).toBe('success')
     expect(summarise(session).successful).toBe(1)
   })
 
   it('keeps a failing batch retryable with every code still queued', () => {
-    let session = recordScan(openSession(), 'LL-AAAAAA', T0 + 1)
-    session = recordScan(session, 'LL-BBBBBB', T0 + 2)
+    const first = code(1)
+    const second = code(2)
+    let session = recordScan(openSession(), first, T0 + 1)
+    session = recordScan(session, second, T0 + 2)
     session = failQueued(session, 'Could not reach the linen service', T0 + 3)
 
     expect(queuedCodes(session)).toEqual([])
     expect(summarise(session).failed).toBe(2)
 
     session = requeueUnresolved(session)
-    expect(queuedCodes(session)).toEqual(['LL-AAAAAA', 'LL-BBBBBB'])
+    expect(queuedCodes(session)).toEqual([first, second])
   })
 
   it('filters the history by code, state or outcome', () => {
-    let session = recordScan(openSession(), 'LL-AAAAAA', T0 + 1)
+    const first = code(1)
+    const second = code(2)
+    let session = recordScan(openSession(), first, T0 + 1)
     session = applyBulkResult(session, result({
-      processed: [{ linen_id: 'LL-AAAAAA', from_status: 'READY', to_status: 'COLLECTED' }],
+      processed: [{ linen_id: first, from_status: 'READY', to_status: 'COLLECTED' }],
     }), T0 + 2)
-    session = recordScan(session, 'LL-BBBBBB', T0 + 3)
+    session = recordScan(session, second, T0 + 3)
 
-    expect(filterRecords(session.records, 'll-aaaa')).toHaveLength(1)
+    expect(filterRecords(session.records, first)).toHaveLength(1)
     expect(filterRecords(session.records, 'COLLECTED')).toHaveLength(1)
     expect(filterRecords(session.records, 'updated')).toHaveLength(1)
     expect(filterRecords(session.records, 'queued')).toHaveLength(1)
@@ -197,8 +227,8 @@ describe('linen scan session queue', () => {
 
   it('counts a thousand queued scans without drift', () => {
     let session = openSession()
-    for (let index = 0; index < 1000; index += 1) {
-      session = recordScan(session, `LL-${String(index).padStart(6, '0')}`, T0 + index)
+    for (let index = 1; index <= 1000; index += 1) {
+      session = recordScan(session, code(index), T0 + index)
     }
 
     expect(queuedCodes(session)).toHaveLength(1000)
@@ -206,25 +236,30 @@ describe('linen scan session queue', () => {
   })
 
   it('counts distinct linens once and buckets the four requested categories', () => {
+    const bath = code(7)
+    const pool = code(8)
+    const single = code(9)
+    const double = code(10)
+    const other = code(11)
     let session = openSession()
-    for (const code of ['LL-BATH001', 'LL-POOL001', 'LL-SNGL001', 'LL-DBLE001', 'LL-OTHER1']) {
-      session = recordScan(session, code, T0 + 1)
+    for (const tag of [bath, pool, single, double, other]) {
+      session = recordScan(session, tag, T0 + 1)
     }
-    session = recordScan(session, 'LL-BATH001', T0 + 2) // duplicate read
+    session = recordScan(session, bath, T0 + 2) // duplicate read
 
-    session = applyLinenVerification(session, 'LL-BATH001', {
-      linen_id: 'LL-BATH001', category: 'TOWEL', item_type: 'BATH TOWEL',
+    session = applyLinenVerification(session, bath, {
+      linen_id: bath, category: 'TOWEL', item_type: 'BATH TOWEL',
     }, T0 + 3)
-    session = applyLinenVerification(session, 'LL-POOL001', {
-      linen_id: 'LL-POOL001', category: 'TOWEL', item_type: 'POOL TOWEL',
+    session = applyLinenVerification(session, pool, {
+      linen_id: pool, category: 'TOWEL', item_type: 'POOL TOWEL',
     }, T0 + 3)
-    session = applyLinenVerification(session, 'LL-SNGL001', {
-      linen_id: 'LL-SNGL001', category: 'BEDSHEET', size: 'SINGLE',
+    session = applyLinenVerification(session, single, {
+      linen_id: single, category: 'BEDSHEET', size: 'SINGLE',
     }, T0 + 3)
-    session = applyLinenVerification(session, 'LL-DBLE001', {
-      linen_id: 'LL-DBLE001', category: 'BEDSHEET', item_type: 'DOUBLE',
+    session = applyLinenVerification(session, double, {
+      linen_id: double, category: 'BEDSHEET', item_type: 'DOUBLE',
     }, T0 + 3)
-    session = applyLinenVerification(session, 'LL-OTHER1', null, T0 + 3)
+    session = applyLinenVerification(session, other, null, T0 + 3)
 
     const summary = summarise(session)
     expect(scannedCodes(session.records)).toHaveLength(5)
@@ -241,13 +276,14 @@ describe('linen scan session queue', () => {
 
     // The duplicate read inherits its proof from the first bath-towel read.
     const duplicate = session.records.find(record => record.outcome === 'duplicate')
-    expect(duplicate).toMatchObject({ verification: 'verified', identity: { linen_id: 'LL-BATH001' } })
+    expect(duplicate).toMatchObject({ verification: 'verified', identity: { linen_id: bath } })
   })
 
   it('keeps category metadata when a live websocket event patches a tag', () => {
-    let session = recordScan(openSession(), 'LL-LIVE001', T0 + 1)
-    session = applyLinenVerification(session, 'LL-LIVE001', {
-      linen_id: 'LL-LIVE001', category: 'TOWEL', item_type: 'POOL TOWEL', size: 'LARGE',
+    const tag = code(12)
+    let session = recordScan(openSession(), tag, T0 + 1)
+    session = applyLinenVerification(session, tag, {
+      linen_id: tag, category: 'TOWEL', item_type: 'POOL TOWEL', size: 'LARGE',
     }, T0 + 2)
 
     session = applyLinenLiveEvent(session, {
@@ -255,7 +291,7 @@ describe('linen scan session queue', () => {
       event: 'scan',
       action: 'collect',
       at: new Date(T0 + 3).toISOString(),
-      linen: { linen_id: 'LL-LIVE001', status: 'COLLECTED', previous_status: 'READY' },
+      linen: { linen_id: tag, status: 'COLLECTED', previous_status: 'READY' },
     }, T0 + 4)
 
     const record = session.records[0]
@@ -266,9 +302,10 @@ describe('linen scan session queue', () => {
   })
 
   it('marks a tag from a bulk linen_ids event live even without a snapshot', () => {
-    let session = recordScan(openSession(), 'LL-BULK001', T0 + 1)
+    const tag = code(13)
+    let session = recordScan(openSession(), tag, T0 + 1)
     session = applyLinenLiveEvent(session, {
-      event: 'bulk_scan', linen_ids: ['ll-bulk001', 'LL-OTHER1'],
+      event: 'bulk_scan', linen_ids: [tag.toLowerCase(), code(11)],
     }, T0 + 2)
 
     expect(session.records[0].live).toMatchObject({ event: 'bulk_scan', at: T0 + 2 })

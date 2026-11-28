@@ -97,7 +97,7 @@ export default function LinenBulkScan() {
                   onKeyDown={e => {
                     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); addCode() }
                   }}
-                  placeholder={"Enter linen IDs, one per line or space-separated...\ne.g. LL-7K4P92 LL-82M7QF"}
+                  placeholder={"Enter linen IDs, one per line or space-separated...\ne.g. BSG-A0001XL BSG-A0002XT"}
                   rows={4}
                   className="w-full px-3 py-2 text-sm font-mono border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)] resize-none focus:outline-none focus:ring-2 focus:ring-[var(--danger)]/20 focus:border-[var(--danger)] transition-colors"
                 />

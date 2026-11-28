@@ -5,7 +5,7 @@
    ───────────────────────────────────────────────────────────────────────────
    Layer 1  @theme            semantic Tailwind utilities (bg-surface, …)
    Layer 2  base              reset, typography, focus, form controls, scrollbars
-   Layer 3  theme presets     the 9 selectable palettes, all built from the same
+   Layer 3  theme presets     the 20 selectable palettes, all built from the same
                               semantic contract so no page can drift
    Layer 4  legacy remap      normalises the hard-coded hex utilities that were
                               written before the token layer existed, so every
@@ -24,7 +24,7 @@
    0 · DARK VARIANT
    Tailwind's stock `dark:` compiles to `@media (prefers-color-scheme: dark)`,
    which tracks the *operating system*, not the preset the user picked. A user
-   who selects "nightblue" on a light laptop would have lost every `dark:` rule.
+   who selects a dark preset such as "Crimson Dark" on a light laptop would have lost every `dark:` rule.
    Binding the variant to the app's own theme attribute makes the two agree:
    the UI is dark exactly when the user asked for a dark palette.
    The attribute is written to <html> before first paint (see index.html) so
@@ -32,9 +32,27 @@
 ─────────────────────────────────────────────────────────────────────────── */
 @custom-variant dark (&:where(
   [data-theme='dark'],
+  [data-theme='dark-crimson'],
+  [data-theme='dark-ember'],
+  [data-theme='dark-amber'],
+  [data-theme='dark-gold'],
+  [data-theme='dark-lime'],
+  [data-theme='dark-emerald'],
+  [data-theme='dark-forest'],
+  [data-theme='dark-teal'],
+  [data-theme='dark-rose'],
   [data-theme='nightblue'],
   [data-theme='contrast-dark'],
   [data-theme='dark'] *,
+  [data-theme='dark-crimson'] *,
+  [data-theme='dark-ember'] *,
+  [data-theme='dark-amber'] *,
+  [data-theme='dark-gold'] *,
+  [data-theme='dark-lime'] *,
+  [data-theme='dark-emerald'] *,
+  [data-theme='dark-forest'] *,
+  [data-theme='dark-teal'] *,
+  [data-theme='dark-rose'] *,
   [data-theme='nightblue'] *,
   [data-theme='contrast-dark'] *
 ));

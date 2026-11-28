@@ -262,7 +262,7 @@ export default function LinenScanner() {
                   value={code}
                   onChange={e => setCode(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && handleLookup()}
-                  placeholder="Enter linen ID (e.g. LL-7K4P92)"
+                  placeholder="Enter linen ID (e.g. BSG-A0001XL)"
                   autoFocus
                   className="w-full pl-10 pr-4 py-3 text-lg font-mono border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--danger)]/20 focus:border-[var(--danger)] transition-colors"
                 />

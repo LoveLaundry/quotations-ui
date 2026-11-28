@@ -23,10 +23,10 @@ r.setAttribute('data-theme',t);r.style.colorScheme=mode;r.classList.toggle('dark
       // Apply the saved font size before first paint.
       (function () {
         try {
-          var size = { xs: '12px', sm: '13px', md: '14px', lg: '15px', xl: '17px', xxl: '19px' }[
+          var size = { xs: '12px', sm: '13px', md: '14px', lg: '15px', xl: '17px', xxl: '19px', xxxl: '22px' }[
             localStorage.getItem('theme-font-size') || 'md'
           ]
-          var zoom = { xs: 0.85, sm: 0.92, md: 1, lg: 1.08, xl: 1.18, xxl: 1.3 }[
+          var zoom = { xs: 0.85, sm: 0.92, md: 1, lg: 1.08, xl: 1.18, xxl: 1.3, xxxl: 1.5 }[
             localStorage.getItem('theme-font-size') || 'md'
           ]
           var root = document.documentElement

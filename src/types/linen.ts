@@ -20,6 +20,9 @@ export interface Linen {
   color?: string
   client_name: string
   department?: string
+  hotel_id?: string
+  hotel_code?: string
+  item_code?: string
   status: LinenStatus
   condition: LinenCondition
   location?: string
@@ -95,6 +98,9 @@ export interface LinenBulkCreate {
   department?: string
   quantity: number
   notes?: string
+  hotel_id?: string
+  hotel_code?: string
+  start_number?: number
 }
 
 export interface LinenScanAction {
@@ -113,6 +119,11 @@ export interface LinenTagGenerate {
   size?: string
   color?: string
   department?: string
+  /** Hotel registry id; selecting it supplies the code in checksummed IDs like `BSG-A0001XL`. */
+  hotel_id?: string
+  /** Copied from the hotel registry record — never typed by the admin. */
+  hotel_code?: string
+  start_number?: number
 }
 
 /** One action exactly as `GET /linens/transitions` describes it. The server
