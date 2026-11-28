@@ -13,7 +13,7 @@ function normalizeBaseUrl(url: string): string {
 }
 
 const workersApi = axios.create({
-  baseURL: normalizeBaseUrl(import.meta.env.VITE_WORKERS_API_URL ?? 'http://localhost:8003'),
+  baseURL: normalizeBaseUrl(import.meta.env.VITE_WORKERS_API_URL ?? '/api/workers'),
   timeout: 10000,
   headers: { 'Content-Type': 'application/json' },
 })

@@ -4,7 +4,7 @@ import { getActiveToken } from '../lib/auth-token'
 import { installOfflineAdapter } from '../cache/offline-adapter'
 
 const billsApi = axios.create({
-  baseURL: import.meta.env.VITE_BILLS_API_URL ?? 'http://localhost:8001',
+  baseURL: import.meta.env.VITE_BILLS_API_URL ?? '/api/bills',
   timeout: 30000,
   headers: { 'Content-Type': 'application/json' },
 })

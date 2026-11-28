@@ -30,7 +30,7 @@ describe('hotel list for the tag generator', () => {
       { limit: HOTEL_PAGE_SIZE, offset: 0 },
       { limit: HOTEL_PAGE_SIZE, offset: 2 },
     ])
-    expect(seen.every(params => (params.limit ?? 0) <= 200)).toBe(true)
+    expect(seen.every(params => params.limit === 20)).toBe(true)
     expect(result.map(item => item.name)).toEqual(['Bay View', 'Goldi', 'Sunrise'])
   })
 

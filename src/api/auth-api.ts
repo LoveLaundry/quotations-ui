@@ -3,7 +3,9 @@ import { getActiveToken } from '../lib/auth-token'
 import { attachResponseInterceptor } from './interceptors'
 
 const authApi = axios.create({
-  baseURL: import.meta.env.VITE_USER_API_URL ?? 'http://localhost:8002',
+  // Set VITE_USER_API_URL in the deployment environment. The relative value is
+  // only a same-origin path for local proxies — no service host is hardcoded.
+  baseURL: import.meta.env.VITE_USER_API_URL ?? '/api/user',
   timeout: 10000,
   headers: { 'Content-Type': 'application/json' },
 })

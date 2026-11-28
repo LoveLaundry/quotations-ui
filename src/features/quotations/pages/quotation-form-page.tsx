@@ -12,6 +12,8 @@ import { useDataGrid, mergeRefs } from '../../../hooks/use-data-grid'
 import { useEnterFlow } from '../../../hooks/use-enter-flow'
 import { Breadcrumb } from '../../../components/ui/breadcrumb'
 import { useAuth } from '../../../context/AuthContext'
+import { listAllHotels } from '../../../lib/hotel-registry'
+import { entityId, type RegistryEntity } from '../../platform/services/entity-registry.service'
 import {
   quotationKeys, useCreateQuotation, useQuotation, useUpdateQuotation,
 } from '../hooks/useQuotations'
@@ -97,9 +99,18 @@ const lineItemSchema = z.object({
 
 const formSchema = z.object({
   client_name: z.string().trim().min(1, 'Client / hotel name is required'),
+  hotelId: z.string(),
   quotation_title: z.string(),
   tag: z.enum(['shop', 'hotel']),
   line_items: z.array(lineItemSchema).min(1, 'Add at least one item'),
+}).superRefine((values, ctx) => {
+  if (values.tag === 'hotel' && !values.hotelId.trim()) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['hotelId'],
+      message: 'Select a hotel from the hotels list',
+    })
+  }
 })
 
 const newItem = () => ({
@@ -113,8 +124,9 @@ const newItem = () => ({
 
 const createDefaults = (): QuotationFormValues => ({
   client_name: '',
+  hotelId: '',
   quotation_title: '',
-  tag: 'shop' as 'shop' | 'hotel',
+  tag: 'hotel' as 'shop' | 'hotel',
   line_items: [newItem()],
 })
 
@@ -290,6 +302,7 @@ export default function QuotationFormPage() {
     control,
     handleSubmit,
     reset,
+    setValue,
     watch,
     formState: { errors },
   } = useForm<QuotationFormValues>({
@@ -310,6 +323,30 @@ export default function QuotationFormPage() {
   const flow = useEnterFlow<HTMLDivElement>()
   const tagRef = useRef<HTMLSelectElement | null>(null)
   const regTag = register('tag')
+  const regHotelId = register('hotelId')
+
+  const [hotels, setHotels] = useState<RegistryEntity[]>([])
+  const [hotelsLoading, setHotelsLoading] = useState(true)
+  const [hotelsError, setHotelsError] = useState('')
+
+  useEffect(() => {
+    let active = true
+    setHotelsLoading(true)
+    setHotelsError('')
+    listAllHotels()
+      .then((records) => {
+        if (!active) return
+        setHotels(records)
+        setHotelsLoading(false)
+      })
+      .catch(() => {
+        if (!active) return
+        setHotels([])
+        setHotelsError('Could not load the hotels list. Hotel quotations need a registered hotel.')
+        setHotelsLoading(false)
+      })
+    return () => { active = false }
+  }, [])
 
   const values = watch()
   const lineItems = values.line_items ?? []
@@ -344,6 +381,7 @@ export default function QuotationFormPage() {
 
   const isFormReady = useMemo(() => {
     if (!clientName.trim() || lineItems.length === 0) return false
+    if (values.tag === 'hotel' && !values.hotelId?.trim()) return false
     return lineItems.every((line) => {
       if (!line.item_name?.trim() || !line.unit_price?.trim()) return false
       if (!Number.isFinite(Number(line.unit_price)) || Number(line.unit_price) < 0) return false
@@ -351,7 +389,7 @@ export default function QuotationFormPage() {
         Boolean(spec.specification?.trim()) === Boolean(spec.unit_price?.trim()),
       )
     })
-  }, [clientName, lineItems])
+  }, [clientName, lineItems, values.tag, values.hotelId])
 
   const canSubmit = isFormReady && duplicateIndexes.length === 0 &&
     !submit.pending && !createMutation.isPending && !updateMutation.isPending
@@ -363,6 +401,7 @@ export default function QuotationFormPage() {
       if (typeof message === 'string' && message.trim()) out.add(message.trim())
     }
     add(errors.client_name?.message)
+    add(errors.hotelId?.message)
     add(errors.line_items?.message)
     lineItems.forEach((_, index) => {
       add(errors.line_items?.[index]?.item_name?.message)
@@ -409,8 +448,9 @@ export default function QuotationFormPage() {
     if (!existing) return
     reset({
       client_name: existing.client_name,
+      hotelId: existing.hotel_id ?? '',
       quotation_title: existing.quotation_title ?? '',
-      tag: (existing.tag ?? 'shop') as 'shop' | 'hotel',
+      tag: (existing.tag ?? 'hotel') as 'shop' | 'hotel',
       line_items: (existing.line_items ?? []).map((li) => ({
         id: crypto.randomUUID(),
         item_name: li.item_name,
@@ -450,6 +490,7 @@ export default function QuotationFormPage() {
       client_name: v.client_name.trim(),
       quotation_title: v.quotation_title.trim() || undefined,
       tag: v.tag,
+      hotel_id: v.tag === 'hotel' ? v.hotelId.trim() : undefined,
       line_items: v.line_items.map((li) => {
         const item: {
           item_name: string
@@ -509,7 +550,7 @@ export default function QuotationFormPage() {
       {draftBannerOpen && (
         <DraftRestoreBanner
           onRestore={() => {
-            if (draft) reset(draft)
+            if (draft) reset({ ...createDefaults(), ...draft, hotelId: draft.hotelId ?? '' })
             setDraftBannerOpen(false)
           }}
           onDiscard={() => {
@@ -532,18 +573,53 @@ export default function QuotationFormPage() {
               <div>
                 <CardTitle>Client / Hotel Details</CardTitle>
                 <p className="text-[12px] text-[var(--text-faint)] mt-0.5">
-                  Name of the hotel or client this quotation is for
+                  Hotel quotations are coupled to a record from the hotels list; the name is read from that record.
                 </p>
               </div>
             </CardHeader>
             <CardContent className="pt-4">
-              <div ref={flow.ref} onKeyDown={handleHeaderKeyDown} className="grid gap-4 sm:grid-cols-3">
+              <div ref={flow.ref} onKeyDown={handleHeaderKeyDown} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                {values.tag === 'hotel' ? (
+                  <div>
+                    <Label>Hotel <RequiredMark /></Label>
+                    <select
+                      {...regHotelId}
+                      onChange={(event) => {
+                        regHotelId.onChange(event)
+                        const selected = hotels.find((hotel) => entityId(hotel) === event.target.value)
+                        if (selected) {
+                          setValue('client_name', selected.name, { shouldValidate: true, shouldDirty: true })
+                        }
+                      }}
+                      aria-label="Hotel"
+                      aria-invalid={Boolean(errors.hotelId)}
+                      className="flex h-10 w-full rounded-lg border border-[var(--border)] bg-white px-3 py-2 text-[14px] ring-offset-white focus:outline-none focus:ring-2 focus:ring-[var(--success)] focus:ring-offset-0 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      <option value="">
+                        {hotelsLoading ? 'Loading hotels…' : hotelsError ? 'Hotels unavailable' : 'Select a hotel from the list'}
+                      </option>
+                      {hotels.map((hotel) => (
+                        <option key={entityId(hotel)} value={entityId(hotel)}>
+                          {hotel.name}{hotel.hotel_code ? ` — ${hotel.hotel_code}` : ''}
+                        </option>
+                      ))}
+                      {values.hotelId && !hotels.some((hotel) => entityId(hotel) === values.hotelId) ? (
+                        <option value={values.hotelId}>Selected hotel (not in current list)</option>
+                      ) : null}
+                    </select>
+                    <FieldErr msg={errors.hotelId?.message} />
+                    {hotelsError ? (
+                      <p className="mt-1 text-[11px] text-[var(--danger-text)]" role="alert">{hotelsError}</p>
+                    ) : null}
+                  </div>
+                ) : null}
                 <div>
                   <Label>Hotel / Client Name <RequiredMark /></Label>
                   <Input
                     {...register('client_name')}
-                    autoFocus={!isEdit}
-                    placeholder="e.g. Nilawin Hotel, Avenra Garden Hotel"
+                    autoFocus={!isEdit && values.tag !== 'hotel'}
+                    readOnly={values.tag === 'hotel'}
+                    placeholder={values.tag === 'hotel' ? 'Choose a hotel above' : 'e.g. Walk-in client'}
                     aria-invalid={Boolean(errors.client_name)}
                     aria-describedby={errors.client_name ? 'client-name-error' : undefined}
                   />

@@ -103,6 +103,11 @@ export interface Quotation {
   status?: OrderStatus
   status_history?: StatusHistoryEntry[]
   tag?: 'shop' | 'hotel'
+  /** Registry coupling — hotel quotations always carry this id. */
+  hotel_id?: string | null
+  shop_id?: string | null
+  hotel_code?: string | null
+  shop_code?: string | null
 }
 
 export interface QuotationPayload {
@@ -117,12 +122,14 @@ export interface QuotationPayload {
   }>
   status?: OrderStatus
   tag?: 'shop' | 'hotel'
+  hotel_id?: string
 }
 
 export interface QuotationFormValues {
   client_name: string
   quotation_title: string
   tag: 'shop' | 'hotel'
+  hotelId: string
   line_items: Array<{
     id: string
     item_name: string

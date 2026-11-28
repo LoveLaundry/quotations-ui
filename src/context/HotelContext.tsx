@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { useAuth } from './AuthContext'
+import { listAllHotels } from '../lib/hotel-registry'
 import { useGatePasses } from '../features/quotations/hooks/useGatePasses'
 import { useDeliveries } from '../features/quotations/hooks/useDeliveries'
 import { useBills } from '../features/quotations/hooks/useBills'
@@ -63,14 +64,30 @@ function HotelDataProvider({ children }: { children: ReactNode }) {
     const { data: billsResp } = useBills({ limit: 1000 })
     const { data: quotations = [] } = useQuotations()
 
+    // The workspace scope is hotel-first. Start from the authoritative hotels
+    // list so quotations always resolve to a registered hotel, then keep any
+    // legacy client names still present on older operational records.
+    const [registryHotels, setRegistryHotels] = useState<string[]>([])
+    useEffect(() => {
+        let active = true
+        listAllHotels()
+            .then(records => {
+                if (active) setRegistryHotels(records.map(hotel => hotel.name).filter(Boolean))
+            })
+            .catch(() => {
+                if (active) setRegistryHotels([])
+            })
+        return () => { active = false }
+    }, [])
+
     const hotels = useMemo(() => {
-        const set = new Set<string>()
+        const set = new Set<string>(registryHotels)
         gatePasses.forEach(g => { if (g.client_name) set.add(g.client_name) })
         deliveries.forEach(d => { if (d.client_name) set.add(d.client_name) })
         ;(billsResp?.items ?? []).forEach(b => { if (b.client_name) set.add(b.client_name) })
         quotations.forEach(q => { if (q.client_name) set.add(q.client_name) })
         return Array.from(set).sort((a, b) => a.localeCompare(b))
-    }, [gatePasses, deliveries, billsResp, quotations])
+    }, [registryHotels, gatePasses, deliveries, billsResp, quotations])
 
     const setSelectedHotel = useCallback((name: string) => {
         if (choiceWasStored.current) choiceWasStored.current.value = true
