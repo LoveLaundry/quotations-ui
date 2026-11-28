@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { ArrowLeft, Plus, Trash2, GripVertical, X, FileSpreadsheet } from 'lucide-react'
+import { ArrowLeft, Plus, Trash2, GripVertical, X, Download, Upload } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { useFieldArray, useForm } from 'react-hook-form'
 import { useNavigate, useParams } from 'react-router-dom'
@@ -32,63 +32,29 @@ import {
   findDuplicateRows, itemIdentity, normalizeError,
 } from '../../feature-pack/utils'
 import {
-  CAMELOT_2026_CATALOG, camelotItemCount, camelotLineItems, camelotSectionCount,
-} from '../lib/camelot-catalog'
+  CAMELOT_TEMPLATE,
+  CAMELOT_TEMPLATE_FILE_NAME,
+  camelotTemplateCategories,
+  camelotTemplateItemCount,
+  camelotTemplateLineItems,
+  parseCamelotTemplate,
+  serializeCamelotTemplate,
+  type CamelotTemplate,
+} from '../lib/camelot-template'
 
-const COMMON_ITEMS = [
-  'Bed Sheet',
-  'Bed Cover (Duvet Cover)',
-  'Bath Towel',
-  'Face Towel',
-  'Bath Mat',
-  'Pillow Case',
-  'Duster',
-  'Table Runner',
-  'Table Cloth',
-  'Top Cloth',
-  'Napkin',
-  'Chair Cover',
-  'Shirt / T-Shirt',
-  'Trouser',
-  'Stain Cloth',
-  'Protector',
-  'Hand Towel',
-  'Pillow Protector',
-  'Pool Towel',
-  'Staff Bed Sheet',
-  'Bath Robe',
-  'Shower Curtain',
-  'Carpet',
-  'Sarong',
-  'Jacket',
-  'Blazer',
-  'Curtain (1 Kg)',
-  'Blanket',
-  'Duvet Protector',
-  'Mattress Protector',
-  'Pool Umbrella Cover',
-  'Chef Coat',
-  'Spa Bed Sheet',
-  'Spa Bath Towel',
-  'Spa Face Towel',
-]
-
-const COMMON_CATEGORIES = [
-  'Bed Linen',
-  'Towels',
-  'Restaurant Linen',
-  'Staff Clothing',
-  'Guest Clothing',
-  'Spa Items',
-  'Curtains & Covers',
-  'Miscellaneous',
-]
-
-/** Autocomplete covers both the existing shortcuts and the Camelot 2026 list. */
-const ITEM_SUGGESTIONS = Array.from(new Set([
-  ...COMMON_ITEMS,
-  ...camelotLineItems().map((line) => line.item_name),
-]))
+function downloadCamelotTemplate() {
+  const blob = new Blob([serializeCamelotTemplate(CAMELOT_TEMPLATE)], {
+    type: 'application/json;charset=utf-8',
+  })
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = CAMELOT_TEMPLATE_FILE_NAME
+  document.body.appendChild(link)
+  link.click()
+  link.remove()
+  URL.revokeObjectURL(url)
+}
 
 const TITLE_MAX = 120
 
@@ -158,11 +124,13 @@ function SpecFields({
   register,
   control,
   errors,
+  currency,
 }: {
   index: number
   register: any
   control: any
   errors: any
+  currency: string
 }) {
   const { fields, append, remove } = useFieldArray({
     control,
@@ -207,7 +175,7 @@ function SpecFields({
               </div>
               <div className="relative w-28">
                 <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[11px] text-[var(--text-faint)]">
-                  LKR
+                  {currency}
                 </span>
                 <Input
                   type="number"
@@ -371,7 +339,11 @@ export default function QuotationFormPage() {
   )
   const [draftBannerOpen, setDraftBannerOpen] = useState(false)
   const [formError, setFormError] = useState('')
-  const [camelotNotice, setCamelotNotice] = useState('')
+  const [importedTemplate, setImportedTemplate] = useState<CamelotTemplate | null>(null)
+  const [importFileName, setImportFileName] = useState('')
+  const [importError, setImportError] = useState('')
+  const [importNotice, setImportNotice] = useState('')
+  const [isImporting, setIsImporting] = useState(false)
 
   useEffect(() => {
     if (hasDraft && !isEdit && !existing) setDraftBannerOpen(true)
@@ -476,51 +448,61 @@ export default function QuotationFormPage() {
     })
   }, [existing, reset])
 
+  const activeTemplate = importedTemplate ?? CAMELOT_TEMPLATE
+
   const cats = useMemo(
-    () =>
-      Array.from(
-        new Set([
-          ...COMMON_CATEGORIES,
-          ...CAMELOT_2026_CATALOG.map((section) => section.title),
-          ...(existing?.line_items?.map((l) => l.category ?? '').filter(Boolean) ?? []),
-        ]),
-      ).sort(),
-    [existing],
+    () => Array.from(new Set([
+      ...camelotTemplateCategories(activeTemplate),
+      ...lineItems.map((line) => line.category?.trim()).filter((value): value is string => Boolean(value)),
+    ])).sort(),
+    [activeTemplate, lineItems],
   )
 
-  /**
-   * Adds the Camelot rows that are not already on the quotation. The single
-   * empty placeholder row is replaced rather than left behind, so the form is
-   * immediately valid. Hotel selection stays with the registry dropdown —
-   * this template never invents a hotel name or code.
-   */
-  const applyCamelotTemplate = (sectionIds?: string[]) => {
-    const current = getValues('line_items') ?? []
-    const known = new Set(
-      current.filter((line) => line.item_name?.trim()).map((line) => itemIdentity(line)),
-    )
-    const additions = camelotLineItems(sectionIds)
-      .filter((line) => !known.has(itemIdentity(line)))
-      .map((line) => ({ ...line, id: crypto.randomUUID() }))
+  const itemSuggestions = useMemo(
+    () => Array.from(new Set([
+      ...camelotTemplateLineItems(activeTemplate).map((line) => line.item_name),
+      ...lineItems.map((line) => line.item_name?.trim()).filter((value): value is string => Boolean(value)),
+    ])),
+    [activeTemplate, lineItems],
+  )
 
-    if (additions.length === 0) {
-      setCamelotNotice('Every Camelot item in this section is already on the quotation.')
-      return
-    }
+  const handleJsonFile = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    event.target.value = ''
+    if (!file) return
 
-    const placeholderOnly = current.length === 1 &&
-      !current[0].item_name?.trim() && !current[0].unit_price?.trim()
-    if (placeholderOnly) {
-      setValue('line_items', additions, { shouldValidate: true, shouldDirty: true })
-    } else {
-      append(additions)
+    setIsImporting(true)
+    setImportError('')
+    setImportNotice('')
+    setImportedTemplate(null)
+    setImportFileName(file.name)
+    try {
+      const parsed = parseCamelotTemplate(await file.text())
+      setImportedTemplate(parsed)
+      setImportNotice(
+        `${file.name} is ready: ${camelotTemplateItemCount(parsed)} items across ${parsed.sections.length} sections.`,
+      )
+    } catch (error) {
+      setImportError(error instanceof Error ? error.message : 'Could not read this JSON file.')
+    } finally {
+      setIsImporting(false)
     }
+  }
+
+  /** Replace the form rows with the uploaded JSON quotation. */
+  const applyImportedTemplate = () => {
+    if (!importedTemplate) return
+    const lines = camelotTemplateLineItems(importedTemplate).map((line) => ({
+      ...line,
+      id: crypto.randomUUID(),
+    }))
+    setValue('line_items', lines, { shouldValidate: true, shouldDirty: true })
     if (!getValues('quotation_title').trim()) {
-      setValue('quotation_title', 'Camelot 2026 Price List', { shouldDirty: true })
+      setValue('quotation_title', importedTemplate.title, { shouldDirty: true })
     }
-    setCamelotNotice(
-      `Added ${additions.length} Camelot 2026 item${additions.length === 1 ? '' : 's'}. Confirm any zero-priced rows before saving.`,
-    )
+    setImportNotice(`Loaded ${lines.length} items from ${importFileName}. Select the hotel below, then create the quotation.`)
+    setImportedTemplate(null)
+    setImportFileName('')
   }
 
   const handleReset = () => {
@@ -528,7 +510,10 @@ export default function QuotationFormPage() {
     clearDraft()
     setDraftBannerOpen(false)
     setFormError('')
-    setCamelotNotice('')
+    setImportError('')
+    setImportNotice('')
+    setImportedTemplate(null)
+    setImportFileName('')
   }
 
   const onSubmit = (v: QuotationFormValues) => {
@@ -615,6 +600,96 @@ export default function QuotationFormPage() {
       ) : (
         <form onSubmit={handleSubmit(onSubmit)} onKeyDown={handleFormKeyDown} className="space-y-4" noValidate>
           <FormErrorSummary errors={validationErrors} />
+
+          <Card>
+            <CardHeader className="border-b border-[var(--border)] pb-4">
+              <div>
+                <CardTitle>Import JSON Quotation</CardTitle>
+                <p className="text-[12px] text-[var(--text-faint)] mt-0.5">
+                  Upload a Camelot-format JSON file to fill the line items. Download the template,
+                  edit rates if needed, then upload it here.
+                </p>
+              </div>
+            </CardHeader>
+            <CardContent className="pt-4">
+              <input
+                id="camelot-json-input"
+                type="file"
+                accept="application/json,.json"
+                className="sr-only"
+                onChange={handleJsonFile}
+                disabled={isImporting}
+              />
+              <div className="flex flex-wrap items-center gap-2">
+                <Button asChild variant="outline" disabled={isImporting}>
+                  <label htmlFor="camelot-json-input" className="cursor-pointer">
+                    <Upload className="h-3.5 w-3.5" />
+                    {isImporting ? 'Reading…' : 'Choose JSON file'}
+                  </label>
+                </Button>
+                <Button type="button" variant="ghost" onClick={downloadCamelotTemplate}>
+                  <Download className="h-3.5 w-3.5" /> Download template
+                </Button>
+              </div>
+
+              {importError ? (
+                <p className="mt-3 rounded-lg border border-[var(--danger-border)] bg-[var(--danger-soft)] px-3 py-2 text-[12px] text-[var(--danger-text)]" role="alert">
+                  {importError}
+                </p>
+              ) : null}
+              {importNotice ? (
+                <p className="mt-3 rounded-lg border border-[var(--info-border)] bg-[var(--info-soft)] px-3 py-2 text-[12px] text-[var(--info-text)]" role="status">
+                  {importNotice}
+                </p>
+              ) : null}
+
+              {importedTemplate ? (
+                <div className="mt-3 rounded-lg border border-[var(--border)] bg-[var(--surface-2)] p-3">
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div>
+                      <p className="text-[13px] font-semibold text-[var(--text-primary)]">
+                        {importedTemplate.title}
+                      </p>
+                      <p className="mt-0.5 text-[11px] text-[var(--text-faint)]">
+                        {camelotTemplateItemCount(importedTemplate)} items ·{' '}
+                        {importedTemplate.sections.length} sections ·{' '}
+                        {importedTemplate.months.map((month) => month.label).join(' · ')}
+                      </p>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      <Button type="button" size="sm" onClick={applyImportedTemplate}>
+                        Load items into form
+                      </Button>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => {
+                          setImportedTemplate(null)
+                          setImportFileName('')
+                        }}
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  </div>
+                  <div className="mt-2 flex flex-wrap gap-1.5">
+                    {importedTemplate.sections.map((section) => (
+                      <span
+                        key={section.id}
+                        className="rounded-md border border-[var(--border)] bg-white px-2 py-0.5 text-[11px] text-[var(--text-muted)]"
+                      >
+                        {section.title} ({section.items.length})
+                      </span>
+                    ))}
+                  </div>
+                  <p className="mt-2 text-[11px] text-[var(--text-faint)]">
+                    Hotel details are not part of the JSON — choose the hotel from the registry below.
+                  </p>
+                </div>
+              ) : null}
+            </CardContent>
+          </Card>
 
           <Card>
             <CardHeader className="border-b border-[var(--border)] pb-4">
@@ -715,19 +790,10 @@ export default function QuotationFormPage() {
                   </span>
                 </CardTitle>
                 <p className="text-[12px] text-[var(--text-faint)] mt-0.5">
-                  Each row = one item with its unit price in LKR
+                  Each row = one item with its unit price in {activeTemplate.currency}
                 </p>
               </div>
               <div className="flex flex-wrap items-center gap-2">
-                <Button
-                  type="button"
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => applyCamelotTemplate()}
-                >
-                  <FileSpreadsheet className="h-3.5 w-3.5" />
-                  Load Camelot 2026 ({camelotItemCount()})
-                </Button>
                 <Button type="button" variant="secondary" size="sm" onClick={() => append(newItem())}>
                   <Plus className="h-3.5 w-3.5 text-[var(--danger-text)]" /> Add Item
                 </Button>
@@ -735,40 +801,12 @@ export default function QuotationFormPage() {
             </CardHeader>
 
             <CardContent className="pt-4">
-              {camelotNotice ? (
-                <p
-                  role="status"
-                  className="mb-3 rounded-lg border border-[var(--info-border)] bg-[var(--info-soft)] px-3 py-2 text-[12px] text-[var(--info-text)]"
-                >
-                  {camelotNotice}
-                </p>
-              ) : null}
-
-              <CollapsibleSection
-                title="Camelot 2026 price list"
-                count={camelotItemCount()}
-                defaultOpen={false}
-              >
-                <p className="mb-2 text-[11px] text-[var(--text-faint)]">
-                  Exact item names and rates from the Camelot workbook. Pick a section or load all
-                  71 rows; existing rows with the same name and category are skipped. Select the
-                  hotel from the registry above.
-                </p>
-                <div className="flex flex-wrap gap-1.5">
-                  {CAMELOT_2026_CATALOG.map((section) => (
-                    <button
-                      key={section.id}
-                      type="button"
-                      onClick={() => applyCamelotTemplate([section.id])}
-                      className="rounded-md border border-[var(--border)] bg-white px-2 py-0.5 text-[11px] font-medium text-[var(--text-primary)] hover:border-[var(--danger-border)] hover:bg-[var(--danger-soft)] hover:text-[var(--danger-text)] transition-all cursor-pointer"
-                    >
-                      + {section.title} ({camelotSectionCount(section.id)})
-                    </button>
-                  ))}
-                </div>
-              </CollapsibleSection>
+              <p className="mb-3 text-[11px] text-[var(--text-faint)]">
+                Item names and rates come from the JSON template above. Add rows manually or upload
+                a JSON quotation to replace all rows at once.
+              </p>
               <div className="hidden sm:grid sm:grid-cols-[28px_1fr_180px_120px_120px_36px] gap-2 mb-2 px-1">
-                {['', 'Item Name', 'Category', 'Unit Price (LKR)', 'Notes / Variant', ''].map(
+                {['', 'Item Name', 'Category', `Unit Price (${activeTemplate.currency})`, 'Notes / Variant', ''].map(
                   (h, i) => (
                     <p
                       key={i}
@@ -780,23 +818,8 @@ export default function QuotationFormPage() {
                 )}
               </div>
 
-              <CollapsibleSection title="Quick-add common items" count={COMMON_ITEMS.length}>
-                <div className="flex flex-wrap gap-1.5">
-                  {COMMON_ITEMS.map((item) => (
-                    <button
-                      key={item}
-                      type="button"
-                      onClick={() => append({ ...newItem(), item_name: item })}
-                      className="rounded-md border border-[var(--border)] bg-white px-2 py-0.5 text-[11px] font-medium text-[var(--text-primary)] hover:border-[var(--danger-border)] hover:bg-[var(--danger-soft)] hover:text-[var(--danger-text)] transition-all cursor-pointer"
-                    >
-                      + {item}
-                    </button>
-                  ))}
-                </div>
-              </CollapsibleSection>
-
               <datalist id="item-suggestions">
-                {ITEM_SUGGESTIONS.map((i) => (
+                {itemSuggestions.map((i) => (
                   <option key={i} value={i} />
                 ))}
               </datalist>
@@ -850,11 +873,11 @@ export default function QuotationFormPage() {
 
                         <div>
                           <p className="text-[11px] text-[var(--text-faint)] mb-1 sm:hidden">
-                            Unit Price (LKR)
+                            Unit Price ({activeTemplate.currency})
                           </p>
                           <div className="relative">
                             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[12px] font-medium text-[var(--text-faint)]">
-                              LKR
+                              {activeTemplate.currency}
                             </span>
                             <Input
                               type="number"
@@ -898,6 +921,7 @@ export default function QuotationFormPage() {
                         register={register}
                         control={control}
                         errors={errors}
+                        currency={activeTemplate.currency}
                       />
                     </div>
                   )
@@ -927,7 +951,7 @@ export default function QuotationFormPage() {
                     {fields.length} items in this quotation
                   </span>
                   <span className="text-[11px] text-[var(--text-faint)]">
-                    Prices shown in LKR
+                    Prices shown in {activeTemplate.currency}
                   </span>
                 </div>
               )}
