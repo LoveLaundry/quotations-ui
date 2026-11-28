@@ -5,7 +5,8 @@ import JsBarcode from 'jsbarcode'
 import { useGenerateTags } from '../hooks/useLinen'
 import { checkLetters } from '../lib/linen-code'
 import { buildTagPrintHtml, type PrintableTag } from '../lib/tag-print'
-import { entityId, hotelRegistry, type RegistryEntity } from '../../platform/services/entity-registry.service'
+import { entityId, type RegistryEntity } from '../../platform/services/entity-registry.service'
+import { listAllHotels } from '../lib/hotel-registry'
 import { LINEN_CATEGORIES } from '../../../types/linen'
 import { Card, CardContent } from '../../../components/ui/card'
 import { Button } from '../../../components/ui/button'
@@ -73,6 +74,8 @@ export default function LinenTagGenerator() {
   const [category, setCategory] = useState('BEDSHEET')
   const [itemType, setItemType] = useState('')
   const [hotels, setHotels] = useState<RegistryEntity[]>([])
+  const [loadingHotels, setLoadingHotels] = useState(true)
+  const [hotelsError, setHotelsError] = useState('')
   const [selectedHotelId, setSelectedHotelId] = useState('')
   const [quantity, setQuantity] = useState(10)
   const [startNumber, setStartNumber] = useState(1)
@@ -84,13 +87,19 @@ export default function LinenTagGenerator() {
 
   useEffect(() => {
     let active = true
-    hotelRegistry.list({ limit: 500 })
+    setLoadingHotels(true)
+    setHotelsError('')
+    listAllHotels()
       .then(data => {
         if (!active) return
-        setHotels([...data.items].sort((a, b) => a.name.localeCompare(b.name)))
+        setHotels(data)
+        setLoadingHotels(false)
       })
       .catch(() => {
-        if (active) setHotels([])
+        if (!active) return
+        setHotels([])
+        setHotelsError('Could not load hotels. Check the hotels list and try again.')
+        setLoadingHotels(false)
       })
     return () => { active = false }
   }, [])
@@ -210,15 +219,18 @@ export default function LinenTagGenerator() {
               <label className="text-[11px] font-semibold text-[var(--text-muted)] uppercase tracking-wide mb-1.5 block">Hotel / Owner *</label>
               <select value={selectedHotelId} onChange={e => setSelectedHotelId(e.target.value)}
                 className="w-full px-3 py-2 text-sm border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--danger)]/20 focus:border-[var(--danger)] transition-colors">
-                <option value="">{hotels.length ? 'Select a hotel record' : 'Loading hotel records...'}</option>
+                <option value="">{hotels.length ? 'Select a hotel record' : loadingHotels ? 'Loading hotel records...' : hotelsError ? 'Hotels unavailable' : 'No hotels found'}</option>
                 {hotels.map(hotel => (
                   <option key={entityId(hotel)} value={entityId(hotel)}>
                     {hotel.name}{hotel.hotel_code ? ` — ${hotel.hotel_code}` : ' — no code'}
                   </option>
                 ))}
               </select>
+              {hotelsError ? (
+                <p className="mt-1 text-[11px] text-[var(--danger)]" role="alert">{hotelsError}</p>
+              ) : null}
               <p className="mt-1 text-[11px] text-[var(--text-muted)]">
-                Hotel code is read from the selected registry record. Tags will look like <span className="font-mono font-semibold">{previewTag(category, hotelCode, startNumber)}</span>.
+                Hotel code is read from the selected hotels list record. Tags will look like <span className="font-mono font-semibold">{previewTag(category, hotelCode, startNumber)}</span>.
               </p>
             </div>
             <div className="grid grid-cols-2 gap-3">
