@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { ArrowLeft, Plus, Trash2, GripVertical, X } from 'lucide-react'
+import { ArrowLeft, Plus, Trash2, GripVertical, X, FileSpreadsheet } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { useFieldArray, useForm } from 'react-hook-form'
 import { useNavigate, useParams } from 'react-router-dom'
@@ -31,6 +31,9 @@ import {
 import {
   findDuplicateRows, itemIdentity, normalizeError,
 } from '../../feature-pack/utils'
+import {
+  CAMELOT_2026_CATALOG, camelotItemCount, camelotLineItems, camelotSectionCount,
+} from '../lib/camelot-catalog'
 
 const COMMON_ITEMS = [
   'Bed Sheet',
@@ -80,6 +83,12 @@ const COMMON_CATEGORIES = [
   'Curtains & Covers',
   'Miscellaneous',
 ]
+
+/** Autocomplete covers both the existing shortcuts and the Camelot 2026 list. */
+const ITEM_SUGGESTIONS = Array.from(new Set([
+  ...COMMON_ITEMS,
+  ...camelotLineItems().map((line) => line.item_name),
+]))
 
 const TITLE_MAX = 120
 
@@ -303,6 +312,7 @@ export default function QuotationFormPage() {
     handleSubmit,
     reset,
     setValue,
+    getValues,
     watch,
     formState: { errors },
   } = useForm<QuotationFormValues>({
@@ -361,6 +371,7 @@ export default function QuotationFormPage() {
   )
   const [draftBannerOpen, setDraftBannerOpen] = useState(false)
   const [formError, setFormError] = useState('')
+  const [camelotNotice, setCamelotNotice] = useState('')
 
   useEffect(() => {
     if (hasDraft && !isEdit && !existing) setDraftBannerOpen(true)
@@ -470,17 +481,54 @@ export default function QuotationFormPage() {
       Array.from(
         new Set([
           ...COMMON_CATEGORIES,
+          ...CAMELOT_2026_CATALOG.map((section) => section.title),
           ...(existing?.line_items?.map((l) => l.category ?? '').filter(Boolean) ?? []),
         ]),
       ).sort(),
     [existing],
   )
 
+  /**
+   * Adds the Camelot rows that are not already on the quotation. The single
+   * empty placeholder row is replaced rather than left behind, so the form is
+   * immediately valid. Hotel selection stays with the registry dropdown —
+   * this template never invents a hotel name or code.
+   */
+  const applyCamelotTemplate = (sectionIds?: string[]) => {
+    const current = getValues('line_items') ?? []
+    const known = new Set(
+      current.filter((line) => line.item_name?.trim()).map((line) => itemIdentity(line)),
+    )
+    const additions = camelotLineItems(sectionIds)
+      .filter((line) => !known.has(itemIdentity(line)))
+      .map((line) => ({ ...line, id: crypto.randomUUID() }))
+
+    if (additions.length === 0) {
+      setCamelotNotice('Every Camelot item in this section is already on the quotation.')
+      return
+    }
+
+    const placeholderOnly = current.length === 1 &&
+      !current[0].item_name?.trim() && !current[0].unit_price?.trim()
+    if (placeholderOnly) {
+      setValue('line_items', additions, { shouldValidate: true, shouldDirty: true })
+    } else {
+      append(additions)
+    }
+    if (!getValues('quotation_title').trim()) {
+      setValue('quotation_title', 'Camelot 2026 Price List', { shouldDirty: true })
+    }
+    setCamelotNotice(
+      `Added ${additions.length} Camelot 2026 item${additions.length === 1 ? '' : 's'}. Confirm any zero-priced rows before saving.`,
+    )
+  }
+
   const handleReset = () => {
     reset(createDefaults())
     clearDraft()
     setDraftBannerOpen(false)
     setFormError('')
+    setCamelotNotice('')
   }
 
   const onSubmit = (v: QuotationFormValues) => {
@@ -670,12 +718,55 @@ export default function QuotationFormPage() {
                   Each row = one item with its unit price in LKR
                 </p>
               </div>
-              <Button type="button" variant="secondary" size="sm" onClick={() => append(newItem())}>
-                <Plus className="h-3.5 w-3.5 text-[var(--danger-text)]" /> Add Item
-              </Button>
+              <div className="flex flex-wrap items-center gap-2">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => applyCamelotTemplate()}
+                >
+                  <FileSpreadsheet className="h-3.5 w-3.5" />
+                  Load Camelot 2026 ({camelotItemCount()})
+                </Button>
+                <Button type="button" variant="secondary" size="sm" onClick={() => append(newItem())}>
+                  <Plus className="h-3.5 w-3.5 text-[var(--danger-text)]" /> Add Item
+                </Button>
+              </div>
             </CardHeader>
 
             <CardContent className="pt-4">
+              {camelotNotice ? (
+                <p
+                  role="status"
+                  className="mb-3 rounded-lg border border-[var(--info-border)] bg-[var(--info-soft)] px-3 py-2 text-[12px] text-[var(--info-text)]"
+                >
+                  {camelotNotice}
+                </p>
+              ) : null}
+
+              <CollapsibleSection
+                title="Camelot 2026 price list"
+                count={camelotItemCount()}
+                defaultOpen={false}
+              >
+                <p className="mb-2 text-[11px] text-[var(--text-faint)]">
+                  Exact item names and rates from the Camelot workbook. Pick a section or load all
+                  71 rows; existing rows with the same name and category are skipped. Select the
+                  hotel from the registry above.
+                </p>
+                <div className="flex flex-wrap gap-1.5">
+                  {CAMELOT_2026_CATALOG.map((section) => (
+                    <button
+                      key={section.id}
+                      type="button"
+                      onClick={() => applyCamelotTemplate([section.id])}
+                      className="rounded-md border border-[var(--border)] bg-white px-2 py-0.5 text-[11px] font-medium text-[var(--text-primary)] hover:border-[var(--danger-border)] hover:bg-[var(--danger-soft)] hover:text-[var(--danger-text)] transition-all cursor-pointer"
+                    >
+                      + {section.title} ({camelotSectionCount(section.id)})
+                    </button>
+                  ))}
+                </div>
+              </CollapsibleSection>
               <div className="hidden sm:grid sm:grid-cols-[28px_1fr_180px_120px_120px_36px] gap-2 mb-2 px-1">
                 {['', 'Item Name', 'Category', 'Unit Price (LKR)', 'Notes / Variant', ''].map(
                   (h, i) => (
@@ -705,7 +796,7 @@ export default function QuotationFormPage() {
               </CollapsibleSection>
 
               <datalist id="item-suggestions">
-                {COMMON_ITEMS.map((i) => (
+                {ITEM_SUGGESTIONS.map((i) => (
                   <option key={i} value={i} />
                 ))}
               </datalist>

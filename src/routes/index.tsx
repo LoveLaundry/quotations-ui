@@ -29,6 +29,8 @@ const QuotationDetailPage = lazy(() => import('../features/quotations/pages/quot
 const QuotationPrintPage = lazy(() => import('../features/quotations/pages/quotation-print-page'))
 const QuotationFormPage = lazy(() => import('../features/quotations/pages/quotation-form-page'))
 const CategoriesPage = lazy(() => import('../features/quotations/pages/categories-page'))
+const CamelotCatalogPage = lazy(() => import('../features/quotations/pages/camelot-catalog-page'))
+const CamelotMonthlyPage = lazy(() => import('../features/quotations/pages/camelot-monthly-page'))
 const SettingsPage = lazy(() => import('../features/quotations/pages/settings-page'))
 const ProfilePage = lazy(() => import('../features/quotations/pages/profile-page'))
 const BillsListPage = lazy(() => import('../features/quotations/pages/bills-list-page'))
@@ -161,6 +163,8 @@ export const router = createBrowserRouter([
           { path: 'quotations/:id', element: <QuotationDetailPage /> },
           { path: 'quotations/:id/edit', element: <QuotationFormPage /> },
           { path: 'quotations/:id/print', element: <QuotationPrintPage /> },
+          { path: 'price-lists/camelot-2026', element: <CamelotCatalogPage /> },
+          { path: 'price-lists/camelot-2026/monthly', element: <CamelotMonthlyPage /> },
 
           // Billing
           { path: 'bills', element: <BillsListPage /> },

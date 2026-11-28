@@ -87,6 +87,8 @@ export const ROUTES: RouteMeta[] = [
   // ── Contracts ───────────────────────────────────────────────────────────────
   { path: '/quotations', title: 'Quotations', navLabel: 'Quotations', group: 'Contracts', icon: 'FileText', keywords: 'quotations quotes list price', permissions: ['view_quotations'] },
   { path: '/quotations/new', title: 'New Quotation', keywords: 'quote new quotation create', permissions: ['view_quotations'] },
+  { path: '/price-lists/camelot-2026', title: 'Camelot 2026 Price List', navLabel: 'Camelot 2026', group: 'Contracts', icon: 'FileText', keywords: 'camelot 2026 price list rates inventory', permissions: ['view_quotations'] },
+  { path: '/price-lists/camelot-2026/monthly', title: 'Camelot Monthly Inventory', navLabel: 'Camelot Monthly', group: 'Contracts', icon: 'ClipboardText', keywords: 'camelot monthly inventory daily quantities october november', permissions: ['view_quotations'] },
   { path: '/categories', title: 'Categories', navLabel: 'By Client', group: 'Contracts', icon: 'FolderOpen', keywords: 'categories clients price list', permissions: ['view_clients'] },
   { path: '/customers', title: 'Customers', navLabel: 'Customers 360', group: 'Contracts', icon: 'Users', keywords: 'customers clients' },
 
