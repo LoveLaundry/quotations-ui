@@ -2,6 +2,7 @@ import { useState, useRef, useCallback, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import jsQR from 'jsqr'
 import { useLinenByCode, useScanLinen } from '../hooks/useLinen'
+import { LinenTagCompact } from '../components/linen-tag'
 import { LINEN_STATUS_CONFIG, SCAN_ACTIONS, type LinenStatus } from '../../../types/linen'
 import { Card, CardContent } from '../../../components/ui/card'
 import { Button } from '../../../components/ui/button'
@@ -80,7 +81,7 @@ export default function LinenScanner() {
       video.setAttribute('playsinline', '')
       video.setAttribute('muted', '')
       video.style.width = '100%'
-      video.style.minHeight = '300px'
+      video.style.height = '100%'
       video.style.objectFit = 'cover'
       video.srcObject = stream
       container.prepend(video)
@@ -209,8 +210,9 @@ export default function LinenScanner() {
       {/* Camera container — video element is created here via DOM */}
       <div
         ref={containerRef}
-        className="relative bg-black rounded-xl overflow-hidden border border-[var(--border)]"
-        style={{ display: cameraActive || cameraStarting ? 'block' : 'none', minHeight: 300 }}
+        data-linen-camera="scanner"
+        className="linen-camera-preview relative bg-black rounded-xl overflow-hidden border border-[var(--border)]"
+        style={{ display: cameraActive || cameraStarting ? 'block' : 'none' }}
       >
         {cameraStarting && (
           <div className="absolute inset-0 flex items-center justify-center bg-black/70 z-10">
@@ -264,7 +266,7 @@ export default function LinenScanner() {
                   onKeyDown={e => e.key === 'Enter' && handleLookup()}
                   placeholder="Enter linen ID (e.g. BSG-A0001XL)"
                   autoFocus
-                  className="w-full pl-10 pr-4 py-3 text-lg font-mono border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--danger)]/20 focus:border-[var(--danger)] transition-colors"
+                  className="w-full min-h-10 pl-10 pr-4 py-3 text-base font-mono border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--danger)]/20 focus:border-[var(--danger)] transition-colors"
                 />
               </div>
               <Button onClick={handleLookup} disabled={!code.trim() || isFetching} className="px-6">
@@ -279,8 +281,9 @@ export default function LinenScanner() {
       {!linen && lastScanned && !isFetching && (
         <Card className="border border-[var(--border)] shadow-sm">
           <CardContent className="p-8 text-center">
-            <p className="text-sm text-[var(--text-muted)]">No linen found with ID: <span className="font-mono font-semibold">{lastScanned}</span></p>
-            <div className="mt-3 flex gap-2 justify-center">
+            <p className="text-sm text-[var(--text-muted)]">No linen found with ID:</p>
+            <div className="mt-2 flex justify-center"><LinenTagCompact code={lastScanned} /></div>
+            <div className="mt-3 flex flex-wrap gap-2 justify-center">
               <Button variant="outline" size="sm" onClick={() => { setLastScanned(null); inputRef.current?.focus() }}>
                 Clear & Try Again
               </Button>
@@ -304,7 +307,10 @@ export default function LinenScanner() {
                   </span>
                 )}
               </div>
-              <p className="text-xs text-[var(--text-muted)] truncate">{linen.linen_id} · {linen.item_type} · {linen.client_name}</p>
+              <div className="mt-1 flex flex-wrap items-center gap-2">
+                <LinenTagCompact code={linen.linen_id} />
+                <p className="min-w-0 break-words text-xs text-[var(--text-muted)]">{linen.item_type} · {linen.client_name}</p>
+              </div>
             </div>
             {scanMutation.isPending ? (
               <Loader2 size={18} className="animate-spin text-[var(--text-muted)] flex-shrink-0" />
@@ -352,7 +358,7 @@ export default function LinenScanner() {
                       key={sa.value}
                       variant="outline"
                       size="sm"
-                      className="w-full justify-start text-xs h-8 focus:ring-2 focus:ring-[var(--danger)]/20"
+                      className="w-full justify-start text-xs min-h-10 focus:ring-2 focus:ring-[var(--danger)]/20"
                       style={{ borderColor: sa.color + '30', color: sa.color }}
                       onClick={() => handleQuickAction(sa.value)}
                       disabled={scanMutation.isPending}

@@ -36,6 +36,7 @@ import { useLinenCamera } from '../hooks/useLinenCamera'
 import { useLinenLiveFeed, type LinenFeedStatus } from '../hooks/useLinenLiveFeed'
 import { useReducedMotion } from '../../feature-pack/hooks'
 import { CustodyGroupPanel, ScanSelectHero, ScanStatCard } from '../components/scan-step-cards'
+import { LinenTagCompact } from '../components/linen-tag'
 import { parseLinenCode } from '../lib/linen-code'
 import {
   CATEGORY_LABEL,
@@ -457,9 +458,9 @@ export default function LinenSession() {
                 ) : (
                   <ul className="max-h-64 space-y-1 overflow-y-auto">
                     {apiResult.processed.map(row => (
-                      <li key={row.linen_id} className="scan-soft-row flex items-center gap-2 rounded border border-[var(--border)] bg-[var(--surface-2)] px-2 py-1.5 text-xs">
+                      <li key={row.linen_id} className="scan-soft-row flex min-w-0 flex-wrap items-center gap-2 rounded border border-[var(--border)] bg-[var(--surface-2)] px-2 py-1.5 text-xs">
                         <CheckCircle2 size={13} className="flex-shrink-0 text-[var(--success-text)]" />
-                        <span className="font-[family-name:var(--font-mono)] font-semibold text-[var(--text-primary)]">{row.linen_id}</span>
+                        <LinenTagCompact code={row.linen_id} />
                         <span className="ml-auto flex items-center gap-1 text-[10px] text-[var(--text-muted)]">
                           {statusLabel(row.from_status)} <ArrowRight size={10} /> {statusLabel(row.to_status)}
                         </span>
@@ -483,9 +484,9 @@ export default function LinenSession() {
                     {apiResult.errors.map(row => (
                       <li key={row.linen_id} className="scan-soft-row flex items-start gap-2 rounded border border-[var(--danger-border)] bg-[var(--danger-soft)] px-2 py-1.5 text-xs">
                         <AlertTriangle size={13} className="mt-0.5 flex-shrink-0 text-[var(--danger-text)]" />
-                        <div className="min-w-0">
-                          <p className="font-[family-name:var(--font-mono)] font-semibold text-[var(--text-primary)]">{row.linen_id}</p>
-                          <p className="text-[10px] text-[var(--danger-text)]">{row.error}</p>
+                        <div className="min-w-0 space-y-1">
+                          <LinenTagCompact code={row.linen_id} />
+                          <p className="break-words text-[10px] text-[var(--danger-text)]">{row.error}</p>
                         </div>
                       </li>
                     ))}
@@ -576,8 +577,9 @@ export default function LinenSession() {
 
       <div
         ref={camera.containerRef}
-        className="relative overflow-hidden rounded-md border border-[var(--border)] bg-black"
-        style={{ display: camera.active || camera.starting ? 'block' : 'none', minHeight: 260 }}
+        data-linen-camera="session"
+        className="linen-camera-preview relative overflow-hidden rounded-md border border-[var(--border)] bg-black"
+        style={{ display: camera.active || camera.starting ? 'block' : 'none' }}
       >
         {camera.active && (
           <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center">
@@ -622,7 +624,7 @@ export default function LinenSession() {
               onChange={event => setLocation(event.target.value)}
               placeholder="Location / station (optional, applied on OK)"
               disabled={bulkMutation.isPending}
-              className="flex-1 rounded-md border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-xs text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)] disabled:opacity-50"
+              className="min-h-10 flex-1 rounded-md border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-xs text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)] disabled:opacity-50"
             />
             <p className="max-w-md text-[11px] text-[var(--text-muted)]">
               Focus returns here after every scan, so a keyboard-wedge scanner can keep reading without a tap.
@@ -851,9 +853,7 @@ function MissingInCyclePanel({
               return (
                 <li key={linen.id} className="scan-soft-row min-w-0 rounded-md border border-[var(--border)] bg-[var(--surface-2)] p-2.5">
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="break-all font-[family-name:var(--font-mono)] text-xs font-semibold text-[var(--text-primary)]">
-                      {linen.linen_id}
-                    </span>
+                    <LinenTagCompact code={linen.linen_id} />
                     <Badge tone="warning" size="xs">{statusLabel(linen.status)}</Badge>
                   </div>
                   <p className="mt-1 break-words text-[11px] text-[var(--text-secondary)]">
@@ -923,7 +923,7 @@ function SessionHistory({ records, total, filter, setFilter, compact }: SessionH
             onChange={event => setFilter(event.target.value)}
             placeholder="Filter by code, category, status or result…"
             aria-label="Filter scan history"
-            className="w-full rounded-md border border-[var(--border)] bg-[var(--surface)] px-2 py-1.5 text-xs text-[var(--text-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--ring)] sm:w-56"
+            className="min-h-10 w-full rounded-md border border-[var(--border)] bg-[var(--surface)] px-2 py-1.5 text-xs text-[var(--text-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--ring)] sm:w-56"
           />
         </div>
 
@@ -943,9 +943,7 @@ function SessionHistory({ records, total, filter, setFilter, compact }: SessionH
                 >
                   <div className="flex flex-wrap items-start justify-between gap-2">
                     <div className="min-w-0 flex-1">
-                      <p className="break-all font-[family-name:var(--font-mono)] text-xs font-semibold text-[var(--text-primary)]">
-                        {record.code}
-                      </p>
+                      <LinenTagCompact code={record.code} />
                       <p className="mt-0.5 break-words text-[11px] text-[var(--text-muted)]">
                         {category ?? 'Category pending'}
                         {record.identity?.client_name ? ` · ${record.identity.client_name}` : ''}

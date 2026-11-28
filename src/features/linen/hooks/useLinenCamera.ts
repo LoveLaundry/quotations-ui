@@ -99,7 +99,7 @@ export function useLinenCamera({ onCode, cooldownMs = DEFAULT_RESCAN_COOLDOWN_MS
       video.setAttribute('playsinline', '')
       video.setAttribute('muted', '')
       video.style.width = '100%'
-      video.style.minHeight = '300px'
+      video.style.height = '100%'
       video.style.objectFit = 'cover'
       video.srcObject = stream
       container.prepend(video)

@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react'
 import { useBulkScan } from '../hooks/useLinen'
+import { LinenTagCompact } from '../components/linen-tag'
 import { SCAN_ACTIONS } from '../../../types/linen'
 import { Card, CardContent } from '../../../components/ui/card'
 import { Button } from '../../../components/ui/button'
@@ -62,7 +63,7 @@ export default function LinenBulkScan() {
                   <select
                     value={action}
                     onChange={e => setAction(e.target.value)}
-                    className="flex-1 px-3 py-2 text-sm border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--danger)]/20 focus:border-[var(--danger)] transition-colors"
+                    className="flex-1 min-h-10 px-3 py-2 text-sm border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--danger)]/20 focus:border-[var(--danger)] transition-colors"
                   >
                     {SCAN_ACTIONS.map(sa => <option key={sa.value} value={sa.value}>{sa.label}</option>)}
                   </select>
@@ -82,7 +83,7 @@ export default function LinenBulkScan() {
                   value={location}
                   onChange={e => setLocation(e.target.value)}
                   placeholder="e.g. Hotel Floor 3, Room 301"
-                  className="w-full px-3 py-2 text-sm border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--danger)]/20 focus:border-[var(--danger)] transition-colors"
+                  className="w-full min-h-10 px-3 py-2 text-sm border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--danger)]/20 focus:border-[var(--danger)] transition-colors"
                 />
               </div>
 
@@ -99,7 +100,7 @@ export default function LinenBulkScan() {
                   }}
                   placeholder={"Enter linen IDs, one per line or space-separated...\ne.g. BSG-A0001XL BSG-A0002XT"}
                   rows={4}
-                  className="w-full px-3 py-2 text-sm font-mono border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)] resize-none focus:outline-none focus:ring-2 focus:ring-[var(--danger)]/20 focus:border-[var(--danger)] transition-colors"
+                  className="w-full min-h-10 px-3 py-2 text-sm font-mono border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)] resize-none focus:outline-none focus:ring-2 focus:ring-[var(--danger)]/20 focus:border-[var(--danger)] transition-colors"
                 />
                 <div className="flex items-center gap-2 mt-2">
                   <Button variant="outline" size="sm" onClick={addCode} disabled={!input.trim()}>Add</Button>
@@ -176,9 +177,9 @@ export default function LinenBulkScan() {
                   <div className="space-y-1 max-h-56 overflow-y-auto">
                     <p className="text-[10px] font-semibold text-[var(--text-muted)] uppercase tracking-wide">Processed</p>
                     {bulkMutation.data.processed.map((p: any) => (
-                      <div key={p.linen_id} className="flex items-center gap-2 text-xs font-mono py-1.5 px-2 rounded bg-[var(--surface)] border border-[var(--border)]">
-                        <CheckCircle size={13} className="text-green-600 flex-shrink-0" />
-                        <span className="text-[var(--text-primary)] font-semibold">{p.linen_id}</span>
+                      <div key={p.linen_id} className="flex min-w-0 flex-wrap items-center gap-2 rounded border border-[var(--border)] bg-[var(--surface)] px-2 py-1.5 text-xs font-mono">
+                        <CheckCircle size={13} className="flex-shrink-0 text-green-600" />
+                        <LinenTagCompact code={p.linen_id} />
                         <span className="ml-auto text-[10px] text-[var(--text-muted)] flex items-center gap-1">
                           {p.from_status}<ArrowRight size={10} />{p.to_status}
                         </span>
@@ -192,9 +193,9 @@ export default function LinenBulkScan() {
                     {bulkMutation.data.errors.map((e: any) => (
                       <div key={e.linen_id} className="flex items-start gap-2 text-xs font-mono py-1.5 px-2 rounded bg-red-50 border border-red-100">
                         <AlertTriangle size={13} className="text-red-600 flex-shrink-0 mt-0.5" />
-                        <div className="min-w-0">
-                          <p className="text-[var(--text-primary)] font-semibold">{e.linen_id}</p>
-                          <p className="text-[10px] text-red-600">{e.error}</p>
+                        <div className="min-w-0 space-y-1">
+                          <LinenTagCompact code={e.linen_id} />
+                          <p className="break-words text-[10px] text-red-600">{e.error}</p>
                         </div>
                       </div>
                     ))}

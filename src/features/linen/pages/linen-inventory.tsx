@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useLinens } from '../hooks/useLinen'
+import { LinenTagCompact } from '../components/linen-tag'
 import { LINEN_STATUS_CONFIG, LINEN_CATEGORIES, LINEN_CONDITIONS, type LinenStatus } from '../../../types/linen'
 import { Card, CardContent } from '../../../components/ui/card'
 import { Button } from '../../../components/ui/button'
@@ -87,23 +88,23 @@ export default function LinenInventory() {
                 value={search}
                 onChange={e => setSearch(e.target.value)}
                 placeholder="Search linen ID, type, client..."
-                className="w-full pl-9 pr-3 py-2 text-sm border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--danger)]/20 focus:border-[var(--danger)] transition-colors"
+                className="w-full min-h-10 pl-9 pr-3 py-2 text-sm border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--danger)]/20 focus:border-[var(--danger)] transition-colors"
               />
             </div>
             <select value={category} onChange={e => { setCategory(e.target.value); setPage(0) }}
-              className="px-3 py-2 text-sm border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--danger)]/20 focus:border-[var(--danger)] transition-colors">
+              className="min-h-10 px-3 py-2 text-sm border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--danger)]/20 focus:border-[var(--danger)] transition-colors">
               <option value="">All Categories</option>
               {LINEN_CATEGORIES.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
             </select>
             <select value={status} onChange={e => { setStatus(e.target.value); setPage(0) }}
-              className="px-3 py-2 text-sm border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--danger)]/20 focus:border-[var(--danger)] transition-colors">
+              className="min-h-10 px-3 py-2 text-sm border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--danger)]/20 focus:border-[var(--danger)] transition-colors">
               <option value="">All Statuses</option>
               {(Object.keys(LINEN_STATUS_CONFIG) as LinenStatus[]).map(s => (
                 <option key={s} value={s}>{LINEN_STATUS_CONFIG[s].label}</option>
               ))}
             </select>
             <select value={condition} onChange={e => { setCondition(e.target.value); setPage(0) }}
-              className="px-3 py-2 text-sm border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--danger)]/20 focus:border-[var(--danger)] transition-colors">
+              className="min-h-10 px-3 py-2 text-sm border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--danger)]/20 focus:border-[var(--danger)] transition-colors">
               <option value="">All Conditions</option>
               {LINEN_CONDITIONS.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
             </select>
@@ -122,47 +123,80 @@ export default function LinenInventory() {
       ) : isError ? <ErrorState /> : !data?.items?.length ? (
         <EmptyState title="No linen found" description="Try adjusting your filters or generate new linen tags." />
       ) : (
-        <Card className="border border-[var(--border)] shadow-sm overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-[var(--border)] bg-[var(--surface)]">
-                  {['Linen ID', 'Type', 'Client', 'Status', 'Condition', 'Washes', 'Last Scan', ''].map(h => (
-                    <th key={h} className="px-4 py-3 text-left text-[11px] font-semibold text-[var(--text-muted)] uppercase tracking-wide whitespace-nowrap">{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {data.items.map(linen => {
-                  const stCfg = LINEN_STATUS_CONFIG[linen.status as LinenStatus] ?? { label: linen.status, color: 'var(--text-muted)', bg: 'var(--surface-3)' }
-                  return (
-                    <tr
-                      key={linen.id}
-                      onClick={() => navigate(`/linen/${linen.id}`)}
-                      className="border-b border-[var(--border)] last:border-b-0 hover:bg-[var(--surface-hover)] transition-colors cursor-pointer"
-                    >
-                      <td className="px-4 py-3 font-mono text-[13px] font-semibold text-[var(--text-primary)]">{linen.linen_id}</td>
-                      <td className="px-4 py-3 text-[var(--text-secondary)]">{linen.item_type}</td>
-                      <td className="px-4 py-3 text-[var(--text-secondary)]">{linen.client_name}</td>
-                      <td className="px-4 py-3">
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold" style={{ backgroundColor: stCfg.bg, color: stCfg.color }}>
-                          <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: stCfg.color }} />
-                          {stCfg.label}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 text-[var(--text-secondary)]">{linen.condition}</td>
-                      <td className="px-4 py-3 text-[var(--text-secondary)] text-center">{linen.wash_count}</td>
-                      <td className="px-4 py-3 text-[var(--text-muted)] text-xs">{linen.last_scanned_date ? formatDate(linen.last_scanned_date) : '—'}</td>
-                      <td className="px-4 py-3">
-                        <Link to={`/linen/${linen.id}`} onClick={e => e.stopPropagation()} className="text-[var(--danger-text)] hover:underline text-xs font-semibold">View</Link>
-                      </td>
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
+        <>
+          {/* Wide screens keep the dense ledger; its own container scrolls. */}
+          <Card className="hidden border border-[var(--border)] shadow-sm overflow-hidden sm:block">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-[var(--border)] bg-[var(--surface)]">
+                    {['Linen ID', 'Type', 'Client', 'Status', 'Condition', 'Washes', 'Last Scan', ''].map(h => (
+                      <th key={h} className="px-4 py-3 text-left text-[11px] font-semibold text-[var(--text-muted)] uppercase tracking-wide whitespace-nowrap">{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.items.map(linen => {
+                    const stCfg = LINEN_STATUS_CONFIG[linen.status as LinenStatus] ?? { label: linen.status, color: 'var(--text-muted)', bg: 'var(--surface-3)' }
+                    return (
+                      <tr
+                        key={linen.id}
+                        onClick={() => navigate(`/linen/${linen.id}`)}
+                        className="border-b border-[var(--border)] last:border-b-0 hover:bg-[var(--surface-hover)] transition-colors cursor-pointer"
+                      >
+                        <td className="max-w-[220px] px-4 py-3"><LinenTagCompact code={linen.linen_id} /></td>
+                        <td className="px-4 py-3 text-[var(--text-secondary)]">{linen.item_type}</td>
+                        <td className="px-4 py-3 text-[var(--text-secondary)]">{linen.client_name}</td>
+                        <td className="px-4 py-3">
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold" style={{ backgroundColor: stCfg.bg, color: stCfg.color }}>
+                            <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: stCfg.color }} />
+                            {stCfg.label}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 text-[var(--text-secondary)]">{linen.condition}</td>
+                        <td className="px-4 py-3 text-[var(--text-secondary)] text-center">{linen.wash_count}</td>
+                        <td className="px-4 py-3 text-[var(--text-muted)] text-xs">{linen.last_scanned_date ? formatDate(linen.last_scanned_date) : '—'}</td>
+                        <td className="px-4 py-3">
+                          <Link to={`/linen/${linen.id}`} onClick={e => e.stopPropagation()} className="text-[var(--danger-text)] hover:underline text-xs font-semibold">View</Link>
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </Card>
+
+          {/* Phones get the same data as wrapped cards — no sideways scrolling. */}
+          <div className="space-y-2 sm:hidden">
+            {data.items.map(linen => {
+              const stCfg = LINEN_STATUS_CONFIG[linen.status as LinenStatus] ?? { label: linen.status, color: 'var(--text-muted)', bg: 'var(--surface-3)' }
+              return (
+                <Link
+                  key={linen.id}
+                  data-linen-card="inventory"
+                  data-href
+                  to={`/linen/${linen.id}`}
+                  className="block min-w-0 rounded-lg border border-[var(--border)] bg-[var(--surface)] p-3 hover:bg-[var(--surface-hover)] transition-colors"
+                >
+                  <div className="flex flex-wrap items-center gap-2">
+                    <LinenTagCompact code={linen.linen_id} />
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold" style={{ backgroundColor: stCfg.bg, color: stCfg.color }}>
+                      <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: stCfg.color }} />
+                      {stCfg.label}
+                    </span>
+                  </div>
+                  <div className="mt-2 grid gap-1 text-xs text-[var(--text-secondary)]">
+                    <p className="break-words"><span className="text-[var(--text-muted)]">Type: </span>{linen.item_type}</p>
+                    <p className="break-words"><span className="text-[var(--text-muted)]">Client: </span>{linen.client_name}</p>
+                    <p className="break-words"><span className="text-[var(--text-muted)]">Condition: </span>{linen.condition} · <span className="text-[var(--text-muted)]">Washes: </span>{linen.wash_count}</p>
+                    <p className="break-words text-[var(--text-muted)]">Last scan: {linen.last_scanned_date ? formatDate(linen.last_scanned_date) : '—'}</p>
+                  </div>
+                </Link>
+              )
+            })}
           </div>
-        </Card>
+        </>
       )}
 
       {/* Pagination */}

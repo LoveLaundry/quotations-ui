@@ -1,9 +1,8 @@
 import { useParams } from 'react-router-dom'
-import { QRCodeSVG } from 'qrcode.react'
-import JsBarcode from 'jsbarcode'
-import { useRef, useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Loader2 } from 'lucide-react'
 import { useLinen, useLinenEvents, useScanLinen } from '../hooks/useLinen'
+import { LinenTagFull } from '../components/linen-tag'
 import { LINEN_STATUS_CONFIG, SCAN_ACTIONS, type LinenStatus } from '../../../types/linen'
 import { Card, CardContent } from '../../../components/ui/card'
 import { Button } from '../../../components/ui/button'
@@ -19,25 +18,12 @@ export default function LinenProfile() {
   const { data: events } = useLinenEvents(id)
   const scanMutation = useScanLinen()
   const [pendingAction, setPendingAction] = useState<string | null>(null)
-  const barcodeRef = useRef<SVGSVGElement>(null)
-
-  useEffect(() => {
-    if (barcodeRef.current && linen?.linen_id) {
-      JsBarcode(barcodeRef.current, linen.linen_id, {
-        format: 'CODE128',
-        width: 2,
-        height: 50,
-        displayValue: false,
-        margin: 0,
-      })
-    }
-  }, [linen?.linen_id])
 
   if (isLoading) return (
     <div className="space-y-4">
       <Skeleton className="h-8 w-48 rounded-lg" />
-      <div className="flex gap-5">
-        <Skeleton className="w-80 h-96 rounded-xl" />
+      <div className="flex flex-col gap-5 lg:flex-row">
+        <Skeleton className="w-full max-w-80 h-96 rounded-xl" />
         <div className="flex-1 space-y-4"><Skeleton className="h-48 rounded-xl" /><Skeleton className="h-64 rounded-xl" /></div>
       </div>
     </div>
@@ -72,14 +58,10 @@ export default function LinenProfile() {
       <div className="flex flex-col lg:flex-row gap-5">
         {/* Left column — QR, Barcode, Status, Actions */}
         <div className="lg:w-80 space-y-4">
-          {/* QR + Barcode card */}
+          {/* QR + CODE128 + ID — the same tag the printer produces */}
           <Card className="border border-[var(--border)] shadow-sm">
-            <CardContent className="p-6 flex flex-col items-center gap-4">
-              <QRCodeSVG value={linen.linen_id} size={160} level="M" includeMargin />
-              <div className="w-full text-center">
-                <svg ref={barcodeRef} className="w-full" />
-                <p className="mt-2 text-lg font-bold font-mono text-[var(--text-primary)] tracking-wider">{linen.linen_id}</p>
-              </div>
+            <CardContent className="p-6">
+              <LinenTagFull code={linen.linen_id} />
             </CardContent>
           </Card>
 
@@ -105,7 +87,7 @@ export default function LinenProfile() {
                     key={sa.value}
                     variant="outline"
                     size="sm"
-                    className="text-xs justify-start h-8 focus:ring-2 focus:ring-[var(--danger)]/20"
+                    className="text-xs justify-start min-h-10 focus:ring-2 focus:ring-[var(--danger)]/20"
                     style={{ borderColor: sa.color + '30', color: sa.color }}
                     onClick={() => handleQuickAction(sa.value)}
                     disabled={scanMutation.isPending}

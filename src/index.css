@@ -2928,3 +2928,22 @@ button:not(:disabled):active,
     background: var(--surface-hover, var(--surface-2));
   }
 }
+
+/* ── Linen camera previews ──────────────────────────────────────────────────
+   Scanner and scan session used hard-coded 300/260px floors. A viewport-relative
+   height keeps the framing usable on a short phone without pushing the page
+   sideways; the video is created imperatively, so it is styled here too. */
+.linen-camera-preview {
+  height: clamp(200px, 42vh, 320px);
+  min-height: 0;
+}
+@supports (height: 1dvh) {
+  .linen-camera-preview { height: clamp(200px, 42dvh, 320px); }
+}
+.linen-camera-preview > video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  object-fit: cover;
+}
